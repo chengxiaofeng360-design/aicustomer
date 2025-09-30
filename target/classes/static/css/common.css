@@ -212,13 +212,13 @@ body {
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
 }
 
 .stats-card {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-sm);
     border-radius: var(--border-radius);
     text-align: center;
     box-shadow: var(--shadow);
@@ -243,14 +243,17 @@ body {
 }
 
 .stats-number {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 0;
+    display: inline;
 }
 
 .stats-label {
     font-size: var(--font-size-sm);
     opacity: 0.9;
+    display: inline;
+    margin-left: var(--spacing-xs);
 }
 
 .stat-card {

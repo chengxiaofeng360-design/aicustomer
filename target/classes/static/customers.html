@@ -22,42 +22,51 @@
         </div>
         
         <!-- 统计卡片 -->
-        <div class="row mb-4">
+        <div class="row mb-3">
             <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">1,234</div>
-                    <div class="stats-label">客户总数</div>
+                <div class="stats-card" style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                    <div>
+                        <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">客户总数</div>
+                        <div class="stats-number" style="font-size: 1.5rem; font-weight: bold;">1,234</div>
+                    </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">89%</div>
-                    <div class="stats-label">客户满意度</div>
+                <div class="stats-card" style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                    <div>
+                        <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">客户满意度</div>
+                        <div class="stats-number" style="font-size: 1.5rem; font-weight: bold;">89%</div>
+                    </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">156</div>
-                    <div class="stats-label">本月新增</div>
+                <div class="stats-card" style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                    <div>
+                        <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">本月新增</div>
+                        <div class="stats-number" style="font-size: 1.5rem; font-weight: bold;">156</div>
+                    </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">45</div>
-                    <div class="stats-label">潜在客户</div>
+                <div class="stats-card" style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                    <div>
+                        <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">潜在客户</div>
+                        <div class="stats-number" style="font-size: 1.5rem; font-weight: bold;">45</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- 搜索和筛选区域 -->
-        <div class="card mb-4">
+        <div class="card mb-3">
             <div class="card-body">
-                <div class="row g-3">
+                <!-- 第一排：搜索条件 -->
+                <div class="row g-3 mb-3">
                     <div class="col-md-3">
                         <label class="form-label">客户名称</label>
                         <input type="text" class="form-control" id="customerName" placeholder="请输入客户名称...">
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">客户类型</label>
                         <select class="form-select" id="customerType">
                             <option value="">全部</option>
@@ -66,7 +75,7 @@
                             <option value="科研院所">科研院所</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">申请性质</label>
                         <select class="form-select" id="applicationType">
                             <option value="">全部</option>
@@ -75,7 +84,7 @@
                             <option value="商标注册">商标注册</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">地区</label>
                         <select class="form-select" id="region">
                             <option value="">全部</option>
@@ -85,39 +94,43 @@
                             <option value="江苏">江苏</option>
                         </select>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button class="btn btn-primary me-2" onclick="searchCustomers()">
-                            <i class="bi bi-search"></i> 搜索
-                        </button>
-                        <button class="btn btn-secondary me-2" onclick="resetFilters()">
-                            <i class="bi bi-arrow-clockwise"></i> 重置
-                        </button>
-                        <button class="btn btn-success" onclick="showAddCustomerModal()">
-                            <i class="bi bi-plus"></i> 新增
-                        </button>
+                </div>
+                
+                <!-- 第二排：操作按钮 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-2 justify-content-between">
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-success" onclick="showAddCustomerModal()">
+                                    <i class="bi bi-plus"></i> 新增
+                                </button>
+                                <button class="btn btn-info" onclick="showBatchImport()">
+                                    <i class="bi bi-upload"></i> 批量导入
+                                </button>
+                                <button class="btn btn-warning" onclick="exportCustomers()">
+                                    <i class="bi bi-download"></i> 导出数据
+                                </button>
+                                <button class="btn btn-danger" onclick="batchDelete()">
+                                    <i class="bi bi-trash"></i> 批量删除
+                                </button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-primary" onclick="searchCustomers()">
+                                    <i class="bi bi-search"></i> 搜索
+                                </button>
+                                <button class="btn btn-secondary" onclick="resetFilters()">
+                                    <i class="bi bi-arrow-clockwise"></i> 重置
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 操作按钮区域 -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <button class="btn btn-outline-danger me-2" onclick="batchDelete()">
-                    <i class="bi bi-trash"></i> 批量删除
-                </button>
-                <button class="btn btn-outline-secondary" onclick="refreshCustomers()">
-                    <i class="bi bi-arrow-clockwise"></i> 刷新
-                </button>
-            </div>
-            <div>
-                <button class="btn btn-outline-primary me-2" onclick="importCustomers()">
-                    <i class="bi bi-upload"></i> 导入
-                </button>
-                <button class="btn btn-outline-success" onclick="exportCustomers()">
-                    <i class="bi bi-download"></i> 导出
-                </button>
-            </div>
+        <!-- 记录统计信息 - 移到右下角 -->
+        <div class="position-fixed" style="bottom: 20px; right: 20px; z-index: 1000;">
+            <span class="badge bg-secondary fs-6">共 <span id="totalCustomers">0</span> 条记录</span>
         </div>
 
         <!-- 客户列表 -->
@@ -450,6 +463,81 @@
         </div>
     </div>
 
+    <!-- 批量导入模态框 -->
+    <div class="modal fade" id="batchImportModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">批量导入客户信息</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle"></i> 使用说明：</h6>
+                        <ul class="mb-0">
+                            <li>支持从Excel、Word等文档中复制数据直接粘贴</li>
+                            <li>每行一个客户，字段用制表符或逗号分隔</li>
+                            <li>必填字段：客户名称、联系人、电话、客户类型、申请性质、地区</li>
+                            <li>系统会自动识别和整理数据格式</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">数据格式示例：</label>
+                        <div class="bg-light p-3 rounded">
+                            <code>
+                                张三公司 | 李四 | 13800138000 | 企业客户 | 新品种申请 | 北京 | 农业 | 1000万<br>
+                                王五农场 | 赵六 | 13900139000 | 个人客户 | 品种权申请 | 上海 | 种植业 | 500万
+                            </code>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">粘贴客户数据：</label>
+                        <textarea class="form-control" id="batchImportData" rows="10" 
+                                  placeholder="请在此处粘贴客户数据，每行一个客户，字段用制表符或逗号分隔..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <button class="btn btn-outline-primary" onclick="parseImportData()">
+                            <i class="bi bi-gear"></i> 解析数据
+                        </button>
+                        <button class="btn btn-outline-secondary ms-2" onclick="clearImportData()">
+                            <i class="bi bi-trash"></i> 清空
+                        </button>
+                    </div>
+
+                    <div id="importPreview" style="display: none;">
+                        <h6>数据预览：</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>客户名称</th>
+                                        <th>联系人</th>
+                                        <th>电话</th>
+                                        <th>客户类型</th>
+                                        <th>申请性质</th>
+                                        <th>地区</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="importPreviewBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveBatchImport()" id="saveImportBtn" disabled>
+                        <i class="bi bi-save"></i> 保存到数据库
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 模拟客户数据
         let customers = [
@@ -598,6 +686,214 @@
             document.getElementById('customerForm').reset();
             document.getElementById('customerId').value = '';
             new bootstrap.Modal(document.getElementById('customerModal')).show();
+        }
+
+        // 显示批量导入模态框
+        function showBatchImport() {
+            new bootstrap.Modal(document.getElementById('batchImportModal')).show();
+        }
+
+        // 解析导入数据
+        function parseImportData() {
+            const data = document.getElementById('batchImportData').value.trim();
+            if (!data) {
+                alert('请先粘贴要导入的数据！');
+                return;
+            }
+
+            const lines = data.split('\n').filter(line => line.trim());
+            const parsedData = [];
+            let hasError = false;
+
+            lines.forEach((line, index) => {
+                const fields = line.split(/[\t,|]/).map(field => field.trim());
+                
+                if (fields.length < 6) {
+                    hasError = true;
+                    parsedData.push({
+                        customerName: fields[0] || '',
+                        contactPerson: fields[1] || '',
+                        phone: fields[2] || '',
+                        customerType: fields[3] || '',
+                        applicationType: fields[4] || '',
+                        region: fields[5] || '',
+                        industry: fields[6] || '',
+                        annualRevenue: fields[7] || '',
+                        status: 'error',
+                        error: '字段不足，至少需要6个字段'
+                    });
+                    return;
+                }
+
+                // 验证必填字段
+                const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]];
+                const missingFields = requiredFields.some(field => !field);
+                
+                if (missingFields) {
+                    hasError = true;
+                    parsedData.push({
+                        customerName: fields[0] || '',
+                        contactPerson: fields[1] || '',
+                        phone: fields[2] || '',
+                        customerType: fields[3] || '',
+                        applicationType: fields[4] || '',
+                        region: fields[5] || '',
+                        industry: fields[6] || '',
+                        annualRevenue: fields[7] || '',
+                        status: 'error',
+                        error: '必填字段不能为空'
+                    });
+                } else {
+                    parsedData.push({
+                        customerName: fields[0],
+                        contactPerson: fields[1],
+                        phone: fields[2],
+                        customerType: fields[3],
+                        applicationType: fields[4],
+                        region: fields[5],
+                        industry: fields[6] || '',
+                        annualRevenue: fields[7] || '',
+                        varietyName: fields[8] || '',
+                        varietyType: fields[9] || '',
+                        applicationNumber: fields[10] || '',
+                        applicationDate: fields[11] || '',
+                        breederName: fields[12] || '',
+                        breederUnit: fields[13] || '',
+                        breederAddress: fields[14] || '',
+                        breederPhone: fields[15] || '',
+                        applicantName: fields[16] || '',
+                        applicantUnit: fields[17] || '',
+                        applicantAddress: fields[18] || '',
+                        applicantPhone: fields[19] || '',
+                        varietyDescription: fields[20] || '',
+                        technicalFeatures: fields[21] || '',
+                        marketProspect: fields[22] || '',
+                        address: fields[23] || '',
+                        remarks: fields[24] || '',
+                        status: 'valid'
+                    });
+                }
+            });
+
+            // 显示预览
+            displayImportPreview(parsedData);
+            
+            if (!hasError) {
+                document.getElementById('saveImportBtn').disabled = false;
+            }
+        }
+
+        // 显示导入预览
+        function displayImportPreview(data) {
+            const previewBody = document.getElementById('importPreviewBody');
+            previewBody.innerHTML = '';
+
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = item.status === 'error' ? 'table-danger' : 'table-success';
+                
+                row.innerHTML = `
+                    <td>${item.customerName}</td>
+                    <td>${item.contactPerson}</td>
+                    <td>${item.phone}</td>
+                    <td>${item.customerType}</td>
+                    <td>${item.applicationType}</td>
+                    <td>${item.region}</td>
+                    <td>
+                        ${item.status === 'error' ? 
+                            `<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> ${item.error}</span>` : 
+                            `<span class="text-success"><i class="bi bi-check-circle"></i> 有效</span>`
+                        }
+                    </td>
+                `;
+                previewBody.appendChild(row);
+            });
+
+            document.getElementById('importPreview').style.display = 'block';
+        }
+
+        // 清空导入数据
+        function clearImportData() {
+            document.getElementById('batchImportData').value = '';
+            document.getElementById('importPreview').style.display = 'none';
+            document.getElementById('saveImportBtn').disabled = true;
+        }
+
+        // 保存批量导入数据
+        function saveBatchImport() {
+            const data = document.getElementById('batchImportData').value.trim();
+            if (!data) {
+                alert('没有要保存的数据！');
+                return;
+            }
+
+            const lines = data.split('\n').filter(line => line.trim());
+            let successCount = 0;
+            let errorCount = 0;
+
+            lines.forEach((line, index) => {
+                const fields = line.split(/[\t,|]/).map(field => field.trim());
+                
+                if (fields.length >= 6) {
+                    const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]];
+                    const missingFields = requiredFields.some(field => !field);
+                    
+                    if (!missingFields) {
+                        // 创建新客户对象
+                        const newCustomer = {
+                            id: Date.now() + index,
+                            customerName: fields[0],
+                            contactPerson: fields[1],
+                            phone: fields[2],
+                            email: fields[3] || '',
+                            companySize: fields[4] || '',
+                            customerType: fields[5],
+                            applicationType: fields[6],
+                            region: fields[7],
+                            industry: fields[8] || '',
+                            annualRevenue: fields[9] || '',
+                            varietyName: fields[10] || '',
+                            varietyType: fields[11] || '',
+                            applicationNumber: fields[12] || '',
+                            applicationDate: fields[13] || '',
+                            breederName: fields[14] || '',
+                            breederUnit: fields[15] || '',
+                            breederAddress: fields[16] || '',
+                            breederPhone: fields[17] || '',
+                            applicantName: fields[18] || '',
+                            applicantUnit: fields[19] || '',
+                            applicantAddress: fields[20] || '',
+                            applicantPhone: fields[21] || '',
+                            varietyDescription: fields[22] || '',
+                            technicalFeatures: fields[23] || '',
+                            marketProspect: fields[24] || '',
+                            address: fields[25] || '',
+                            remarks: fields[26] || '',
+                            createTime: new Date().toLocaleString(),
+                            updateTime: new Date().toLocaleString()
+                        };
+
+                        customers.push(newCustomer);
+                        successCount++;
+                    } else {
+                        errorCount++;
+                    }
+                } else {
+                    errorCount++;
+                }
+            });
+
+            // 刷新客户列表
+            loadCustomers();
+            
+            // 关闭模态框
+            bootstrap.Modal.getInstance(document.getElementById('batchImportModal')).hide();
+            
+            // 显示结果
+            alert(`批量导入完成！\n成功导入：${successCount} 条\n失败：${errorCount} 条`);
+            
+            // 清空数据
+            clearImportData();
         }
 
         // 查看客户详情
