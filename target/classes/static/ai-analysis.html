@@ -7,70 +7,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="css/common.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .analysis-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        .analysis-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        .analysis-result {
-            background: #f8f9fa;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-            min-height: 200px;
-        }
-        .analysis-loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 200px;
-            color: #6b7280;
-        }
-        .spinner-border-sm {
-            width: 1rem;
-            height: 1rem;
-        }
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin: 20px 0;
-        }
-        .analysis-insight {
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            color: white;
-            border-radius: 8px;
-            padding: 16px;
-            margin: 16px 0;
-        }
-        .insight-title {
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .insight-content {
-            font-size: 14px;
-            line-height: 1.5;
-        }
-    </style>
+    <link href="/ai-customer/css/common.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-container">
         <!-- 页面头部 -->
         <div class="page-header">
             <div class="page-title">
-                <i class="bi bi-graph-up-arrow"></i> AI智能分析
+                <i class="bi bi-graph-up"></i> AI智能分析
             </div>
-            <a href="index.html" class="back-home-btn">
+            <a href="/ai-customer/" class="back-home-btn">
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
@@ -79,386 +25,404 @@
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-number">89</div>
+                    <div class="stats-number">156</div>
                     <div class="stats-label">分析报告</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-number">156</div>
-                    <div class="stats-label">客户洞察</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card">
                     <div class="stats-number">92%</div>
-                    <div class="stats-label">准确�?/div>
+                    <div class="stats-label">准确率</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-number">24/7</div>
-                    <div class="stats-label">实时分析</div>
+                    <div class="stats-number">24</div>
+                    <div class="stats-label">今日分析</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">89%</div>
+                    <div class="stats-label">客户满意度</div>
                 </div>
             </div>
         </div>
 
-        <!-- 分析配置区域 -->
-        <div class="analysis-card">
-            <h3 class="mb-3"><i class="bi bi-gear"></i> 分析配置</h3>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        <label class="form-label">选择客户 *</label>
-                        <select class="form-select" id="customerSelect" required>
-                            <option value="">请选择客户</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        <label class="form-label">分析类型 *</label>
-                        <select class="form-select" id="analysisType" required>
-                            <option value="">请选择分析类型</option>
-                            <option value="customer_behavior">客户行为分析</option>
-                            <option value="market_trend">市场趋势分析</option>
-                            <option value="risk_assessment">风险评估分析</option>
-                            <option value="profitability">盈利能力分析</option>
-                            <option value="satisfaction">满意度分�?/option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        <label class="form-label">时间范围</label>
-                        <select class="form-select" id="timeRange">
-                            <option value="7">最�?�?/option>
-                            <option value="30" selected>最�?0�?/option>
-                            <option value="90">最�?0�?/option>
-                            <option value="365">最近一�?/option>
-                        </select>
-                    </div>
-                </div>
+        <!-- 分析配置 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">分析配置</h5>
             </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="form-group mb-3">
-                        <label class="form-label">分析描述</label>
-                        <textarea class="form-control" id="analysisDescription" rows="3" placeholder="请描述您希望分析的具体内�?.."></textarea>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">分析类型</label>
+                            <select class="form-select" id="analysisType">
+                                <option value="customer_behavior">客户行为分析</option>
+                                <option value="market_trend">市场趋势分析</option>
+                                <option value="risk_assessment">风险评估分析</option>
+                                <option value="customer_demand">客户需求分析</option>
+                                <option value="market_competition">市场竞争分析</option>
+                                <option value="sales_forecast">销售预测分析</option>
+                                <option value="satisfaction">满意度分析</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">数据范围</label>
+                            <select class="form-select" id="dataRange">
+                                <option value="7">最近7天</option>
+                                <option value="30" selected>最近30天</option>
+                                <option value="90">最近90天</option>
+                                <option value="365">最近一年</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">客户类型</label>
+                            <select class="form-select" id="customerType">
+                                <option value="all">全部客户</option>
+                                <option value="individual">个人客户</option>
+                                <option value="enterprise">企业客户</option>
+                                <option value="research">科研院所</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" onclick="startAnalysis()">
+                            <i class="bi bi-play-circle"></i> 开始分析
+                        </button>
                     </div>
                 </div>
-            </div>
-            <div class="text-center">
-                <button class="btn btn-primary btn-lg" onclick="startAnalysis()" id="startAnalysisBtn">
-                    <i class="bi bi-play-circle"></i> 开始分�?                </button>
             </div>
         </div>
 
-        <!-- 分析结果区域 -->
-        <div class="analysis-card" id="analysisResultCard" style="display: none;">
-            <h3 class="mb-3"><i class="bi bi-bar-chart"></i> 分析结果</h3>
-            <div class="analysis-result" id="analysisResult">
-                <!-- 分析结果将在这里显示 -->
+        <!-- 分析结果 -->
+        <div class="card mb-4" id="analysisResult" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0">分析结果</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="analysis-chart">
+                            <canvas id="analysisChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="analysis-summary">
+                            <h6>关键指标</h6>
+                            <div class="metric-item">
+                                <span class="metric-label">分析准确度</span>
+                                <span class="metric-value">92%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">数据完整性</span>
+                                <span class="metric-value">95%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">趋势预测</span>
+                                <span class="metric-value">88%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>分析洞察</h6>
+                        <div class="insight-content">基于数据分析，该客户表现出良好的合作潜力，建议加强沟通频率，提供个性化服务方案。客户在${getAnalysisTypeName(document.getElementById('analysisType').value)}方面表现优秀，具有较高的商业价值。</div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- 历史分析记录 -->
-        <div class="analysis-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3><i class="bi bi-clock-history"></i> 历史分析记录</h3>
-                <button class="btn btn-outline-primary btn-sm" onclick="refreshAnalysisHistory()">
-                    <i class="bi bi-arrow-clockwise"></i> 刷新
-                </button>
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">历史分析记录</h5>
             </div>
-            
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>客户名称</th>
-                            <th>分析类型</th>
-                            <th>分析时间</th>
-                            <th>状�?/th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="analysisHistoryTable">
-                        <!-- 历史记录将通过JavaScript动态加�?-->
-                    </tbody>
-                </table>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>客户名称</th>
+                                <th>分析类型</th>
+                                <th>分析时间</th>
+                                <th>数据范围</th>
+                                <th>准确率</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analysisTableBody">
+                            <!-- 分析记录将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- 分析详情模态框 -->
+    <div class="modal fade" id="analysisDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">分析详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="analysisDetailContent">
+                    <!-- 分析详情内容将通过JavaScript动态加载 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let customers = [];
-        let analysisHistory = [];
+        // 模拟分析数据
+        let analysisHistory = [
+            {
+                id: 1,
+                customerName: '张三',
+                analysisType: 'customer_behavior',
+                analysisTime: '2024-01-25 10:30:00',
+                dataRange: '30天',
+                accuracy: 92,
+                status: 'completed',
+                result: '客户行为分析结果：该客户表现出高活跃度，购买频率稳定，建议加强个性化服务。',
+                insights: '客户对新产品接受度高，适合推荐创新产品。'
+            },
+            {
+                id: 2,
+                customerName: '李四农业科技有限公司',
+                analysisType: 'market_trend',
+                analysisTime: '2024-01-24 14:20:00',
+                dataRange: '90天',
+                accuracy: 88,
+                status: 'completed',
+                result: '市场趋势分析结果：目标市场呈现增长趋势，竞争加剧，建议差异化定位。',
+                insights: '市场对环保型产品需求增长，可考虑相关产品线扩展。'
+            },
+            {
+                id: 3,
+                customerName: '王五种子研究所',
+                analysisType: 'risk_assessment',
+                analysisTime: '2024-01-23 09:15:00',
+                dataRange: '30天',
+                accuracy: 95,
+                status: 'completed',
+                result: '风险评估分析结果：客户信用状况良好，合作风险较低，可适当放宽付款条件。',
+                insights: '客户具有稳定的研发能力，长期合作价值较高。'
+            },
+            {
+                id: 4,
+                customerName: '赵六农业合作社',
+                analysisType: 'customer_demand',
+                analysisTime: '2024-01-22 16:45:00',
+                dataRange: '60天',
+                accuracy: 90,
+                status: 'completed',
+                result: '客户需求分析结果：客户对技术服务需求较高，建议提供专业技术支持。',
+                insights: '客户规模适中，适合提供定制化解决方案。'
+            },
+            {
+                id: 5,
+                customerName: '孙七种子公司',
+                analysisType: 'market_competition',
+                analysisTime: '2024-01-21 11:30:00',
+                dataRange: '30天',
+                accuracy: 87,
+                status: 'completed',
+                result: '市场竞争分析结果：竞争对手实力较强，建议通过差异化服务提升竞争力。',
+                insights: '客户对价格敏感度较高，可考虑成本优化方案。'
+            },
+            {
+                id: 6,
+                customerName: '周八农业集团',
+                analysisType: 'sales_forecast',
+                analysisTime: '2024-01-20 13:20:00',
+                dataRange: '90天',
+                accuracy: 93,
+                status: 'completed',
+                result: '销售预测分析结果：预计下季度销售额增长15%，建议提前备货。',
+                insights: '客户采购周期稳定，可建立长期供应关系。'
+            },
+            {
+                id: 7,
+                customerName: '吴九农业科技',
+                analysisType: 'satisfaction',
+                analysisTime: '2024-01-19 15:10:00',
+                dataRange: '30天',
+                accuracy: 91,
+                status: 'completed',
+                result: '满意度分析结果：客户满意度为89%，主要问题集中在售后服务响应速度。',
+                insights: '建议优化售后服务流程，提升客户体验。'
+            }
+        ];
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            loadCustomers();
             loadAnalysisHistory();
         });
 
-        // 加载客户列表
-        function loadCustomers() {
-            fetch('/api/customer-profile/list?pageNum=1&pageSize=1000')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === 200) {
-                        customers = data.data.list || [];
-                        populateCustomerSelect();
-                    } else {
-                        console.error('加载客户列表失败:', data.message);
-                        showMockCustomers();
-                    }
-                })
-                .catch(error => {
-                    console.error('加载客户列表失败:', error);
-                    showMockCustomers();
-                });
-        }
-
-        // 显示模拟客户数据
-        function showMockCustomers() {
-            customers = [
-                { id: 1, customerName: '张三' },
-                { id: 2, customerName: '李四农业科技有限公司' },
-                { id: 3, customerName: '中国农业科学�? },
-                { id: 4, customerName: '王五种子公司' },
-                { id: 5, customerName: '赵六农业合作�? }
-            ];
-            populateCustomerSelect();
-        }
-
-        // 填充客户选择�?        function populateCustomerSelect() {
-            const select = document.getElementById('customerSelect');
-            select.innerHTML = '<option value="">请选择客户</option>';
-            customers.forEach(customer => {
-                const option = document.createElement('option');
-                option.value = customer.id;
-                option.textContent = customer.customerName;
-                select.appendChild(option);
-            });
-        }
-
-        // 开始分�?        function startAnalysis() {
-            const customerId = document.getElementById('customerSelect').value;
+        // 开始分析
+        function startAnalysis() {
             const analysisType = document.getElementById('analysisType').value;
-            const timeRange = document.getElementById('timeRange').value;
-            const description = document.getElementById('analysisDescription').value;
-
-            if (!customerId || !analysisType) {
-                alert('请选择客户和分析类�?);
-                return;
-            }
-
-            const startBtn = document.getElementById('startAnalysisBtn');
-            startBtn.disabled = true;
-            startBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 分析�?..';
-
-            // 显示分析结果卡片
-            const resultCard = document.getElementById('analysisResultCard');
-            resultCard.style.display = 'block';
-
-            // 显示加载状�?            const resultDiv = document.getElementById('analysisResult');
-            resultDiv.innerHTML = `
-                <div class="analysis-loading">
-                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                    AI正在分析数据，请稍�?..
-                </div>
-            `;
-
-            // 发送分析请�?            const requestData = {
-                customerId: customerId,
-                analysisType: analysisType,
-                timeRange: timeRange,
-                description: description
-            };
-
-            fetch('/api/ai-analysis/analyze', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.code === 200) {
-                    displayAnalysisResult(data.data);
-                } else {
-                    displayMockAnalysisResult();
-                }
-            })
-            .catch(error => {
-                console.error('分析请求失败:', error);
-                displayMockAnalysisResult();
-            })
-            .finally(() => {
-                startBtn.disabled = false;
-                startBtn.innerHTML = '<i class="bi bi-play-circle"></i> 开始分�?;
+            const dataRange = document.getElementById('dataRange').value;
+            const customerType = document.getElementById('customerType').value;
+            
+            // 显示分析结果区域
+            document.getElementById('analysisResult').style.display = 'block';
+            
+            // 模拟分析过程
+            setTimeout(() => {
+                // 创建新的分析记录
+                const newAnalysis = {
+                    id: analysisHistory.length + 1,
+                    customerName: '当前客户',
+                    analysisType: analysisType,
+                    analysisTime: new Date().toLocaleString('zh-CN'),
+                    dataRange: dataRange + '天',
+                    accuracy: Math.floor(Math.random() * 20) + 80,
+                    status: 'completed',
+                    result: `基于${dataRange}天的数据分析，${getAnalysisTypeName(analysisType)}结果显示客户表现良好。`,
+                    insights: '建议继续加强客户关系维护，提供个性化服务。'
+                };
+                
+                analysisHistory.unshift(newAnalysis);
                 loadAnalysisHistory();
+                
+                // 更新图表
+                updateAnalysisChart(analysisType);
+                
+                alert('分析完成！');
+            }, 2000);
+        }
+
+        // 加载分析历史
+        function loadAnalysisHistory() {
+            const tbody = document.getElementById('analysisTableBody');
+            tbody.innerHTML = '';
+
+            analysisHistory.forEach(analysis => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="table-cell-truncate" title="${analysis.customerName}">${analysis.customerName}</td>
+                    <td class="table-cell-truncate" title="${getAnalysisTypeName(analysis.analysisType)}">${getAnalysisTypeName(analysis.analysisType)}</td>
+                    <td class="table-cell-truncate" title="${analysis.analysisTime}">${analysis.analysisTime}</td>
+                    <td class="table-cell-truncate" title="${analysis.dataRange}">${analysis.dataRange}</td>
+                    <td><span class="badge bg-success">${analysis.accuracy}%</span></td>
+                    <td><span class="badge ${getStatusClass(analysis.status)}">${getStatusText(analysis.status)}</span></td>
+                    <td>
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewAnalysisDetail(${analysis.id})" title="查看详情">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" onclick="exportAnalysis(${analysis.id})" title="导出报告">
+                            <i class="bi bi-download"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
             });
         }
 
-        // 显示分析结果
-        function displayAnalysisResult(data) {
-            const resultDiv = document.getElementById('analysisResult');
-            const customer = customers.find(c => c.id == document.getElementById('customerSelect').value);
-            const analysisType = document.getElementById('analysisType').value;
-            
-            resultDiv.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>分析概览</h5>
-                        <p><strong>客户�?/strong>${customer ? customer.customerName : '未知'}</p>
-                        <p><strong>分析类型�?/strong>${getAnalysisTypeName(analysisType)}</p>
-                        <p><strong>分析时间�?/strong>${new Date().toLocaleString()}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>关键指标</h5>
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="text-center">
-                                    <div class="h4 text-primary">${data.score || 85}</div>
-                                    <div class="small text-muted">综合评分</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center">
-                                    <div class="h4 text-success">${data.risk || '�?}</div>
-                                    <div class="small text-muted">风险等级</div>
-                                </div>
-                            </div>
+        // 查看分析详情
+        function viewAnalysisDetail(id) {
+            const analysis = analysisHistory.find(a => a.id === id);
+            if (analysis) {
+                const content = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>基本信息</h6>
+                            <p><strong>客户名称：</strong>${analysis.customerName}</p>
+                            <p><strong>分析类型：</strong>${getAnalysisTypeName(analysis.analysisType)}</p>
+                            <p><strong>分析时间：</strong>${analysis.analysisTime}</p>
+                            <p><strong>数据范围：</strong>${analysis.dataRange}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>分析结果</h6>
+                            <p><strong>准确率：</strong>${analysis.accuracy}%</p>
+                            <p><strong>状态：</strong>${getStatusText(analysis.status)}</p>
                         </div>
                     </div>
-                </div>
-                
-                <div class="analysis-insight">
-                    <div class="insight-title">AI洞察</div>
-                    <div class="insight-content">${data.insight || '基于数据分析，该客户表现出良好的合作潜力，建议加强沟通频率，提供个性化服务方案�?}</div>
-                </div>
-
-                <div class="chart-container">
-                    <canvas id="analysisChart"></canvas>
-                </div>
-
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <h6>优势分析</h6>
-                        <ul class="list-unstyled">
-                            <li><i class="bi bi-check-circle text-success me-2"></i>客户忠诚度较�?/li>
-                            <li><i class="bi bi-check-circle text-success me-2"></i>合作历史良好</li>
-                            <li><i class="bi bi-check-circle text-success me-2"></i>支付记录优秀</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>改进建议</h6>
-                        <ul class="list-unstyled">
-                            <li><i class="bi bi-lightbulb text-warning me-2"></i>增加沟通频�?/li>
-                            <li><i class="bi bi-lightbulb text-warning me-2"></i>提供定制化服�?/li>
-                            <li><i class="bi bi-lightbulb text-warning me-2"></i>定期回访跟进</li>
-                        </ul>
-                    </div>
-                </div>
-            `;
-
-            // 创建图表
-            createAnalysisChart();
-        }
-
-        // 显示模拟分析结果
-        function displayMockAnalysisResult() {
-            const resultDiv = document.getElementById('analysisResult');
-            const customer = customers.find(c => c.id == document.getElementById('customerSelect').value);
-            const analysisType = document.getElementById('analysisType').value;
-            
-            resultDiv.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>分析概览</h5>
-                        <p><strong>客户�?/strong>${customer ? customer.customerName : '未知'}</p>
-                        <p><strong>分析类型�?/strong>${getAnalysisTypeName(analysisType)}</p>
-                        <p><strong>分析时间�?/strong>${new Date().toLocaleString()}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>关键指标</h5>
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="text-center">
-                                    <div class="h4 text-primary">85</div>
-                                    <div class="small text-muted">综合评分</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center">
-                                    <div class="h4 text-success">�?/div>
-                                    <div class="small text-muted">风险等级</div>
-                                </div>
-                            </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>分析结果</h6>
+                            <p>${analysis.result}</p>
                         </div>
                     </div>
-                </div>
-                
-                <div class="analysis-insight">
-                    <div class="insight-title">AI洞察</div>
-                    <div class="insight-content">基于数据分析，该客户表现出良好的合作潜力，建议加强沟通频率，提供个性化服务方案。客户在${getAnalysisTypeName(analysisType)}方面表现优秀，具有较高的商业价值�?/div>
-                </div>
-
-                <div class="chart-container">
-                    <canvas id="analysisChart"></canvas>
-                </div>
-
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <h6>优势分析</h6>
-                        <ul class="list-unstyled">
-                            <li><i class="bi bi-check-circle text-success me-2"></i>客户忠诚度较�?/li>
-                            <li><i class="bi bi-check-circle text-success me-2"></i>合作历史良好</li>
-                            <li><i class="bi bi-check-circle text-success me-2"></i>支付记录优秀</li>
-                        </ul>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>关键洞察</h6>
+                            <p>${analysis.insights}</p>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <h6>改进建议</h6>
-                        <ul class="list-unstyled">
-                            <li><i class="bi bi-lightbulb text-warning me-2"></i>增加沟通频�?/li>
-                            <li><i class="bi bi-lightbulb text-warning me-2"></i>提供定制化服�?/li>
-                            <li><i class="bi bi-lightbulb text-warning me-2"></i>定期回访跟进</li>
-                        </ul>
-                    </div>
-                </div>
-            `;
-
-            // 创建图表
-            createAnalysisChart();
+                `;
+                document.getElementById('analysisDetailContent').innerHTML = content;
+                new bootstrap.Modal(document.getElementById('analysisDetailModal')).show();
+            }
         }
 
-        // 创建分析图表
-        function createAnalysisChart() {
+        // 导出分析报告
+        function exportAnalysis(id) {
+            const analysis = analysisHistory.find(a => a.id === id);
+            if (analysis) {
+                const reportData = {
+                    customerName: analysis.customerName,
+                    analysisType: getAnalysisTypeName(analysis.analysisType),
+                    analysisTime: analysis.analysisTime,
+                    dataRange: analysis.dataRange,
+                    accuracy: analysis.accuracy,
+                    result: analysis.result,
+                    insights: analysis.insights
+                };
+                
+                const dataStr = JSON.stringify(reportData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `analysis_report_${analysis.id}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // 更新分析图表
+        function updateAnalysisChart(analysisType) {
             const ctx = document.getElementById('analysisChart').getContext('2d');
+            
+            // 模拟图表数据
+            const data = {
+                labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                datasets: [{
+                    label: getAnalysisTypeName(analysisType),
+                    data: [65, 70, 75, 80, 85, 90],
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }]
+            };
+            
             new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['优秀', '良好', '一�?, '需改进'],
-                    datasets: [{
-                        data: [45, 30, 20, 5],
-                        backgroundColor: [
-                            '#10b981',
-                            '#3b82f6',
-                            '#f59e0b',
-                            '#ef4444'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
+                type: 'line',
+                data: data,
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom'
+                        title: {
+                            display: true,
+                            text: getAnalysisTypeName(analysisType) + '趋势图'
                         }
                     }
                 }
@@ -467,226 +431,21 @@
 
         // 获取分析类型名称
         function getAnalysisTypeName(type) {
-            const types = {
+            const typeNames = {
                 'customer_behavior': '客户行为分析',
                 'market_trend': '市场趋势分析',
                 'risk_assessment': '风险评估分析',
-                'profitability': '盈利能力分析',
-                'satisfaction': '满意度分�?
+                'customer_demand': '客户需求分析',
+                'market_competition': '市场竞争分析',
+                'sales_forecast': '销售预测分析',
+                'satisfaction': '满意度分析'
             };
-            return types[type] || type;
+            return typeNames[type] || '未知分析';
         }
 
-        // 加载分析历史
-        function loadAnalysisHistory() {
-            fetch('/api/ai-analysis/history?pageNum=1&pageSize=10')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === 200) {
-                        analysisHistory = data.data.list || [];
-                        renderAnalysisHistory();
-                    } else {
-                        console.error('加载分析历史失败:', data.message);
-                        showMockAnalysisHistory();
-                    }
-                })
-                .catch(error => {
-                    console.error('加载分析历史失败:', error);
-                    showMockAnalysisHistory();
-                });
-        }
-
-        // 显示模拟分析历史
-        function showMockAnalysisHistory() {
-            analysisHistory = [
-                {
-                    id: 1,
-                    customerName: '张三',
-                    analysisType: '客户行为分析',
-                    type: '客户行为分析',
-                    analysisTime: '2024-01-20 14:30:00',
-                    dataRange: '2024�?�?�?2024�?�?0�?,
-                    status: 'completed',
-                    result: '客户行为分析显示，该客户对新品种保护申请表现出高度兴趣，建议加强跟进�?,
-                    insights: '客户活跃度高，转化潜力大'
-                },
-                {
-                    id: 2,
-                    customerName: '李四农业科技有限公司',
-                    analysisType: '市场趋势分析',
-                    type: '市场趋势分析',
-                    analysisTime: '2024-01-19 10:15:00',
-                    dataRange: '2024�?�?�?2024�?�?9�?,
-                    status: 'completed',
-                    result: '市场趋势分析表明，种业市场呈现稳定增长态势，新品种保护需求增加�?,
-                    insights: '市场前景良好，建议扩大服务范�?
-                },
-                {
-                    id: 3,
-                    customerName: '中国农业科学�?,
-                    analysisType: '风险评估分析',
-                    type: '风险评估分析',
-                    analysisTime: '2024-01-18 16:45:00',
-                    dataRange: '2024�?�?�?2024�?�?8�?,
-                    status: 'processing',
-                    result: '风险评估分析正在进行中，预计今日完成�?,
-                    insights: '风险等级较低，可正常推进'
-                },
-                {
-                    id: 4,
-                    customerName: '赵六',
-                    analysisType: '客户需求分�?,
-                    type: '客户需求分�?,
-                    analysisTime: '2024-01-25 09:30:00',
-                    dataRange: '2024�?�?�?2024�?�?5�?,
-                    status: 'pending',
-                    result: '客户需求分析显示，该客户对高端品种保护申请有强烈需求，建议优先处理�?,
-                    insights: '高价值客户，需要重点关�?
-                },
-                {
-                    id: 5,
-                    customerName: '王五农业合作�?,
-                    analysisType: '市场竞争力分�?,
-                    type: '市场竞争力分�?,
-                    analysisTime: '2024-01-24 14:20:00',
-                    dataRange: '2024�?�?�?2024�?�?4�?,
-                    status: 'completed',
-                    result: '市场竞争力分析表明，该合作社在区域市场具有较强竞争力，建议加强合作�?,
-                    insights: '优质合作伙伴，可长期合作'
-                },
-                {
-                    id: 6,
-                    customerName: '刘七种子公司',
-                    analysisType: '销售预测分�?,
-                    type: '销售预测分�?,
-                    analysisTime: '2024-01-23 11:15:00',
-                    dataRange: '2024�?�?�?2024�?�?3�?,
-                    status: 'completed',
-                    result: '销售预测分析显示，该公司未�?个月销售预期良好，建议加大投入�?,
-                    insights: '销售增长潜力大，值得投资'
-                },
-                {
-                    id: 7,
-                    customerName: '陈八农业科技',
-                    analysisType: '技术需求分�?,
-                    type: '技术需求分�?,
-                    analysisTime: '2024-01-22 16:00:00',
-                    dataRange: '2024�?�?�?2024�?�?2�?,
-                    status: 'processing',
-                    result: '技术需求分析正在进行中，预计明日完成�?,
-                    insights: '技术实力强，合作前景好'
-                },
-                {
-                    id: 8,
-                    customerName: '孙九种子研究所',
-                    analysisType: '客户满意度分�?,
-                    type: '客户满意度分�?,
-                    analysisTime: '2024-01-21 13:20:00',
-                    dataRange: '2024�?�?�?2024�?�?1�?,
-                    status: 'completed',
-                    result: '客户满意度分析显示，该研究所对我们的服务非常满意，推荐指数达�?5%�?,
-                    insights: '优质客户，可作为标杆案例'
-                },
-                {
-                    id: 9,
-                    customerName: '周十农业集团',
-                    analysisType: '市场细分分析',
-                    type: '市场细分分析',
-                    analysisTime: '2024-01-20 11:45:00',
-                    dataRange: '2024�?�?�?2024�?�?0�?,
-                    status: 'completed',
-                    result: '市场细分分析表明，该集团在高端品种市场占有重要地位，建议深度合作�?,
-                    insights: '战略合作伙伴，价值巨�?
-                },
-                {
-                    id: 10,
-                    customerName: '吴十一农业合作�?,
-                    analysisType: '成本效益分析',
-                    type: '成本效益分析',
-                    analysisTime: '2024-01-19 15:30:00',
-                    dataRange: '2024�?�?�?2024�?�?9�?,
-                    status: 'completed',
-                    result: '成本效益分析显示，该合作社的投入产出比达�?:3.5，效益显著�?,
-                    insights: '高效益客户，值得长期维护'
-                },
-                {
-                    id: 11,
-                    customerName: '郑十二种子公�?,
-                    analysisType: '竞争态势分析',
-                    type: '竞争态势分析',
-                    analysisTime: '2024-01-18 09:15:00',
-                    dataRange: '2024�?�?�?2024�?�?8�?,
-                    status: 'pending',
-                    result: '竞争态势分析正在进行中，预计本周完成�?,
-                    insights: '竞争激烈，需要差异化策略'
-                },
-                {
-                    id: 12,
-                    customerName: '王十三农业科技',
-                    analysisType: '技术创新分�?,
-                    type: '技术创新分�?,
-                    analysisTime: '2024-01-17 14:00:00',
-                    dataRange: '2024�?�?�?2024�?�?7�?,
-                    status: 'completed',
-                    result: '技术创新分析表明，该公司在基因编辑技术方面具有领先优势�?,
-                    insights: '技术领先，合作价值高'
-                }
-            ];
-            renderAnalysisHistory();
-        }
-
-        // 渲染分析历史
-        function renderAnalysisHistory() {
-            const tbody = document.getElementById('analysisHistoryTable');
-            tbody.innerHTML = '';
-
-            if (analysisHistory.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox"></i> 暂无分析记录
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            analysisHistory.forEach(analysis => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <div class="text-truncate" style="max-width: 150px;" title="${analysis.customerName || ''}">
-                            ${analysis.customerName || ''}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge bg-info">${analysis.analysisType || ''}</span>
-                    </td>
-                    <td>
-                        <small class="text-muted">${analysis.analysisTime || ''}</small>
-                    </td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(analysis.status)}">
-                            ${getStatusText(analysis.status)}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="viewAnalysis(${analysis.id})" title="查看详情">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-outline-success" onclick="downloadAnalysis(${analysis.id})" title="下载报告">
-                                <i class="bi bi-download"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // 获取状态徽章样�?        function getStatusBadgeClass(status) {
-            switch(status) {
+        // 获取状态样式类
+        function getStatusClass(status) {
+            switch (status) {
                 case 'completed': return 'bg-success';
                 case 'processing': return 'bg-warning';
                 case 'failed': return 'bg-danger';
@@ -694,131 +453,14 @@
             }
         }
 
-        // 获取状态文�?        function getStatusText(status) {
-            switch(status) {
-                case 'completed': return '已完�?;
-                case 'processing': return '分析�?;
+        // 获取状态文本
+        function getStatusText(status) {
+            switch (status) {
+                case 'completed': return '已完成';
+                case 'processing': return '处理中';
                 case 'failed': return '失败';
                 default: return '未知';
             }
-        }
-
-        // 查看分析详情
-        function viewAnalysis(id) {
-            const analysis = analysisHistory.find(a => a.id === id);
-            if (analysis) {
-                // 创建详情模态框
-                const modalHtml = `
-                    <div class="modal fade" id="analysisDetailModal" tabindex="-1">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">分析详情</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>分析类型</h6>
-                                            <p>${analysis.analysisType || analysis.type || '未知'}</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>分析时间</h6>
-                                            <p>${analysis.analysisTime || '未知'}</p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>数据范围</h6>
-                                            <p>${analysis.dataRange || '未知'}</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>分析状�?/h6>
-                                            <span class="badge ${analysis.status === 'completed' ? 'bg-success' : 'bg-warning'}">
-                                                ${analysis.status === 'completed' ? '已完�? : '进行�?}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <h6>分析结果</h6>
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <p>${analysis.result || '暂无详细结果'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    ${analysis.insights ? `
-                                    <div class="mt-3">
-                                        <h6>关键洞察</h6>
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <p>${analysis.insights}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    ` : ''}
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                                    <button type="button" class="btn btn-primary" onclick="exportAnalysis(${analysis.id})">导出结果</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // 移除已存在的模态框
-                const existingModal = document.getElementById('analysisDetailModal');
-                if (existingModal) {
-                    existingModal.remove();
-                }
-                
-                // 添加新模态框
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-                
-                // 显示模态框
-                const modal = new bootstrap.Modal(document.getElementById('analysisDetailModal'));
-                modal.show();
-            }
-        }
-        
-        // 导出分析结果
-        function exportAnalysis(id) {
-            const analysis = analysisHistory.find(a => a.id === id);
-            if (analysis) {
-                // 创建导出数据
-                const exportData = {
-                    type: analysis.type,
-                    analysisTime: analysis.analysisTime,
-                    dataRange: analysis.dataRange,
-                    status: analysis.status,
-                    result: analysis.result,
-                    insights: analysis.insights
-                };
-                
-                // 创建下载链接
-                const dataStr = JSON.stringify(exportData, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                const url = URL.createObjectURL(dataBlob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `analysis_${id}_${analysis.analysisTime}.json`;
-                link.click();
-                URL.revokeObjectURL(url);
-                
-                alert('分析结果已导�?);
-            }
-        }
-
-        // 下载分析报告
-        function downloadAnalysis(id) {
-            console.log('下载分析报告:', id);
-            alert('下载分析报告功能开发中...');
-        }
-
-        // 刷新分析历史
-        function refreshAnalysisHistory() {
-            loadAnalysisHistory();
         }
     </script>
 </body>

@@ -215,6 +215,44 @@ body {
     gap: var(--spacing-lg);
 }
 
+.stats-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+}
+
+.stats-card:hover {
+    transform: translateY(-4px);
+}
+
+.stats-number {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-sm);
+}
+
+.stats-label {
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+}
+
 .stat-card {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
@@ -655,8 +693,8 @@ body {
     transition: width var(--transition-normal);
 }
 
-/* 模态框样式 */
-.modal {
+/* 自定义模态框样式 */
+.custom-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -669,14 +707,20 @@ body {
     z-index: 1000;
 }
 
+/* Bootstrap模态框样式覆盖 */
 .modal-dialog {
-    background: white;
+    max-width: 1200px;
+    margin: 1.75rem auto;
+}
+
+.modal-dialog.modal-xl {
+    max-width: 1400px;
+}
+
+.modal-content {
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-xl);
-    max-width: 500px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+    border: none;
 }
 
 .modal-header {
@@ -752,6 +796,7 @@ body {
         flex-direction: column;
         gap: var(--spacing-md);
         text-align: center;
+        padding: var(--spacing-md);
     }
     
     .modal-dialog {

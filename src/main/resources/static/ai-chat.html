@@ -7,324 +7,119 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="css/common.css" rel="stylesheet">
-    <style>
-        .chat-container {
-            height: 600px;
-            display: flex;
-            flex-direction: column;
-        }
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .message {
-            margin-bottom: 20px;
-            display: flex;
-            align-items: flex-start;
-        }
-        .message.user {
-            justify-content: flex-end;
-        }
-        .message.ai {
-            justify-content: flex-start;
-        }
-        .message-content {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            word-wrap: break-word;
-        }
-        .message.user .message-content {
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            color: white;
-        }
-        .message.ai .message-content {
-            background: white;
-            border: 1px solid #e5e7eb;
-            color: #374151;
-        }
-        .message-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 8px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .message.user .message-avatar {
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            color: white;
-        }
-        .message.ai .message-avatar {
-            background: linear-gradient(135deg, #10b981, #06b6d4);
-            color: white;
-        }
-        .chat-input-area {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
-        .chat-input {
-            flex: 1;
-            min-height: 50px;
-            max-height: 120px;
-            resize: none;
-            border-radius: 25px;
-            border: 2px solid #e5e7eb;
-            padding: 12px 20px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        .chat-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            outline: none;
-        }
-        .send-button {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .send-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-        .send-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .typing-indicator {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            color: #6b7280;
-            font-style: italic;
-        }
-        .typing-dots {
-            display: flex;
-            gap: 4px;
-        }
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #6b7280;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-        .typing-dot:nth-child(3) { animation-delay: 0s; }
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-        .quick-actions {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-        .quick-action-btn {
-            padding: 8px 16px;
-            border: 1px solid #e5e7eb;
-            background: white;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .quick-action-btn:hover {
-            background: #f3f4f6;
-            border-color: #3b82f6;
-        }
-    </style>
+    <link href="/ai-customer/css/common.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-container">
         <!-- 页面头部 -->
         <div class="page-header">
             <div class="page-title">
-                <i class="bi bi-robot"></i> AI智能聊天
+                <i class="bi bi-chat-dots"></i> AI智能聊天
             </div>
-            <a href="index.html" class="back-home-btn">
+            <a href="/ai-customer/" class="back-home-btn">
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
         
-
-        <!-- 聊天区域 -->
-        <div class="chat-main-container">
-            <!-- 侧边�?-->
-            <div class="chat-sidebar" id="chatSidebar">
-                <div class="sidebar-header">
-                    <div class="d-flex flex-column gap-2">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-robot me-2"></i>
-                            <span>AI助手</span>
-                        </div>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="newChat()">
-                            <i class="bi bi-plus"></i> 新对�?                        </button>
-                    </div>
-                </div>
-                
-                <!-- 对话历史 -->
-                <div class="chat-history">
-                    <h6 class="text-muted mb-2">对话历史</h6>
-                    <div class="history-list" id="historyList">
-                        <div class="history-item active">
-                            <i class="bi bi-chat-dots"></i>
-                            <span>当前对话</span>
+        <div class="row">
+            <!-- 侧边栏 -->
+            <div class="col-md-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">AI助手</h6>
+                            <button class="btn btn-outline-primary btn-sm" onclick="startNewChat()">
+                                <i class="bi bi-plus"></i> 新对话
+                            </button>
                         </div>
                     </div>
-                </div>
-
-                <!-- 快速操�?-->
-                <div class="quick-actions-sidebar">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0">快速操�?/h6>
-                        <button class="btn btn-link btn-sm p-0" onclick="toggleQuickActions()" title="折叠/展开">
-                            <i class="bi bi-chevron-down" id="quickActionsIcon"></i>
-                        </button>
-                    </div>
-                    <div class="quick-actions-grid" id="quickActionsGrid" style="display: none;">
-                        <button class="quick-action-card" onclick="sendQuickMessage('帮我分析客户数据')">
-                            <i class="bi bi-graph-up"></i>
-                            <span>数据分析</span>
-                        </button>
-                        <button class="quick-action-card" onclick="sendQuickMessage('推荐合适的营销策略')">
-                            <i class="bi bi-lightbulb"></i>
-                            <span>营销策略</span>
-                        </button>
-                        <button class="quick-action-card" onclick="sendQuickMessage('如何提高客户满意�?)">
-                            <i class="bi bi-heart"></i>
-                            <span>客户满意�?/span>
-                        </button>
-                        <button class="quick-action-card" onclick="sendQuickMessage('新品种保护申请流�?)">
-                            <i class="bi bi-file-text"></i>
-                            <span>申请流程</span>
-                        </button>
-                        <button class="quick-action-card" onclick="sendQuickMessage('风险评估建议')">
-                            <i class="bi bi-shield-check"></i>
-                            <span>风险评估</span>
-                        </button>
-                        <button class="quick-action-card" onclick="sendQuickMessage('生成客户报告')">
-                            <i class="bi bi-file-earmark-bar-graph"></i>
-                            <span>生成报告</span>
-                        </button>
+                    <div class="card-body">
+                        <!-- 快速操作 -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-0">快速操作</h6>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" onclick="sendQuickMessage('客户满意度分析')">
+                                <i class="bi bi-graph-up"></i>
+                                <span>客户满意度</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="sendQuickMessage('营销策略建议')">
+                                <i class="bi bi-bullseye"></i>
+                                <span>营销策略</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="sendQuickMessage('产品推荐')">
+                                <i class="bi bi-box-seam"></i>
+                                <span>产品推荐</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="sendQuickMessage('市场趋势分析')">
+                                <i class="bi bi-trending-up"></i>
+                                <span>市场趋势</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="sendQuickMessage('客户服务优化')">
+                                <i class="bi bi-headset"></i>
+                                <span>服务优化</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="sendQuickMessage('数据分析报告')">
+                                <i class="bi bi-file-earmark-bar-graph"></i>
+                                <span>数据分析</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- 主聊天区�?-->
-            <div class="chat-main-area">
-                <!-- 聊天头部 -->
-                <div class="chat-header">
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                        <div class="chat-title">
-                            <div class="ai-avatar">
+            
+            <!-- 主聊天区域 -->
+            <div class="col-md-9">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <div class="ai-avatar me-3">
                                 <i class="bi bi-robot"></i>
                             </div>
                             <div>
                                 <h6 class="mb-0">AI智能助手</h6>
+                                <small class="text-muted">在线 · 专业种业顾问</small>
                             </div>
-                        </div>
-                        <div class="chat-actions">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="clearChat()" title="清空对话">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="exportChat()" title="导出对话">
-                                <i class="bi bi-download"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="toggleSidebar()" title="切换侧边�?>
-                                <i class="bi bi-list"></i>
-                            </button>
                         </div>
                     </div>
-                </div>
-
-                <!-- 聊天消息区域 -->
-                <div class="chat-messages-container">
-                    <div class="chat-messages" id="chatMessages">
-                        <!-- 欢迎消息 -->
-                        <div class="message ai-message">
-                            <div class="message-avatar">
-                                <i class="bi bi-robot"></i>
-                            </div>
-                            <div class="message-content">
-                                <div class="message-text">
-                                    <p>您好！我是AI智能助手，专门为种业客户管理系统提供专业服务�?/p>
-                                    <p>我可以帮助您�?/p>
-                                    <ul>
-                                        <li>📊 分析客户数据和趋�?/li>
-                                        <li>💡 提供营销策略建议</li>
-                                        <li>📋 解答新品种保护相关问�?/li>
-                                        <li>🎯 协助业务决策</li>
-                                        <li>📈 生成专业报告</li>
-                                    </ul>
-                                    <p>请随时向我提问，我会尽力为您提供帮助�?/p>
+                    <div class="card-body chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- 欢迎消息 -->
+                            <div class="message ai-message">
+                                <div class="message-avatar">
+                                    <i class="bi bi-robot"></i>
                                 </div>
-                                <div class="message-time">刚刚</div>
+                                <div class="message-content">
+                                    <div class="message-bubble">
+                                        <p>您好！我是AI智能助手，专门为种业客户管理系统提供专业服务。</p>
+                                        <p>我可以帮助您：</p>
+                                        <ul>
+                                            <li>分析客户数据和市场趋势</li>
+                                            <li>提供营销策略建议</li>
+                                            <li>推荐合适的产品和服务</li>
+                                            <li>解答业务相关问题</li>
+                                        </ul>
+                                        <p>请随时向我提问，我会尽力为您提供帮助。</p>
+                                    </div>
+                                    <div class="message-time">刚刚</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- 输入区域 -->
-                    <div class="chat-input-container">
-                        <div class="input-wrapper">
-                            <div class="input-actions">
-                                <button class="input-action-btn" onclick="attachFile()" title="附件">
+                        
+                        <!-- 输入区域 -->
+                        <div class="chat-input">
+                            <div class="input-group">
+                                <button class="btn btn-outline-secondary" type="button" onclick="attachFile()">
                                     <i class="bi bi-paperclip"></i>
                                 </button>
-                                <button class="input-action-btn" onclick="voiceInput()" title="语音输入">
+                                <button class="btn btn-outline-secondary" type="button" onclick="startVoiceInput()">
                                     <i class="bi bi-mic"></i>
                                 </button>
+                                <textarea class="form-control" id="messageInput" placeholder="请输入您的问题..." rows="2" onkeypress="handleKeyPress(event)"></textarea>
+                                <button class="btn btn-primary" type="button" onclick="sendMessage()">
+                                    <i class="bi bi-send"></i>
+                                </button>
                             </div>
-                            <textarea 
-                                class="chat-input" 
-                                id="chatInput" 
-                                placeholder="输入您的问题..."
-                                rows="1"
-                                onkeypress="handleKeyPress(event)"
-                                oninput="autoResize(this)"
-                            ></textarea>
-                            <button class="send-button" id="sendButton" onclick="sendMessage()">
-                                <i class="bi bi-send-fill"></i>
-                            </button>
-                        </div>
-                        <div class="input-footer">
-                            <small class="text-muted">�?Enter 发送，Shift + Enter 换行</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 正在输入指示�?-->
-                <div class="typing-indicator" id="typingIndicator">
-                    <div class="typing-avatar">
-                        <i class="bi bi-robot"></i>
-                    </div>
-                    <div class="typing-content">
-                        <div class="typing-text">AI正在思�?/div>
-                        <div class="typing-dots">
-                            <span></span>
-                            <span></span>
-                            <span></span>
                         </div>
                     </div>
                 </div>
@@ -339,197 +134,104 @@
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            loadChatHistory();
+            // 聚焦到输入框
+            document.getElementById('messageInput').focus();
         });
 
-        // 加载聊天历史
-        function loadChatHistory() {
-            fetch('/api/ai-chat/history?pageNum=1&pageSize=50')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === 200 && data.data.list) {
-                        chatHistory = data.data.list;
-                        renderChatHistory();
-                    }
-                })
-                .catch(error => {
-                    console.error('加载聊天历史失败:', error);
-                });
-        }
-
-        // 渲染聊天历史
-        function renderChatHistory() {
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = '';
-
-            // 添加欢迎消息
-            chatMessages.innerHTML = `
-                <div class="message ai">
-                    <div class="message-avatar">AI</div>
-                    <div class="message-content">
-                        <div>您好！我是AI智能助手，专门为种业客户管理系统提供专业服务。我可以帮助您：</div>
-                        <ul class="mt-2 mb-0">
-                            <li>分析客户数据和趋�?/li>
-                            <li>提供营销策略建议</li>
-                            <li>解答新品种保护相关问�?/li>
-                            <li>协助业务决策</li>
-                        </ul>
-                        <div class="mt-2">请随时向我提问，我会尽力为您提供帮助�?/div>
-                    </div>
-                </div>
-            `;
-
-            // 渲染历史消息
-            chatHistory.forEach(message => {
-                addMessageToChat(message.userMessage, 'user');
-                addMessageToChat(message.replyContent || message.content, 'ai');
-            });
-
-            scrollToBottom();
-        }
-
-        // 发送消�?        function sendMessage() {
-            const input = document.getElementById('chatInput');
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
             const message = input.value.trim();
             
-            if (!message || isTyping) return;
-
+            if (!message) return;
+            
             // 添加用户消息
-            addMessageToChat(message, 'user');
+            addMessage(message, 'user');
+            
+            // 清空输入框
             input.value = '';
-            autoResize(input);
-
-            // 发送到后端
-            sendToAI(message);
+            
+            // 模拟AI回复
+            setTimeout(() => {
+                const aiResponse = generateAIResponse(message);
+                addMessage(aiResponse, 'ai');
+            }, 1000);
         }
 
-        // 发送快速消�?        function sendQuickMessage(message) {
-            const input = document.getElementById('chatInput');
-            input.value = message;
+        // 发送快速消息
+        function sendQuickMessage(message) {
+            document.getElementById('messageInput').value = message;
             sendMessage();
         }
 
-        // 切换侧边�?        function toggleSidebar() {
-            const sidebar = document.getElementById('chatSidebar');
-            sidebar.classList.toggle('show');
-        }
-
-        // 切换快速操�?        function toggleQuickActions() {
-            const quickActionsGrid = document.getElementById('quickActionsGrid');
-            const icon = document.getElementById('quickActionsIcon');
-            
-            if (quickActionsGrid.style.display === 'none') {
-                quickActionsGrid.style.display = 'grid';
-                icon.className = 'bi bi-chevron-up';
-            } else {
-                quickActionsGrid.style.display = 'none';
-                icon.className = 'bi bi-chevron-down';
-            }
-        }
-
-        // 新对�?        function newChat() {
-            if (confirm('确定要开始新对话吗？当前对话将被清空�?)) {
-                clearChat();
-            }
-        }
-
-        // 附件功能
-        function attachFile() {
-            alert('附件功能开发中...');
-        }
-
-        // 语音输入
-        function voiceInput() {
-            alert('语音输入功能开发中...');
-        }
-
-        // 发送到AI
-        function sendToAI(message) {
-            isTyping = true;
-            showTypingIndicator();
-
-            const requestData = {
-                message: message,
-                sessionId: 'default-session'
-            };
-
-            fetch('/api/ai-chat/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                hideTypingIndicator();
-                isTyping = false;
-
-                if (data.code === 200) {
-                    const reply = data.data.replyContent || data.data.content || '抱歉，我暂时无法回答这个问题�?;
-                    addMessageToChat(reply, 'ai');
-                } else {
-                    addMessageToChat('抱歉，服务暂时不可用，请稍后再试�?, 'ai');
-                }
-            })
-            .catch(error => {
-                hideTypingIndicator();
-                isTyping = false;
-                console.error('发送消息失�?', error);
-                addMessageToChat('抱歉，网络连接出现问题，请检查网络后重试�?, 'ai');
-            });
-        }
-
-        // 添加消息到聊天区�?        function addMessageToChat(message, sender) {
-            const chatMessages = document.getElementById('chatMessages');
+        // 添加消息到聊天界面
+        function addMessage(content, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender === 'ai' ? 'ai-message' : 'user-message'}`;
+            messageDiv.className = `message ${sender}-message`;
             
             const time = new Date().toLocaleTimeString('zh-CN', { 
                 hour: '2-digit', 
                 minute: '2-digit' 
             });
             
-            if (sender === 'ai') {
+            if (sender === 'user') {
                 messageDiv.innerHTML = `
-                    <div class="message-avatar">
-                        <i class="bi bi-robot"></i>
-                    </div>
                     <div class="message-content">
-                        <div class="message-text">${message}</div>
+                        <div class="message-bubble">
+                            <p>${content}</p>
+                        </div>
                         <div class="message-time">${time}</div>
+                    </div>
+                    <div class="message-avatar">
+                        <i class="bi bi-person-fill"></i>
                     </div>
                 `;
             } else {
                 messageDiv.innerHTML = `
                     <div class="message-avatar">
-                        <i class="bi bi-person"></i>
+                        <i class="bi bi-robot"></i>
                     </div>
                     <div class="message-content">
-                        <div class="message-text">${message}</div>
+                        <div class="message-bubble">
+                            <p>${content}</p>
+                        </div>
                         <div class="message-time">${time}</div>
                     </div>
                 `;
             }
             
-            chatMessages.appendChild(messageDiv);
-            scrollToBottom();
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // 保存到聊天历史
+            chatHistory.push({
+                content: content,
+                sender: sender,
+                time: time
+            });
         }
 
-        // 显示正在输入指示�?        function showTypingIndicator() {
-            const indicator = document.getElementById('typingIndicator');
-            indicator.style.display = 'flex';
-            scrollToBottom();
-        }
-
-        // 隐藏正在输入指示�?        function hideTypingIndicator() {
-            const indicator = document.getElementById('typingIndicator');
-            indicator.style.display = 'none';
-        }
-
-        // 滚动到底�?        function scrollToBottom() {
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+        // 生成AI回复
+        function generateAIResponse(userMessage) {
+            const responses = {
+                '客户满意度分析': '根据您的要求，我来为您分析客户满意度数据。从最近的数据来看，整体满意度为89%，其中产品满意度92%，服务满意度85%。建议重点关注服务环节的改进。',
+                '营销策略建议': '基于当前市场情况，我建议采用以下营销策略：1. 数字化营销渠道拓展 2. 客户细分精准营销 3. 产品差异化定位 4. 客户关系维护加强。您希望我详细分析哪个方面？',
+                '产品推荐': '根据您的客户画像和需求，我推荐以下产品组合：1. 抗病性强的水稻品种 2. 高效肥料产品 3. 智能种植设备。这些产品在您的目标市场表现优异。',
+                '市场趋势分析': '当前种业市场呈现以下趋势：1. 智能化种植需求增长 2. 环保型产品受青睐 3. 线上销售渠道快速发展 4. 客户对服务质量要求提高。建议提前布局相关领域。',
+                '客户服务优化': '客户服务优化建议：1. 建立24小时客服热线 2. 提供在线技术支持 3. 定期客户回访 4. 建立客户反馈机制 5. 培训客服人员专业技能。',
+                '数据分析报告': '数据分析报告已生成，包含：1. 客户增长趋势 2. 产品销售分析 3. 市场占有率变化 4. 客户满意度趋势 5. 收入结构分析。需要我详细解释某个指标吗？'
+            };
+            
+            // 查找匹配的回复
+            for (let key in responses) {
+                if (userMessage.includes(key)) {
+                    return responses[key];
+                }
+            }
+            
+            // 默认回复
+            return '感谢您的问题！作为AI智能助手，我可以帮助您分析客户数据、提供营销建议、推荐产品等。请告诉我您具体需要什么帮助，我会为您提供专业的建议。';
         }
 
         // 处理键盘事件
@@ -540,55 +242,42 @@
             }
         }
 
-        // 自动调整输入框高�?        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-        }
-
-        // 清空对话
-        function clearChat() {
-            if (confirm('确定要清空所有对话记录吗�?)) {
-                const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML = `
-                    <div class="message ai">
-                        <div class="message-avatar">AI</div>
+        // 开始新对话
+        function startNewChat() {
+            if (confirm('确定要开始新对话吗？当前对话记录将被清空。')) {
+                chatHistory = [];
+                document.getElementById('chatMessages').innerHTML = `
+                    <div class="message ai-message">
+                        <div class="message-avatar">
+                            <i class="bi bi-robot"></i>
+                        </div>
                         <div class="message-content">
-                            <div>您好！我是AI智能助手，专门为种业客户管理系统提供专业服务。我可以帮助您：</div>
-                            <ul class="mt-2 mb-0">
-                                <li>分析客户数据和趋�?/li>
-                                <li>提供营销策略建议</li>
-                                <li>解答新品种保护相关问�?/li>
-                                <li>协助业务决策</li>
-                            </ul>
-                            <div class="mt-2">请随时向我提问，我会尽力为您提供帮助�?/div>
+                            <div class="message-bubble">
+                                <p>您好！我是AI智能助手，专门为种业客户管理系统提供专业服务。</p>
+                                <p>我可以帮助您：</p>
+                                <ul>
+                                    <li>分析客户数据和市场趋势</li>
+                                    <li>提供营销策略建议</li>
+                                    <li>推荐合适的产品和服务</li>
+                                    <li>解答业务相关问题</li>
+                                </ul>
+                                <p>请随时向我提问，我会尽力为您提供帮助。</p>
+                            </div>
+                            <div class="message-time">刚刚</div>
                         </div>
                     </div>
                 `;
-                chatHistory = [];
             }
         }
 
-        // 导出对话
-        function exportChat() {
-            const messages = document.querySelectorAll('.message');
-            let exportText = 'AI智能聊天记录\n';
-            exportText += '='.repeat(50) + '\n\n';
-            
-            messages.forEach(message => {
-                const sender = message.classList.contains('user') ? '用户' : 'AI助手';
-                const content = message.querySelector('.message-content').textContent;
-                exportText += `${sender}: ${content}\n\n`;
-            });
-            
-            const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `AI聊天记录_${new Date().toISOString().slice(0, 10)}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        // 附件功能
+        function attachFile() {
+            alert('附件功能开发中...');
+        }
+
+        // 语音输入功能
+        function startVoiceInput() {
+            alert('语音输入功能开发中...');
         }
     </script>
 </body>

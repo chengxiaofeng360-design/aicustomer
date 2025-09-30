@@ -7,100 +7,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="css/common.css" rel="stylesheet">
-    <style>
-        .recommendation-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        .recommendation-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        .recommendation-item {
-            background: #f8f9fa;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 16px;
-            transition: all 0.3s ease;
-        }
-        .recommendation-item:hover {
-            background: #f1f5f9;
-            border-color: #3b82f6;
-        }
-        .recommendation-priority {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-bottom: 12px;
-        }
-        .priority-high {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-        .priority-medium {
-            background: #fffbeb;
-            color: #d97706;
-            border: 1px solid #fed7aa;
-        }
-        .priority-low {
-            background: #f0fdf4;
-            color: #16a34a;
-            border: 1px solid #bbf7d0;
-        }
-        .recommendation-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
-        }
-        .recommendation-loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 200px;
-            color: #6b7280;
-        }
-        .spinner-border-sm {
-            width: 1rem;
-            height: 1rem;
-        }
-        .recommendation-stats {
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            color: white;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-        .stat-item {
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        .stat-label {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-    </style>
+    <link href="/ai-customer/css/common.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-container">
         <!-- 页面头部 -->
         <div class="page-header">
             <div class="page-title">
-                <i class="bi bi-lightbulb-fill"></i> AI智能推荐
+                <i class="bi bi-lightbulb"></i> AI智能推荐
             </div>
-            <a href="index.html" class="back-home-btn">
+            <a href="/ai-customer/" class="back-home-btn">
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
@@ -115,752 +31,496 @@
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-number">89%</div>
-                    <div class="stats-label">采纳�?/div>
+                    <div class="stats-number">89</div>
+                    <div class="stats-label">采纳率</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
                     <div class="stats-number">92%</div>
-                    <div class="stats-label">准确�?/div>
+                    <div class="stats-label">准确率</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-number">24/7</div>
-                    <div class="stats-label">智能推荐</div>
+                    <div class="stats-number">24</div>
+                    <div class="stats-label">今日推荐</div>
                 </div>
             </div>
         </div>
 
-        <!-- 推荐配置区域 -->
-        <div class="recommendation-card">
-            <h3 class="mb-3"><i class="bi bi-gear"></i> 推荐配置</h3>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        <label class="form-label">选择客户 *</label>
-                        <select class="form-select" id="customerSelect" required>
-                            <option value="">请选择客户</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        <label class="form-label">推荐类型 *</label>
-                        <select class="form-select" id="recommendationType" required>
-                            <option value="">请选择推荐类型</option>
-                            <option value="product">产品推荐</option>
-                            <option value="service">服务推荐</option>
-                            <option value="strategy">策略推荐</option>
-                            <option value="opportunity">商机推荐</option>
-                            <option value="risk">风险提醒</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-3">
-                        <label class="form-label">推荐数量</label>
-                        <select class="form-select" id="recommendationCount">
-                            <option value="5" selected>5条推�?/option>
-                            <option value="10">10条推�?/option>
-                            <option value="20">20条推�?/option>
-                        </select>
-                    </div>
-                </div>
+        <!-- 推荐配置 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">推荐配置</h5>
             </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="form-group mb-3">
-                        <label class="form-label">推荐偏好</label>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">推荐类型</label>
+                            <select class="form-select" id="recommendationType">
+                                <option value="all">全部类型</option>
+                                <option value="product">产品推荐</option>
+                                <option value="service">服务推荐</option>
+                                <option value="strategy">策略推荐</option>
+                                <option value="action">行动推荐</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">推荐数量</label>
+                            <select class="form-select" id="recommendationCount">
+                                <option value="5" selected>5条推荐</option>
+                                <option value="10">10条推荐</option>
+                                <option value="20">20条推荐</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">时间范围</label>
+                            <select class="form-select" id="timeRange">
+                                <option value="7">最近7天</option>
+                                <option value="30" selected>最近30天</option>
+                                <option value="90">最近90天</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" onclick="generateRecommendations()">
+                            <i class="bi bi-magic"></i> 生成推荐
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 偏好设置 -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>偏好设置</h6>
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="preferConservative" checked>
-                                    <label class="form-check-label" for="preferConservative">保守�?/label>
+                                    <label class="form-check-label" for="preferConservative">保守型</label>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="preferInnovative" checked>
-                                    <label class="form-check-label" for="preferInnovative">创新�?/label>
+                                    <input class="form-check-input" type="checkbox" id="preferInnovative">
+                                    <label class="form-check-label" for="preferInnovative">创新型</label>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="preferCostEffective" checked>
-                                    <label class="form-check-label" for="preferCostEffective">性价�?/label>
+                                    <label class="form-check-label" for="preferCostEffective">性价比优先</label>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="preferQuick" checked>
-                                    <label class="form-check-label" for="preferQuick">快速响�?/label>
+                                    <input class="form-check-input" type="checkbox" id="preferQuick">
+                                    <label class="form-check-label" for="preferQuick">快速响应</label>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="text-center">
-                <button class="btn btn-primary btn-lg" onclick="generateRecommendations()" id="generateBtn">
-                    <i class="bi bi-magic"></i> 生成推荐
-                </button>
-            </div>
         </div>
 
-        <!-- 推荐结果区域 -->
-        <div class="recommendation-card" id="recommendationResultCard" style="display: none;">
-            <h3 class="mb-3"><i class="bi bi-lightbulb"></i> 智能推荐</h3>
-            <div id="recommendationResult">
-                <!-- 推荐结果将在这里显示 -->
+        <!-- 推荐结果 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">推荐结果</h5>
+                <div>
+                    <button class="btn btn-outline-success" onclick="batchAdopt()">
+                        <i class="bi bi-check-all"></i> 批量采纳
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="exportRecommendations()">
+                        <i class="bi bi-download"></i> 导出
+                    </button>
+                </div>
             </div>
-        </div>
-
-        <!-- 推荐统计 -->
-        <div class="recommendation-stats" id="recommendationStats" style="display: none;">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-number" id="totalRecommendations">0</div>
-                        <div class="stat-label">推荐总数</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-number" id="adoptedRecommendations">0</div>
-                        <div class="stat-label">已采�?/div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-number" id="pendingRecommendations">0</div>
-                        <div class="stat-label">待处�?/div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-item">
-                        <div class="stat-number" id="adoptionRate">0%</div>
-                        <div class="stat-label">采纳�?/div>
-                    </div>
+            <div class="card-body">
+                <div id="recommendationResults">
+                    <!-- 推荐结果将通过JavaScript动态加载 -->
                 </div>
             </div>
         </div>
 
         <!-- 历史推荐记录 -->
-        <div class="recommendation-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3><i class="bi bi-clock-history"></i> 历史推荐记录</h3>
-                <button class="btn btn-outline-primary btn-sm" onclick="refreshRecommendationHistory()">
-                    <i class="bi bi-arrow-clockwise"></i> 刷新
-                </button>
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">历史推荐记录</h5>
             </div>
-            
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>客户名称</th>
-                            <th>推荐类型</th>
-                            <th>推荐内容</th>
-                            <th>优先�?/th>
-                            <th>状�?/th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recommendationHistoryTable">
-                        <!-- 历史记录将通过JavaScript动态加�?-->
-                    </tbody>
-                </table>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number">89</div>
+                            <div class="stat-label">已采纳</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number">45</div>
+                            <div class="stat-label">待处理</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number">67</div>
+                            <div class="stat-label">采纳率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number">92%</div>
+                            <div class="stat-label">准确率</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>客户名称</th>
+                                <th>推荐类型</th>
+                                <th>推荐内容</th>
+                                <th>优先级</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- 历史记录将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 推荐详情模态框 -->
+    <div class="modal fade" id="recommendationDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">推荐详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="recommendationDetailContent">
+                    <!-- 推荐详情内容将通过JavaScript动态加载 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="adoptRecommendation()">
+                        <i class="bi bi-check"></i> 采纳推荐
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let customers = [];
-        let recommendationHistory = [];
+        // 模拟推荐数据
+        let recommendations = [
+            {
+                id: 1,
+                customerName: '张三',
+                type: 'product',
+                title: '推荐水稻新品种',
+                content: '基于客户种植环境分析，推荐抗病性强、产量高的水稻新品种',
+                priority: 'high',
+                status: 'pending',
+                createTime: '2024-01-25',
+                confidence: 0.92,
+                reason: '客户所在地区病虫害较多，该品种具有强抗病性'
+            },
+            {
+                id: 2,
+                customerName: '李四农业科技有限公司',
+                type: 'service',
+                title: '推荐技术咨询服务',
+                content: '建议提供专业的技术咨询服务，帮助客户优化种植方案',
+                priority: 'medium',
+                status: 'adopted',
+                createTime: '2024-01-24',
+                confidence: 0.88,
+                reason: '客户规模较大，需要专业的技术支持'
+            },
+            {
+                id: 3,
+                customerName: '王五种子研究所',
+                type: 'strategy',
+                title: '推荐市场拓展策略',
+                content: '建议采用线上线下结合的方式，扩大市场影响力',
+                priority: 'high',
+                status: 'pending',
+                createTime: '2024-01-23',
+                confidence: 0.95,
+                reason: '客户具有研发优势，适合多元化发展'
+            }
+        ];
+
+        let selectedRecommendations = [];
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            loadCustomers();
-            loadRecommendationHistory();
+            loadRecommendationResults();
+            loadHistoryRecords();
         });
-
-        // 加载客户列表
-        function loadCustomers() {
-            fetch('/api/customer-profile/list?pageNum=1&pageSize=1000')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === 200) {
-                        customers = data.data.list || [];
-                        populateCustomerSelect();
-                    } else {
-                        console.error('加载客户列表失败:', data.message);
-                        showMockCustomers();
-                    }
-                })
-                .catch(error => {
-                    console.error('加载客户列表失败:', error);
-                    showMockCustomers();
-                });
-        }
-
-        // 显示模拟客户数据
-        function showMockCustomers() {
-            customers = [
-                { id: 1, customerName: '张三' },
-                { id: 2, customerName: '李四农业科技有限公司' },
-                { id: 3, customerName: '中国农业科学�? },
-                { id: 4, customerName: '王五种子公司' },
-                { id: 5, customerName: '赵六农业合作�? }
-            ];
-            populateCustomerSelect();
-        }
-
-        // 填充客户选择�?        function populateCustomerSelect() {
-            const select = document.getElementById('customerSelect');
-            select.innerHTML = '<option value="">请选择客户</option>';
-            customers.forEach(customer => {
-                const option = document.createElement('option');
-                option.value = customer.id;
-                option.textContent = customer.customerName;
-                select.appendChild(option);
-            });
-        }
 
         // 生成推荐
         function generateRecommendations() {
-            const customerId = document.getElementById('customerSelect').value;
-            const recommendationType = document.getElementById('recommendationType').value;
-            const recommendationCount = document.getElementById('recommendationCount').value;
-
-            if (!customerId || !recommendationType) {
-                alert('请选择客户和推荐类�?);
-                return;
-            }
-
-            const generateBtn = document.getElementById('generateBtn');
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成�?..';
-
-            // 显示推荐结果卡片
-            const resultCard = document.getElementById('recommendationResultCard');
-            resultCard.style.display = 'block';
-
-            // 显示加载状�?            const resultDiv = document.getElementById('recommendationResult');
-            resultDiv.innerHTML = `
-                <div class="recommendation-loading">
-                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                    AI正在分析客户数据并生成个性化推荐，请稍�?..
-                </div>
-            `;
-
-            // 发送推荐请�?            const requestData = {
-                customerId: customerId,
-                recommendationType: recommendationType,
-                count: parseInt(recommendationCount)
-            };
-
-            // 直接使用模拟数据，避�?04错误
+            const type = document.getElementById('recommendationType').value;
+            const count = parseInt(document.getElementById('recommendationCount').value);
+            const timeRange = parseInt(document.getElementById('timeRange').value);
+            
+            // 模拟API调用
             setTimeout(() => {
-                displayMockRecommendations();
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '<i class="bi bi-magic"></i> 生成推荐';
-                loadRecommendationHistory();
+                loadRecommendationResults();
+                alert('推荐生成完成！');
             }, 1000);
         }
 
-        // 显示推荐结果
-        function displayRecommendations(data) {
-            const resultDiv = document.getElementById('recommendationResult');
-            const customer = customers.find(c => c.id == document.getElementById('customerSelect').value);
-            const recommendationType = document.getElementById('recommendationType').value;
-            
-            let recommendations = data.recommendations || [];
+        // 加载推荐结果
+        function loadRecommendationResults() {
+            const container = document.getElementById('recommendationResults');
+            container.innerHTML = '';
+
             if (recommendations.length === 0) {
-                recommendations = generateMockRecommendations(recommendationType);
-            }
-
-            let html = `
-                <div class="mb-3">
-                    <h5>�?<strong>${customer ? customer.customerName : '未知客户'}</strong> 生成�?${getRecommendationTypeName(recommendationType)}</h5>
-                    <p class="text-muted">基于AI算法分析，为您提供以下个性化推荐�?/p>
-                </div>
-            `;
-
-            recommendations.forEach((rec, index) => {
-                html += `
-                    <div class="recommendation-item">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <span class="recommendation-priority ${getPriorityClass(rec.priority)}">
-                                    ${getPriorityText(rec.priority)}
-                                </span>
-                                <h6 class="mb-1">${rec.title}</h6>
-                            </div>
-                            <small class="text-muted">推荐 #${index + 1}</small>
-                        </div>
-                        <p class="text-muted mb-2">${rec.description}</p>
-                        <div class="recommendation-actions">
-                            <button class="btn btn-success btn-sm" onclick="adoptRecommendation(${index})">
-                                <i class="bi bi-check"></i> 采纳
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="viewRecommendationDetail(${index})">
-                                <i class="bi bi-eye"></i> 详情
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="rejectRecommendation(${index})">
-                                <i class="bi bi-x"></i> 拒绝
-                            </button>
-                        </div>
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-lightbulb display-1 text-muted"></i>
+                        <h5 class="mt-3 text-muted">暂无推荐</h5>
+                        <p>点击"生成推荐"按钮获取AI智能推荐</p>
                     </div>
-                `;
-            });
-
-            resultDiv.innerHTML = html;
-
-            // 显示统计信息
-            updateRecommendationStats(recommendations.length);
-        }
-
-        // 显示模拟推荐结果
-        function displayMockRecommendations() {
-            const resultDiv = document.getElementById('recommendationResult');
-            const customer = customers.find(c => c.id == document.getElementById('customerSelect').value);
-            const recommendationType = document.getElementById('recommendationType').value;
-            
-            const recommendations = generateMockRecommendations(recommendationType);
-
-            let html = `
-                <div class="mb-3">
-                    <h5>�?<strong>${customer ? customer.customerName : '未知客户'}</strong> 生成�?${getRecommendationTypeName(recommendationType)}</h5>
-                    <p class="text-muted">基于AI算法分析，为您提供以下个性化推荐�?/p>
-                </div>
-            `;
-
-            recommendations.forEach((rec, index) => {
-                html += `
-                    <div class="recommendation-item">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <span class="recommendation-priority ${getPriorityClass(rec.priority)}">
-                                    ${getPriorityText(rec.priority)}
-                                </span>
-                                <h6 class="mb-1">${rec.title}</h6>
-                            </div>
-                            <small class="text-muted">推荐 #${index + 1}</small>
-                        </div>
-                        <p class="text-muted mb-2">${rec.description}</p>
-                        <div class="recommendation-actions">
-                            <button class="btn btn-success btn-sm" onclick="adoptRecommendation(${index})">
-                                <i class="bi bi-check"></i> 采纳
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="viewRecommendationDetail(${index})">
-                                <i class="bi bi-eye"></i> 详情
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="rejectRecommendation(${index})">
-                                <i class="bi bi-x"></i> 拒绝
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            resultDiv.innerHTML = html;
-
-            // 显示统计信息
-            updateRecommendationStats(recommendations.length);
-        }
-
-        // 生成模拟推荐数据
-        function generateMockRecommendations(type) {
-            const recommendations = {
-                'product': [
-                    {
-                        title: '推荐新品种保护申请服�?,
-                        description: '基于客户历史数据，建议申请新品种保护，预计可提升品牌价�?0%',
-                        priority: 'high'
-                    },
-                    {
-                        title: '定制化技术咨询服�?,
-                        description: '为客户提供专业的技术咨询服务，帮助优化种植方案',
-                        priority: 'medium'
-                    },
-                    {
-                        title: '市场推广支持方案',
-                        description: '提供全方位的市场推广支持，扩大产品影响力',
-                        priority: 'medium'
-                    }
-                ],
-                'service': [
-                    {
-                        title: 'VIP客户专属服务',
-                        description: '提供专属客户经理和优先服务通道',
-                        priority: 'high'
-                    },
-                    {
-                        title: '定期技术培�?,
-                        description: '每月组织专业技术培训，提升客户技术水�?,
-                        priority: 'medium'
-                    },
-                    {
-                        title: '24/7技术支持热�?,
-                        description: '提供全天候技术支持服�?,
-                        priority: 'low'
-                    }
-                ],
-                'strategy': [
-                    {
-                        title: '数字化转型策�?,
-                        description: '建议客户进行数字化转型，提升运营效率',
-                        priority: 'high'
-                    },
-                    {
-                        title: '市场细分策略',
-                        description: '针对不同市场细分制定差异化策�?,
-                        priority: 'medium'
-                    },
-                    {
-                        title: '合作伙伴拓展计划',
-                        description: '建议与相关企业建立战略合作关�?,
-                        priority: 'low'
-                    }
-                ],
-                'opportunity': [
-                    {
-                        title: '政府补贴申请机会',
-                        description: '发现符合条件的技术创新补贴申请机�?,
-                        priority: 'high'
-                    },
-                    {
-                        title: '行业展会参展建议',
-                        description: '建议参加即将举办的行业展会，扩大影响�?,
-                        priority: 'medium'
-                    },
-                    {
-                        title: '新市场开拓机�?,
-                        description: '发现新的市场开拓机会，建议重点关注',
-                        priority: 'medium'
-                    }
-                ],
-                'risk': [
-                    {
-                        title: '技术风险预�?,
-                        description: '检测到潜在的技术风险，建议提前防范',
-                        priority: 'high'
-                    },
-                    {
-                        title: '市场风险提醒',
-                        description: '市场环境变化可能带来的风险提�?,
-                        priority: 'medium'
-                    },
-                    {
-                        title: '合规风险提示',
-                        description: '提醒注意相关法规变化可能带来的合规风�?,
-                        priority: 'low'
-                    }
-                ]
-            };
-
-            return recommendations[type] || recommendations['product'];
-        }
-
-        // 获取推荐类型名称
-        function getRecommendationTypeName(type) {
-            const types = {
-                'product': '产品推荐',
-                'service': '服务推荐',
-                'strategy': '策略推荐',
-                'opportunity': '商机推荐',
-                'risk': '风险提醒'
-            };
-            return types[type] || type;
-        }
-
-        // 获取优先级样式类
-        function getPriorityClass(priority) {
-            switch(priority) {
-                case 'high': return 'priority-high';
-                case 'medium': return 'priority-medium';
-                case 'low': return 'priority-low';
-                default: return 'priority-medium';
-            }
-        }
-
-        // 获取优先级文�?        function getPriorityText(priority) {
-            switch(priority) {
-                case 'high': return '高优先级';
-                case 'medium': return '中优先级';
-                case 'low': return '低优先级';
-                default: return '中优先级';
-            }
-        }
-
-        // 更新推荐统计
-        function updateRecommendationStats(total) {
-            const statsCard = document.getElementById('recommendationStats');
-            statsCard.style.display = 'block';
-            
-            document.getElementById('totalRecommendations').textContent = total;
-            document.getElementById('adoptedRecommendations').textContent = Math.floor(total * 0.3);
-            document.getElementById('pendingRecommendations').textContent = Math.floor(total * 0.7);
-            document.getElementById('adoptionRate').textContent = '30%';
-        }
-
-        // 采纳推荐
-        function adoptRecommendation(index) {
-            alert(`推荐 #${index + 1} 已采纳！`);
-            // 这里可以添加实际的采纳逻辑
-        }
-
-        // 查看推荐详情
-        function viewRecommendationDetail(index) {
-            alert(`查看推荐 #${index + 1} 的详细信息`);
-            // 这里可以添加查看详情的逻辑
-        }
-
-        // 拒绝推荐
-        function rejectRecommendation(index) {
-            if (confirm(`确定要拒绝推�?#${index + 1} 吗？`)) {
-                alert(`推荐 #${index + 1} 已拒绝`);
-                // 这里可以添加拒绝的逻辑
-            }
-        }
-
-        // 加载推荐历史
-        function loadRecommendationHistory() {
-            // 直接使用模拟数据，避�?04错误
-            showMockRecommendationHistory();
-        }
-
-        // 显示模拟推荐历史
-        function showMockRecommendationHistory() {
-            recommendationHistory = [
-                {
-                    id: 1,
-                    customerName: '张三',
-                    recommendationType: '产品推荐',
-                    content: '推荐新品种保护申请服�?,
-                    priority: 'high',
-                    status: 'adopted'
-                },
-                {
-                    id: 2,
-                    customerName: '李四农业科技有限公司',
-                    recommendationType: '服务推荐',
-                    content: 'VIP客户专属服务',
-                    priority: 'medium',
-                    status: 'pending'
-                },
-                {
-                    id: 3,
-                    customerName: '中国农业科学�?,
-                    recommendationType: '策略推荐',
-                    content: '数字化转型策�?,
-                    priority: 'high',
-                    status: 'rejected'
-                }
-            ];
-            renderRecommendationHistory();
-        }
-
-        // 渲染推荐历史
-        function renderRecommendationHistory() {
-            const tbody = document.getElementById('recommendationHistoryTable');
-            tbody.innerHTML = '';
-
-            if (recommendationHistory.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox"></i> 暂无推荐记录
-                        </td>
-                    </tr>
                 `;
                 return;
             }
 
-            recommendationHistory.forEach(rec => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <div class="text-truncate" style="max-width: 120px;" title="${rec.customerName || ''}">
-                            ${rec.customerName || ''}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge bg-info">${rec.recommendationType || ''}</span>
-                    </td>
-                    <td>
-                        <div class="text-truncate" style="max-width: 200px;" title="${rec.content || ''}">
-                            ${rec.content || ''}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="recommendation-priority ${getPriorityClass(rec.priority)}">
-                            ${getPriorityText(rec.priority)}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(rec.status)}">
-                            ${getStatusText(rec.status)}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="viewRecommendationHistory(${rec.id})" title="查看详情">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-outline-success" onclick="adoptRecommendationHistory(${rec.id})" title="采纳">
-                                <i class="bi bi-check"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // 获取状态徽章样�?        function getStatusBadgeClass(status) {
-            switch(status) {
-                case 'adopted': return 'bg-success';
-                case 'pending': return 'bg-warning';
-                case 'rejected': return 'bg-danger';
-                default: return 'bg-secondary';
-            }
-        }
-
-        // 获取状态文�?        function getStatusText(status) {
-            switch(status) {
-                case 'adopted': return '已采�?;
-                case 'pending': return '待处�?;
-                case 'rejected': return '已拒�?;
-                default: return '未知';
-            }
-        }
-
-        // 查看推荐历史详情
-        function viewRecommendationHistory(id) {
-            const recommendation = recommendationHistory.find(r => r.id === id);
-            if (recommendation) {
-                // 创建详情模态框
-                const modalHtml = `
-                    <div class="modal fade" id="recommendationDetailModal" tabindex="-1">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">推荐详情</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            recommendations.forEach(rec => {
+                const recCard = document.createElement('div');
+                recCard.className = 'recommendation-card mb-3';
+                recCard.innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-1">
+                                    <input type="checkbox" class="form-check-input" value="${rec.id}" onchange="toggleRecommendationSelection(${rec.id})">
                                 </div>
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>客户名称</h6>
-                                            <p>${recommendation.customerName || ''}</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>推荐类型</h6>
-                                            <p>${recommendation.recommendationType || ''}</p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>优先�?/h6>
-                                            <span class="badge ${getPriorityClass(recommendation.priority)}">
-                                                ${getPriorityText(recommendation.priority)}
-                                            </span>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>状�?/h6>
-                                            <span class="badge ${getStatusBadgeClass(recommendation.status)}">
-                                                ${getStatusText(recommendation.status)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <h6>推荐内容</h6>
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <p>${recommendation.content || ''}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <h6>推荐理由</h6>
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <p>${recommendation.reason || '暂无推荐理由'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>创建时间</h6>
-                                            <p>${recommendation.createTime || ''}</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>更新时间</h6>
-                                            <p>${recommendation.updateTime || ''}</p>
-                                        </div>
+                                <div class="col-md-8">
+                                    <h6 class="card-title">${rec.title}</h6>
+                                    <p class="card-text text-muted">${rec.content}</p>
+                                    <div class="d-flex gap-2">
+                                        <span class="badge ${getTypeClass(rec.type)}">${getTypeText(rec.type)}</span>
+                                        <span class="badge ${getPriorityClass(rec.priority)}">${getPriorityText(rec.priority)}</span>
+                                        <span class="badge bg-info">置信度: ${Math.round(rec.confidence * 100)}%</span>
                                     </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                                    <button type="button" class="btn btn-success" onclick="adoptRecommendationHistory(${recommendation.id})">
-                                        <i class="bi bi-check"></i> 采纳推荐
+                                <div class="col-md-3 text-end">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="viewRecommendationDetail(${rec.id})">
+                                        <i class="bi bi-eye"></i> 查看详情
+                                    </button>
+                                    <button class="btn btn-success btn-sm" onclick="adoptRecommendation(${rec.id})">
+                                        <i class="bi bi-check"></i> 采纳
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 `;
-                
-                // 移除已存在的模态框
-                const existingModal = document.getElementById('recommendationDetailModal');
-                if (existingModal) {
-                    existingModal.remove();
-                }
-                
-                // 添加新模态框到页�?                document.body.insertAdjacentHTML('beforeend', modalHtml);
-                
-                // 显示模态框
+                container.appendChild(recCard);
+            });
+        }
+
+        // 加载历史记录
+        function loadHistoryRecords() {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            recommendations.forEach(rec => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="table-cell-truncate" title="${rec.customerName}">${rec.customerName}</td>
+                    <td class="table-cell-truncate" title="${getTypeText(rec.type)}">${getTypeText(rec.type)}</td>
+                    <td class="table-cell-truncate" title="${rec.title}">${rec.title}</td>
+                    <td><span class="badge ${getPriorityClass(rec.priority)}">${getPriorityText(rec.priority)}</span></td>
+                    <td><span class="badge ${getStatusClass(rec.status)}">${getStatusText(rec.status)}</span></td>
+                    <td class="table-cell-truncate" title="${rec.createTime}">${rec.createTime}</td>
+                    <td>
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewRecommendationDetail(${rec.id})" title="查看详情">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="adoptRecommendation(${rec.id})" title="采纳推荐">
+                            <i class="bi bi-check"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 查看推荐详情
+        function viewRecommendationDetail(id) {
+            const rec = recommendations.find(r => r.id === id);
+            if (rec) {
+                const content = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>基本信息</h6>
+                            <p><strong>客户名称：</strong>${rec.customerName}</p>
+                            <p><strong>推荐类型：</strong>${getTypeText(rec.type)}</p>
+                            <p><strong>优先级：</strong>${getPriorityText(rec.priority)}</p>
+                            <p><strong>状态：</strong>${getStatusText(rec.status)}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>详细信息</h6>
+                            <p><strong>置信度：</strong>${Math.round(rec.confidence * 100)}%</p>
+                            <p><strong>创建时间：</strong>${rec.createTime}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>推荐内容</h6>
+                            <p>${rec.content}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>推荐理由</h6>
+                            <p>${rec.reason}</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('recommendationDetailContent').innerHTML = content;
                 new bootstrap.Modal(document.getElementById('recommendationDetailModal')).show();
+            }
+        }
+
+        // 采纳推荐
+        function adoptRecommendation(id) {
+            const rec = recommendations.find(r => r.id === id);
+            if (rec) {
+                rec.status = 'adopted';
+                rec.modifyTime = new Date().toISOString().split('T')[0];
+                loadRecommendationResults();
+                loadHistoryRecords();
+                bootstrap.Modal.getInstance(document.getElementById('recommendationDetailModal')).hide();
+                alert('推荐已采纳！');
+            }
+        }
+
+        // 切换推荐选择状态
+        function toggleRecommendationSelection(id) {
+            const index = selectedRecommendations.indexOf(id);
+            if (index > -1) {
+                selectedRecommendations.splice(index, 1);
             } else {
-                alert('未找到推荐记�?);
+                selectedRecommendations.push(id);
             }
         }
 
-        // 采纳推荐历史
-        function adoptRecommendationHistory(id) {
-            if (confirm('确定要采纳这个推荐吗�?)) {
-                const recommendation = recommendationHistory.find(r => r.id === id);
-                if (recommendation) {
-                    // 更新推荐状态为已采�?                    recommendation.status = 'adopted';
-                    recommendation.updateTime = new Date().toLocaleString();
-                    
-                    // 重新渲染表格
-                    renderRecommendationHistory();
-                    
-                    // 显示成功消息
-                    alert('推荐已采纳！状态已更新�?);
-                    
-                    // 关闭模态框（如果存在）
-                    const modal = document.getElementById('recommendationDetailModal');
-                    if (modal) {
-                        const bsModal = bootstrap.Modal.getInstance(modal);
-                        if (bsModal) {
-                            bsModal.hide();
-                        }
+        // 批量采纳
+        function batchAdopt() {
+            if (selectedRecommendations.length === 0) {
+                alert('请先选择要采纳的推荐！');
+                return;
+            }
+            
+            if (confirm(`确定要采纳选中的 ${selectedRecommendations.length} 条推荐吗？`)) {
+                selectedRecommendations.forEach(id => {
+                    const rec = recommendations.find(r => r.id === id);
+                    if (rec) {
+                        rec.status = 'adopted';
+                        rec.modifyTime = new Date().toISOString().split('T')[0];
                     }
-                } else {
-                    alert('未找到推荐记�?);
-                }
+                });
+                selectedRecommendations = [];
+                loadRecommendationResults();
+                loadHistoryRecords();
+                alert('批量采纳成功！');
             }
         }
 
-        // 刷新推荐历史
-        function refreshRecommendationHistory() {
-            loadRecommendationHistory();
+        // 导出推荐
+        function exportRecommendations() {
+            const dataStr = JSON.stringify(recommendations, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `recommendations_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 获取类型样式类
+        function getTypeClass(type) {
+            switch (type) {
+                case 'product': return 'bg-primary';
+                case 'service': return 'bg-success';
+                case 'strategy': return 'bg-warning';
+                case 'action': return 'bg-info';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // 获取优先级样式类
+        function getPriorityClass(priority) {
+            switch (priority) {
+                case 'high': return 'bg-danger';
+                case 'medium': return 'bg-warning';
+                case 'low': return 'bg-success';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // 获取状态样式类
+        function getStatusClass(status) {
+            switch (status) {
+                case 'pending': return 'bg-warning';
+                case 'adopted': return 'bg-success';
+                case 'rejected': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // 获取类型文本
+        function getTypeText(type) {
+            switch (type) {
+                case 'product': return '产品推荐';
+                case 'service': return '服务推荐';
+                case 'strategy': return '策略推荐';
+                case 'action': return '行动推荐';
+                default: return '未知';
+            }
+        }
+
+        // 获取优先级文本
+        function getPriorityText(priority) {
+            switch (priority) {
+                case 'high': return '高';
+                case 'medium': return '中';
+                case 'low': return '低';
+                default: return '未知';
+            }
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            switch (status) {
+                case 'pending': return '待处理';
+                case 'adopted': return '已采纳';
+                case 'rejected': return '已拒绝';
+                default: return '未知';
+            }
         }
     </script>
 </body>

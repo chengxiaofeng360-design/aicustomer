@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="css/common.css" rel="stylesheet">
+    <link href="/ai-customer/css/common.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-container">
@@ -16,7 +16,7 @@
             <div class="page-title">
                 <i class="bi bi-people"></i> 团队协作
             </div>
-            <a href="index.html" class="back-home-btn">
+            <a href="/ai-customer/" class="back-home-btn">
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
@@ -32,28 +32,28 @@
             <div class="col-md-3">
                 <div class="stats-card">
                     <div class="stats-number">24</div>
-                    <div class="stats-label">进行中任�?/div>
+                    <div class="stats-label">进行中任务</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
                     <div class="stats-number">156</div>
-                    <div class="stats-label">已完成任�?/div>
+                    <div class="stats-label">已完成任务</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
                     <div class="stats-number">92%</div>
-                    <div class="stats-label">任务完成�?/div>
+                    <div class="stats-label">任务完成率</div>
                 </div>
             </div>
         </div>
 
-        <!-- 团队成员区域 -->
-        <div class="content-card mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3><i class="bi bi-people-fill"></i> 团队成员</h3>
-                <div class="btn-group">
+        <!-- 团队成员管理 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">团队成员</h5>
+                <div>
                     <button class="btn btn-primary" onclick="showAddMemberModal()">
                         <i class="bi bi-person-plus"></i> 添加成员
                     </button>
@@ -65,22 +65,23 @@
                     </button>
                 </div>
             </div>
-            
-            <div class="team-members-container">
-                <div class="team-members-scroll" id="teamMembers">
-                    <!-- 团队成员将通过JavaScript动态加�?-->
+            <div class="card-body">
+                <div class="team-members-container">
+                    <div class="team-members-scroll" id="teamMembersList">
+                        <!-- 团队成员将通过JavaScript动态加载 -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 任务管理区域 -->
-        <div class="content-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3><i class="bi bi-list-task"></i> 任务管理</h3>
-                <div class="btn-group">
+        <!-- 任务管理 -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">团队任务</h5>
+                <div class="d-flex gap-2">
                     <button class="btn btn-outline-primary" onclick="filterTasks('all')">全部</button>
-                    <button class="btn btn-outline-warning" onclick="filterTasks('pending')">进行�?/button>
-                    <button class="btn btn-outline-success" onclick="filterTasks('completed')">已完�?/button>
+                    <button class="btn btn-outline-warning" onclick="filterTasks('pending')">进行中</button>
+                    <button class="btn btn-outline-success" onclick="filterTasks('completed')">已完成</button>
                     <button class="btn btn-primary" onclick="showAddTaskModal()">
                         <i class="bi bi-plus"></i> 新建任务
                     </button>
@@ -92,34 +93,35 @@
                     </button>
                 </div>
             </div>
-            
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>任务名称</th>
-                            <th>负责�?/th>
-                            <th>优先�?/th>
-                            <th>状�?/th>
-                            <th>截止时间</th>
-                            <th>进度</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="taskTableBody">
-                        <!-- 任务数据将通过JavaScript动态加�?-->
-                    </tbody>
-                </table>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>任务名称</th>
+                                <th>负责人</th>
+                                <th>优先级</th>
+                                <th>状态</th>
+                                <th>截止日期</th>
+                                <th>进度</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskTableBody">
+                            <!-- 任务数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 添加成员模态框 -->
+    <!-- 添加/编辑成员模态框 -->
     <div class="modal fade" id="memberModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">添加团队成员</h5>
+                    <h5 class="modal-title" id="memberModalTitle">添加成员</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -127,19 +129,39 @@
                         <input type="hidden" id="memberId" name="id">
                         <div class="mb-3">
                             <label class="form-label">姓名 *</label>
-                            <input type="text" class="form-control" id="memberName" required>
+                            <input type="text" class="form-control" id="memberName" name="name" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">职位 *</label>
-                            <input type="text" class="form-control" id="memberPosition" required>
+                            <input type="text" class="form-control" id="memberPosition" name="position" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">邮箱</label>
-                            <input type="email" class="form-control" id="memberEmail">
+                            <label class="form-label">邮箱 *</label>
+                            <input type="email" class="form-control" id="memberEmail" name="email" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">电话</label>
-                            <input type="tel" class="form-control" id="memberPhone">
+                            <input type="tel" class="form-control" id="memberPhone" name="phone">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">部门</label>
+                            <select class="form-select" id="memberDepartment" name="department">
+                                <option value="">请选择</option>
+                                <option value="销售部">销售部</option>
+                                <option value="技术部">技术部</option>
+                                <option value="客服部">客服部</option>
+                                <option value="市场部">市场部</option>
+                                <option value="行政部">行政部</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">角色</label>
+                            <select class="form-select" id="memberRole" name="role">
+                                <option value="">请选择</option>
+                                <option value="管理员">管理员</option>
+                                <option value="普通用户">普通用户</option>
+                                <option value="只读用户">只读用户</option>
+                            </select>
                         </div>
                     </form>
                 </div>
@@ -151,12 +173,12 @@
         </div>
     </div>
 
-    <!-- 添加任务模态框 -->
+    <!-- 添加/编辑任务模态框 -->
     <div class="modal fade" id="taskModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">新建任务</h5>
+                    <h5 class="modal-title" id="taskModalTitle">新建任务</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -171,9 +193,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">负责�?*</label>
+                                    <label class="form-label">负责人 *</label>
                                     <select class="form-select" id="taskAssignee" name="assignee" required>
-                                        <option value="">请选择负责�?/option>
+                                        <option value="">请选择负责人</option>
+                                        <!-- 选项将通过JavaScript动态加载 -->
                                     </select>
                                 </div>
                             </div>
@@ -181,25 +204,29 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">优先�?*</label>
+                                    <label class="form-label">优先级 *</label>
                                     <select class="form-select" id="taskPriority" name="priority" required>
-                                        <option value="">请选择优先�?/option>
-                                        <option value="�?>�?/option>
-                                        <option value="�?>�?/option>
-                                        <option value="�?>�?/option>
+                                        <option value="">请选择优先级</option>
+                                        <option value="high">高</option>
+                                        <option value="medium">中</option>
+                                        <option value="low">低</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">截止时间</label>
-                                    <input type="date" class="form-control" id="taskDueDate" name="dueDate">
+                                    <label class="form-label">截止日期 *</label>
+                                    <input type="date" class="form-control" id="taskDueDate" name="dueDate" required>
                                 </div>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">任务描述</label>
                             <textarea class="form-control" id="taskDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">进度 (%)</label>
+                            <input type="number" class="form-control" id="taskProgress" name="progress" min="0" max="100" value="0">
                         </div>
                     </form>
                 </div>
@@ -213,9 +240,75 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let currentFilter = 'all';
-        let teamMembers = [];
-        let tasks = [];
+        // 模拟团队成员数据
+        let teamMembers = [
+            {
+                id: 1,
+                name: '张三',
+                position: '销售经理',
+                email: 'zhangsan@company.com',
+                phone: '13800138001',
+                department: '销售部',
+                role: '管理员',
+                avatar: 'https://via.placeholder.com/40'
+            },
+            {
+                id: 2,
+                name: '李四',
+                position: '技术总监',
+                email: 'lisi@company.com',
+                phone: '13800138002',
+                department: '技术部',
+                role: '管理员',
+                avatar: 'https://via.placeholder.com/40'
+            },
+            {
+                id: 3,
+                name: '王五',
+                position: '客服专员',
+                email: 'wangwu@company.com',
+                phone: '13800138003',
+                department: '客服部',
+                role: '普通用户',
+                avatar: 'https://via.placeholder.com/40'
+            }
+        ];
+
+        // 模拟任务数据
+        let tasks = [
+            {
+                id: 1,
+                name: '客户需求分析',
+                assignee: '张三',
+                priority: 'high',
+                status: 'pending',
+                dueDate: '2024-01-30',
+                progress: 60,
+                description: '分析客户需求，制定解决方案'
+            },
+            {
+                id: 2,
+                name: '系统优化',
+                assignee: '李四',
+                priority: 'medium',
+                status: 'completed',
+                dueDate: '2024-01-25',
+                progress: 100,
+                description: '优化系统性能，提升用户体验'
+            },
+            {
+                id: 3,
+                name: '客户培训',
+                assignee: '王五',
+                priority: 'low',
+                status: 'pending',
+                dueDate: '2024-02-05',
+                progress: 30,
+                description: '为客户提供产品使用培训'
+            }
+        ];
+
+        let currentTaskFilter = 'all';
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -225,37 +318,22 @@
 
         // 加载团队成员
         function loadTeamMembers() {
-            // 直接使用模拟数据，避�?04错误
-            showMockMembers();
-        }
-
-        // 显示模拟成员数据
-        function showMockMembers() {
-            teamMembers = [
-                { id: 1, name: '张三', position: '项目经理', email: 'zhangsan@example.com', phone: '13800138000', avatar: 'ZS' },
-                { id: 2, name: '李四', position: '技术专�?, email: 'lisi@example.com', phone: '13800138001', avatar: 'LS' },
-                { id: 3, name: '王五', position: '客户经理', email: 'wangwu@example.com', phone: '13800138002', avatar: 'WW' },
-                { id: 4, name: '赵六', position: '数据分析�?, email: 'zhaoliu@example.com', phone: '13800138003', avatar: 'ZL' }
-            ];
-            renderTeamMembers();
-            populateAssigneeSelect();
-        }
-
-        // 渲染团队成员
-        function renderTeamMembers() {
-            const container = document.getElementById('teamMembers');
+            const container = document.getElementById('teamMembersList');
             container.innerHTML = '';
 
             teamMembers.forEach(member => {
-                const memberDiv = document.createElement('div');
-                memberDiv.className = 'team-member-card';
-                memberDiv.innerHTML = `
-                    <div class="team-member-avatar">
-                        ${member.avatar}
+                const memberCard = document.createElement('div');
+                memberCard.className = 'team-member-card';
+                memberCard.innerHTML = `
+                    <div class="member-avatar">
+                        <img src="${member.avatar}" alt="${member.name}" onerror="this.src='https://via.placeholder.com/40'">
                     </div>
-                    <div class="team-member-name">${member.name}</div>
-                    <div class="team-member-position">${member.position}</div>
-                    <div class="team-member-actions">
+                    <div class="member-info">
+                        <h6 class="member-name">${member.name}</h6>
+                        <p class="member-position">${member.position}</p>
+                        <p class="member-department">${member.department}</p>
+                    </div>
+                    <div class="member-actions">
                         <button class="btn btn-outline-primary btn-sm" onclick="editMember(${member.id})" title="编辑">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -264,249 +342,89 @@
                         </button>
                     </div>
                 `;
-                container.appendChild(memberDiv);
+                container.appendChild(memberCard);
             });
-        }
-
-        // 填充负责人选择�?        function populateAssigneeSelect() {
-            const select = document.getElementById('taskAssignee');
-            if (select) {
-                select.innerHTML = '<option value="">请选择负责�?/option>';
-                teamMembers.forEach(member => {
-                    const option = document.createElement('option');
-                    option.value = member.id;
-                    option.textContent = member.name;
-                    select.appendChild(option);
-                });
-            }
         }
 
         // 加载任务列表
         function loadTasks() {
-            // 直接使用模拟数据，避�?04错误
-            showMockTasks();
-            // 应用当前筛�?            applyTaskFilter();
-        }
-
-        // 应用任务筛�?        function applyTaskFilter() {
-            let filteredTasks = tasks;
-            
-            if (currentFilter !== 'all') {
-                filteredTasks = tasks.filter(task => {
-                    if (currentFilter === 'pending') {
-                        return task.status === 'pending';
-                    } else if (currentFilter === 'completed') {
-                        return task.status === 'completed';
-                    }
-                    return true;
-                });
-            }
-            
-            // 重新渲染筛选后的任�?            renderFilteredTasks(filteredTasks);
-        }
-
-        // 渲染筛选后的任�?        function renderFilteredTasks(filteredTasks) {
             const tbody = document.getElementById('taskTableBody');
             tbody.innerHTML = '';
 
-            if (filteredTasks.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox"></i> 暂无任务
-                        </td>
-                    </tr>
-                `;
-                return;
+            let filteredTasks = tasks;
+            if (currentTaskFilter !== 'all') {
+                filteredTasks = tasks.filter(task => {
+                    switch (currentTaskFilter) {
+                        case 'pending':
+                            return task.status === 'pending';
+                        case 'completed':
+                            return task.status === 'completed';
+                        default:
+                            return true;
+                    }
+                });
             }
 
             filteredTasks.forEach(task => {
                 const row = document.createElement('tr');
+                const priorityClass = getPriorityClass(task.priority);
+                const statusClass = getStatusClass(task.status);
+                
                 row.innerHTML = `
+                    <td class="table-cell-truncate" title="${task.name}">${task.name}</td>
+                    <td class="table-cell-truncate" title="${task.assignee}">${task.assignee}</td>
+                    <td><span class="badge ${priorityClass}">${getPriorityText(task.priority)}</span></td>
+                    <td><span class="badge ${statusClass}">${getStatusText(task.status)}</span></td>
+                    <td class="table-cell-truncate" title="${task.dueDate}">${task.dueDate}</td>
                     <td>
-                        <div class="table-cell-truncate" data-full-text="${task.name || ''}">
-                            ${task.name || ''}
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar" role="progressbar" style="width: ${task.progress}%">${task.progress}%</div>
                         </div>
                     </td>
                     <td>
-                        <div class="table-cell-truncate" data-full-text="${task.assignee || ''}">
-                            ${task.assignee || ''}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge ${getPriorityBadgeClass(task.priority)}">
-                            ${task.priority || ''}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(task.status)}">
-                            ${getStatusText(task.status)}
-                        </span>
-                    </td>
-                    <td>
-                        <small class="text-muted">${task.dueDate || ''}</small>
-                    </td>
-                    <td>
-                        <div class="progress" style="width: 100px; height: 8px;">
-                            <div class="progress-bar" role="progressbar" style="width: ${task.progress || 0}%"></div>
-                        </div>
-                        <small class="text-muted">${task.progress || 0}%</small>
-                    </td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-success" onclick="completeTask(${task.id})" title="标记完成">
-                                <i class="bi bi-check"></i>
-                            </button>
-                            <button class="btn btn-outline-warning" onclick="editTask(${task.id})" title="编辑">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="deleteTask(${task.id})" title="删除">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
+                        <button class="btn btn-outline-success btn-sm" onclick="completeTask(${task.id})" title="标记完成">
+                            <i class="bi bi-check"></i>
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="editTask(${task.id})" title="编辑">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteTask(${task.id})" title="删除">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // 显示模拟任务数据
-        function showMockTasks() {
-            tasks = [
-                {
-                    id: 1,
-                    name: '客户需求分�?,
-                    assignee: '张三',
-                    priority: '�?,
-                    status: 'pending',
-                    dueDate: '2024-01-25',
-                    progress: 60
-                },
-                {
-                    id: 2,
-                    name: '技术方案设�?,
-                    assignee: '李四',
-                    priority: '�?,
-                    status: 'pending',
-                    dueDate: '2024-01-28',
-                    progress: 30
-                },
-                {
-                    id: 3,
-                    name: '客户沟通会�?,
-                    assignee: '王五',
-                    priority: '�?,
-                    status: 'completed',
-                    dueDate: '2024-01-20',
-                    progress: 100
-                }
-            ];
-            renderTaskTable();
-        }
-
-        // 渲染任务表格
-        function renderTaskTable() {
-            const tbody = document.getElementById('taskTableBody');
-            tbody.innerHTML = '';
-
-            if (tasks.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox"></i> 暂无任务
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tasks.forEach(task => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <div class="table-cell-truncate" data-full-text="${task.name || ''}">
-                            ${task.name || ''}
-                        </div>
-                    </td>
-                    <td>
-                        <div class="table-cell-truncate" data-full-text="${task.assignee || ''}">
-                            ${task.assignee || ''}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge ${getPriorityBadgeClass(task.priority)}">
-                            ${task.priority || ''}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(task.status)}">
-                            ${getStatusText(task.status)}
-                        </span>
-                    </td>
-                    <td>
-                        <small class="text-muted">${task.dueDate || ''}</small>
-                    </td>
-                    <td>
-                        <div class="progress" style="width: 100px; height: 8px;">
-                            <div class="progress-bar" role="progressbar" style="width: ${task.progress || 0}%"></div>
-                        </div>
-                        <small class="text-muted">${task.progress || 0}%</small>
-                    </td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-success" onclick="completeTask(${task.id})" title="标记完成">
-                                <i class="bi bi-check"></i>
-                            </button>
-                            <button class="btn btn-outline-warning" onclick="editTask(${task.id})" title="编辑">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="deleteTask(${task.id})" title="删除">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // 获取优先级徽章样�?        function getPriorityBadgeClass(priority) {
-            switch(priority) {
-                case '�?: return 'bg-danger';
-                case '�?: return 'bg-warning';
-                case '�?: return 'bg-success';
-                default: return 'bg-secondary';
-            }
-        }
-
-        // 获取状态徽章样�?        function getStatusBadgeClass(status) {
-            switch(status) {
-                case 'pending': return 'bg-warning';
-                case 'completed': return 'bg-success';
-                case 'cancelled': return 'bg-secondary';
-                default: return 'bg-secondary';
-            }
-        }
-
-        // 获取状态文�?        function getStatusText(status) {
-            switch(status) {
-                case 'pending': return '进行�?;
-                case 'completed': return '已完�?;
-                case 'cancelled': return '已取�?;
-                default: return '未知';
-            }
-        }
-
-        // 过滤任务
+        // 筛选任务
         function filterTasks(filter) {
-            currentFilter = filter;
+            currentTaskFilter = filter;
             loadTasks();
         }
 
         // 显示添加成员模态框
         function showAddMemberModal() {
+            document.getElementById('memberModalTitle').textContent = '添加成员';
             document.getElementById('memberForm').reset();
+            document.getElementById('memberId').value = '';
             new bootstrap.Modal(document.getElementById('memberModal')).show();
+        }
+
+        // 编辑成员
+        function editMember(id) {
+            const member = teamMembers.find(m => m.id === id);
+            if (member) {
+                document.getElementById('memberModalTitle').textContent = '编辑成员';
+                document.getElementById('memberId').value = member.id;
+                document.getElementById('memberName').value = member.name;
+                document.getElementById('memberPosition').value = member.position;
+                document.getElementById('memberEmail').value = member.email;
+                document.getElementById('memberPhone').value = member.phone;
+                document.getElementById('memberDepartment').value = member.department;
+                document.getElementById('memberRole').value = member.role;
+                new bootstrap.Modal(document.getElementById('memberModal')).show();
+            }
         }
 
         // 保存成员
@@ -518,36 +436,79 @@
                 name: formData.get('name'),
                 position: formData.get('position'),
                 email: formData.get('email'),
-                phone: formData.get('phone')
+                phone: formData.get('phone'),
+                department: formData.get('department'),
+                role: formData.get('role'),
+                avatar: 'https://via.placeholder.com/40'
             };
+
+            const memberId = document.getElementById('memberId').value;
             
-            fetch('/api/team-collaboration/member', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(memberData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.code === 200) {
-                    alert('成员保存成功');
-                    new bootstrap.Modal(document.getElementById('memberModal')).hide();
-                    loadTeamMembers();
-                } else {
-                    alert('保存失败: ' + data.message);
+            if (memberId) {
+                // 编辑模式
+                const index = teamMembers.findIndex(m => m.id == memberId);
+                if (index !== -1) {
+                    teamMembers[index] = { ...teamMembers[index], ...memberData };
                 }
-            })
-            .catch(error => {
-                console.error('保存成员失败:', error);
-                alert('保存失败，请重试');
-            });
+            } else {
+                // 新增模式
+                const newMember = {
+                    id: teamMembers.length + 1,
+                    ...memberData
+                };
+                teamMembers.push(newMember);
+            }
+
+            loadTeamMembers();
+            bootstrap.Modal.getInstance(document.getElementById('memberModal')).hide();
+            alert('保存成功！');
+        }
+
+        // 删除成员
+        function deleteMember(id) {
+            if (confirm('确定要删除这个成员吗？')) {
+                teamMembers = teamMembers.filter(m => m.id !== id);
+                loadTeamMembers();
+                alert('删除成功！');
+            }
         }
 
         // 显示添加任务模态框
         function showAddTaskModal() {
+            document.getElementById('taskModalTitle').textContent = '新建任务';
             document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            loadAssigneeOptions();
             new bootstrap.Modal(document.getElementById('taskModal')).show();
+        }
+
+        // 加载负责人选项
+        function loadAssigneeOptions() {
+            const select = document.getElementById('taskAssignee');
+            select.innerHTML = '<option value="">请选择负责人</option>';
+            teamMembers.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.name;
+                option.textContent = member.name;
+                select.appendChild(option);
+            });
+        }
+
+        // 编辑任务
+        function editTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                document.getElementById('taskModalTitle').textContent = '编辑任务';
+                document.getElementById('taskId').value = task.id;
+                document.getElementById('taskName').value = task.name;
+                document.getElementById('taskAssignee').value = task.assignee;
+                document.getElementById('taskPriority').value = task.priority;
+                document.getElementById('taskDueDate').value = task.dueDate;
+                document.getElementById('taskDescription').value = task.description || '';
+                document.getElementById('taskProgress').value = task.progress;
+                loadAssigneeOptions();
+                new bootstrap.Modal(document.getElementById('taskModal')).show();
+            }
         }
 
         // 保存任务
@@ -560,212 +521,123 @@
                 assignee: formData.get('assignee'),
                 priority: formData.get('priority'),
                 dueDate: formData.get('dueDate'),
-                description: formData.get('description')
+                description: formData.get('description'),
+                progress: parseInt(formData.get('progress')) || 0,
+                status: parseInt(formData.get('progress')) === 100 ? 'completed' : 'pending'
             };
+
+            const taskId = document.getElementById('taskId').value;
             
-            fetch('/api/team-collaboration/task', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(taskData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.code === 200) {
-                    alert('任务保存成功');
-                    new bootstrap.Modal(document.getElementById('taskModal')).hide();
-                    loadTasks();
-                } else {
-                    alert('保存失败: ' + data.message);
+            if (taskId) {
+                // 编辑模式
+                const index = tasks.findIndex(t => t.id == taskId);
+                if (index !== -1) {
+                    tasks[index] = { ...tasks[index], ...taskData };
                 }
-            })
-            .catch(error => {
-                console.error('保存任务失败:', error);
-                alert('保存失败，请重试');
-            });
+            } else {
+                // 新增模式
+                const newTask = {
+                    id: tasks.length + 1,
+                    ...taskData
+                };
+                tasks.push(newTask);
+            }
+
+            loadTasks();
+            bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
+            alert('保存成功！');
         }
 
         // 完成任务
         function completeTask(id) {
-            if (confirm('确定要标记这个任务为已完成吗�?)) {
-                // 调用完成任务API
-                fetch(`/api/team-collaboration/tasks/${id}/status?status=completed`, {
-                    method: 'PUT'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === 200) {
-                        alert('任务标记为已完成');
-                        loadTasks();
-                    } else {
-                        alert('操作失败: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('完成任务失败:', error);
-                    alert('操作失败，请重试');
-                });
-            }
-        }
-
-        // 编辑任务
-        function editTask(id) {
             const task = tasks.find(t => t.id === id);
             if (task) {
-                // 填充编辑表单
-                document.getElementById('taskId').value = task.id;
-                document.getElementById('taskName').value = task.name;
-                document.getElementById('taskDescription').value = task.description;
-                document.getElementById('taskAssignee').value = task.assignee;
-                document.getElementById('taskDueDate').value = task.dueDate;
-                document.getElementById('taskPriority').value = task.priority;
-                
-                // 显示编辑模态框
-                new bootstrap.Modal(document.getElementById('taskModal')).show();
-            }
-        }
-        
-        // 编辑成员
-        function editMember(id) {
-            const member = teamMembers.find(m => m.id === id);
-            if (member) {
-                // 填充编辑表单
-                document.getElementById('memberId').value = member.id;
-                document.getElementById('memberName').value = member.name;
-                document.getElementById('memberPosition').value = member.position;
-                document.getElementById('memberEmail').value = member.email;
-                document.getElementById('memberPhone').value = member.phone;
-                
-                // 显示编辑模态框
-                new bootstrap.Modal(document.getElementById('memberModal')).show();
+                task.status = 'completed';
+                task.progress = 100;
+                loadTasks();
+                alert('任务已完成！');
             }
         }
 
         // 删除任务
         function deleteTask(id) {
-            if (confirm('确定要删除这个任务吗�?)) {
-                // 调用删除任务API
-                fetch(`/api/team-collaboration/tasks/${id}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === 200) {
-                        alert('任务删除成功');
-                        loadTasks();
-                    } else {
-                        alert('删除失败: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('删除任务失败:', error);
-                    alert('删除失败，请重试');
-                });
+            if (confirm('确定要删除这个任务吗？')) {
+                tasks = tasks.filter(t => t.id !== id);
+                loadTasks();
+                alert('删除成功！');
             }
-        }
-
-        // 导入任务
-        function importTasks() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json,.csv,.xlsx';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        try {
-                            const data = JSON.parse(e.target.result);
-                            if (Array.isArray(data)) {
-                                // 合并导入的任务数�?                                tasks = [...tasks, ...data];
-                                renderTaskTable();
-                                alert(`成功导入 ${data.length} 个任务`);
-                            } else {
-                                alert('文件格式不正�?);
-                            }
-                        } catch (error) {
-                            alert('文件解析失败: ' + error.message);
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            input.click();
-        }
-
-        // 导出任务
-        function exportTasks() {
-            const exportData = tasks.map(task => ({
-                任务名称: task.name,
-                负责�? task.assignee,
-                优先�? task.priority,
-                状�? getStatusText(task.status),
-                截止时间: task.dueDate,
-                描述: task.description
-            }));
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `tasks_${new Date().toISOString().slice(0, 10)}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-            
-            alert('任务数据已导�?);
         }
 
         // 导入成员
         function importMembers() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json,.csv,.xlsx';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        try {
-                            const data = JSON.parse(e.target.result);
-                            if (Array.isArray(data)) {
-                                // 合并导入的成员数�?                                teamMembers = [...teamMembers, ...data];
-                                renderTeamMembers();
-                                populateAssigneeSelect();
-                                alert(`成功导入 ${data.length} 个成员`);
-                            } else {
-                                alert('文件格式不正�?);
-                            }
-                        } catch (error) {
-                            alert('文件解析失败: ' + error.message);
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            input.click();
+            alert('导入功能开发中...');
         }
 
         // 导出成员
         function exportMembers() {
-            const exportData = teamMembers.map(member => ({
-                姓名: member.name,
-                职位: member.position,
-                邮箱: member.email,
-                电话: member.phone
-            }));
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataStr = JSON.stringify(teamMembers, null, 2);
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `members_${new Date().toISOString().slice(0, 10)}.json`;
+            link.download = `members_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
             URL.revokeObjectURL(url);
-            
-            alert('成员数据已导�?);
+        }
+
+        // 导入任务
+        function importTasks() {
+            alert('导入功能开发中...');
+        }
+
+        // 导出任务
+        function exportTasks() {
+            const dataStr = JSON.stringify(tasks, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tasks_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 获取优先级样式类
+        function getPriorityClass(priority) {
+            switch (priority) {
+                case 'high': return 'bg-danger';
+                case 'medium': return 'bg-warning';
+                case 'low': return 'bg-success';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // 获取状态样式类
+        function getStatusClass(status) {
+            switch (status) {
+                case 'pending': return 'bg-warning';
+                case 'completed': return 'bg-success';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // 获取优先级文本
+        function getPriorityText(priority) {
+            switch (priority) {
+                case 'high': return '高';
+                case 'medium': return '中';
+                case 'low': return '低';
+                default: return '未知';
+            }
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            switch (status) {
+                case 'pending': return '进行中';
+                case 'completed': return '已完成';
+                default: return '未知';
+            }
         }
     </script>
 </body>

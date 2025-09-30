@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="css/common.css" rel="stylesheet">
+    <link href="/ai-customer/css/common.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-container">
@@ -16,7 +16,7 @@
             <div class="page-title">
                 <i class="bi bi-people-fill"></i> 客户档案管理
             </div>
-            <a href="index.html" class="back-home-btn">
+            <a href="/ai-customer/" class="back-home-btn">
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
@@ -151,7 +151,7 @@
 
     <!-- 新增/编辑客户模态框 -->
     <div class="modal fade" id="customerModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="customerModalTitle">新增客户</h5>
@@ -245,8 +245,177 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">行业</label>
+                                    <select class="form-select" id="industry" name="industry">
+                                        <option value="">请选择</option>
+                                        <option value="农业">农业</option>
+                                        <option value="种业">种业</option>
+                                        <option value="生物技术">生物技术</option>
+                                        <option value="科研院所">科研院所</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">年营业额</label>
+                                    <select class="form-select" id="annualRevenue" name="annualRevenue">
+                                        <option value="">请选择</option>
+                                        <option value="100万以下">100万以下</option>
+                                        <option value="100-500万">100-500万</option>
+                                        <option value="500-1000万">500-1000万</option>
+                                        <option value="1000万以上">1000万以上</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 植物新品种保护申请信息 -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">植物新品种保护申请信息</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">品种名称</label>
+                                            <input type="text" class="form-control" id="varietyName" name="varietyName">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">品种类型</label>
+                                            <select class="form-select" id="varietyType" name="varietyType">
+                                                <option value="">请选择</option>
+                                                <option value="玉米">玉米</option>
+                                                <option value="水稻">水稻</option>
+                                                <option value="小麦">小麦</option>
+                                                <option value="大豆">大豆</option>
+                                                <option value="其他">其他</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">申请号</label>
+                                            <input type="text" class="form-control" id="applicationNumber" name="applicationNumber">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">申请日期</label>
+                                            <input type="date" class="form-control" id="applicationDate" name="applicationDate">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 培育人信息 -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">培育人信息</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">培育人姓名</label>
+                                            <input type="text" class="form-control" id="breederName" name="breederName">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">培育人单位</label>
+                                            <input type="text" class="form-control" id="breederUnit" name="breederUnit">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">培育人地址</label>
+                                            <input type="text" class="form-control" id="breederAddress" name="breederAddress">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">培育人电话</label>
+                                            <input type="text" class="form-control" id="breederPhone" name="breederPhone">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 申请人信息 -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">申请人信息</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">申请人姓名</label>
+                                            <input type="text" class="form-control" id="applicantName" name="applicantName">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">申请人单位</label>
+                                            <input type="text" class="form-control" id="applicantUnit" name="applicantUnit">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">申请人地址</label>
+                                            <input type="text" class="form-control" id="applicantAddress" name="applicantAddress">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">申请人电话</label>
+                                            <input type="text" class="form-control" id="applicantPhone" name="applicantPhone">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 其他信息 -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">其他信息</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">品种描述</label>
+                                            <textarea class="form-control" id="varietyDescription" name="varietyDescription" rows="4"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">技术特点</label>
+                                            <textarea class="form-control" id="technicalFeatures" name="technicalFeatures" rows="4"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">市场前景</label>
+                                            <textarea class="form-control" id="marketProspect" name="marketProspect" rows="4"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="mb-3">
-                            <label class="form-label">地址</label>
+                            <label class="form-label">详细地址</label>
                             <textarea class="form-control" id="address" name="address" rows="2"></textarea>
                         </div>
                         <div class="mb-3">
@@ -265,7 +434,7 @@
 
     <!-- 客户详情模态框 -->
     <div class="modal fade" id="customerDetailModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">客户详情</h5>
@@ -281,7 +450,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // 模拟客户数据
         let customers = [
@@ -343,29 +511,28 @@
 
             customers.forEach(customer => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <input type="checkbox" class="customer-checkbox" value="${customer.id}" onchange="toggleCustomerSelection(${customer.id})">
-                    </td>
-                    <td class="table-cell-truncate" title="${customer.customerName}">${customer.customerName}</td>
-                    <td class="table-cell-truncate" title="${customer.contactPerson}">${customer.contactPerson}</td>
-                    <td class="table-cell-truncate" title="${customer.phone}">${customer.phone}</td>
-                    <td class="table-cell-truncate" title="${customer.customerType}">${customer.customerType}</td>
-                    <td class="table-cell-truncate" title="${customer.applicationType}">${customer.applicationType}</td>
-                    <td class="table-cell-truncate" title="${customer.region}">${customer.region}</td>
-                    <td class="table-cell-truncate" title="${customer.createTime}">${customer.createTime}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewCustomer(${customer.id})">
-                            <i class="bi bi-eye"></i> 详情
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning me-1" onclick="editCustomer(${customer.id})">
-                            <i class="bi bi-pencil"></i> 编辑
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${customer.id})">
-                            <i class="bi bi-trash"></i> 删除
-                        </button>
-                    </td>
-                `;
+                row.innerHTML = 
+                    '<td>' +
+                        '<input type="checkbox" class="customer-checkbox" value="' + customer.id + '" onchange="toggleCustomerSelection(' + customer.id + ')">' +
+                    '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.customerName + '">' + customer.customerName + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.contactPerson + '">' + customer.contactPerson + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.phone + '">' + customer.phone + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.customerType + '">' + customer.customerType + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.applicationType + '">' + customer.applicationType + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.region + '">' + customer.region + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.createTime + '">' + customer.createTime + '</td>' +
+                    '<td>' +
+                        '<button class="btn btn-sm btn-outline-primary me-1" onclick="viewCustomer(' + customer.id + ')">' +
+                            '<i class="bi bi-eye"></i> 详情' +
+                        '</button>' +
+                        '<button class="btn btn-sm btn-outline-warning me-1" onclick="editCustomer(' + customer.id + ')">' +
+                            '<i class="bi bi-pencil"></i> 编辑' +
+                        '</button>' +
+                        '<button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(' + customer.id + ')">' +
+                            '<i class="bi bi-trash"></i> 删除' +
+                        '</button>' +
+                    '</td>';
                 tbody.appendChild(row);
             });
         }
@@ -390,29 +557,28 @@
 
             filteredCustomers.forEach(customer => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <input type="checkbox" class="customer-checkbox" value="${customer.id}" onchange="toggleCustomerSelection(${customer.id})">
-                    </td>
-                    <td class="table-cell-truncate" title="${customer.customerName}">${customer.customerName}</td>
-                    <td class="table-cell-truncate" title="${customer.contactPerson}">${customer.contactPerson}</td>
-                    <td class="table-cell-truncate" title="${customer.phone}">${customer.phone}</td>
-                    <td class="table-cell-truncate" title="${customer.customerType}">${customer.customerType}</td>
-                    <td class="table-cell-truncate" title="${customer.applicationType}">${customer.applicationType}</td>
-                    <td class="table-cell-truncate" title="${customer.region}">${customer.region}</td>
-                    <td class="table-cell-truncate" title="${customer.createTime}">${customer.createTime}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewCustomer(${customer.id})">
-                            <i class="bi bi-eye"></i> 详情
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning me-1" onclick="editCustomer(${customer.id})">
-                            <i class="bi bi-pencil"></i> 编辑
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${customer.id})">
-                            <i class="bi bi-trash"></i> 删除
-                        </button>
-                    </td>
-                `;
+                row.innerHTML = 
+                    '<td>' +
+                        '<input type="checkbox" class="customer-checkbox" value="' + customer.id + '" onchange="toggleCustomerSelection(' + customer.id + ')">' +
+                    '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.customerName + '">' + customer.customerName + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.contactPerson + '">' + customer.contactPerson + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.phone + '">' + customer.phone + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.customerType + '">' + customer.customerType + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.applicationType + '">' + customer.applicationType + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.region + '">' + customer.region + '</td>' +
+                    '<td class="table-cell-truncate" title="' + customer.createTime + '">' + customer.createTime + '</td>' +
+                    '<td>' +
+                        '<button class="btn btn-sm btn-outline-primary me-1" onclick="viewCustomer(' + customer.id + ')">' +
+                            '<i class="bi bi-eye"></i> 详情' +
+                        '</button>' +
+                        '<button class="btn btn-sm btn-outline-warning me-1" onclick="editCustomer(' + customer.id + ')">' +
+                            '<i class="bi bi-pencil"></i> 编辑' +
+                        '</button>' +
+                        '<button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(' + customer.id + ')">' +
+                            '<i class="bi bi-trash"></i> 删除' +
+                        '</button>' +
+                    '</td>';
                 tbody.appendChild(row);
             });
         }
@@ -438,42 +604,77 @@
         function viewCustomer(id) {
             const customer = customers.find(c => c.id === id);
             if (customer) {
-                const content = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>基本信息</h6>
-                            <p><strong>客户名称：</strong>${customer.customerName}</p>
-                            <p><strong>联系人：</strong>${customer.contactPerson}</p>
-                            <p><strong>电话：</strong>${customer.phone}</p>
-                            <p><strong>邮箱：</strong>${customer.email || '未填写'}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>业务信息</h6>
-                            <p><strong>客户类型：</strong>${customer.customerType}</p>
-                            <p><strong>申请性质：</strong>${customer.applicationType}</p>
-                            <p><strong>地区：</strong>${customer.region}</p>
-                            <p><strong>公司规模：</strong>${customer.companySize || '未填写'}</p>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h6>地址信息</h6>
-                            <p><strong>地址：</strong>${customer.address || '未填写'}</p>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h6>备注信息</h6>
-                            <p><strong>备注：</strong>${customer.remarks || '无'}</p>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h6>系统信息</h6>
-                            <p><strong>创建时间：</strong>${customer.createTime}</p>
-                        </div>
-                    </div>
-                `;
+                const content = 
+                    '<div class="row">' +
+                        '<div class="col-md-4">' +
+                            '<h6>基本信息</h6>' +
+                            '<p><strong>客户名称：</strong>' + customer.customerName + '</p>' +
+                            '<p><strong>联系人：</strong>' + customer.contactPerson + '</p>' +
+                            '<p><strong>电话：</strong>' + customer.phone + '</p>' +
+                            '<p><strong>邮箱：</strong>' + (customer.email || '未填写') + '</p>' +
+                            '<p><strong>公司规模：</strong>' + (customer.companySize || '未填写') + '</p>' +
+                        '</div>' +
+                        '<div class="col-md-4">' +
+                            '<h6>业务信息</h6>' +
+                            '<p><strong>客户类型：</strong>' + customer.customerType + '</p>' +
+                            '<p><strong>申请性质：</strong>' + customer.applicationType + '</p>' +
+                            '<p><strong>地区：</strong>' + customer.region + '</p>' +
+                            '<p><strong>行业：</strong>' + (customer.industry || '未填写') + '</p>' +
+                            '<p><strong>年营业额：</strong>' + (customer.annualRevenue || '未填写') + '</p>' +
+                        '</div>' +
+                        '<div class="col-md-4">' +
+                            '<h6>植物新品种保护申请信息</h6>' +
+                            '<p><strong>品种名称：</strong>' + (customer.varietyName || '未填写') + '</p>' +
+                            '<p><strong>品种类型：</strong>' + (customer.varietyType || '未填写') + '</p>' +
+                            '<p><strong>申请号：</strong>' + (customer.applicationNumber || '未填写') + '</p>' +
+                            '<p><strong>申请日期：</strong>' + (customer.applicationDate || '未填写') + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="row mt-3">' +
+                        '<div class="col-md-4">' +
+                            '<h6>培育人信息</h6>' +
+                            '<p><strong>培育人姓名：</strong>' + (customer.breederName || '未填写') + '</p>' +
+                            '<p><strong>培育人单位：</strong>' + (customer.breederUnit || '未填写') + '</p>' +
+                            '<p><strong>培育人地址：</strong>' + (customer.breederAddress || '未填写') + '</p>' +
+                            '<p><strong>培育人电话：</strong>' + (customer.breederPhone || '未填写') + '</p>' +
+                        '</div>' +
+                        '<div class="col-md-4">' +
+                            '<h6>申请人信息</h6>' +
+                            '<p><strong>申请人姓名：</strong>' + (customer.applicantName || '未填写') + '</p>' +
+                            '<p><strong>申请人单位：</strong>' + (customer.applicantUnit || '未填写') + '</p>' +
+                            '<p><strong>申请人地址：</strong>' + (customer.applicantAddress || '未填写') + '</p>' +
+                            '<p><strong>申请人电话：</strong>' + (customer.applicantPhone || '未填写') + '</p>' +
+                        '</div>' +
+                        '<div class="col-md-4">' +
+                            '<h6>系统信息</h6>' +
+                            '<p><strong>创建时间：</strong>' + customer.createTime + '</p>' +
+                            '<p><strong>最后更新：</strong>' + (customer.updateTime || customer.createTime) + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="row mt-3">' +
+                        '<div class="col-md-4">' +
+                            '<h6>品种描述</h6>' +
+                            '<p>' + (customer.varietyDescription || '未填写') + '</p>' +
+                        '</div>' +
+                        '<div class="col-md-4">' +
+                            '<h6>技术特点</h6>' +
+                            '<p>' + (customer.technicalFeatures || '未填写') + '</p>' +
+                        '</div>' +
+                        '<div class="col-md-4">' +
+                            '<h6>市场前景</h6>' +
+                            '<p>' + (customer.marketProspect || '未填写') + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="row mt-3">' +
+                        '<div class="col-md-6">' +
+                            '<h6>地址信息</h6>' +
+                            '<p><strong>详细地址：</strong>' + (customer.address || '未填写') + '</p>' +
+                        '</div>' +
+                        '<div class="col-md-6">' +
+                            '<h6>备注信息</h6>' +
+                            '<p><strong>备注：</strong>' + (customer.remarks || '无') + '</p>' +
+                        '</div>' +
+                    '</div>';
                 document.getElementById('customerDetailContent').innerHTML = content;
                 new bootstrap.Modal(document.getElementById('customerDetailModal')).show();
             }
@@ -493,6 +694,23 @@
                 document.getElementById('regionSelect').value = customer.region;
                 document.getElementById('applicationTypeSelect').value = customer.applicationType;
                 document.getElementById('companySize').value = customer.companySize || '';
+                document.getElementById('industry').value = customer.industry || '';
+                document.getElementById('annualRevenue').value = customer.annualRevenue || '';
+                document.getElementById('varietyName').value = customer.varietyName || '';
+                document.getElementById('varietyType').value = customer.varietyType || '';
+                document.getElementById('applicationNumber').value = customer.applicationNumber || '';
+                document.getElementById('applicationDate').value = customer.applicationDate || '';
+                document.getElementById('breederName').value = customer.breederName || '';
+                document.getElementById('breederUnit').value = customer.breederUnit || '';
+                document.getElementById('breederAddress').value = customer.breederAddress || '';
+                document.getElementById('breederPhone').value = customer.breederPhone || '';
+                document.getElementById('applicantName').value = customer.applicantName || '';
+                document.getElementById('applicantUnit').value = customer.applicantUnit || '';
+                document.getElementById('applicantAddress').value = customer.applicantAddress || '';
+                document.getElementById('applicantPhone').value = customer.applicantPhone || '';
+                document.getElementById('varietyDescription').value = customer.varietyDescription || '';
+                document.getElementById('technicalFeatures').value = customer.technicalFeatures || '';
+                document.getElementById('marketProspect').value = customer.marketProspect || '';
                 document.getElementById('address').value = customer.address || '';
                 document.getElementById('remarks').value = customer.remarks || '';
                 new bootstrap.Modal(document.getElementById('customerModal')).show();
@@ -513,6 +731,23 @@
                 region: formData.get('region'),
                 applicationType: formData.get('applicationType'),
                 companySize: formData.get('companySize'),
+                industry: formData.get('industry'),
+                annualRevenue: formData.get('annualRevenue'),
+                varietyName: formData.get('varietyName'),
+                varietyType: formData.get('varietyType'),
+                applicationNumber: formData.get('applicationNumber'),
+                applicationDate: formData.get('applicationDate'),
+                breederName: formData.get('breederName'),
+                breederUnit: formData.get('breederUnit'),
+                breederAddress: formData.get('breederAddress'),
+                breederPhone: formData.get('breederPhone'),
+                applicantName: formData.get('applicantName'),
+                applicantUnit: formData.get('applicantUnit'),
+                applicantAddress: formData.get('applicantAddress'),
+                applicantPhone: formData.get('applicantPhone'),
+                varietyDescription: formData.get('varietyDescription'),
+                technicalFeatures: formData.get('technicalFeatures'),
+                marketProspect: formData.get('marketProspect'),
                 address: formData.get('address'),
                 remarks: formData.get('remarks')
             };
@@ -556,7 +791,7 @@
                 return;
             }
             
-            if (confirm(`确定要删除选中的 ${selectedCustomers.length} 个客户吗？`)) {
+            if (confirm('确定要删除选中的 ' + selectedCustomers.length + ' 个客户吗？')) {
                 customers = customers.filter(c => !selectedCustomers.includes(c.id));
                 selectedCustomers = [];
                 loadCustomers();
@@ -609,10 +844,11 @@
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `customers_${new Date().toISOString().split('T')[0]}.json`;
+            link.download = 'customers_' + new Date().toISOString().split('T')[0] + '.json';
             link.click();
             URL.revokeObjectURL(url);
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
