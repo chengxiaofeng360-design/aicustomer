@@ -13,9 +13,7 @@ spring:
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url:  jdbc:mysql://bj-cynosdbmysql-grp-bbi2ygoo.sql.tencentcdb.com :26713/master_db?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
-    username: root
-    password: 1q2w3e4R
+
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
