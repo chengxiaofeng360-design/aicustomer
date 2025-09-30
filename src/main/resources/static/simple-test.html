@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>简单API测试</title>
+</head>
+<body>
+    <h1>API测试</h1>
+    <button onclick="testAPI()">测试客户API</button>
+    <div id="result"></div>
+    
+    <script>
+        function testAPI() {
+            fetch('/api/customer-profile/list?pageNum=1&pageSize=10')
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.text();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    document.getElementById('result').innerHTML = '<pre>' + data + '</pre>';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('result').innerHTML = 'Error: ' + error.message;
+                });
+        }
+    </script>
+</body>
+</html>
+
+
+

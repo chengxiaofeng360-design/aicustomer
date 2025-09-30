@@ -1,0 +1,102 @@
+# AI客户管理系统配置文件
+server:
+  port: 8080
+  servlet:
+    context-path: /ai-customer
+  tomcat:
+    uri-encoding: UTF-8
+
+spring:
+  application:
+    name: ai-customer-management
+  
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url:  jdbc:mysql://bj-cynosdbmysql-grp-bbi2ygoo.sql.tencentcdb.com :26713/master_db?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: 1q2w3e4R
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: AiCustomerHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.aicustomer.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    multiple-result-sets-enabled: true
+    use-column-label: true
+    use-generated-keys: true
+    auto-mapping-behavior: partial
+    default-executor-type: simple
+    default-statement-timeout: 25
+    default-fetch-size: 100
+    safe-row-bounds-enabled: false
+    safe-result-handler-enabled: true
+    local-cache-scope: session
+    jdbc-type-for-null: other
+    lazy-load-trigger-methods: equals,clone,hashCode,toString
+
+# 日志配置
+logging:
+  level:
+    com.aicustomer: debug
+    org.springframework.security: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/ai-customer.log
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# 自定义配置
+ai-customer:
+  # 文件存储路径
+  file:
+    upload-path: /uploads/
+    max-size: 104857600  # 100MB
+  
+  # AI服务配置
+  ai:
+    enabled: true
+    timeout: 30000  # 30秒超时
+  
+  # 系统配置
+  system:
+    name: AI客户管理系统
+    version: 1.0.0
+    author: AI Customer Management Team
+
+

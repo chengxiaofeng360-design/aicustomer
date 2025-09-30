@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户档案管理 - AI客户管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="css/common.css" rel="stylesheet">
+</head>
+<body>
+    <div class="main-container">
+        <!-- 页面头部 -->
+        <div class="page-header">
+            <div class="page-title">
+                <i class="bi bi-people-fill"></i> 客户档案管理
+            </div>
+            <a href="index.html" class="back-home-btn">
+                <i class="bi bi-house-fill"></i> 返回首页
+            </a>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">1,234</div>
+                    <div class="stats-label">客户总数</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">89%</div>
+                    <div class="stats-label">客户满意度</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">156</div>
+                    <div class="stats-label">本月新增</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">45</div>
+                    <div class="stats-label">潜在客户</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜索和筛选区域 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">客户名称</label>
+                        <input type="text" class="form-control" id="customerName" placeholder="请输入客户名称...">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">客户类型</label>
+                        <select class="form-select" id="customerType">
+                            <option value="">全部</option>
+                            <option value="个人">个人</option>
+                            <option value="企业">企业</option>
+                            <option value="科研院所">科研院所</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">申请性质</label>
+                        <select class="form-select" id="applicationType">
+                            <option value="">全部</option>
+                            <option value="新品种保护">新品种保护</option>
+                            <option value="品种审定">品种审定</option>
+                            <option value="商标注册">商标注册</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">地区</label>
+                        <select class="form-select" id="region">
+                            <option value="">全部</option>
+                            <option value="北京">北京</option>
+                            <option value="上海">上海</option>
+                            <option value="广东">广东</option>
+                            <option value="江苏">江苏</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary me-2" onclick="searchCustomers()">
+                            <i class="bi bi-search"></i> 搜索
+                        </button>
+                        <button class="btn btn-secondary me-2" onclick="resetFilters()">
+                            <i class="bi bi-arrow-clockwise"></i> 重置
+                        </button>
+                        <button class="btn btn-success" onclick="showAddCustomerModal()">
+                            <i class="bi bi-plus"></i> 新增
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮区域 -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <button class="btn btn-outline-danger me-2" onclick="batchDelete()">
+                    <i class="bi bi-trash"></i> 批量删除
+                </button>
+                <button class="btn btn-outline-secondary" onclick="refreshCustomers()">
+                    <i class="bi bi-arrow-clockwise"></i> 刷新
+                </button>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary me-2" onclick="importCustomers()">
+                    <i class="bi bi-upload"></i> 导入
+                </button>
+                <button class="btn btn-outline-success" onclick="exportCustomers()">
+                    <i class="bi bi-download"></i> 导出
+                </button>
+            </div>
+        </div>
+
+        <!-- 客户列表 -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                </th>
+                                <th>客户名称</th>
+                                <th>联系人</th>
+                                <th>电话</th>
+                                <th>客户类型</th>
+                                <th>申请性质</th>
+                                <th>地区</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerTableBody">
+                            <!-- 客户数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增/编辑客户模态框 -->
+    <div class="modal fade" id="customerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerModalTitle">新增客户</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customerForm">
+                        <input type="hidden" id="customerId" name="id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">客户名称 *</label>
+                                    <input type="text" class="form-control" id="customerNameInput" name="customerName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">联系人 *</label>
+                                    <input type="text" class="form-control" id="contactPerson" name="contactPerson" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">电话 *</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">邮箱</label>
+                                    <input type="email" class="form-control" id="email" name="email">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">客户类型 *</label>
+                                    <select class="form-select" id="customerTypeSelect" name="customerType" required>
+                                        <option value="">请选择</option>
+                                        <option value="个人">个人</option>
+                                        <option value="企业">企业</option>
+                                        <option value="科研院所">科研院所</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">地区 *</label>
+                                    <select class="form-select" id="regionSelect" name="region" required>
+                                        <option value="">请选择</option>
+                                        <option value="北京">北京</option>
+                                        <option value="上海">上海</option>
+                                        <option value="广东">广东</option>
+                                        <option value="江苏">江苏</option>
+                                        <option value="浙江">浙江</option>
+                                        <option value="山东">山东</option>
+                                        <option value="河南">河南</option>
+                                        <option value="四川">四川</option>
+                                        <option value="湖北">湖北</option>
+                                        <option value="湖南">湖南</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">申请性质 *</label>
+                                    <select class="form-select" id="applicationTypeSelect" name="applicationType" required>
+                                        <option value="">请选择</option>
+                                        <option value="新品种保护">新品种保护</option>
+                                        <option value="品种审定">品种审定</option>
+                                        <option value="商标注册">商标注册</option>
+                                        <option value="专利保护">专利保护</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">公司规模</label>
+                                    <select class="form-select" id="companySize" name="companySize">
+                                        <option value="">请选择</option>
+                                        <option value="小型企业">小型企业</option>
+                                        <option value="中型企业">中型企业</option>
+                                        <option value="大型企业">大型企业</option>
+                                        <option value="上市公司">上市公司</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">地址</label>
+                            <textarea class="form-control" id="address" name="address" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">备注</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCustomer()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 客户详情模态框 -->
+    <div class="modal fade" id="customerDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">客户详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="customerDetailContent">
+                    <!-- 客户详情内容将通过JavaScript动态加载 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 模拟客户数据
+        let customers = [
+            {
+                id: 1,
+                customerName: '张三',
+                contactPerson: '张三',
+                phone: '13612345678',
+                email: 'zhangsan@example.com',
+                customerType: '个人',
+                applicationType: '新品种保护',
+                region: '北京',
+                companySize: '',
+                address: '北京市朝阳区',
+                remarks: '种子培育专家',
+                createTime: '2024-01-15'
+            },
+            {
+                id: 2,
+                customerName: '李四农业科技有限公司',
+                contactPerson: '李四',
+                phone: '13987654321',
+                email: 'lisi@company.com',
+                customerType: '企业',
+                applicationType: '品种审定',
+                region: '上海',
+                companySize: '中型企业',
+                address: '上海市浦东新区',
+                remarks: '专业从事水稻育种',
+                createTime: '2024-01-20'
+            },
+            {
+                id: 3,
+                customerName: '王五种子研究所',
+                contactPerson: '王五',
+                phone: '13888888888',
+                email: 'wangwu@institute.com',
+                customerType: '科研院所',
+                applicationType: '专利保护',
+                region: '广东',
+                companySize: '',
+                address: '广东省广州市',
+                remarks: '国家级种子研究机构',
+                createTime: '2024-01-25'
+            }
+        ];
+
+        let selectedCustomers = [];
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCustomers();
+        });
+
+        // 加载客户列表
+        function loadCustomers() {
+            const tbody = document.getElementById('customerTableBody');
+            tbody.innerHTML = '';
+
+            customers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="customer-checkbox" value="${customer.id}" onchange="toggleCustomerSelection(${customer.id})">
+                    </td>
+                    <td class="table-cell-truncate" title="${customer.customerName}">${customer.customerName}</td>
+                    <td class="table-cell-truncate" title="${customer.contactPerson}">${customer.contactPerson}</td>
+                    <td class="table-cell-truncate" title="${customer.phone}">${customer.phone}</td>
+                    <td class="table-cell-truncate" title="${customer.customerType}">${customer.customerType}</td>
+                    <td class="table-cell-truncate" title="${customer.applicationType}">${customer.applicationType}</td>
+                    <td class="table-cell-truncate" title="${customer.region}">${customer.region}</td>
+                    <td class="table-cell-truncate" title="${customer.createTime}">${customer.createTime}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewCustomer(${customer.id})">
+                            <i class="bi bi-eye"></i> 详情
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning me-1" onclick="editCustomer(${customer.id})">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${customer.id})">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 搜索客户
+        function searchCustomers() {
+            const name = document.getElementById('customerName').value;
+            const type = document.getElementById('customerType').value;
+            const application = document.getElementById('applicationType').value;
+            const region = document.getElementById('region').value;
+
+            let filteredCustomers = customers.filter(customer => {
+                return (!name || customer.customerName.includes(name)) &&
+                       (!type || customer.customerType === type) &&
+                       (!application || customer.applicationType === application) &&
+                       (!region || customer.region === region);
+            });
+
+            // 重新渲染表格
+            const tbody = document.getElementById('customerTableBody');
+            tbody.innerHTML = '';
+
+            filteredCustomers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="customer-checkbox" value="${customer.id}" onchange="toggleCustomerSelection(${customer.id})">
+                    </td>
+                    <td class="table-cell-truncate" title="${customer.customerName}">${customer.customerName}</td>
+                    <td class="table-cell-truncate" title="${customer.contactPerson}">${customer.contactPerson}</td>
+                    <td class="table-cell-truncate" title="${customer.phone}">${customer.phone}</td>
+                    <td class="table-cell-truncate" title="${customer.customerType}">${customer.customerType}</td>
+                    <td class="table-cell-truncate" title="${customer.applicationType}">${customer.applicationType}</td>
+                    <td class="table-cell-truncate" title="${customer.region}">${customer.region}</td>
+                    <td class="table-cell-truncate" title="${customer.createTime}">${customer.createTime}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewCustomer(${customer.id})">
+                            <i class="bi bi-eye"></i> 详情
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning me-1" onclick="editCustomer(${customer.id})">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${customer.id})">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 重置筛选条件
+        function resetFilters() {
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerType').value = '';
+            document.getElementById('applicationType').value = '';
+            document.getElementById('region').value = '';
+            loadCustomers();
+        }
+
+        // 显示新增客户模态框
+        function showAddCustomerModal() {
+            document.getElementById('customerModalTitle').textContent = '新增客户';
+            document.getElementById('customerForm').reset();
+            document.getElementById('customerId').value = '';
+            new bootstrap.Modal(document.getElementById('customerModal')).show();
+        }
+
+        // 查看客户详情
+        function viewCustomer(id) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                const content = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>基本信息</h6>
+                            <p><strong>客户名称：</strong>${customer.customerName}</p>
+                            <p><strong>联系人：</strong>${customer.contactPerson}</p>
+                            <p><strong>电话：</strong>${customer.phone}</p>
+                            <p><strong>邮箱：</strong>${customer.email || '未填写'}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>业务信息</h6>
+                            <p><strong>客户类型：</strong>${customer.customerType}</p>
+                            <p><strong>申请性质：</strong>${customer.applicationType}</p>
+                            <p><strong>地区：</strong>${customer.region}</p>
+                            <p><strong>公司规模：</strong>${customer.companySize || '未填写'}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>地址信息</h6>
+                            <p><strong>地址：</strong>${customer.address || '未填写'}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>备注信息</h6>
+                            <p><strong>备注：</strong>${customer.remarks || '无'}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>系统信息</h6>
+                            <p><strong>创建时间：</strong>${customer.createTime}</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('customerDetailContent').innerHTML = content;
+                new bootstrap.Modal(document.getElementById('customerDetailModal')).show();
+            }
+        }
+
+        // 编辑客户
+        function editCustomer(id) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                document.getElementById('customerModalTitle').textContent = '编辑客户';
+                document.getElementById('customerId').value = customer.id;
+                document.getElementById('customerNameInput').value = customer.customerName;
+                document.getElementById('contactPerson').value = customer.contactPerson;
+                document.getElementById('phone').value = customer.phone;
+                document.getElementById('email').value = customer.email || '';
+                document.getElementById('customerTypeSelect').value = customer.customerType;
+                document.getElementById('regionSelect').value = customer.region;
+                document.getElementById('applicationTypeSelect').value = customer.applicationType;
+                document.getElementById('companySize').value = customer.companySize || '';
+                document.getElementById('address').value = customer.address || '';
+                document.getElementById('remarks').value = customer.remarks || '';
+                new bootstrap.Modal(document.getElementById('customerModal')).show();
+            }
+        }
+
+        // 保存客户
+        function saveCustomer() {
+            const form = document.getElementById('customerForm');
+            const formData = new FormData(form);
+            
+            const customerData = {
+                customerName: formData.get('customerName'),
+                contactPerson: formData.get('contactPerson'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                customerType: formData.get('customerType'),
+                region: formData.get('region'),
+                applicationType: formData.get('applicationType'),
+                companySize: formData.get('companySize'),
+                address: formData.get('address'),
+                remarks: formData.get('remarks')
+            };
+
+            const customerId = document.getElementById('customerId').value;
+            
+            if (customerId) {
+                // 编辑模式
+                const index = customers.findIndex(c => c.id == customerId);
+                if (index !== -1) {
+                    customers[index] = { ...customers[index], ...customerData };
+                }
+            } else {
+                // 新增模式
+                const newCustomer = {
+                    id: customers.length + 1,
+                    ...customerData,
+                    createTime: new Date().toISOString().split('T')[0]
+                };
+                customers.push(newCustomer);
+            }
+
+            loadCustomers();
+            bootstrap.Modal.getInstance(document.getElementById('customerModal')).hide();
+            alert('保存成功！');
+        }
+
+        // 删除客户
+        function deleteCustomer(id) {
+            if (confirm('确定要删除这个客户吗？')) {
+                customers = customers.filter(c => c.id !== id);
+                loadCustomers();
+                alert('删除成功！');
+            }
+        }
+
+        // 批量删除
+        function batchDelete() {
+            if (selectedCustomers.length === 0) {
+                alert('请先选择要删除的客户！');
+                return;
+            }
+            
+            if (confirm(`确定要删除选中的 ${selectedCustomers.length} 个客户吗？`)) {
+                customers = customers.filter(c => !selectedCustomers.includes(c.id));
+                selectedCustomers = [];
+                loadCustomers();
+                alert('批量删除成功！');
+            }
+        }
+
+        // 全选/取消全选
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.customer-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    if (!selectedCustomers.includes(parseInt(checkbox.value))) {
+                        selectedCustomers.push(parseInt(checkbox.value));
+                    }
+                } else {
+                    selectedCustomers = selectedCustomers.filter(id => id !== parseInt(checkbox.value));
+                }
+            });
+        }
+
+        // 切换客户选择状态
+        function toggleCustomerSelection(id) {
+            const index = selectedCustomers.indexOf(id);
+            if (index > -1) {
+                selectedCustomers.splice(index, 1);
+            } else {
+                selectedCustomers.push(id);
+            }
+        }
+
+        // 刷新客户列表
+        function refreshCustomers() {
+            loadCustomers();
+            alert('刷新成功！');
+        }
+
+        // 导入客户
+        function importCustomers() {
+            alert('导入功能开发中...');
+        }
+
+        // 导出客户
+        function exportCustomers() {
+            const dataStr = JSON.stringify(customers, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `customers_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

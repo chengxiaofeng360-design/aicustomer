@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试更新 - AI客户管理系统</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c5aa0;
+        }
+        .test-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 系统更新测试页面</h1>
+            <p>当前时间: <span id="currentTime"></span></p>
+        </div>
+        
+        <div class="test-section success">
+            <h3>�?更新内容验证</h3>
+            <ul>
+                <li><strong>客户管理表单已更�?/strong> - 添加了植物新品种保护申请相关字段</li>
+                <li><strong>消息中心已创�?/strong> - 包含快速操作和最近活�?/li>
+                <li><strong>API路径已修�?/strong> - 解决了网络连接错�?/li>
+                <li><strong>首页已优�?/strong> - 移除了快速操作和最近活动，添加了消息中心入�?/li>
+            </ul>
+        </div>
+        
+        <div class="test-section info">
+            <h3>🔧 如果看不到更新，请尝试：</h3>
+            <ol>
+                <li>�?<strong>Ctrl + F5</strong> 强制刷新浏览�?/li>
+                <li>清除浏览器缓存（Ctrl + Shift + Delete�?/li>
+                <li>在隐私模式下打开页面</li>
+                <li>检查浏览器开发者工具的网络面板，确认文件更新时�?/li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 新增的客户信息字段包括：</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                <div><strong>基本信息�?/strong>邮政编码、传�?/div>
+                <div><strong>申请人信息：</strong>机构代码、国籍、申请人性质</div>
+                <div><strong>代理机构�?/strong>机构名称、代码、地址、邮�?/div>
+                <div><strong>代理人信息：</strong>姓名、电话、传真、手机、邮�?/div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔗 快速链�?/h3>
+            <p>
+                <a href="/ai-customer/" style="margin-right: 15px;">🏠 首页</a>
+                <a href="/ai-customer/customers.html" style="margin-right: 15px;">👥 客户管理</a>
+                <a href="/ai-customer/messages.html" style="margin-right: 15px;">🔔 消息中心</a>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // 显示当前时间
+        document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-CN');
+        
+        // �?秒更新时�?
+        setInterval(function() {
+            document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-CN');
+        }, 5000);
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aicustomer.mapper.CommunicationMapper">
+
+    <resultMap id="BaseResultMap" type="com.aicustomer.entity.CommunicationRecord">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="customer_id" property="customerId" jdbcType="BIGINT"/>
+        <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
+        <result column="communication_type" property="communicationType" jdbcType="INTEGER"/>
+        <result column="communication_time" property="communicationTime" jdbcType="TIMESTAMP"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="summary" property="summary" jdbcType="VARCHAR"/>
+        <result column="importance" property="importance" jdbcType="INTEGER"/>
+        <result column="sentiment" property="sentiment" jdbcType="INTEGER"/>
+        <result column="satisfaction_score" property="satisfactionScore" jdbcType="INTEGER"/>
+        <result column="keywords" property="keywords" jdbcType="VARCHAR"/>
+        <result column="important_info" property="importantInfo" jdbcType="VARCHAR"/>
+        <result column="follow_up_task" property="followUpTask" jdbcType="VARCHAR"/>
+        <result column="task_deadline" property="taskDeadline" jdbcType="TIMESTAMP"/>
+        <result column="task_status" property="taskStatus" jdbcType="INTEGER"/>
+        <result column="communicator_id" property="communicatorId" jdbcType="BIGINT"/>
+        <result column="communicator_name" property="communicatorName" jdbcType="VARCHAR"/>
+        <result column="attachment_path" property="attachmentPath" jdbcType="VARCHAR"/>
+        <result column="channel_detail" property="channelDetail" jdbcType="VARCHAR"/>
+        <result column="duration" property="duration" jdbcType="INTEGER"/>
+        <result column="response_time" property="responseTime" jdbcType="INTEGER"/>
+        <result column="is_read" property="isRead" jdbcType="BOOLEAN"/>
+        <result column="is_processed" property="isProcessed" jdbcType="BOOLEAN"/>
+        <result column="process_result" property="processResult" jdbcType="VARCHAR"/>
+        <result column="process_time" property="processTime" jdbcType="TIMESTAMP"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+        <result column="update_by" property="updateBy" jdbcType="VARCHAR"/>
+        <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+        <result column="version" property="version" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, customer_id, customer_name, communication_type, communication_time, content, summary,
+        importance, sentiment, satisfaction_score, keywords, important_info, follow_up_task,
+        task_deadline, task_status, communicator_id, communicator_name, attachment_path,
+        channel_detail, duration, response_time, is_read, is_processed, process_result,
+        process_time, create_time, update_time, create_by, update_by, deleted, version
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM communication_record
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM communication_record
+        WHERE deleted = 0
+        <if test="record.customerId != null">
+            AND customer_id = #{record.customerId}
+        </if>
+        <if test="record.communicationType != null">
+            AND communication_type = #{record.communicationType}
+        </if>
+        <if test="record.importance != null">
+            AND importance = #{record.importance}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM communication_record
+        WHERE deleted = 0
+        <if test="record.customerId != null">
+            AND customer_id = #{record.customerId}
+        </if>
+        <if test="record.communicationType != null">
+            AND communication_type = #{record.communicationType}
+        </if>
+        <if test="record.importance != null">
+            AND importance = #{record.importance}
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM communication_record
+        WHERE deleted = 0
+        <if test="record.customerId != null">
+            AND customer_id = #{record.customerId}
+        </if>
+        <if test="record.communicationType != null">
+            AND communication_type = #{record.communicationType}
+        </if>
+        <if test="record.importance != null">
+            AND importance = #{record.importance}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="com.aicustomer.entity.CommunicationRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO communication_record (
+            customer_id, customer_name, communication_type, communication_time, content, summary,
+            importance, sentiment, satisfaction_score, keywords, important_info, follow_up_task,
+            task_deadline, task_status, communicator_id, communicator_name, attachment_path,
+            channel_detail, duration, response_time, is_read, is_processed, process_result,
+            process_time, create_time, update_time, create_by, update_by, deleted, version
+        ) VALUES (
+            #{customerId}, #{customerName}, #{communicationType}, #{communicationTime}, #{content}, #{summary},
+            #{importance}, #{sentiment}, #{satisfactionScore}, #{keywords}, #{importantInfo}, #{followUpTask},
+            #{taskDeadline}, #{taskStatus}, #{communicatorId}, #{communicatorName}, #{attachmentPath},
+            #{channelDetail}, #{duration}, #{responseTime}, #{isRead}, #{isProcessed}, #{processResult},
+            #{processTime}, #{createTime}, #{updateTime}, #{createBy}, #{updateBy}, #{deleted}, #{version}
+        )
+    </insert>
+
+    <update id="updateById" parameterType="com.aicustomer.entity.CommunicationRecord">
+        UPDATE communication_record
+        SET customer_id = #{customerId},
+            customer_name = #{customerName},
+            communication_type = #{communicationType},
+            communication_time = #{communicationTime},
+            content = #{content},
+            summary = #{summary},
+            importance = #{importance},
+            sentiment = #{sentiment},
+            satisfaction_score = #{satisfactionScore},
+            keywords = #{keywords},
+            important_info = #{importantInfo},
+            follow_up_task = #{followUpTask},
+            task_deadline = #{taskDeadline},
+            task_status = #{taskStatus},
+            communicator_id = #{communicatorId},
+            communicator_name = #{communicatorName},
+            attachment_path = #{attachmentPath},
+            channel_detail = #{channelDetail},
+            duration = #{duration},
+            response_time = #{responseTime},
+            is_read = #{isRead},
+            is_processed = #{isProcessed},
+            process_result = #{processResult},
+            process_time = #{processTime},
+            update_time = #{updateTime},
+            update_by = #{updateBy},
+            version = version + 1
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <update id="deleteById">
+        UPDATE communication_record
+        SET deleted = 1, update_time = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <select id="selectByCustomerId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM communication_record
+        WHERE customer_id = #{customerId} AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <update id="markAsImportant">
+        UPDATE communication_record
+        SET importance = #{important} ? 3 : 1, update_time = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+</mapper>
+
+
+
