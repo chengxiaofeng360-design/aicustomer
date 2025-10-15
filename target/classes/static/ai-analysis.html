@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI智能分析 - AI客户管理系统</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="/ai-customer/css/common.css" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-container">
@@ -16,7 +16,7 @@
             <div class="page-title">
                 <i class="bi bi-graph-up"></i> AI智能分析
             </div>
-            <a href="/ai-customer/" class="back-home-btn">
+            <a href="/" class="back-home-btn">
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
@@ -134,7 +134,7 @@
                 <div class="row mt-3">
                     <div class="col-12">
                         <h6>分析洞察</h6>
-                        <div class="insight-content">基于数据分析，该客户表现出良好的合作潜力，建议加强沟通频率，提供个性化服务方案。客户在${getAnalysisTypeName(document.getElementById('analysisType').value)}方面表现优秀，具有较高的商业价值。</div>
+                        <div class="insight-content" id="insightContent">基于数据分析，该客户表现出良好的合作潜力，建议加强沟通频率，提供个性化服务方案。客户在行为分析方面表现优秀，具有较高的商业价值。</div>
                     </div>
                 </div>
             </div>
@@ -187,7 +187,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script>
         // 模拟分析数据
         let analysisHistory = [
@@ -284,6 +284,11 @@
             // 显示分析结果区域
             document.getElementById('analysisResult').style.display = 'block';
             
+            // 动态更新分析洞察内容
+            const analysisTypeName = getAnalysisTypeName(analysisType);
+            const insightContent = `基于数据分析，该客户表现出良好的合作潜力，建议加强沟通频率，提供个性化服务方案。客户在${analysisTypeName}方面表现优秀，具有较高的商业价值。`;
+            document.getElementById('insightContent').textContent = insightContent;
+            
             // 模拟分析过程
             setTimeout(() => {
                 // 创建新的分析记录
@@ -295,8 +300,8 @@
                     dataRange: dataRange + '天',
                     accuracy: Math.floor(Math.random() * 20) + 80,
                     status: 'completed',
-                    result: `基于${dataRange}天的数据分析，${getAnalysisTypeName(analysisType)}结果显示客户表现良好。`,
-                    insights: '建议继续加强客户关系维护，提供个性化服务。'
+                    result: `基于${dataRange}天的数据分析，${analysisTypeName}结果显示客户表现良好。`,
+                    insights: insightContent
                 };
                 
                 analysisHistory.unshift(newAnalysis);

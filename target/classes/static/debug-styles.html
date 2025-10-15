@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI客户管理系统 - 本地样式测试</title>
+    <link href="/css/common.css" rel="stylesheet">
+    <style>
+        /* 内联样式确保显示 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info">
+        CSS测试页面<br>
+        时间: <span id="time"></span>
+    </div>
+    
+    <div class="main-container">
+        <div class="header">
+            <h1><i class="bi bi-robot"></i> AI客户管理系统</h1>
+            <p>智能化客户关系管理，提升业务效率</p>
+        </div>
+
+        <div class="function-grid">
+            <div class="function-card" onclick="alert('客户管理点击')">
+                <div class="function-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="function-title">客户档案管理</div>
+                <div class="function-desc">全面管理客户信息，提升客户关系价值</div>
+            </div>
+
+            <div class="function-card" onclick="alert('沟通记录点击')">
+                <div class="function-icon">
+                    <i class="bi bi-chat-dots-fill"></i>
+                </div>
+                <div class="function-title">沟通记录管理</div>
+                <div class="function-desc">记录和管理与客户的所有沟通历史</div>
+            </div>
+
+            <div class="function-card" onclick="alert('消息中心点击')">
+                <div class="function-icon">
+                    <i class="bi bi-bell-fill"></i>
+                </div>
+                <div class="function-title">消息中心</div>
+                <div class="function-desc">快速操作、最近活动和系统通知</div>
+            </div>
+
+            <div class="function-card" onclick="alert('团队协作点击')">
+                <div class="function-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="function-title">团队协作</div>
+                <div class="function-desc">团队成员管理和任务协作</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('time').textContent = new Date().toLocaleTimeString();
+        
+        // 检查CSS是否加载
+        setTimeout(function() {
+            const testElement = document.querySelector('.main-container');
+            const computedStyle = window.getComputedStyle(testElement);
+            console.log('Background:', computedStyle.background);
+            console.log('Padding:', computedStyle.padding);
+            
+            if (computedStyle.background.includes('gradient')) {
+                console.log('✅ CSS样式正常加载');
+            } else {
+                console.log('❌ CSS样式可能未正确加载');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
+
+
+
