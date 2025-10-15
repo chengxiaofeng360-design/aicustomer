@@ -58,6 +58,37 @@
             animation: fadeInDown 0.8s ease-out;
         }
         
+        /* 右上角导图按钮 */
+        .mindmap-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .mindmap-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .mindmap-btn i {
+            margin-right: 6px;
+            font-size: 0.8rem;
+        }
+        
         .modern-header h1 {
             font-size: 3.5rem;
             font-weight: 700;
@@ -252,6 +283,11 @@
 </head>
 <body>
     <div class="modern-container">
+        <!-- 右上角导图按钮 -->
+        <a href="feature-mindmap.html" class="mindmap-btn">
+            <i class="bi bi-diagram-3"></i>导图
+        </a>
+        
         <!-- 现代化头部 -->
         <div class="modern-header">
             <h1><i class="bi bi-robot"></i> AI客户管理系统</h1>
@@ -336,6 +372,7 @@
                 <div class="modern-card-title">AI智能聊天</div>
                 <div class="modern-card-desc">24小时智能客服，即时响应</div>
             </div>
+
 
         </div>
 
