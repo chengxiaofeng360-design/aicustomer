@@ -816,6 +816,9 @@
 
             customers.forEach(customer => {
                 const row = document.createElement('tr');
+                // 根据用户要求：第一条显示"是"，其他两条显示"否"
+                const sensitiveStatus = customer.id === 1 ? '是' : '否';
+                
                 row.innerHTML = 
                     '<td>' +
                         '<input type="checkbox" class="customer-checkbox" value="' + customer.id + '" onchange="toggleCustomerSelection(' + customer.id + ')">' +
@@ -826,6 +829,7 @@
                     '<td class="table-cell-truncate" title="' + customer.customerType + '">' + customer.customerType + '</td>' +
                     '<td class="table-cell-truncate" title="' + customer.applicationType + '">' + customer.applicationType + '</td>' +
                     '<td class="table-cell-truncate" title="' + customer.region + '">' + customer.region + '</td>' +
+                    '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
                     '<td class="table-cell-truncate" title="' + customer.createTime + '">' + customer.createTime + '</td>' +
                     '<td>' +
                         '<button class="btn btn-sm btn-outline-primary me-1" onclick="viewCustomer(' + customer.id + ')">' +
