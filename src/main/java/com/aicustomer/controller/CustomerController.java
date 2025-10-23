@@ -4,6 +4,7 @@ import com.aicustomer.common.PageResult;
 import com.aicustomer.common.Result;
 import com.aicustomer.entity.Customer;
 import com.aicustomer.service.CustomerService;
+import com.aicustomer.service.SensitiveDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ import java.util.List;
 public class CustomerController {
     
     private final CustomerService customerService;
+    private final SensitiveDataService sensitiveDataService;
     
     /**
      * 根据ID查询客户
@@ -29,7 +31,9 @@ public class CustomerController {
     public Result<Customer> getById(@PathVariable Long id) {
         Customer customer = customerService.getById(id);
         if (customer != null) {
-            return Result.success(customer);
+            // 对敏感数据进行脱敏处理
+            Customer maskedCustomer = sensitiveDataService.maskSensitiveData(customer);
+            return Result.success(maskedCustomer);
         }
         return Result.error("客户不存在");
     }
@@ -52,7 +56,11 @@ public class CustomerController {
     @GetMapping("/list")
     public Result<List<Customer>> list(Customer customer) {
         List<Customer> list = customerService.list(customer);
-        return Result.success(list);
+        // 对敏感数据进行脱敏处理
+        List<Customer> maskedList = list.stream()
+                .map(sensitiveDataService::maskSensitiveData)
+                .collect(java.util.stream.Collectors.toList());
+        return Result.success(maskedList);
     }
     
     /**
@@ -63,6 +71,11 @@ public class CustomerController {
                                            @RequestParam(defaultValue = "10") Integer pageSize,
                                            Customer customer) {
         PageResult<Customer> pageResult = customerService.page(pageNum, pageSize, customer);
+        // 对敏感数据进行脱敏处理
+        List<Customer> maskedList = pageResult.getList().stream()
+                .map(sensitiveDataService::maskSensitiveData)
+                .collect(java.util.stream.Collectors.toList());
+        pageResult.setList(maskedList);
         return Result.success(pageResult);
     }
     
@@ -117,5 +130,36 @@ public class CustomerController {
             return Result.success("客户批量删除成功");
         }
         return Result.error("客户批量删除失败");
+    }
+    
+    /**
+     * 验证敏感数据保护密码
+     */
+    @PostMapping("/{id}/verify-password")
+    public Result<Boolean> verifyPassword(@PathVariable Long id, @RequestBody String password) {
+        try {
+            boolean isValid = sensitiveDataService.verifyProtectionPassword(id, password);
+            return Result.success(isValid);
+        } catch (Exception e) {
+            return Result.error("密码验证失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 获取完整的敏感客户数据（需要密码验证）
+     */
+    @PostMapping("/{id}/full")
+    public Result<Customer> getByIdWithPassword(@PathVariable Long id, @RequestBody String password) {
+        try {
+            boolean isValid = sensitiveDataService.verifyProtectionPassword(id, password);
+            if (isValid) {
+                Customer customer = customerService.getById(id);
+                return Result.success(customer);
+            } else {
+                return Result.error("密码错误");
+            }
+        } catch (Exception e) {
+            return Result.error("获取数据失败: " + e.getMessage());
+        }
     }
 }

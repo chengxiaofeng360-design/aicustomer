@@ -2,171 +2,152 @@ package com.aicustomer.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * 团队任务实体类
- * 
+ *
  * @author AI Customer Management System
  * @version 1.0.0
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class TeamTask extends BaseEntity {
-    
+
     /**
-     * 任务标题
+     * 任务名称
      */
-    private String title;
-    
+    private String name;
+
     /**
      * 任务描述
      */
     private String description;
-    
-    /**
-     * 任务类型 (1:客户跟进, 2:项目推进, 3:问题处理, 4:会议安排, 5:其他)
-     */
-    private Integer taskType;
-    
-    /**
-     * 任务状态 (1:待分配, 2:进行中, 3:待审核, 4:已完成, 5:已取消)
-     */
-    private Integer status;
-    
-    /**
-     * 优先级 (1:低, 2:中, 3:高, 4:紧急)
-     */
-    private Integer priority;
-    
-    /**
-     * 关联客户ID
-     */
-    private Long customerId;
-    
-    /**
-     * 关联客户姓名
-     */
-    private String customerName;
-    
-    /**
-     * 创建人ID
-     */
-    private Long creatorId;
-    
-    /**
-     * 创建人姓名
-     */
-    private String creatorName;
-    
+
     /**
      * 负责人ID
      */
     private Long assigneeId;
-    
+
     /**
      * 负责人姓名
      */
     private String assigneeName;
-    
+
     /**
-     * 开始时间
+     * 优先级 (1:高, 2:中, 3:低)
      */
-    private LocalDateTime startTime;
-    
+    private Integer priority;
+
     /**
-     * 截止时间
+     * 任务状态 (1:待开始, 2:进行中, 3:已完成, 4:已暂停, 5:已取消)
      */
-    private LocalDateTime deadline;
-    
+    private Integer status;
+
     /**
-     * 完成时间
-     */
-    private LocalDateTime completedTime;
-    
-    /**
-     * 预计工时 (小时)
-     */
-    private Integer estimatedHours;
-    
-    /**
-     * 实际工时 (小时)
-     */
-    private Integer actualHours;
-    
-    /**
-     * 任务进度 (0-100%)
+     * 完成进度 (%)
      */
     private Integer progress;
-    
-    /**
-     * 完成结果
-     */
-    private String result;
-    
-    /**
-     * 备注
-     */
-    private String remark;
-    
-    /**
-     * 父任务ID
-     */
-    private Long parentTaskId;
-    
-    /**
-     * 任务层级
-     */
-    private Integer level;
-    
-    /**
-     * 是否需要审批
-     */
-    private Boolean needApproval;
-    
-    /**
-     * 审批人ID
-     */
-    private Long approverId;
-    
-    /**
-     * 审批人姓名
-     */
-    private String approverName;
-    
-    /**
-     * 审批时间
-     */
-    private LocalDateTime approvalTime;
-    
-    /**
-     * 审批结果 (1:通过, 2:拒绝, 3:待审批)
-     */
-    private Integer approvalResult;
-    
-    /**
-     * 审批意见
-     */
-    private String approvalComment;
-    
-    /**
-     * 任务标签
-     */
-    private String tags;
-    
-    /**
-     * 关联文件路径
-     */
-    private String attachmentPath;
-    
-    /**
-     * 是否公开
-     */
-    private Boolean isPublic;
-    
-    /**
-     * 可见用户ID列表 (多个用逗号分隔)
-     */
-    private String visibleUserIds;
-}
 
+    /**
+     * 开始日期
+     */
+    private LocalDate startDate;
+
+    /**
+     * 结束日期
+     */
+    private LocalDate endDate;
+
+    /**
+     * 工作模式 (1:办公室, 2:远程, 3:混合)
+     */
+    private Integer workMode;
+
+    /**
+     * 预计工作时长 (分钟)
+     */
+    private Integer workDuration;
+
+    /**
+     * 实际开始时间
+     */
+    private LocalDateTime actualStartTime;
+
+    /**
+     * 实际结束时间
+     */
+    private LocalDateTime actualEndTime;
+
+    /**
+     * 工作状态 (1:工作中, 2:休息中, 3:会议中, 4:离线, 5:异常)
+     */
+    private Integer workStatus;
+
+    /**
+     * 最后活跃时间
+     */
+    private LocalDateTime lastActiveTime;
+
+    /**
+     * 工作地点
+     */
+    private String workLocation;
+
+    /**
+     * 工作证据 (图片、文档等)
+     */
+    private String workEvidence;
+
+    /**
+     * 工作日志
+     */
+    private String workLog;
+
+    /**
+     * 监督人ID
+     */
+    private Long supervisorId;
+
+    /**
+     * 监督人姓名
+     */
+    private String supervisorName;
+
+    /**
+     * 是否需要监督
+     */
+    private Boolean needSupervision;
+
+    /**
+     * 监督间隔 (分钟)
+     */
+    private Integer supervisionInterval;
+
+    /**
+     * 最后监督时间
+     */
+    private LocalDateTime lastSupervisionTime;
+
+    /**
+     * 质量评分 (1-5分)
+     */
+    private Integer qualityScore;
+
+    /**
+     * 效率评分 (1-5分)
+     */
+    private Integer efficiencyScore;
+
+    /**
+     * 态度评分 (1-5分)
+     */
+    private Integer attitudeScore;
+
+    /**
+     * 监督备注
+     */
+    private String supervisionNote;
+}

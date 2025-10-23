@@ -26,32 +26,30 @@ public class TeamCollaborationServiceImpl implements TeamCollaborationService {
         // 创建模拟数据
         TeamTask task1 = new TeamTask();
         task1.setId(1L);
-        task1.setTaskType(1); // 1:客户跟进
-        task1.setTitle("客户张三跟进");
+        task1.setName("客户张三跟进");
         task1.setDescription("负责客户张三的日常跟进工作");
         task1.setStatus(taskStatus != null ? 2 : 2); // 2:进行中
         task1.setPriority(priority != null ? 3 : 3); // 3:高
         task1.setAssigneeName(assignee != null ? assignee : "李经理");
-        task1.setCreatorName("王总");
-        task1.setCustomerId(1L);
+        task1.setAssigneeId(1L);
         task1.setProgress(60);
         task1.setCreateTime(LocalDateTime.now());
-        task1.setDeadline(LocalDateTime.now().plusDays(15));
+        task1.setStartDate(LocalDateTime.now().toLocalDate());
+        task1.setEndDate(LocalDateTime.now().plusDays(15).toLocalDate());
         tasks.add(task1);
         
         TeamTask task2 = new TeamTask();
         task2.setId(2L);
-        task2.setTaskType(2); // 2:项目推进
-        task2.setTitle("合同审核");
+        task2.setName("合同审核");
         task2.setDescription("审核客户李四的合同条款");
         task2.setStatus(1); // 1:待分配
         task2.setPriority(2); // 2:中
         task2.setAssigneeName("张助理");
-        task2.setCreatorName("李经理");
-        task2.setCustomerId(2L);
+        task2.setAssigneeId(2L);
         task2.setProgress(0);
         task2.setCreateTime(LocalDateTime.now());
-        task2.setDeadline(LocalDateTime.now().plusDays(10));
+        task2.setStartDate(LocalDateTime.now().toLocalDate());
+        task2.setEndDate(LocalDateTime.now().plusDays(10).toLocalDate());
         tasks.add(task2);
         
         PageResult<TeamTask> result = new PageResult<>();
@@ -68,24 +66,23 @@ public class TeamCollaborationServiceImpl implements TeamCollaborationService {
         // 模拟数据
         TeamTask task = new TeamTask();
         task.setId(id);
-        task.setTaskType(1); // 1:客户跟进
-        task.setTitle("客户张三跟进");
+        task.setName("客户张三跟进");
         task.setDescription("负责客户张三的日常跟进工作");
         task.setStatus(2); // 2:进行中
         task.setPriority(3); // 3:高
         task.setAssigneeName("李经理");
-        task.setCreatorName("王总");
-        task.setCustomerId(1L);
+        task.setAssigneeId(1L);
         task.setProgress(60);
         task.setCreateTime(LocalDateTime.now());
-        task.setDeadline(LocalDateTime.now().plusDays(15));
+        task.setStartDate(LocalDateTime.now().toLocalDate());
+        task.setEndDate(LocalDateTime.now().plusDays(15).toLocalDate());
         return task;
     }
 
     @Override
     public void createTeamTask(TeamTask task) {
         // 实际项目中应该保存到数据库
-        System.out.println("创建团队任务: " + task.getTitle());
+        System.out.println("创建团队任务: " + task.getName());
     }
 
     @Override
@@ -125,17 +122,16 @@ public class TeamCollaborationServiceImpl implements TeamCollaborationService {
         
         TeamTask task = new TeamTask();
         task.setId(1L);
-        task.setTaskType(1); // 1:客户跟进
-        task.setTitle("客户张三跟进");
+        task.setName("客户张三跟进");
         task.setDescription("负责客户张三的日常跟进工作");
         task.setStatus(status != null ? 2 : 2); // 2:进行中
         task.setPriority(3); // 3:高
         task.setAssigneeName("当前用户");
-        task.setCreatorName("王总");
-        task.setCustomerId(1L);
+        task.setAssigneeId(1L);
         task.setProgress(60);
         task.setCreateTime(LocalDateTime.now());
-        task.setDeadline(LocalDateTime.now().plusDays(15));
+        task.setStartDate(LocalDateTime.now().toLocalDate());
+        task.setEndDate(LocalDateTime.now().plusDays(15).toLocalDate());
         tasks.add(task);
         
         return tasks;
@@ -148,17 +144,16 @@ public class TeamCollaborationServiceImpl implements TeamCollaborationService {
         
         TeamTask task = new TeamTask();
         task.setId(2L);
-        task.setTaskType(2); // 2:项目推进
-        task.setTitle("合同审核");
+        task.setName("合同审核");
         task.setDescription("审核客户李四的合同条款");
         task.setStatus(status != null ? 1 : 1); // 1:待分配
         task.setPriority(2); // 2:中
         task.setAssigneeName("张助理");
-        task.setCreatorName("当前用户");
-        task.setCustomerId(2L);
+        task.setAssigneeId(2L);
         task.setProgress(0);
         task.setCreateTime(LocalDateTime.now());
-        task.setDeadline(LocalDateTime.now().plusDays(10));
+        task.setStartDate(LocalDateTime.now().toLocalDate());
+        task.setEndDate(LocalDateTime.now().plusDays(10).toLocalDate());
         tasks.add(task);
         
         return tasks;
@@ -171,17 +166,16 @@ public class TeamCollaborationServiceImpl implements TeamCollaborationService {
         
         TeamTask task = new TeamTask();
         task.setId(1L);
-        task.setTaskType(1); // 1:客户跟进
-        task.setTitle("客户跟进");
+        task.setName("客户跟进");
         task.setDescription("负责客户的日常跟进工作");
         task.setStatus(2); // 2:进行中
         task.setPriority(3); // 3:高
         task.setAssigneeName("李经理");
-        task.setCreatorName("王总");
-        task.setCustomerId(customerId);
+        task.setAssigneeId(1L);
         task.setProgress(60);
         task.setCreateTime(LocalDateTime.now());
-        task.setDeadline(LocalDateTime.now().plusDays(15));
+        task.setStartDate(LocalDateTime.now().toLocalDate());
+        task.setEndDate(LocalDateTime.now().plusDays(15).toLocalDate());
         tasks.add(task);
         
         return tasks;

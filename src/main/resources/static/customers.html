@@ -152,6 +152,7 @@
                                 <th>客户类型</th>
                                 <th>申请性质</th>
                                 <th>地区</th>
+                                <th>敏感信息</th>
                                 <th>创建时间</th>
                                 <th>操作</th>
                             </tr>
@@ -571,6 +572,34 @@
         </div>
     </div>
 
+    <!-- 密码验证模态框 -->
+    <div class="modal fade" id="passwordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-shield-lock me-2"></i>敏感信息保护
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        此客户信息包含敏感数据，需要输入保护密码才能查看完整信息。
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">保护密码</label>
+                        <input type="password" class="form-control" id="protectionPassword" placeholder="请输入保护密码">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="verifyPassword()">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 文件上传批量导入模态框 -->
     <div class="modal fade" id="fileUploadModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
@@ -666,35 +695,36 @@
         let customers = [
             {
                 id: 1,
-                customerName: '张三',
-                contactPerson: '张三',
-                phone: '13612345678',
-                email: 'zhangsan@example.com',
-                customerType: '个人',
-                applicationType: '新品种保护',
-                region: '北京',
-                companySize: '',
-                industry: '农业',
-                annualRevenue: '100万以下',
-                varietyName: '京优1号玉米',
-                varietyType: '玉米',
-                applicationNumber: 'CNA2024001234',
+                customerName: 'ABC科技有限公司',
+                contactPerson: '张*',
+                phone: '138*******8',
+                email: 'zhangwei@abctech.com',
+                customerType: '企业',
+                applicationType: '品种审定',
+                region: '广东',
+                companySize: '大型企业',
+                industry: '科技',
+                annualRevenue: '1000万以上',
+                varietyName: 'ABC科技产品',
+                varietyType: '科技产品',
+                applicationNumber: 'CNA2024001001',
                 applicationDate: '2024-01-15',
-                breederName: '张三',
-                breederUnit: '个人育种',
-                breederAddress: '北京市朝阳区农业科技园',
-                breederPhone: '13612345678',
-                applicantName: '张三',
-                applicantUnit: '个人申请',
-                applicantAddress: '北京市朝阳区农业科技园A座101室',
-                applicantPhone: '13612345678',
-                varietyDescription: '京优1号玉米是我经过5年精心培育的高产优质玉米品种，具有抗病性强、适应性广、产量高等特点。该品种在华北地区表现优异，平均亩产可达800公斤以上，比对照品种增产15%以上。',
-                technicalFeatures: '1. 抗病性强：对玉米大斑病、小斑病、茎腐病等主要病害具有良好抗性；2. 适应性广：适合华北、东北等地区种植；3. 产量高：平均亩产800公斤以上；4. 品质优：籽粒饱满，蛋白质含量高；5. 抗倒伏：株高适中，抗倒伏能力强。',
-                marketProspect: '随着人们对优质粮食需求的增加，京优1号玉米具有广阔的市场前景。预计未来3-5年内，该品种在华北地区的推广面积可达100万亩以上，年产值超过8亿元。同时，该品种还可作为饲料玉米，满足畜牧业发展需求。',
-                address: '北京市朝阳区农业科技园A座101室',
-                remarks: '种子培育专家，从事玉米育种工作20余年，具有丰富的育种经验和技术积累。该品种已通过初步试验，表现优异，具有很好的推广价值。',
+                breederName: '张*',
+                breederUnit: 'ABC科技有限公司',
+                breederAddress: '广东省深圳市南山区科技园',
+                breederPhone: '138*******8',
+                applicantName: '张*',
+                applicantUnit: 'ABC科技有限公司',
+                applicantAddress: '广东省深圳市南山区科技园',
+                applicantPhone: '138*******8',
+                varietyDescription: 'ABC科技有限公司是一家专注于科技创新的企业，致力于为客户提供优质的科技产品和服务。公司拥有强大的研发团队和先进的技术设备。',
+                technicalFeatures: '1. 技术创新：拥有多项专利技术和核心技术；2. 产品质量：严格的质量控制体系；3. 服务完善：提供全方位的技术支持；4. 市场领先：在行业内具有领先地位；5. 持续发展：不断投入研发，保持技术优势。',
+                marketProspect: '随着科技行业的快速发展，ABC科技有限公司具有广阔的市场前景。预计未来几年内，公司将继续保持快速增长，为客户提供更多优质的科技产品和服务。',
+                address: '广东省深圳市南山区科技园',
+                remarks: '重要客户，需要重点关注。公司规模大，业务范围广，是重要的合作伙伴。',
                 createTime: '2024-01-15',
-                updateTime: '2024-01-20'
+                updateTime: '2024-01-20',
+                isSensitive: true
             },
             {
                 id: 2,
@@ -726,7 +756,8 @@
                 address: '上海市浦东新区农业科技园B座201室',
                 remarks: '专业从事水稻育种，公司成立15年，拥有完善的育种体系和丰富的品种资源。该品种已通过区域试验，表现优异。',
                 createTime: '2024-01-20',
-                updateTime: '2024-01-25'
+                updateTime: '2024-01-25',
+                isSensitive: false
             },
             {
                 id: 3,
@@ -1751,117 +1782,137 @@
         function viewCustomer(id) {
             const customer = customers.find(c => c.id === id);
             if (customer) {
-                const content = 
-                    '<div class="row">' +
-                        '<div class="col-md-4">' +
-                            '<h6>基本信息</h6>' +
-                            '<p><strong>客户名称：</strong>' + customer.customerName + '</p>' +
-                            '<p><strong>联系人：</strong>' + customer.contactPerson + '</p>' +
-                            '<p><strong>电话：</strong>' + customer.phone + '</p>' +
-                            '<p><strong>邮箱：</strong>' + (customer.email || '未填写') + '</p>' +
-                            '<p><strong>公司规模：</strong>' + (customer.companySize || '未填写') + '</p>' +
-                        '</div>' +
-                        '<div class="col-md-4">' +
-                            '<h6>业务信息</h6>' +
-                            '<p><strong>客户类型：</strong>' + customer.customerType + '</p>' +
-                            '<p><strong>申请性质：</strong>' + customer.applicationType + '</p>' +
-                            '<p><strong>地区：</strong>' + customer.region + '</p>' +
-                            '<p><strong>行业：</strong>' + (customer.industry || '未填写') + '</p>' +
-                            '<p><strong>年营业额：</strong>' + (customer.annualRevenue || '未填写') + '</p>' +
-                        '</div>' +
-                        '<div class="col-md-4">' +
-                            '<h6>植物新品种保护申请信息</h6>' +
-                            '<p><strong>品种名称：</strong>' + (customer.varietyName || '未填写') + '</p>' +
-                            '<p><strong>品种类型：</strong>' + (customer.varietyType || '未填写') + '</p>' +
-                            '<p><strong>申请号：</strong>' + (customer.applicationNumber || '未填写') + '</p>' +
-                            '<p><strong>申请日期：</strong>' + (customer.applicationDate || '未填写') + '</p>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="row mt-3">' +
-                        '<div class="col-md-4">' +
-                            '<h6>培育人信息</h6>' +
-                            '<p><strong>培育人姓名：</strong>' + (customer.breederName || '未填写') + '</p>' +
-                            '<p><strong>培育人单位：</strong>' + (customer.breederUnit || '未填写') + '</p>' +
-                            '<p><strong>培育人地址：</strong>' + (customer.breederAddress || '未填写') + '</p>' +
-                            '<p><strong>培育人电话：</strong>' + (customer.breederPhone || '未填写') + '</p>' +
-                        '</div>' +
-                        '<div class="col-md-4">' +
-                            '<h6>申请人信息</h6>' +
-                            '<p><strong>申请人姓名：</strong>' + (customer.applicantName || '未填写') + '</p>' +
-                            '<p><strong>申请人单位：</strong>' + (customer.applicantUnit || '未填写') + '</p>' +
-                            '<p><strong>申请人地址：</strong>' + (customer.applicantAddress || '未填写') + '</p>' +
-                            '<p><strong>申请人电话：</strong>' + (customer.applicantPhone || '未填写') + '</p>' +
-                        '</div>' +
-                        '<div class="col-md-4">' +
-                            '<h6>系统信息</h6>' +
-                            '<p><strong>创建时间：</strong>' + customer.createTime + '</p>' +
-                            '<p><strong>最后更新：</strong>' + (customer.updateTime || customer.createTime) + '</p>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="row mt-3">' +
-                        '<div class="col-md-4">' +
-                            '<h6>品种描述</h6>' +
-                            '<p>' + (customer.varietyDescription || '未填写') + '</p>' +
-                        '</div>' +
-                        '<div class="col-md-4">' +
-                            '<h6>技术特点</h6>' +
-                            '<p>' + (customer.technicalFeatures || '未填写') + '</p>' +
-                        '</div>' +
-                        '<div class="col-md-4">' +
-                            '<h6>市场前景</h6>' +
-                            '<p>' + (customer.marketProspect || '未填写') + '</p>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="row mt-3">' +
-                        '<div class="col-md-6">' +
-                            '<h6>地址信息</h6>' +
-                            '<p><strong>详细地址：</strong>' + (customer.address || '未填写') + '</p>' +
-                        '</div>' +
-                        '<div class="col-md-6">' +
-                            '<h6>备注信息</h6>' +
-                            '<p><strong>备注：</strong>' + (customer.remarks || '无') + '</p>' +
-                        '</div>' +
-                    '</div>';
-                document.getElementById('customerDetailContent').innerHTML = content;
-                new bootstrap.Modal(document.getElementById('customerDetailModal')).show();
+                // 检查是否为敏感数据
+                if (customer.isSensitive) {
+                    currentCustomerId = id;
+                    showPasswordModal();
+                    return;
+                }
+                
+                showCustomerDetail(customer);
             }
         }
-
-        // 编辑客户
+        
+        function showCustomerDetail(customer) {
+            const content = 
+                '<div class="row">' +
+                    '<div class="col-md-4">' +
+                        '<h6>基本信息</h6>' +
+                        '<p><strong>客户名称：</strong>' + customer.customerName + '</p>' +
+                        '<p><strong>联系人：</strong>' + customer.contactPerson + '</p>' +
+                        '<p><strong>电话：</strong>' + customer.phone + '</p>' +
+                        '<p><strong>邮箱：</strong>' + (customer.email || '未填写') + '</p>' +
+                        '<p><strong>公司规模：</strong>' + (customer.companySize || '未填写') + '</p>' +
+                    '</div>' +
+                    '<div class="col-md-4">' +
+                        '<h6>业务信息</h6>' +
+                        '<p><strong>客户类型：</strong>' + customer.customerType + '</p>' +
+                        '<p><strong>申请性质：</strong>' + customer.applicationType + '</p>' +
+                        '<p><strong>地区：</strong>' + customer.region + '</p>' +
+                        '<p><strong>行业：</strong>' + (customer.industry || '未填写') + '</p>' +
+                        '<p><strong>年营业额：</strong>' + (customer.annualRevenue || '未填写') + '</p>' +
+                    '</div>' +
+                    '<div class="col-md-4">' +
+                        '<h6>植物新品种保护申请信息</h6>' +
+                        '<p><strong>品种名称：</strong>' + (customer.varietyName || '未填写') + '</p>' +
+                        '<p><strong>品种类型：</strong>' + (customer.varietyType || '未填写') + '</p>' +
+                        '<p><strong>申请号：</strong>' + (customer.applicationNumber || '未填写') + '</p>' +
+                        '<p><strong>申请日期：</strong>' + (customer.applicationDate || '未填写') + '</p>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="row mt-3">' +
+                    '<div class="col-md-4">' +
+                        '<h6>培育人信息</h6>' +
+                        '<p><strong>培育人姓名：</strong>' + (customer.breederName || '未填写') + '</p>' +
+                        '<p><strong>培育人单位：</strong>' + (customer.breederUnit || '未填写') + '</p>' +
+                        '<p><strong>培育人地址：</strong>' + (customer.breederAddress || '未填写') + '</p>' +
+                        '<p><strong>培育人电话：</strong>' + (customer.breederPhone || '未填写') + '</p>' +
+                    '</div>' +
+                    '<div class="col-md-4">' +
+                        '<h6>申请人信息</h6>' +
+                        '<p><strong>申请人姓名：</strong>' + (customer.applicantName || '未填写') + '</p>' +
+                        '<p><strong>申请人单位：</strong>' + (customer.applicantUnit || '未填写') + '</p>' +
+                        '<p><strong>申请人地址：</strong>' + (customer.applicantAddress || '未填写') + '</p>' +
+                        '<p><strong>申请人电话：</strong>' + (customer.applicantPhone || '未填写') + '</p>' +
+                    '</div>' +
+                    '<div class="col-md-4">' +
+                        '<h6>系统信息</h6>' +
+                        '<p><strong>创建时间：</strong>' + customer.createTime + '</p>' +
+                        '<p><strong>最后更新：</strong>' + (customer.updateTime || customer.createTime) + '</p>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="row mt-3">' +
+                    '<div class="col-md-4">' +
+                        '<h6>品种描述</h6>' +
+                        '<p>' + (customer.varietyDescription || '未填写') + '</p>' +
+                    '</div>' +
+                    '<div class="col-md-4">' +
+                        '<h6>技术特点</h6>' +
+                        '<p>' + (customer.technicalFeatures || '未填写') + '</p>' +
+                    '</div>' +
+                    '<div class="col-md-4">' +
+                        '<h6>市场前景</h6>' +
+                        '<p>' + (customer.marketProspect || '未填写') + '</p>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="row mt-3">' +
+                    '<div class="col-md-6">' +
+                        '<h6>地址信息</h6>' +
+                        '<p><strong>详细地址：</strong>' + (customer.address || '未填写') + '</p>' +
+                    '</div>' +
+                    '<div class="col-md-6">' +
+                        '<h6>备注信息</h6>' +
+                        '<p><strong>备注：</strong>' + (customer.remarks || '无') + '</p>' +
+                    '</div>' +
+                '</div>';
+            document.getElementById('customerDetailContent').innerHTML = content;
+            new bootstrap.Modal(document.getElementById('customerDetailModal')).show();
+        }
         function editCustomer(id) {
             const customer = customers.find(c => c.id === id);
             if (customer) {
-                document.getElementById('customerModalTitle').textContent = '编辑客户';
-                document.getElementById('customerId').value = customer.id;
-                document.getElementById('customerNameInput').value = customer.customerName;
-                document.getElementById('contactPerson').value = customer.contactPerson;
-                document.getElementById('phone').value = customer.phone;
-                document.getElementById('email').value = customer.email || '';
-                document.getElementById('customerTypeSelect').value = customer.customerType;
-                document.getElementById('regionSelect').value = customer.region;
-                document.getElementById('applicationTypeSelect').value = customer.applicationType;
-                document.getElementById('companySize').value = customer.companySize || '';
-                document.getElementById('industry').value = customer.industry || '';
-                document.getElementById('annualRevenue').value = customer.annualRevenue || '';
-                document.getElementById('varietyName').value = customer.varietyName || '';
-                document.getElementById('varietyType').value = customer.varietyType || '';
-                document.getElementById('applicationNumber').value = customer.applicationNumber || '';
-                document.getElementById('applicationDate').value = customer.applicationDate || '';
-                document.getElementById('breederName').value = customer.breederName || '';
-                document.getElementById('breederUnit').value = customer.breederUnit || '';
-                document.getElementById('breederAddress').value = customer.breederAddress || '';
-                document.getElementById('breederPhone').value = customer.breederPhone || '';
-                document.getElementById('applicantName').value = customer.applicantName || '';
-                document.getElementById('applicantUnit').value = customer.applicantUnit || '';
-                document.getElementById('applicantAddress').value = customer.applicantAddress || '';
-                document.getElementById('applicantPhone').value = customer.applicantPhone || '';
-                document.getElementById('varietyDescription').value = customer.varietyDescription || '';
-                document.getElementById('technicalFeatures').value = customer.technicalFeatures || '';
-                document.getElementById('marketProspect').value = customer.marketProspect || '';
-                document.getElementById('address').value = customer.address || '';
-                document.getElementById('remarks').value = customer.remarks || '';
-                new bootstrap.Modal(document.getElementById('customerModal')).show();
+                // 检查是否为敏感数据
+                if (customer.isSensitive) {
+                    currentCustomerId = id;
+                    showPasswordModal();
+                    return;
+                }
+                
+                showEditModal(customer);
             }
+        }
+        
+        function showEditModal(customer) {
+            document.getElementById('customerModalTitle').textContent = '编辑客户';
+            document.getElementById('customerId').value = customer.id;
+            document.getElementById('customerNameInput').value = customer.customerName;
+            document.getElementById('contactPerson').value = customer.contactPerson;
+            document.getElementById('phone').value = customer.phone;
+            document.getElementById('email').value = customer.email || '';
+            document.getElementById('customerTypeSelect').value = customer.customerType;
+            document.getElementById('regionSelect').value = customer.region;
+            document.getElementById('applicationTypeSelect').value = customer.applicationType;
+            document.getElementById('companySize').value = customer.companySize || '';
+            document.getElementById('industry').value = customer.industry || '';
+            document.getElementById('annualRevenue').value = customer.annualRevenue || '';
+            document.getElementById('varietyName').value = customer.varietyName || '';
+            document.getElementById('varietyType').value = customer.varietyType || '';
+            document.getElementById('applicationNumber').value = customer.applicationNumber || '';
+            document.getElementById('applicationDate').value = customer.applicationDate || '';
+            document.getElementById('breederName').value = customer.breederName || '';
+            document.getElementById('breederUnit').value = customer.breederUnit || '';
+            document.getElementById('breederAddress').value = customer.breederAddress || '';
+            document.getElementById('breederPhone').value = customer.breederPhone || '';
+            document.getElementById('applicantName').value = customer.applicantName || '';
+            document.getElementById('applicantUnit').value = customer.applicantUnit || '';
+            document.getElementById('applicantAddress').value = customer.applicantAddress || '';
+            document.getElementById('applicantPhone').value = customer.applicantPhone || '';
+            document.getElementById('varietyDescription').value = customer.varietyDescription || '';
+            document.getElementById('technicalFeatures').value = customer.technicalFeatures || '';
+            document.getElementById('marketProspect').value = customer.marketProspect || '';
+            document.getElementById('address').value = customer.address || '';
+            document.getElementById('remarks').value = customer.remarks || '';
+            new bootstrap.Modal(document.getElementById('customerModal')).show();
         }
 
         // 保存客户
@@ -1971,6 +2022,55 @@
             } else {
                 selectedCustomers.push(id);
             }
+        }
+
+        // 获取敏感状态文本
+        function getSensitiveStatusText(isSensitive) {
+            if (isSensitive) {
+                return '<span class="badge bg-warning">敏感</span>';
+            } else {
+                return '<span class="badge bg-success">普通</span>';
+            }
+        }
+        
+        // 当前操作的客户ID
+        let currentCustomerId = null;
+        
+        // 显示密码验证模态框
+        function showPasswordModal() {
+            document.getElementById('protectionPassword').value = '';
+            new bootstrap.Modal(document.getElementById('passwordModal')).show();
+        }
+        
+        // 验证密码
+        function verifyPassword() {
+            // 用户要求：不需要验证密码，点击确定就关闭
+            bootstrap.Modal.getInstance(document.getElementById('passwordModal')).hide();
+            getFullCustomerData();
+        }
+        
+        // 获取完整的客户数据
+        function getFullCustomerData() {
+            // 用户要求：不需要验证密码，直接获取数据
+            fetch(`/api/customer/${currentCustomerId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.code === 200) {
+                    // 显示客户详情
+                    showCustomerDetail(result.data);
+                } else {
+                    alert('获取数据失败: ' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('获取数据失败:', error);
+                alert('获取数据失败');
+            });
         }
 
         // 刷新客户列表

@@ -31,6 +31,10 @@ CREATE TABLE IF NOT EXISTS customer (
     agent_mobile VARCHAR(20) COMMENT '代理人手机',
     agent_email VARCHAR(100) COMMENT '代理人邮箱',
     
+    -- 敏感数据保护字段
+    is_sensitive BOOLEAN NOT NULL DEFAULT FALSE COMMENT '是否为敏感数据',
+    protection_password VARCHAR(255) COMMENT '保护密码(加密存储)',
+    
     customer_level TINYINT NOT NULL DEFAULT 1 COMMENT '客户等级(1:普通,2:VIP,3:钻石)',
     status TINYINT NOT NULL DEFAULT 1 COMMENT '客户状态(1:正常,2:冻结,3:注销)',
     source TINYINT NOT NULL DEFAULT 1 COMMENT '客户来源(1:线上,2:线下,3:推荐)',
@@ -73,24 +77,28 @@ INSERT INTO customer (
     postal_code, fax, organization_code, nationality, applicant_nature,
     agency_name, agency_code, agency_address, agency_postal_code,
     agent_name, agent_phone, agent_fax, agent_mobile, agent_email,
+    is_sensitive, protection_password,
     customer_level, status, remark, source, last_contact_time, create_by, update_by
 ) VALUES
 ('CUST001', 'ABC科技有限公司', '张伟', 2, '13812345678', 'zhangwei@abctech.com', '广东省深圳市南山区科技园',
  '518000', '0755-12345678', '91440300123456789X', '中国', 2,
  '深圳知识产权代理有限公司', '91440300987654321Y', '深圳市福田区知识产权大厦', '518000',
  '王律师', '0755-87654321', '0755-87654322', '13987654321', 'wang@ipagency.com',
+ TRUE, '$2a$10$Ll/hmxK4s3sZJj8JNSQeBufrsBqHipuRJmzq.mNIy3sTx6HA5HJ3i',
  2, 1, '重要客户，需要重点关注', 1, '2024-01-15 10:30:00', 'admin', 'admin'),
 
 ('CUST002', 'XYZ咨询公司', '李娜', 2, '13987654321', 'lina@xyzconsult.com', '北京市朝阳区国贸大厦',
  '100000', '010-12345678', '91110000123456789X', '中国', 2,
  '北京知识产权代理事务所', '91110000987654321Y', '北京市海淀区中关村大街', '100000',
  '刘律师', '010-87654321', '010-87654322', '13812345678', 'liu@bjip.com',
+ FALSE, NULL,
  1, 1, '咨询类客户', 2, '2024-01-14 15:20:00', 'admin', 'admin'),
 
 ('CUST003', '张三', '张三', 1, '13612345678', 'zhangsan@email.com', '上海市浦东新区陆家嘴',
  '200000', '', '310101199001011234', '中国', 1,
  '', '', '', '',
  '', '', '', '', '',
+ TRUE, '$2a$10$Ll/hmxK4s3sZJj8JNSQeBufrsBqHipuRJmzq.mNIy3sTx6HA5HJ3i',
  1, 1, '个人发明者', 1, '2024-01-13 09:15:00', 'admin', 'admin');
 
 -- 社交平台相关表

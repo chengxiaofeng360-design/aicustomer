@@ -119,6 +119,16 @@ public class Customer extends BaseEntity {
     private String agentEmail;
     
     /**
+     * 是否为敏感数据
+     */
+    private Boolean isSensitive;
+    
+    /**
+     * 保护密码
+     */
+    private String protectionPassword;
+    
+    /**
      * 客户等级 (1:普通, 2:VIP, 3:钻石)
      */
     private Integer customerLevel;

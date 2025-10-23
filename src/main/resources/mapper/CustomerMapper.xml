@@ -38,6 +38,8 @@
         <result column="agent_fax" property="agentFax" jdbcType="VARCHAR"/>
         <result column="agent_mobile" property="agentMobile" jdbcType="VARCHAR"/>
         <result column="agent_email" property="agentEmail" jdbcType="VARCHAR"/>
+        <result column="is_sensitive" property="isSensitive" jdbcType="BOOLEAN"/>
+        <result column="protection_password" property="protectionPassword" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 基础列 -->
@@ -47,7 +49,8 @@
         create_time, update_time, create_by, update_by, deleted, version,
         contact_person, postal_code, fax, organization_code, nationality,
         applicant_nature, agency_name, agency_code, agency_address, agency_postal_code,
-        agent_name, agent_phone, agent_fax, agent_mobile, agent_email
+        agent_name, agent_phone, agent_fax, agent_mobile, agent_email,
+        is_sensitive, protection_password
     </sql>
 
     <!-- 根据ID查询客户 -->

@@ -182,7 +182,9 @@ public class TeamCollaborationController {
     @PostMapping("/customer-assignment")
     public Result<String> createCustomerAssignment(@RequestBody TeamTask task) {
         try {
-            task.setTaskType(1); // 1:客户跟进
+            // 设置任务基本信息
+            task.setStatus(1); // 1:待开始
+            task.setPriority(2); // 2:中
             teamCollaborationService.createTeamTask(task);
             return Result.success("客户分配任务创建成功");
         } catch (Exception e) {
@@ -196,7 +198,9 @@ public class TeamCollaborationController {
     @PostMapping("/workflow-task")
     public Result<String> createWorkflowTask(@RequestBody TeamTask task) {
         try {
-            task.setTaskType(2); // 2:项目推进
+            // 设置任务基本信息
+            task.setStatus(1); // 1:待开始
+            task.setPriority(2); // 2:中
             teamCollaborationService.createTeamTask(task);
             return Result.success("协作流程任务创建成功");
         } catch (Exception e) {
@@ -259,6 +263,168 @@ public class TeamCollaborationController {
             return Result.success("团队消息发送功能开发中");
         } catch (Exception e) {
             return Result.error("发送团队消息失败: " + e.getMessage());
+        }
+    }
+
+    // ========== 远程办公相关接口 ==========
+
+    /**
+     * 获取团队成员列表（包含远程办公信息）
+     */
+    @GetMapping("/members")
+    public Result<List<Object>> getTeamMembers() {
+        try {
+            // 这里可以添加获取团队成员列表逻辑
+            return Result.success(new java.util.ArrayList<>());
+        } catch (Exception e) {
+            return Result.error("获取团队成员列表失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新成员工作模式
+     */
+    @PutMapping("/members/{id}/work-mode")
+    public Result<String> updateWorkMode(@PathVariable Long id, @RequestParam Integer workMode) {
+        try {
+            // 这里可以添加更新工作模式逻辑
+            return Result.success("工作模式更新成功");
+        } catch (Exception e) {
+            return Result.error("更新工作模式失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新成员在线状态
+     */
+    @PutMapping("/members/{id}/online-status")
+    public Result<String> updateOnlineStatus(@PathVariable Long id, @RequestParam Integer status) {
+        try {
+            // 这里可以添加更新在线状态逻辑
+            return Result.success("在线状态更新成功");
+        } catch (Exception e) {
+            return Result.error("更新在线状态失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取远程办公工具列表
+     */
+    @GetMapping("/remote-tools")
+    public Result<List<Object>> getRemoteTools() {
+        try {
+            // 这里可以添加获取远程办公工具列表逻辑
+            return Result.success(new java.util.ArrayList<>());
+        } catch (Exception e) {
+            return Result.error("获取远程办公工具列表失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 创建远程会议
+     */
+    @PostMapping("/meetings")
+    public Result<String> createRemoteMeeting(@RequestBody Object meeting) {
+        try {
+            // 这里可以添加创建远程会议逻辑
+            return Result.success("远程会议创建成功");
+        } catch (Exception e) {
+            return Result.error("创建远程会议失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取会议列表
+     */
+    @GetMapping("/meetings")
+    public Result<List<Object>> getMeetings(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        try {
+            // 这里可以添加获取会议列表逻辑
+            return Result.success(new java.util.ArrayList<>());
+        } catch (Exception e) {
+            return Result.error("获取会议列表失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 加入会议
+     */
+    @PostMapping("/meetings/{id}/join")
+    public Result<String> joinMeeting(@PathVariable Long id) {
+        try {
+            // 这里可以添加加入会议逻辑
+            return Result.success("成功加入会议");
+        } catch (Exception e) {
+            return Result.error("加入会议失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 结束会议
+     */
+    @PostMapping("/meetings/{id}/end")
+    public Result<String> endMeeting(@PathVariable Long id) {
+        try {
+            // 这里可以添加结束会议逻辑
+            return Result.success("会议已结束");
+        } catch (Exception e) {
+            return Result.error("结束会议失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取远程协作统计
+     */
+    @GetMapping("/remote-stats")
+    public Result<Object> getRemoteStats(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        try {
+            // 这里可以添加远程协作统计逻辑
+            return Result.success("远程协作统计功能开发中");
+        } catch (Exception e) {
+            return Result.error("获取远程协作统计失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 发送远程协作邀请
+     */
+    @PostMapping("/collaboration/invite")
+    public Result<String> sendCollaborationInvite(@RequestBody Object invite) {
+        try {
+            // 这里可以添加发送协作邀请逻辑
+            return Result.success("协作邀请发送成功");
+        } catch (Exception e) {
+            return Result.error("发送协作邀请失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取在线成员列表
+     */
+    @GetMapping("/online-members")
+    public Result<List<Object>> getOnlineMembers() {
+        try {
+            // 这里可以添加获取在线成员列表逻辑
+            return Result.success(new java.util.ArrayList<>());
+        } catch (Exception e) {
+            return Result.error("获取在线成员列表失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新任务远程协作信息
+     */
+    @PutMapping("/tasks/{id}/remote-info")
+    public Result<String> updateTaskRemoteInfo(@PathVariable Long id, @RequestBody Object remoteInfo) {
+        try {
+            // 这里可以添加更新任务远程协作信息逻辑
+            return Result.success("任务远程协作信息更新成功");
+        } catch (Exception e) {
+            return Result.error("更新任务远程协作信息失败: " + e.getMessage());
         }
     }
 }

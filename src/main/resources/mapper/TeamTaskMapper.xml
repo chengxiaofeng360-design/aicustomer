@@ -2,226 +2,135 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aicustomer.mapper.TeamTaskMapper">
 
-    <resultMap id="BaseResultMap" type="com.aicustomer.entity.TeamTask">
-        <id column="id" property="id" jdbcType="BIGINT"/>
-        <result column="title" property="title" jdbcType="VARCHAR"/>
-        <result column="description" property="description" jdbcType="VARCHAR"/>
-        <result column="task_type" property="taskType" jdbcType="INTEGER"/>
-        <result column="status" property="status" jdbcType="INTEGER"/>
-        <result column="priority" property="priority" jdbcType="INTEGER"/>
-        <result column="customer_id" property="customerId" jdbcType="BIGINT"/>
-        <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
-        <result column="creator_id" property="creatorId" jdbcType="BIGINT"/>
-        <result column="creator_name" property="creatorName" jdbcType="VARCHAR"/>
-        <result column="assignee_id" property="assigneeId" jdbcType="BIGINT"/>
-        <result column="assignee_name" property="assigneeName" jdbcType="VARCHAR"/>
-        <result column="start_time" property="startTime" jdbcType="TIMESTAMP"/>
-        <result column="deadline" property="deadline" jdbcType="TIMESTAMP"/>
-        <result column="completed_time" property="completedTime" jdbcType="TIMESTAMP"/>
-        <result column="estimated_hours" property="estimatedHours" jdbcType="INTEGER"/>
-        <result column="actual_hours" property="actualHours" jdbcType="INTEGER"/>
-        <result column="progress" property="progress" jdbcType="INTEGER"/>
-        <result column="result" property="result" jdbcType="VARCHAR"/>
-        <result column="remark" property="remark" jdbcType="VARCHAR"/>
-        <result column="parent_task_id" property="parentTaskId" jdbcType="BIGINT"/>
-        <result column="level" property="level" jdbcType="INTEGER"/>
-        <result column="need_approval" property="needApproval" jdbcType="BOOLEAN"/>
-        <result column="approver_id" property="approverId" jdbcType="BIGINT"/>
-        <result column="approver_name" property="approverName" jdbcType="VARCHAR"/>
-        <result column="approval_time" property="approvalTime" jdbcType="TIMESTAMP"/>
-        <result column="approval_result" property="approvalResult" jdbcType="INTEGER"/>
-        <result column="approval_comment" property="approvalComment" jdbcType="VARCHAR"/>
-        <result column="tags" property="tags" jdbcType="VARCHAR"/>
-        <result column="attachment_path" property="attachmentPath" jdbcType="VARCHAR"/>
-        <result column="is_public" property="isPublic" jdbcType="BOOLEAN"/>
-        <result column="visible_user_ids" property="visibleUserIds" jdbcType="VARCHAR"/>
-        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
-        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
-        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
-        <result column="update_by" property="updateBy" jdbcType="VARCHAR"/>
-        <result column="deleted" property="deleted" jdbcType="TINYINT"/>
-        <result column="version" property="version" jdbcType="INTEGER"/>
+    <!-- 结果映射 -->
+    <resultMap id="TeamTaskResultMap" type="com.aicustomer.entity.TeamTask">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="assignee_id" property="assigneeId"/>
+        <result column="assignee_name" property="assigneeName"/>
+        <result column="priority" property="priority"/>
+        <result column="status" property="status"/>
+        <result column="progress" property="progress"/>
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="work_mode" property="workMode"/>
+        <result column="work_duration" property="workDuration"/>
+        <result column="actual_start_time" property="actualStartTime"/>
+        <result column="actual_end_time" property="actualEndTime"/>
+        <result column="work_status" property="workStatus"/>
+        <result column="last_active_time" property="lastActiveTime"/>
+        <result column="work_location" property="workLocation"/>
+        <result column="work_evidence" property="workEvidence"/>
+        <result column="work_log" property="workLog"/>
+        <result column="supervisor_id" property="supervisorId"/>
+        <result column="supervisor_name" property="supervisorName"/>
+        <result column="need_supervision" property="needSupervision"/>
+        <result column="supervision_interval" property="supervisionInterval"/>
+        <result column="last_supervision_time" property="lastSupervisionTime"/>
+        <result column="quality_score" property="qualityScore"/>
+        <result column="efficiency_score" property="efficiencyScore"/>
+        <result column="attitude_score" property="attitudeScore"/>
+        <result column="supervision_note" property="supervisionNote"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
     </resultMap>
 
-    <sql id="Base_Column_List">
-        id, title, description, task_type, status, priority, customer_id, customer_name,
-        creator_id, creator_name, assignee_id, assignee_name, start_time, deadline, completed_time,
-        estimated_hours, actual_hours, progress, result, remark, parent_task_id, level,
-        need_approval, approver_id, approver_name, approval_time, approval_result, approval_comment,
-        tags, attachment_path, is_public, visible_user_ids, create_time, update_time, create_by,
-        update_by, deleted, version
-    </sql>
-
-    <select id="selectById" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM team_task
-        WHERE id = #{id} AND deleted = 0
-    </select>
-
-    <select id="selectList" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM team_task
-        WHERE deleted = 0
-        <if test="task.taskType != null">
-            AND task_type = #{task.taskType}
-        </if>
-        <if test="task.status != null">
-            AND status = #{task.status}
-        </if>
-        <if test="task.priority != null">
-            AND priority = #{task.priority}
-        </if>
-        ORDER BY create_time DESC
-    </select>
-
-    <select id="selectPage" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM team_task
-        WHERE deleted = 0
-        <if test="task.taskType != null">
-            AND task_type = #{task.taskType}
-        </if>
-        <if test="task.status != null">
-            AND status = #{task.status}
-        </if>
-        <if test="task.priority != null">
-            AND priority = #{task.priority}
-        </if>
+    <!-- 查询团队任务列表 -->
+    <select id="findTasks" resultMap="TeamTaskResultMap">
+        SELECT * FROM team_task
+        <where>
+            <if test="assigneeId != null">
+                AND assignee_id = #{assigneeId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="priority != null">
+                AND priority = #{priority}
+            </if>
+        </where>
         ORDER BY create_time DESC
         LIMIT #{offset}, #{limit}
     </select>
 
-    <select id="selectCount" resultType="java.lang.Long">
-        SELECT COUNT(*)
-        FROM team_task
-        WHERE deleted = 0
-        <if test="task.taskType != null">
-            AND task_type = #{task.taskType}
-        </if>
-        <if test="task.status != null">
-            AND status = #{task.status}
-        </if>
-        <if test="task.priority != null">
-            AND priority = #{task.priority}
-        </if>
+    <!-- 根据ID查询团队任务 -->
+    <select id="findById" resultMap="TeamTaskResultMap">
+        SELECT * FROM team_task WHERE id = #{id}
     </select>
 
+    <!-- 插入团队任务 -->
     <insert id="insert" parameterType="com.aicustomer.entity.TeamTask" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO team_task (
-            title, description, task_type, status, priority, customer_id, customer_name,
-            creator_id, creator_name, assignee_id, assignee_name, start_time, deadline, completed_time,
-            estimated_hours, actual_hours, progress, result, remark, parent_task_id, level,
-            need_approval, approver_id, approver_name, approval_time, approval_result, approval_comment,
-            tags, attachment_path, is_public, visible_user_ids, create_time, update_time, create_by,
-            update_by, deleted, version
+            name, description, assignee_id, assignee_name, priority, status, progress,
+            start_date, end_date, work_mode, work_duration, actual_start_time, actual_end_time,
+            work_status, last_active_time, work_location, work_evidence, work_log,
+            supervisor_id, supervisor_name, need_supervision, supervision_interval,
+            last_supervision_time, quality_score, efficiency_score, attitude_score,
+            supervision_note, create_time, update_time
         ) VALUES (
-            #{title}, #{description}, #{taskType}, #{status}, #{priority}, #{customerId}, #{customerName},
-            #{creatorId}, #{creatorName}, #{assigneeId}, #{assigneeName}, #{startTime}, #{deadline}, #{completedTime},
-            #{estimatedHours}, #{actualHours}, #{progress}, #{result}, #{remark}, #{parentTaskId}, #{level},
-            #{needApproval}, #{approverId}, #{approverName}, #{approvalTime}, #{approvalResult}, #{approvalComment},
-            #{tags}, #{attachmentPath}, #{isPublic}, #{visibleUserIds}, #{createTime}, #{updateTime}, #{createBy},
-            #{updateBy}, #{deleted}, #{version}
+            #{name}, #{description}, #{assigneeId}, #{assigneeName}, #{priority}, #{status}, #{progress},
+            #{startDate}, #{endDate}, #{workMode}, #{workDuration}, #{actualStartTime}, #{actualEndTime},
+            #{workStatus}, #{lastActiveTime}, #{workLocation}, #{workEvidence}, #{workLog},
+            #{supervisorId}, #{supervisorName}, #{needSupervision}, #{supervisionInterval},
+            #{lastSupervisionTime}, #{qualityScore}, #{efficiencyScore}, #{attitudeScore},
+            #{supervisionNote}, #{createTime}, #{updateTime}
         )
     </insert>
 
-    <update id="updateById" parameterType="com.aicustomer.entity.TeamTask">
-        UPDATE team_task
-        SET title = #{title},
+    <!-- 更新团队任务 -->
+    <update id="update" parameterType="com.aicustomer.entity.TeamTask">
+        UPDATE team_task SET
+            name = #{name},
             description = #{description},
-            task_type = #{taskType},
-            status = #{status},
-            priority = #{priority},
-            customer_id = #{customerId},
-            customer_name = #{customerName},
-            creator_id = #{creatorId},
-            creator_name = #{creatorName},
             assignee_id = #{assigneeId},
             assignee_name = #{assigneeName},
-            start_time = #{startTime},
-            deadline = #{deadline},
-            completed_time = #{completedTime},
-            estimated_hours = #{estimatedHours},
-            actual_hours = #{actualHours},
+            priority = #{priority},
+            status = #{status},
             progress = #{progress},
-            result = #{result},
-            remark = #{remark},
-            parent_task_id = #{parentTaskId},
-            level = #{level},
-            need_approval = #{needApproval},
-            approver_id = #{approverId},
-            approver_name = #{approverName},
-            approval_time = #{approvalTime},
-            approval_result = #{approvalResult},
-            approval_comment = #{approvalComment},
-            tags = #{tags},
-            attachment_path = #{attachmentPath},
-            is_public = #{isPublic},
-            visible_user_ids = #{visibleUserIds},
-            update_time = #{updateTime},
-            update_by = #{updateBy},
-            version = version + 1
-        WHERE id = #{id} AND deleted = 0
+            start_date = #{startDate},
+            end_date = #{endDate},
+            work_mode = #{workMode},
+            work_duration = #{workDuration},
+            actual_start_time = #{actualStartTime},
+            actual_end_time = #{actualEndTime},
+            work_status = #{workStatus},
+            last_active_time = #{lastActiveTime},
+            work_location = #{workLocation},
+            work_evidence = #{workEvidence},
+            work_log = #{workLog},
+            supervisor_id = #{supervisorId},
+            supervisor_name = #{supervisorName},
+            need_supervision = #{needSupervision},
+            supervision_interval = #{supervisionInterval},
+            last_supervision_time = #{lastSupervisionTime},
+            quality_score = #{qualityScore},
+            efficiency_score = #{efficiencyScore},
+            attitude_score = #{attitudeScore},
+            supervision_note = #{supervisionNote},
+            update_time = #{updateTime}
+        WHERE id = #{id}
     </update>
 
-    <update id="deleteById">
-        UPDATE team_task
-        SET deleted = 1, update_time = NOW()
-        WHERE id = #{id} AND deleted = 0
-    </update>
+    <!-- 删除团队任务 -->
+    <delete id="delete">
+        DELETE FROM team_task WHERE id = #{id}
+    </delete>
 
-    <update id="assignTask">
-        UPDATE team_task
-        SET assignee_name = #{assignee}, update_time = NOW()
-        WHERE id = #{id} AND deleted = 0
-    </update>
-
-    <update id="updateTaskStatus">
-        UPDATE team_task
-        SET status = #{status}, update_time = NOW()
-        WHERE id = #{id} AND deleted = 0
-    </update>
-
-    <update id="updateTaskProgress">
-        UPDATE team_task
-        SET progress = #{progress}, update_time = NOW()
-        WHERE id = #{id} AND deleted = 0
-    </update>
-
-    <select id="selectMyTasks" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM team_task
-        WHERE assignee_name = #{assignee} AND deleted = 0
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        ORDER BY create_time DESC
-    </select>
-
-    <select id="selectAssignedTasks" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM team_task
-        WHERE creator_name = #{creator} AND deleted = 0
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        ORDER BY create_time DESC
-    </select>
-
-    <select id="selectByCustomerId" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM team_task
-        WHERE customer_id = #{customerId} AND deleted = 0
-        ORDER BY create_time DESC
+    <!-- 获取任务总数 -->
+    <select id="countTasks" resultType="int">
+        SELECT COUNT(*) FROM team_task
+        <where>
+            <if test="assigneeId != null">
+                AND assignee_id = #{assigneeId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="priority != null">
+                AND priority = #{priority}
+            </if>
+        </where>
     </select>
 
 </mapper>
-
-
-
-
