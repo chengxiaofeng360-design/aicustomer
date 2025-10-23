@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aicustomer.mapper.SocialCommentMapper">
+
+    <select id="findByPostId" parameterType="long" resultType="com.aicustomer.entity.SocialComment">
+        SELECT 
+            sc.*,
+            ca.nickname as customerNickname,
+            ca.avatar as customerAvatar,
+            CASE WHEN sl.id IS NOT NULL THEN 1 ELSE 0 END as isLiked
+        FROM social_comment sc
+        LEFT JOIN customer_account ca ON sc.customer_account_id = ca.id
+        LEFT JOIN social_like sl ON sc.id = sl.target_id AND sl.target_type = 2 AND sl.customer_account_id = 1
+        WHERE sc.post_id = #{postId} AND sc.status = 1
+        ORDER BY sc.create_time ASC
+    </select>
+
+    <select id="findById" parameterType="long" resultType="com.aicustomer.entity.SocialComment">
+        SELECT 
+            sc.*,
+            ca.nickname as customerNickname,
+            ca.avatar as customerAvatar
+        FROM social_comment sc
+        LEFT JOIN customer_account ca ON sc.customer_account_id = ca.id
+        WHERE sc.id = #{id} AND sc.status = 1
+    </select>
+
+    <insert id="insert" parameterType="com.aicustomer.entity.SocialComment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO social_comment (
+            post_id, customer_account_id, customer_id, parent_id, content, images, tags,
+            like_count, status, create_time, update_time
+        ) VALUES (
+            #{postId}, #{customerAccountId}, #{customerId}, #{parentId}, #{content}, #{images}, #{tags},
+            #{likeCount}, #{status}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.aicustomer.entity.SocialComment">
+        UPDATE social_comment SET
+            content = #{content},
+            status = #{status},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE social_comment SET status = 2 WHERE id = #{id}
+    </update>
+
+    <update id="updateLikeCount">
+        UPDATE social_comment SET like_count = like_count + #{increment} WHERE id = #{id}
+    </update>
+
+    <select id="findByUserId" parameterType="long" resultType="com.aicustomer.entity.SocialComment">
+        SELECT 
+            sc.*,
+            ca.nickname as customerNickname,
+            ca.avatar as customerAvatar,
+            sp.content as postContent
+        FROM social_comment sc
+        LEFT JOIN customer_account ca ON sc.customer_account_id = ca.id
+        LEFT JOIN social_post sp ON sc.post_id = sp.id
+        WHERE sc.customer_account_id = #{userId} AND sc.status = 1
+        ORDER BY sc.create_time DESC
+    </select>
+
+</mapper>

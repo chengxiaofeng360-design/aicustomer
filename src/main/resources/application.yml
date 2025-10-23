@@ -1,8 +1,6 @@
 # AI客户管理系统配置文件
 server:
   port: 8080
-  servlet:
-    context-path: /ai-customer
   tomcat:
     uri-encoding: UTF-8
 
