@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS样式测试</title>
+    <style>
+        /* 内联样式确保显示 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .test-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+        }
+        
+        .test-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .test-header h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .test-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .test-icon {
+            font-size: 3rem;
+            color: #8b5cf6;
+            margin-bottom: 1rem;
+        }
+        
+        .test-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 1rem;
+        }
+        
+        .test-desc {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+        
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div class="status">
+        CSS测试页面<br>
+        时间: <span id="time"></span><br>
+        状态: <span id="status">加载中...</span>
+    </div>
+    
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🎨 CSS样式测试</h1>
+            <p>如果你能看到渐变背景、白色卡片和悬停效果，说明CSS正常工作</p>
+        </div>
+
+        <div class="test-grid">
+            <div class="test-card" onclick="alert('卡片1被点击')">
+                <div class="test-icon">👥</div>
+                <div class="test-title">客户管理</div>
+                <div class="test-desc">测试卡片样式和交互效果</div>
+            </div>
+
+            <div class="test-card" onclick="alert('卡片2被点击')">
+                <div class="test-icon">💬</div>
+                <div class="test-title">沟通记录</div>
+                <div class="test-desc">测试悬停动画和阴影效果</div>
+            </div>
+
+            <div class="test-card" onclick="alert('卡片3被点击')">
+                <div class="test-icon">🔔</div>
+                <div class="test-title">消息中心</div>
+                <div class="test-desc">测试响应式网格布局</div>
+            </div>
+
+            <div class="test-card" onclick="alert('卡片4被点击')">
+                <div class="test-icon">👥</div>
+                <div class="test-title">团队协作</div>
+                <div class="test-desc">测试圆角和过渡效果</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('time').textContent = new Date().toLocaleTimeString();
+        
+        // 检查样式是否正常加载
+        setTimeout(function() {
+            const testElement = document.querySelector('.test-container');
+            const computedStyle = window.getComputedStyle(testElement);
+            
+            if (computedStyle.background.includes('gradient')) {
+                document.getElementById('status').textContent = '✅ CSS正常';
+                document.getElementById('status').style.color = '#10b981';
+            } else {
+                document.getElementById('status').textContent = '❌ CSS异常';
+                document.getElementById('status').style.color = '#ef4444';
+            }
+        }, 1000);
+        
+        // 更新时间
+        setInterval(function() {
+            document.getElementById('time').textContent = new Date().toLocaleTimeString();
+        }, 1000);
+    </script>
+</body>
+</html>
+
+
+
+
+

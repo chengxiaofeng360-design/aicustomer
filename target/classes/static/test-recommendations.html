@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI推荐功能测试</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 16px;
+        }
+        .result-area {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 AI推荐功能测试</h1>
+        <p>测试生成推荐功能是否正常工作</p>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h5>推荐配置</h5>
+                <div class="mb-3">
+                    <label class="form-label">推荐类型</label>
+                    <select class="form-select" id="testRecommendationType">
+                        <option value="product">产品推荐</option>
+                        <option value="service">服务推荐</option>
+                        <option value="strategy">策略推荐</option>
+                        <option value="action">行动推荐</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">推荐数量</label>
+                    <select class="form-select" id="testRecommendationCount">
+                        <option value="3">3条推荐</option>
+                        <option value="5" selected>5条推荐</option>
+                        <option value="10">10条推荐</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5>偏好设置</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="testConservative" checked>
+                    <label class="form-check-label" for="testConservative">保守型</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="testInnovative">
+                    <label class="form-check-label" for="testInnovative">创新型</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="testCostEffective" checked>
+                    <label class="form-check-label" for="testCostEffective">性价比优先</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="testQuick">
+                    <label class="form-check-label" for="testQuick">快速响应</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <button class="btn btn-primary test-button" onclick="testGenerateRecommendations()">
+                <i class="bi bi-magic"></i> 测试生成推荐
+            </button>
+            <button class="btn btn-secondary test-button" onclick="clearResults()">
+                <i class="bi bi-trash"></i> 清空结果
+            </button>
+        </div>
+        
+        <div class="result-area" id="testResults">
+            <p class="text-muted">点击"测试生成推荐"按钮开始测试</p>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        // 测试生成推荐功能
+        function testGenerateRecommendations() {
+            const type = document.getElementById('testRecommendationType').value;
+            const count = parseInt(document.getElementById('testRecommendationCount').value);
+            
+            // 获取偏好设置
+            const preferences = [];
+            if (document.getElementById('testConservative').checked) preferences.push('保守型');
+            if (document.getElementById('testInnovative').checked) preferences.push('创新型');
+            if (document.getElementById('testCostEffective').checked) preferences.push('性价比优先');
+            if (document.getElementById('testQuick').checked) preferences.push('快速响应');
+            
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="text-center"><i class="bi bi-hourglass-split"></i> 正在生成推荐...</div>';
+            
+            // 模拟生成过程
+            setTimeout(() => {
+                const newRecommendations = generateTestRecommendations(type, count, preferences);
+                displayTestResults(newRecommendations, type, preferences);
+            }, 1500);
+        }
+        
+        // 生成测试推荐
+        function generateTestRecommendations(type, count, preferences) {
+            const recommendations = [];
+            const typeNames = {
+                'product': '产品推荐',
+                'service': '服务推荐', 
+                'strategy': '策略推荐',
+                'action': '行动推荐'
+            };
+            
+            for (let i = 0; i < count; i++) {
+                recommendations.push({
+                    id: Date.now() + i,
+                    title: `测试推荐 ${i + 1}`,
+                    content: `这是基于${typeNames[type]}生成的测试推荐内容，考虑了${preferences.join('、')}偏好设置。`,
+                    type: type,
+                    priority: ['high', 'medium', 'low'][i % 3],
+                    confidence: (Math.random() * 0.2 + 0.8).toFixed(2)
+                });
+            }
+            
+            return recommendations;
+        }
+        
+        // 显示测试结果
+        function displayTestResults(recommendations, type, preferences) {
+            const resultsDiv = document.getElementById('testResults');
+            const typeName = {
+                'product': '产品推荐',
+                'service': '服务推荐',
+                'strategy': '策略推荐', 
+                'action': '行动推荐'
+            }[type];
+            
+            let html = `
+                <div class="alert alert-success">
+                    <h6><i class="bi bi-check-circle"></i> 测试成功！</h6>
+                    <p>成功生成 <strong>${recommendations.length}</strong> 条${typeName}</p>
+                    <p><strong>偏好设置：</strong>${preferences.length > 0 ? preferences.join('、') : '通用设置'}</p>
+                </div>
+                <div class="recommendation-list">
+                    <h6>生成的推荐：</h6>
+            `;
+            
+            recommendations.forEach((rec, index) => {
+                html += `
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h6 class="card-title">${rec.title}</h6>
+                            <p class="card-text">${rec.content}</p>
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-primary">${typeName}</span>
+                                <span class="badge bg-warning">${rec.priority}</span>
+                                <span class="badge bg-success">置信度: ${Math.round(rec.confidence * 100)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        // 清空结果
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '<p class="text-muted">点击"测试生成推荐"按钮开始测试</p>';
+        }
+    </script>
+</body>
+</html>
+
+

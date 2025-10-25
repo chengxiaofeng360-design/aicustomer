@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>按钮测试</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>按钮测试页面</h1>
+        <button class="btn btn-primary" onclick="testFunction()">测试按钮</button>
+        <div id="result" class="mt-3"></div>
+    </div>
+
+    <script>
+        function testFunction() {
+            document.getElementById('result').innerHTML = '<div class="alert alert-success">按钮点击成功！</div>';
+        }
+    </script>
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>

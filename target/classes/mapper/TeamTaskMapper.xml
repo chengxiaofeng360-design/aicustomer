@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aicustomer.mapper.TeamTaskMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="TeamTaskResultMap" type="com.aicustomer.entity.TeamTask">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="assignee_id" property="assigneeId"/>
+        <result column="assignee_name" property="assigneeName"/>
+        <result column="priority" property="priority"/>
+        <result column="status" property="status"/>
+        <result column="progress" property="progress"/>
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="work_mode" property="workMode"/>
+        <result column="work_duration" property="workDuration"/>
+        <result column="actual_start_time" property="actualStartTime"/>
+        <result column="actual_end_time" property="actualEndTime"/>
+        <result column="work_status" property="workStatus"/>
+        <result column="last_active_time" property="lastActiveTime"/>
+        <result column="work_location" property="workLocation"/>
+        <result column="work_evidence" property="workEvidence"/>
+        <result column="work_log" property="workLog"/>
+        <result column="supervisor_id" property="supervisorId"/>
+        <result column="supervisor_name" property="supervisorName"/>
+        <result column="need_supervision" property="needSupervision"/>
+        <result column="supervision_interval" property="supervisionInterval"/>
+        <result column="last_supervision_time" property="lastSupervisionTime"/>
+        <result column="quality_score" property="qualityScore"/>
+        <result column="efficiency_score" property="efficiencyScore"/>
+        <result column="attitude_score" property="attitudeScore"/>
+        <result column="supervision_note" property="supervisionNote"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 查询团队任务列表 -->
+    <select id="findTasks" resultMap="TeamTaskResultMap">
+        SELECT * FROM team_task
+        <where>
+            <if test="assigneeId != null">
+                AND assignee_id = #{assigneeId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="priority != null">
+                AND priority = #{priority}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据ID查询团队任务 -->
+    <select id="findById" resultMap="TeamTaskResultMap">
+        SELECT * FROM team_task WHERE id = #{id}
+    </select>
+
+    <!-- 插入团队任务 -->
+    <insert id="insert" parameterType="com.aicustomer.entity.TeamTask" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO team_task (
+            name, description, assignee_id, assignee_name, priority, status, progress,
+            start_date, end_date, work_mode, work_duration, actual_start_time, actual_end_time,
+            work_status, last_active_time, work_location, work_evidence, work_log,
+            supervisor_id, supervisor_name, need_supervision, supervision_interval,
+            last_supervision_time, quality_score, efficiency_score, attitude_score,
+            supervision_note, create_time, update_time
+        ) VALUES (
+            #{name}, #{description}, #{assigneeId}, #{assigneeName}, #{priority}, #{status}, #{progress},
+            #{startDate}, #{endDate}, #{workMode}, #{workDuration}, #{actualStartTime}, #{actualEndTime},
+            #{workStatus}, #{lastActiveTime}, #{workLocation}, #{workEvidence}, #{workLog},
+            #{supervisorId}, #{supervisorName}, #{needSupervision}, #{supervisionInterval},
+            #{lastSupervisionTime}, #{qualityScore}, #{efficiencyScore}, #{attitudeScore},
+            #{supervisionNote}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <!-- 更新团队任务 -->
+    <update id="update" parameterType="com.aicustomer.entity.TeamTask">
+        UPDATE team_task SET
+            name = #{name},
+            description = #{description},
+            assignee_id = #{assigneeId},
+            assignee_name = #{assigneeName},
+            priority = #{priority},
+            status = #{status},
+            progress = #{progress},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            work_mode = #{workMode},
+            work_duration = #{workDuration},
+            actual_start_time = #{actualStartTime},
+            actual_end_time = #{actualEndTime},
+            work_status = #{workStatus},
+            last_active_time = #{lastActiveTime},
+            work_location = #{workLocation},
+            work_evidence = #{workEvidence},
+            work_log = #{workLog},
+            supervisor_id = #{supervisorId},
+            supervisor_name = #{supervisorName},
+            need_supervision = #{needSupervision},
+            supervision_interval = #{supervisionInterval},
+            last_supervision_time = #{lastSupervisionTime},
+            quality_score = #{qualityScore},
+            efficiency_score = #{efficiencyScore},
+            attitude_score = #{attitudeScore},
+            supervision_note = #{supervisionNote},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除团队任务 -->
+    <delete id="delete">
+        DELETE FROM team_task WHERE id = #{id}
+    </delete>
+
+    <!-- 获取任务总数 -->
+    <select id="countTasks" resultType="int">
+        SELECT COUNT(*) FROM team_task
+        <where>
+            <if test="assigneeId != null">
+                AND assignee_id = #{assigneeId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="priority != null">
+                AND priority = #{priority}
+            </if>
+        </where>
+    </select>
+
+</mapper>

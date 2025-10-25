@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沟通记录管理 - AI客户管理系统</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
+</head>
+<body>
+    <div class="main-container">
+        <!-- 页面头部 -->
+        <div class="page-header">
+            <div class="page-title">
+                <i class="bi bi-chat-dots-fill"></i> 沟通记录管理
+            </div>
+            <a href="/" class="back-home-btn">
+                <i class="bi bi-house-fill"></i> 返回首页
+            </a>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">2,456</div>
+                    <div class="stats-label">沟通记录</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">156</div>
+                    <div class="stats-label">本月新增</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">89%</div>
+                    <div class="stats-label">客户满意度</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">45</div>
+                    <div class="stats-label">待跟进</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜索和筛选区域 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label class="form-label">沟通类型</label>
+                        <select class="form-select" id="communicationType">
+                            <option value="">全部</option>
+                            <option value="1">电话</option>
+                            <option value="2">邮件</option>
+                            <option value="3">微信</option>
+                            <option value="4">面谈</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">客户</label>
+                        <select class="form-select" id="customerId">
+                            <option value="">全部</option>
+                            <option value="1">张三</option>
+                            <option value="2">李四农业科技有限公司</option>
+                            <option value="3">王五种子研究所</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">重要程度</label>
+                        <select class="form-select" id="importance">
+                            <option value="">全部</option>
+                            <option value="1">高</option>
+                            <option value="2">中</option>
+                            <option value="3">低</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">开始日期</label>
+                        <input type="date" class="form-control" id="startDate">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">结束日期</label>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary me-2" onclick="searchCommunications()">
+                            <i class="bi bi-search"></i> 搜索
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetSearch()">
+                            <i class="bi bi-arrow-clockwise"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮区域 -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <button class="btn btn-primary" onclick="showAddCommunicationModal()">
+                    <i class="bi bi-plus"></i> 新增沟通记录
+                </button>
+                <button class="btn btn-success" onclick="exportCommunications()">
+                    <i class="bi bi-download"></i> 导出
+                </button>
+                <button class="btn btn-warning" onclick="batchDelete()">
+                    <i class="bi bi-trash"></i> 批量删除
+                </button>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary" onclick="refreshData()">
+                    <i class="bi bi-arrow-clockwise"></i> 刷新
+                </button>
+            </div>
+        </div>
+
+        <!-- 沟通记录列表 -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                </th>
+                                <th>客户名称</th>
+                                <th>沟通类型</th>
+                                <th>沟通内容</th>
+                                <th>重要程度</th>
+                                <th>沟通时间</th>
+                                <th>操作人</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="communicationTableBody">
+                            <!-- 沟通记录数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增/编辑沟通记录模态框 -->
+    <div class="modal fade" id="communicationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="communicationModalTitle">新增沟通记录</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="communicationForm">
+                        <input type="hidden" id="communicationId" name="id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">客户名称 *</label>
+                                    <select class="form-select" id="customerSelect" name="customerId" required>
+                                        <option value="">请选择客户</option>
+                                        <option value="1">张三</option>
+                                        <option value="2">李四农业科技有限公司</option>
+                                        <option value="3">王五种子研究所</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">沟通类型 *</label>
+                                    <select class="form-select" id="communicationTypeSelect" name="communicationType" required>
+                                        <option value="">请选择类型</option>
+                                        <option value="1">电话</option>
+                                        <option value="2">邮件</option>
+                                        <option value="3">微信</option>
+                                        <option value="4">面谈</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">重要程度 *</label>
+                                    <select class="form-select" id="importanceSelect" name="importance" required>
+                                        <option value="">请选择重要程度</option>
+                                        <option value="1">高</option>
+                                        <option value="2">中</option>
+                                        <option value="3">低</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">沟通时间 *</label>
+                                    <input type="datetime-local" class="form-control" id="communicationTime" name="communicationTime" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">沟通主题 *</label>
+                            <input type="text" class="form-control" id="subject" name="subject" required placeholder="请输入沟通主题...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">沟通内容 *</label>
+                            <textarea class="form-control" id="content" name="content" rows="4" required placeholder="请详细描述沟通内容..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">后续跟进</label>
+                            <textarea class="form-control" id="followUp" name="followUp" rows="3" placeholder="后续跟进计划..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCommunication()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 沟通记录详情模态框 -->
+    <div class="modal fade" id="communicationDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">沟通记录详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="communicationDetailContent">
+                    <!-- 沟通记录详情内容将通过JavaScript动态加载 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        // 模拟沟通记录数据
+        let communications = [
+            {
+                id: 1,
+                customerName: '张三',
+                communicationType: 1,
+                subject: '种子采购咨询',
+                content: '客户咨询了水稻种子的价格和种植技术',
+                importance: 1,
+                communicationTime: '2024-01-25T10:30:00',
+                followUp: '需要提供详细的产品资料',
+                operator: '李四',
+                createTime: '2024-01-25'
+            },
+            {
+                id: 2,
+                customerName: '李四农业科技有限公司',
+                communicationType: 2,
+                subject: '合同条款讨论',
+                content: '通过邮件讨论了合同的具体条款和价格',
+                importance: 2,
+                communicationTime: '2024-01-24T14:20:00',
+                followUp: '等待客户回复最终确认',
+                operator: '王五',
+                createTime: '2024-01-24'
+            },
+            {
+                id: 3,
+                customerName: '王五种子研究所',
+                communicationType: 4,
+                subject: '技术合作洽谈',
+                content: '面谈讨论了技术合作的具体方案',
+                importance: 1,
+                communicationTime: '2024-01-23T09:15:00',
+                followUp: '准备合作方案书',
+                operator: '赵六',
+                createTime: '2024-01-23'
+            }
+        ];
+
+        let selectedCommunications = [];
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCommunications();
+        });
+
+        // 加载沟通记录列表
+        function loadCommunications() {
+            const tbody = document.getElementById('communicationTableBody');
+            tbody.innerHTML = '';
+
+            communications.forEach(communication => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="communication-checkbox" value="${communication.id}" onchange="toggleCommunicationSelection(${communication.id})">
+                    </td>
+                    <td class="table-cell-truncate" title="${communication.customerName}">${communication.customerName}</td>
+                    <td class="table-cell-truncate" title="${getCommunicationTypeText(communication.communicationType)}">${getCommunicationTypeText(communication.communicationType)}</td>
+                    <td class="table-cell-truncate" title="${communication.subject}">${communication.subject}</td>
+                    <td><span class="badge ${getImportanceClass(communication.importance)}">${getImportanceText(communication.importance)}</span></td>
+                    <td class="table-cell-truncate" title="${formatDateTime(communication.communicationTime)}">${formatDateTime(communication.communicationTime)}</td>
+                    <td class="table-cell-truncate" title="${communication.operator}">${communication.operator}</td>
+                    <td>
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewCommunication(${communication.id})" title="查看详情">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="editCommunication(${communication.id})" title="编辑">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteCommunication(${communication.id})" title="删除">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 搜索沟通记录
+        function searchCommunications() {
+            const type = document.getElementById('communicationType').value;
+            const customer = document.getElementById('customerId').value;
+            const importance = document.getElementById('importance').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            let filteredCommunications = communications.filter(communication => {
+                return (!type || communication.communicationType == type) &&
+                       (!customer || communication.customerName.includes(customer)) &&
+                       (!importance || communication.importance == importance) &&
+                       (!startDate || communication.communicationTime >= startDate) &&
+                       (!endDate || communication.communicationTime <= endDate);
+            });
+
+            // 重新渲染表格
+            const tbody = document.getElementById('communicationTableBody');
+            tbody.innerHTML = '';
+
+            filteredCommunications.forEach(communication => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="communication-checkbox" value="${communication.id}" onchange="toggleCommunicationSelection(${communication.id})">
+                    </td>
+                    <td class="table-cell-truncate" title="${communication.customerName}">${communication.customerName}</td>
+                    <td class="table-cell-truncate" title="${getCommunicationTypeText(communication.communicationType)}">${getCommunicationTypeText(communication.communicationType)}</td>
+                    <td class="table-cell-truncate" title="${communication.subject}">${communication.subject}</td>
+                    <td><span class="badge ${getImportanceClass(communication.importance)}">${getImportanceText(communication.importance)}</span></td>
+                    <td class="table-cell-truncate" title="${formatDateTime(communication.communicationTime)}">${formatDateTime(communication.communicationTime)}</td>
+                    <td class="table-cell-truncate" title="${communication.operator}">${communication.operator}</td>
+                    <td>
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewCommunication(${communication.id})" title="查看详情">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="editCommunication(${communication.id})" title="编辑">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteCommunication(${communication.id})" title="删除">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 重置搜索条件
+        function resetSearch() {
+            document.getElementById('communicationType').value = '';
+            document.getElementById('customerId').value = '';
+            document.getElementById('importance').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            loadCommunications();
+        }
+
+        // 显示新增沟通记录模态框
+        function showAddCommunicationModal() {
+            document.getElementById('communicationModalTitle').textContent = '新增沟通记录';
+            document.getElementById('communicationForm').reset();
+            document.getElementById('communicationId').value = '';
+            new bootstrap.Modal(document.getElementById('communicationModal')).show();
+        }
+
+        // 查看沟通记录详情
+        function viewCommunication(id) {
+            const communication = communications.find(c => c.id === id);
+            if (communication) {
+                const content = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>基本信息</h6>
+                            <p><strong>客户名称：</strong>${communication.customerName}</p>
+                            <p><strong>沟通类型：</strong>${getCommunicationTypeText(communication.communicationType)}</p>
+                            <p><strong>重要程度：</strong>${getImportanceText(communication.importance)}</p>
+                            <p><strong>沟通时间：</strong>${formatDateTime(communication.communicationTime)}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>详细信息</h6>
+                            <p><strong>沟通主题：</strong>${communication.subject}</p>
+                            <p><strong>操作人：</strong>${communication.operator}</p>
+                            <p><strong>创建时间：</strong>${communication.createTime}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>沟通内容</h6>
+                            <p>${communication.content}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>后续跟进</h6>
+                            <p>${communication.followUp || '无'}</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('communicationDetailContent').innerHTML = content;
+                new bootstrap.Modal(document.getElementById('communicationDetailModal')).show();
+            }
+        }
+
+        // 编辑沟通记录
+        function editCommunication(id) {
+            const communication = communications.find(c => c.id === id);
+            if (communication) {
+                document.getElementById('communicationModalTitle').textContent = '编辑沟通记录';
+                document.getElementById('communicationId').value = communication.id;
+                document.getElementById('customerSelect').value = communication.customerName;
+                document.getElementById('communicationTypeSelect').value = communication.communicationType;
+                document.getElementById('importanceSelect').value = communication.importance;
+                document.getElementById('communicationTime').value = communication.communicationTime;
+                document.getElementById('subject').value = communication.subject;
+                document.getElementById('content').value = communication.content;
+                document.getElementById('followUp').value = communication.followUp || '';
+                new bootstrap.Modal(document.getElementById('communicationModal')).show();
+            }
+        }
+
+        // 保存沟通记录
+        function saveCommunication() {
+            const form = document.getElementById('communicationForm');
+            const formData = new FormData(form);
+            
+            const communicationData = {
+                customerName: formData.get('customerId'),
+                communicationType: parseInt(formData.get('communicationType')),
+                importance: parseInt(formData.get('importance')),
+                communicationTime: formData.get('communicationTime'),
+                subject: formData.get('subject'),
+                content: formData.get('content'),
+                followUp: formData.get('followUp'),
+                operator: '当前用户'
+            };
+
+            const communicationId = document.getElementById('communicationId').value;
+            
+            if (communicationId) {
+                // 编辑模式
+                const index = communications.findIndex(c => c.id == communicationId);
+                if (index !== -1) {
+                    communications[index] = { ...communications[index], ...communicationData };
+                }
+            } else {
+                // 新增模式
+                const newCommunication = {
+                    id: communications.length + 1,
+                    ...communicationData,
+                    createTime: new Date().toISOString().split('T')[0]
+                };
+                communications.push(newCommunication);
+            }
+
+            loadCommunications();
+            bootstrap.Modal.getInstance(document.getElementById('communicationModal')).hide();
+            alert('保存成功！');
+        }
+
+        // 删除沟通记录
+        function deleteCommunication(id) {
+            if (confirm('确定要删除这个沟通记录吗？')) {
+                communications = communications.filter(c => c.id !== id);
+                loadCommunications();
+                alert('删除成功！');
+            }
+        }
+
+        // 批量删除
+        function batchDelete() {
+            if (selectedCommunications.length === 0) {
+                alert('请先选择要删除的沟通记录！');
+                return;
+            }
+            
+            if (confirm(`确定要删除选中的 ${selectedCommunications.length} 条沟通记录吗？`)) {
+                communications = communications.filter(c => !selectedCommunications.includes(c.id));
+                selectedCommunications = [];
+                loadCommunications();
+                alert('批量删除成功！');
+            }
+        }
+
+        // 全选/取消全选
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.communication-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    if (!selectedCommunications.includes(parseInt(checkbox.value))) {
+                        selectedCommunications.push(parseInt(checkbox.value));
+                    }
+                } else {
+                    selectedCommunications = selectedCommunications.filter(id => id !== parseInt(checkbox.value));
+                }
+            });
+        }
+
+        // 切换沟通记录选择状态
+        function toggleCommunicationSelection(id) {
+            const index = selectedCommunications.indexOf(id);
+            if (index > -1) {
+                selectedCommunications.splice(index, 1);
+            } else {
+                selectedCommunications.push(id);
+            }
+        }
+
+        // 刷新数据
+        function refreshData() {
+            loadCommunications();
+            alert('刷新成功！');
+        }
+
+        // 导出沟通记录
+        function exportCommunications() {
+            const dataStr = JSON.stringify(communications, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `communications_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 获取沟通类型文本
+        function getCommunicationTypeText(type) {
+            switch (type) {
+                case 1: return '电话';
+                case 2: return '邮件';
+                case 3: return '微信';
+                case 4: return '面谈';
+                default: return '未知';
+            }
+        }
+
+        // 获取重要程度文本
+        function getImportanceText(importance) {
+            switch (importance) {
+                case 1: return '高';
+                case 2: return '中';
+                case 3: return '低';
+                default: return '未知';
+            }
+        }
+
+        // 获取重要程度样式类
+        function getImportanceClass(importance) {
+            switch (importance) {
+                case 1: return 'bg-danger';
+                case 2: return 'bg-warning';
+                case 3: return 'bg-success';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // 格式化日期时间
+        function formatDateTime(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return date.toLocaleString('zh-CN');
+        }
+    </script>
+</body>
+</html>

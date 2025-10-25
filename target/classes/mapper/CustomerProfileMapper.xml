@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aicustomer.mapper.CustomerProfileMapper">
+
+    <select id="findByCustomerAccountId" parameterType="long" resultType="com.aicustomer.entity.CustomerProfile">
+        SELECT * FROM customer_profile WHERE customer_account_id = #{customerAccountId}
+    </select>
+
+    <select id="findByCustomerId" parameterType="long" resultType="com.aicustomer.entity.CustomerProfile">
+        SELECT * FROM customer_profile WHERE customer_id = #{customerId}
+    </select>
+
+    <insert id="insert" parameterType="com.aicustomer.entity.CustomerProfile" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO customer_profile (
+            customer_account_id, customer_id, real_name, gender, birthday, 
+            location, company, position, website, interests, 
+            background_image, privacy_settings, create_time, update_time
+        ) VALUES (
+            #{customerAccountId}, #{customerId}, #{realName}, #{gender}, #{birthday},
+            #{location}, #{company}, #{position}, #{website}, #{interests},
+            #{backgroundImage}, #{privacySettings}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.aicustomer.entity.CustomerProfile">
+        UPDATE customer_profile SET
+            real_name = #{realName},
+            gender = #{gender},
+            birthday = #{birthday},
+            location = #{location},
+            company = #{company},
+            position = #{position},
+            website = #{website},
+            interests = #{interests},
+            background_image = #{backgroundImage},
+            privacy_settings = #{privacySettings},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+</mapper>
