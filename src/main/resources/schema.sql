@@ -1,4 +1,4 @@
--- AI客户管理系统数据库初始化脚本 (H2版本)
+-- AI客户管理系统数据库初始化脚本 (MySQL版本)
 
 -- 客户基本信息表
 CREATE TABLE IF NOT EXISTS customer (

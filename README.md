@@ -2,31 +2,12 @@
 
 一个基于Spring Boot的智能客户管理系统，集成了AI功能，提供完整的客户管理解决方案。
 
-## 🚀 技术栈
+## 📚 项目文档
 
-### 后端技术
-- **框架**: Spring Boot 2.4.4
-- **语言**: Java 8
-- **构建工具**: Apache Maven
-- **数据库**: MySQL 8.0
-- **ORM**: MyBatis 2.2.0
-- **安全**: Spring Security
-- **监控**: Spring Actuator
+- **[技术架构约束文档](TECHNOLOGY_CONSTRAINTS.md)** - 详细的技术栈约束、架构设计和实现规范
+- **[功能业务约束文档](FEATURE_CONSTRAINTS.md)** - 完整的功能模块约束、业务规则和数据字段规范
 
-### 前端技术
-- **框架**: Bootstrap 5.1.3
-- **图标**: Bootstrap Icons
-- **交互**: 原生JavaScript
-
-### 核心依赖
-- **JSON处理**: Google Gson 2.8.9, Alibaba FastJSON 1.2.83
-- **工具库**: Google Guava 30.1.1-jre, Apache Commons
-- **文档处理**: Apache POI 5.1.0, POI-TL 1.12.0
-- **PDF处理**: PDFBox 2.0.20
-- **图表生成**: QuickChart 1.2.0
-- **计算机视觉**: JavaCV 1.5.2
-- **浏览器自动化**: Jvppeteer 1.1.5
-- **AI服务**: Alibaba NLS SDK 2.2.1
+**重要提示**：开发前请务必阅读以上两个约束文档，所有开发和扩展必须严格遵守文档规定。
 
 ## 📁 项目结构
 
@@ -133,47 +114,26 @@ java -jar target/ai-customer-management-1.0.0.jar
 - ✅ **事务管理**: 数据库事务支持
 - ✅ **日志记录**: 完整的日志记录
 
-### 待开发功能
-- 🔄 **用户认证**: Spring Security集成
-- 🔄 **权限管理**: 基于角色的权限控制
-- 🔄 **AI功能**: 智能客户分析
-- 🔄 **数据导入导出**: Excel/PDF导出
-- 🔄 **消息通知**: 客户联系提醒
-- 🔄 **数据可视化**: 图表和报表
+## 📋 核心功能
 
-## 🔧 配置说明
+- ✅ **客户管理**: 客户信息的增删改查、分类和标签管理
+- ✅ **沟通记录**: 多渠道沟通记录和智能分析
+- ✅ **AI智能功能**: AI智能分析、推荐和聊天
+- ✅ **团队协作**: 任务管理和团队协作工具
+- ✅ **消息中心**: 系统通知和业务提醒
+- ✅ **数据报表**: 业务报表和数据分析
 
-### 数据库配置
-```yaml
-spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ai_customer_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: 123456
-    hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-```
+更多功能详情请查看 [功能业务约束文档](FEATURE_CONSTRAINTS.md)
 
-### MyBatis配置
-```yaml
-mybatis:
-  mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.aicustomer.entity
-  configuration:
-    map-underscore-to-camel-case: true
-    cache-enabled: true
-```
+## 🔧 技术栈
 
-### 文件上传配置
-```yaml
-spring:
-  servlet:
-    multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
-```
+### 核心技术
+- **后端**: Spring Boot 2.4.4, Java 8, MyBatis 2.2.0
+- **数据库**: MySQL 8.0+
+- **前端**: Bootstrap 5.1.3, 原生JavaScript, CSS3
+- **构建工具**: Apache Maven 3.6+
+
+详细技术栈和架构约束请查看 [技术架构约束文档](TECHNOLOGY_CONSTRAINTS.md)
 
 ## 📊 API接口
 
@@ -213,23 +173,6 @@ curl -X POST http://localhost:8080/ai-customer/api/customer \
 curl "http://localhost:8080/ai-customer/api/customer/page?pageNum=1&pageSize=10"
 ```
 
-## 🗄️ 数据库设计
-
-### 客户表 (customer)
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | BIGINT | 主键ID |
-| customer_code | VARCHAR(50) | 客户编号 |
-| customer_name | VARCHAR(100) | 客户姓名 |
-| customer_type | TINYINT | 客户类型(1:个人,2:企业) |
-| phone | VARCHAR(20) | 手机号码 |
-| email | VARCHAR(100) | 邮箱 |
-| address | VARCHAR(500) | 地址 |
-| customer_level | TINYINT | 客户等级(1:普通,2:VIP,3:钻石) |
-| status | TINYINT | 客户状态(1:正常,2:冻结,3:注销) |
-| source | TINYINT | 客户来源(1:线上,2:线下,3:推荐) |
-| create_time | DATETIME | 创建时间 |
-| update_time | DATETIME | 更新时间 |
 
 ## 🚀 部署说明
 
@@ -248,13 +191,6 @@ mvn clean package -Pprod
 java -jar target/ai-customer-management-1.0.0.jar --spring.profiles.active=prod
 ```
 
-### Docker部署
-```dockerfile
-FROM openjdk:8-jre-alpine
-COPY target/ai-customer-management-1.0.0.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
-```
 
 ## 🤝 贡献指南
 

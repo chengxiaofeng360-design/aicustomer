@@ -1,0 +1,48 @@
+    <style>
+        /* 统计卡片增强样式 */
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .remote-tool-card {
+                height: 100px;
+                padding: 15px;
+            }
+            
+            .tool-icon {
+                font-size: 1.5rem;
+            }
+            
+            .tool-name {
+                font-size: 1rem;
+            }
+            
+            .stats-number {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+
