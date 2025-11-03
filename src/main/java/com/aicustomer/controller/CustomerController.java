@@ -70,13 +70,20 @@ public class CustomerController {
     public Result<PageResult<Customer>> page(@RequestParam(defaultValue = "1") Integer pageNum,
                                            @RequestParam(defaultValue = "10") Integer pageSize,
                                            Customer customer) {
-        PageResult<Customer> pageResult = customerService.page(pageNum, pageSize, customer);
-        // 对敏感数据进行脱敏处理
-        List<Customer> maskedList = pageResult.getList().stream()
-                .map(sensitiveDataService::maskSensitiveData)
-                .collect(java.util.stream.Collectors.toList());
-        pageResult.setList(maskedList);
-        return Result.success(pageResult);
+        try {
+            PageResult<Customer> pageResult = customerService.page(pageNum, pageSize, customer);
+            // 对敏感数据进行脱敏处理
+            List<Customer> maskedList = pageResult.getList().stream()
+                    .map(sensitiveDataService::maskSensitiveData)
+                    .collect(java.util.stream.Collectors.toList());
+            pageResult.setList(maskedList);
+            return Result.success(pageResult);
+        } catch (Exception e) {
+            // 如果数据库连接失败或其他异常，返回空结果而不是抛出异常
+            e.printStackTrace();
+            PageResult<Customer> emptyResult = new PageResult<>(pageNum, pageSize, 0L, new java.util.ArrayList<>());
+            return Result.success(emptyResult);
+        }
     }
     
     /**
@@ -84,16 +91,48 @@ public class CustomerController {
      */
     @PostMapping
     public Result<String> save(@RequestBody Customer customer) {
-        // 检查客户编号是否已存在
-        if (customerService.existsByCustomerCode(customer.getCustomerCode())) {
-            return Result.error("客户编号已存在");
+        try {
+            // 验证必填字段
+            if (customer.getCustomerName() == null || customer.getCustomerName().trim().isEmpty()) {
+                return Result.error("客户姓名/企业名称不能为空");
+            }
+            
+            // 确保客户编号存在
+            if (customer.getCustomerCode() == null || customer.getCustomerCode().trim().isEmpty()) {
+                customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int)(Math.random() * 1000));
+            }
+            
+            // 检查客户编号是否已存在
+            if (customerService.existsByCustomerCode(customer.getCustomerCode())) {
+                return Result.error("客户编号已存在");
+            }
+            
+            // 设置默认值
+            if (customer.getCustomerType() == null) {
+                customer.setCustomerType(1); // 默认个人客户
+            }
+            if (customer.getStatus() == null) {
+                customer.setStatus(1); // 默认正常
+            }
+            if (customer.getSource() == null) {
+                customer.setSource(2); // 默认线下
+            }
+            if (customer.getCustomerLevel() == null) {
+                customer.setCustomerLevel(1); // 默认普通
+            }
+            
+            System.out.println("保存客户数据: " + customer.getCustomerName() + ", 类型: " + customer.getCustomerType() + ", 编号: " + customer.getCustomerCode());
+            
+            boolean success = customerService.save(customer);
+            if (success) {
+                return Result.success("客户保存成功");
+            }
+            return Result.error("客户保存失败");
+        } catch (Exception e) {
+            System.err.println("保存客户异常: " + e.getMessage());
+            e.printStackTrace();
+            return Result.error("客户保存失败: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
         }
-        
-        boolean success = customerService.save(customer);
-        if (success) {
-            return Result.success("客户保存成功");
-        }
-        return Result.error("客户保存失败");
     }
     
     /**
@@ -101,11 +140,34 @@ public class CustomerController {
      */
     @PutMapping
     public Result<String> update(@RequestBody Customer customer) {
-        boolean success = customerService.update(customer);
-        if (success) {
-            return Result.success("客户更新成功");
+        try {
+            // 检查客户是否存在
+            if (customer.getId() == null) {
+                return Result.error("客户ID不能为空");
+            }
+            
+            Customer existingCustomer = customerService.getById(customer.getId());
+            if (existingCustomer == null) {
+                return Result.error("客户不存在");
+            }
+            
+            // 如果修改了客户编号，检查新编号是否已被其他客户使用
+            if (customer.getCustomerCode() != null && 
+                !customer.getCustomerCode().equals(existingCustomer.getCustomerCode())) {
+                if (customerService.existsByCustomerCode(customer.getCustomerCode())) {
+                    return Result.error("客户编号已被使用");
+                }
+            }
+            
+            boolean success = customerService.update(customer);
+            if (success) {
+                return Result.success("客户更新成功");
+            }
+            return Result.error("客户更新失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("客户更新失败: " + e.getMessage());
         }
-        return Result.error("客户更新失败");
     }
     
     /**
@@ -113,11 +175,22 @@ public class CustomerController {
      */
     @DeleteMapping("/{id}")
     public Result<String> deleteById(@PathVariable Long id) {
-        boolean success = customerService.deleteById(id);
-        if (success) {
-            return Result.success("客户删除成功");
+        try {
+            // 检查客户是否存在
+            Customer customer = customerService.getById(id);
+            if (customer == null) {
+                return Result.error("客户不存在");
+            }
+            
+            boolean success = customerService.deleteById(id);
+            if (success) {
+                return Result.success("客户删除成功");
+            }
+            return Result.error("客户删除失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("客户删除失败: " + e.getMessage());
         }
-        return Result.error("客户删除失败");
     }
     
     /**

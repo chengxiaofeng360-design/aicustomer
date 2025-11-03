@@ -71,20 +71,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         fetch('/api/customer/page?' + params.toString())
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                // 如果HTTP状态码不是200，尝试解析错误信息
+                return response.json().then(err => {
+                    throw new Error(err.message || '服务器错误: ' + response.status);
+                });
+            }
+            return response.json();
+        })
         .then(result => {
-            if (result.code === 200 && result.data) {
-                customers = result.data.list || result.data;
+            console.log('API响应:', result);
+            if (result && result.code === 200 && result.data) {
+                customers = result.data.list || result.data || [];
                 renderCustomerTable(customers);
                 updateTotalCount();
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + (result.message || '未知错误') + '</td></tr>';
-                }
-            })
-            .catch(error => {
-                console.error('加载客户列表失败:', error);
-                tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败，请刷新页面重试</td></tr>';
-            });
+            } else {
+                const errorMsg = (result && result.message) || (result && result.error) || '未知错误';
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + errorMsg + '</td></tr>';
+            }
+        })
+        .catch(error => {
+            console.error('加载客户列表失败:', error);
+            const errorMsg = error.message || '网络错误或服务器未响应';
+            tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
+        });
 }
 
 // 渲染客户表格
@@ -304,6 +315,12 @@ const KEYWORD = '木木';
 
 // 初始化语音识别
 function initVoiceRecognition() {
+    // 检查网络状态
+    if (navigator.onLine === false) {
+        console.warn('网络不可用，语音识别功能已禁用');
+        return;
+    }
+    
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
@@ -365,7 +382,27 @@ function initVoiceRecognition() {
 
         recognition.onerror = function(event) {
             console.error('语音识别错误:', event.error);
-            showVoiceStatus('语音识别出错：' + event.error);
+            
+            // 对network错误进行特殊处理（网络问题不影响主要功能）
+            if (event.error === 'network') {
+                // network错误通常是网络连接问题，不影响其他功能，静默处理
+                console.warn('语音识别网络连接失败，功能已禁用');
+                hideVoiceStatus();
+                stopVoiceInput();
+                // 可以选择性地显示一个非错误性的提示
+                // showVoiceStatus('语音识别需要网络连接，当前网络不可用');
+                return;
+            }
+            
+            // 其他错误才显示错误提示
+            if (event.error === 'not-allowed') {
+                showVoiceStatus('语音识别权限被拒绝，请在浏览器设置中允许麦克风权限');
+            } else if (event.error === 'no-speech') {
+                // 无语音输入是正常情况，不显示错误
+                hideVoiceStatus();
+            } else {
+                showVoiceStatus('语音识别出错：' + event.error);
+            }
             stopVoiceInput();
         };
 
@@ -410,6 +447,12 @@ function startVoiceInput() {
 
 // 自动启动语音监听
 function autoStartVoiceListening() {
+    // 检查网络状态，无网络时不启动语音识别
+    if (navigator.onLine === false) {
+        console.warn('网络不可用，跳过语音识别自动启动');
+        return;
+    }
+    
     if (!recognition) {
         initVoiceRecognition();
     }
@@ -419,6 +462,10 @@ function autoStartVoiceListening() {
             recognition.start();
         } catch (error) {
             console.error('自动启动语音识别失败:', error);
+            // 如果是network错误，静默处理
+            if (error.message && error.message.includes('network')) {
+                console.warn('语音识别网络连接失败，已禁用自动启动');
+            }
             // 静默失败，不显示错误提示
         }
     }
@@ -1063,7 +1110,12 @@ function viewCustomer(id) {
         });
 }
 
+// 当前查看的客户信息（用于沟通记录）
+let currentViewingCustomer = null;
+
 function showCustomerDetail(customer) {
+    currentViewingCustomer = customer;
+    
     const customerTypeText = customerTypeMap[customer.customerType] || customer.customerType || '未知';
     const customerLevel = customer.customerLevel || 1;
     const customerLevelText = customerLevelMap[customerLevel] || '普通';
@@ -1112,7 +1164,45 @@ function showCustomerDetail(customer) {
             '</div>' +
         '</div>';
     document.getElementById('customerDetailContent').innerHTML = content;
-    new bootstrap.Modal(document.getElementById('customerDetailModal')).show();
+    
+    // 初始化标签页事件监听（移除旧的监听器，添加新的）
+    const communicationsTab = document.getElementById('communicationsTab');
+    if (communicationsTab) {
+        // 移除旧的监听器
+        const newTab = communicationsTab.cloneNode(true);
+        communicationsTab.parentNode.replaceChild(newTab, communicationsTab);
+        
+        // 添加新的监听器
+        document.getElementById('communicationsTab').addEventListener('shown.bs.tab', function() {
+            // 当切换到沟通记录标签页时，加载该客户的沟通记录
+            if (customer.id) {
+                loadCustomerCommunications(customer.id);
+            }
+        });
+    }
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
+    modal.show();
+}
+
+// 为当前客户显示新增沟通记录模态框
+function showAddCommunicationForCurrentCustomer() {
+    if (!currentViewingCustomer || !currentViewingCustomer.id) {
+        alert('无法获取客户信息，请先查看客户详情');
+        return;
+    }
+    showAddCommunicationModalForCustomer(currentViewingCustomer.id, currentViewingCustomer.customerName);
+    
+    // 设置客户名称显示
+    const customerSelect = document.getElementById('customerSelect');
+    const customerIdHidden = document.getElementById('customerIdHidden');
+    if (customerSelect) {
+        customerSelect.value = currentViewingCustomer.customerName || '';
+    }
+    if (customerIdHidden) {
+        customerIdHidden.value = currentViewingCustomer.id;
+    }
 }
 function editCustomer(id) {
     fetch(`/api/customer/${id}`)
@@ -1164,36 +1254,59 @@ function saveCustomer() {
     const form = document.getElementById('customerForm');
     const formData = new FormData(form);
     
+    // 验证必填字段
+    const customerName = formData.get('customerName')?.trim();
+    if (!customerName) {
+        alert('客户姓名/企业名称不能为空！');
+        return;
+    }
+    
     const customerTypeText = formData.get('customerType');
-    const customerType = customerTypeReverseMap[customerTypeText] || customerTypeText;
+    // 确保customerType有值，默认为1（个人客户）
+    let customerType = customerTypeReverseMap[customerTypeText];
+    if (!customerType && customerTypeText) {
+        // 如果映射失败，尝试直接使用原值（可能是数字字符串）
+        customerType = parseInt(customerTypeText) || 1;
+    }
+    if (!customerType) {
+        customerType = 1; // 默认个人客户
+    }
     
     const customerLevelText = formData.get('customerLevel');
-    const customerLevel = customerLevelReverseMap[customerLevelText] || customerLevelText || 1;
+    const customerLevel = customerLevelReverseMap[customerLevelText] || parseInt(customerLevelText) || 1;
+    
+    const customerId = document.getElementById('customerId').value;
     
     const customerData = {
-        customerName: formData.get('customerName'),
-        contactPerson: formData.get('contactPerson'),
-        phone: formData.get('phone'),
-        email: formData.get('email'),
+        customerName: customerName,
+        contactPerson: formData.get('contactPerson') || null,
+        phone: formData.get('phone') || null,
+        email: formData.get('email') || null,
         customerType: customerType,
         customerLevel: customerLevel,
-        region: formData.get('region'),
-        applicationType: formData.get('applicationType'),
-        companySize: formData.get('companySize'),
-        industry: formData.get('industry'),
-        annualRevenue: formData.get('annualRevenue'),
-        address: formData.get('address'),
-        remark: formData.get('remarks')
+        region: formData.get('region') || null,
+        applicationType: formData.get('applicationType') || null,
+        companySize: formData.get('companySize') || null,
+        industry: formData.get('industry') || null,
+        annualRevenue: formData.get('annualRevenue') || null,
+        address: formData.get('address') || null,
+        remark: formData.get('remarks') || null,
+        status: 1, // 默认状态：正常
+        source: 2  // 默认来源：线下
     };
-
-    const customerId = document.getElementById('customerId').value;
+    
+    // 如果是新增客户，生成客户编号；如果是编辑，保留原有ID和编号
+    if (customerId) {
+        customerData.id = parseInt(customerId);
+    } else {
+        // 新增客户时生成客户编号（格式：CUST + 时间戳 + 随机数）
+        customerData.customerCode = 'CUST' + Date.now() + Math.floor(Math.random() * 1000);
+    }
+    
+    console.log('准备保存客户数据:', customerData);
     
     const url = customerId ? `/api/customer` : `/api/customer`;
     const method = customerId ? 'PUT' : 'POST';
-    
-    if (customerId) {
-        customerData.id = parseInt(customerId);
-    }
     
     fetch(url, {
         method: method,
@@ -1202,19 +1315,29 @@ function saveCustomer() {
         },
         body: JSON.stringify(customerData)
     })
-    .then(response => response.json())
+    .then(response => {
+        // 先尝试解析JSON，如果失败则说明可能是HTML错误页面
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error('服务器错误响应:', text);
+                throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
+            });
+        }
+        return response.json();
+    })
     .then(result => {
+        console.log('服务器响应:', result);
         if (result.code === 200) {
             alert('保存成功！');
             bootstrap.Modal.getInstance(document.getElementById('customerModal')).hide();
             loadCustomers();
         } else {
-            alert('保存失败: ' + (result.message || '未知错误'));
+            alert('保存失败: ' + (result.message || result.msg || '未知错误'));
         }
     })
     .catch(error => {
         console.error('保存客户失败:', error);
-        alert('保存失败，请重试');
+        alert('保存失败: ' + (error.message || '网络错误，请检查服务器连接'));
     });
 }
 
