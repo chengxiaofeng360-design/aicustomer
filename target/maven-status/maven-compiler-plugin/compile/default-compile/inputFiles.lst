@@ -41,9 +41,11 @@
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/mapper/AiChatMapper.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/SensitiveDataService.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/entity/AiChat.java
+/Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/DeepSeekService.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/controller/LoginController.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/SocialCommentService.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/SocialPostService.java
+/Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/util/DatabaseInitializer.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/impl/AiChatServiceImpl.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/TaskReminderService.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/CommunicationService.java
@@ -54,6 +56,7 @@
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/controller/TeamCollaborationController.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/ImportService.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/entity/CustomerProfile.java
+/Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/config/DeepSeekConfig.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/mapper/SocialPostMapper.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/controller/AiAnalysisController.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/impl/AiAnalysisServiceImpl.java

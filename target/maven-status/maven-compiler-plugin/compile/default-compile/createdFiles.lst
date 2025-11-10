@@ -16,6 +16,7 @@ com/aicustomer/AiCustomerApplication.class
 com/aicustomer/entity/SocialComment.class
 com/aicustomer/mapper/TaskReminderMapper.class
 com/aicustomer/service/AiChatService.class
+com/aicustomer/service/DeepSeekService.class
 com/aicustomer/service/impl/TeamCollaborationServiceImpl.class
 com/aicustomer/controller/CustomerAccountController.class
 com/aicustomer/service/impl/TeamTaskServiceImpl.class
@@ -27,6 +28,7 @@ com/aicustomer/controller/TaskProgressReportController.class
 com/aicustomer/entity/TeamTask.class
 com/aicustomer/service/impl/CustomerAccountServiceImpl.class
 com/aicustomer/entity/User.class
+com/aicustomer/config/DeepSeekConfig.class
 com/aicustomer/service/impl/CommunicationServiceImpl.class
 com/aicustomer/entity/TeamMember.class
 com/aicustomer/mapper/CustomerAccountMapper.class
@@ -60,6 +62,7 @@ com/aicustomer/mapper/AiChatMapper.class
 com/aicustomer/service/ImportService$SaveResult.class
 com/aicustomer/controller/CommunicationController.class
 com/aicustomer/service/SocialPostService.class
+com/aicustomer/util/DatabaseInitializer.class
 com/aicustomer/service/ImportService$ValidationResult.class
 com/aicustomer/service/SocialCommentService.class
 com/aicustomer/service/ImportService$ImportResult.class

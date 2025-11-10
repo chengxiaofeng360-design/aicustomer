@@ -5,13 +5,14 @@ import com.aicustomer.entity.Customer;
 import com.aicustomer.entity.CustomerDetail;
 import com.aicustomer.entity.CustomerTag;
 import com.aicustomer.mapper.CustomerMapper;
+import com.aicustomer.mapper.CustomerDetailMapper;
+import com.aicustomer.mapper.CustomerTagMapper;
 import com.aicustomer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,8 @@ import java.util.List;
 public class CustomerServiceImpl implements CustomerService {
     
     private final CustomerMapper customerMapper;
+    private final CustomerTagMapper customerTagMapper;
+    private final CustomerDetailMapper customerDetailMapper;
     
     @Override
     public Customer getById(Long id) {
@@ -159,65 +162,137 @@ public class CustomerServiceImpl implements CustomerService {
     
     @Override
     public List<CustomerTag> getCustomerTags(Long customerId) {
-        // 模拟客户标签数据
-        List<CustomerTag> tags = new ArrayList<>();
-        
-        CustomerTag tag1 = new CustomerTag();
-        tag1.setId(1L);
-        tag1.setCustomerId(customerId);
-        tag1.setTagName("重要客户");
-        tag1.setTagType(1); // 1:重要程度
-        tag1.setCreateTime(LocalDateTime.now());
-        tags.add(tag1);
-        
-        CustomerTag tag2 = new CustomerTag();
-        tag2.setId(2L);
-        tag2.setCustomerId(customerId);
-        tag2.setTagName("科技行业");
-        tag2.setTagType(2); // 2:行业分类
-        tag2.setCreateTime(LocalDateTime.now());
-        tags.add(tag2);
-        
-        return tags;
+        // 从数据库查询客户标签
+        return customerTagMapper.selectByCustomerId(customerId);
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void addCustomerTag(CustomerTag tag) {
-        // 实际项目中应该保存到数据库
-        System.out.println("添加客户标签: " + tag.getTagName());
+        // 设置创建时间和默认值
+        if (tag.getCreateTime() == null) {
+            tag.setCreateTime(LocalDateTime.now());
+        }
+        if (tag.getUpdateTime() == null) {
+            tag.setUpdateTime(LocalDateTime.now());
+        }
+        if (tag.getDeleted() == null) {
+            tag.setDeleted(0);
+        }
+        if (tag.getVersion() == null) {
+            tag.setVersion(1);
+        }
+        if (tag.getTagType() == null) {
+            tag.setTagType(2); // 默认自定义标签
+        }
+        if (tag.getIsVisible() == null) {
+            tag.setIsVisible(1); // 默认显示
+        }
+        if (tag.getWeight() == null) {
+            tag.setWeight(0); // 默认权重
+        }
+        
+        customerTagMapper.insert(tag);
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteCustomerTag(Long tagId) {
-        // 实际项目中应该从数据库删除
-        System.out.println("删除客户标签: " + tagId);
+        // 逻辑删除客户标签
+        customerTagMapper.deleteById(tagId);
     }
     
     @Override
     public CustomerDetail getCustomerDetail(Long customerId) {
-        // 模拟客户详细信息
-        CustomerDetail detail = new CustomerDetail();
-        detail.setId(1L);
-        detail.setCustomerId(customerId);
-        detail.setIndustryCategory("科技");
-        detail.setBusinessType("软件开发");
-        detail.setValueScore(85);
-        detail.setLifecycleStage(3); // 3:合作
-        detail.setCooperationCount(5);
-        detail.setCreditLevel(1); // 1:A级
-        detail.setCreateTime(LocalDateTime.now());
+        // 从数据库查询客户详细信息
+        CustomerDetail detail = customerDetailMapper.selectByCustomerId(customerId);
+        // 如果不存在，返回null而不是创建新对象
         return detail;
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateCustomerDetail(CustomerDetail detail) {
-        // 实际项目中应该更新数据库
-        System.out.println("更新客户详细信息: " + detail.getCustomerId());
+        // 检查是否存在
+        CustomerDetail existing = customerDetailMapper.selectByCustomerId(detail.getCustomerId());
+        if (existing == null) {
+            // 不存在则插入
+            if (detail.getCreateTime() == null) {
+                detail.setCreateTime(LocalDateTime.now());
+            }
+            if (detail.getUpdateTime() == null) {
+                detail.setUpdateTime(LocalDateTime.now());
+            }
+            if (detail.getDeleted() == null) {
+                detail.setDeleted(0);
+            }
+            if (detail.getVersion() == null) {
+                detail.setVersion(1);
+            }
+            customerDetailMapper.insert(detail);
+        } else {
+            // 存在则更新
+            detail.setUpdateTime(LocalDateTime.now());
+            detail.setVersion(existing.getVersion()); // 使用现有版本号，更新时会自动+1
+            customerDetailMapper.updateByCustomerId(detail);
+        }
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateCustomerLifecycle(Long customerId, String lifecycleStage) {
-        // 实际项目中应该更新数据库
-        System.out.println("更新客户生命周期: " + customerId + " -> " + lifecycleStage);
+        // 解析生命周期阶段字符串为数字
+        Integer stage = null;
+        if (lifecycleStage != null) {
+            switch (lifecycleStage.toLowerCase()) {
+                case "潜在":
+                case "1":
+                    stage = 1;
+                    break;
+                case "接触":
+                case "2":
+                    stage = 2;
+                    break;
+                case "合作":
+                case "3":
+                    stage = 3;
+                    break;
+                case "维护":
+                case "4":
+                    stage = 4;
+                    break;
+                case "流失":
+                case "5":
+                    stage = 5;
+                    break;
+                default:
+                    try {
+                        stage = Integer.parseInt(lifecycleStage);
+                    } catch (NumberFormatException e) {
+                        // 忽略无效值
+                    }
+            }
+        }
+        
+        if (stage != null) {
+            // 获取或创建客户详细信息
+            CustomerDetail detail = customerDetailMapper.selectByCustomerId(customerId);
+            if (detail == null) {
+                detail = new CustomerDetail();
+                detail.setCustomerId(customerId);
+                detail.setCreateTime(LocalDateTime.now());
+                detail.setDeleted(0);
+                detail.setVersion(1);
+            }
+            detail.setLifecycleStage(stage);
+            detail.setUpdateTime(LocalDateTime.now());
+            
+            if (detail.getId() == null) {
+                customerDetailMapper.insert(detail);
+            } else {
+                detail.setVersion(detail.getVersion()); // 保持版本号，更新时会自动+1
+                customerDetailMapper.updateByCustomerId(detail);
+            }
+        }
     }
 }

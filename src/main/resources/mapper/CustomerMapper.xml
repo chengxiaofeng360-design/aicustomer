@@ -28,7 +28,10 @@
         <result column="fax" property="fax" jdbcType="VARCHAR"/>
         <result column="organization_code" property="organizationCode" jdbcType="VARCHAR"/>
         <result column="nationality" property="nationality" jdbcType="VARCHAR"/>
-        <result column="applicant_nature" property="applicantNature" jdbcType="VARCHAR"/>
+        <result column="position" property="position" jdbcType="VARCHAR"/>
+        <result column="qq_weixin" property="qqWeixin" jdbcType="VARCHAR"/>
+        <result column="cooperation_content" property="cooperationContent" jdbcType="LONGVARCHAR"/>
+        <result column="region" property="region" jdbcType="VARCHAR"/>
         <result column="agency_name" property="agencyName" jdbcType="VARCHAR"/>
         <result column="agency_code" property="agencyCode" jdbcType="VARCHAR"/>
         <result column="agency_address" property="agencyAddress" jdbcType="VARCHAR"/>
@@ -48,7 +51,8 @@
         customer_level, status, remark, source, last_contact_time,
         create_time, update_time, create_by, update_by, deleted, version,
         contact_person, postal_code, fax, organization_code, nationality,
-        applicant_nature, agency_name, agency_code, agency_address, agency_postal_code,
+        position, qq_weixin, cooperation_content, region,
+        agency_name, agency_code, agency_address, agency_postal_code,
         agent_name, agent_phone, agent_fax, agent_mobile, agent_email,
         is_sensitive, protection_password
     </sql>
@@ -156,7 +160,8 @@
             customer_level, status, remark, source, last_contact_time,
             create_time, update_time, create_by, update_by, deleted, version,
             contact_person, postal_code, fax, organization_code, nationality,
-            applicant_nature, agency_name, agency_code, agency_address, agency_postal_code,
+            position, qq_weixin, cooperation_content, region,
+            agency_name, agency_code, agency_address, agency_postal_code,
             agent_name, agent_phone, agent_fax, agent_mobile, agent_email
         ) VALUES (
             #{customer.customerCode}, #{customer.customerName}, #{customer.customerType},
@@ -167,7 +172,9 @@
             #{customer.updateBy}, #{customer.deleted}, #{customer.version},
             #{customer.contactPerson}, #{customer.postalCode}, #{customer.fax},
             #{customer.organizationCode}, #{customer.nationality},
-            #{customer.applicantNature}, #{customer.agencyName}, #{customer.agencyCode},
+            #{customer.position}, #{customer.qqWeixin}, #{customer.cooperationContent},
+            #{customer.region},
+            #{customer.agencyName}, #{customer.agencyCode},
             #{customer.agencyAddress}, #{customer.agencyPostalCode},
             #{customer.agentName}, #{customer.agentPhone}, #{customer.agentFax},
             #{customer.agentMobile}, #{customer.agentEmail}
@@ -224,8 +231,17 @@
             <if test="customer.nationality != null and customer.nationality != ''">
                 nationality = #{customer.nationality},
             </if>
-            <if test="customer.applicantNature != null and customer.applicantNature != ''">
-                applicant_nature = #{customer.applicantNature},
+            <if test="customer.position != null and customer.position != ''">
+                position = #{customer.position},
+            </if>
+            <if test="customer.qqWeixin != null and customer.qqWeixin != ''">
+                qq_weixin = #{customer.qqWeixin},
+            </if>
+            <if test="customer.cooperationContent != null and customer.cooperationContent != ''">
+                cooperation_content = #{customer.cooperationContent},
+            </if>
+            <if test="customer.region != null and customer.region != ''">
+                region = #{customer.region},
             </if>
             <if test="customer.agencyName != null and customer.agencyName != ''">
                 agency_name = #{customer.agencyName},

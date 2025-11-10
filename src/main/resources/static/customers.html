@@ -85,15 +85,6 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">申请性质</label>
-                        <select class="form-select" id="applicationType">
-                            <option value="">全部</option>
-                            <option value="新品种保护">新品种保护</option>
-                            <option value="品种审定">品种审定</option>
-                            <option value="商标注册">商标注册</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
                         <label class="form-label">地区</label>
                         <select class="form-select" id="region">
                             <option value="">全部</option>
@@ -160,7 +151,8 @@
                                 <th>电话</th>
                                 <th>客户类型</th>
                                 <th>客户等级</th>
-                                <th>申请性质</th>
+                                <th>职务</th>
+                                <th>QQ/微信</th>
                                 <th>地区</th>
                                 <th>敏感信息</th>
                                 <th>创建时间</th>
@@ -178,7 +170,7 @@
 
     <!-- 新增/编辑客户模态框 -->
     <div class="modal fade" id="customerModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="customerModalTitle">新增客户</h5>
@@ -262,83 +254,52 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">申请性质 *</label>
-                                    <select class="form-select" id="applicationTypeSelect" name="applicationType" required>
-                                        <option value="">请选择</option>
-                                        <option value="新品种保护">新品种保护</option>
-                                        <option value="品种审定">品种审定</option>
-                                        <option value="商标注册">商标注册</option>
-                                        <option value="专利保护">专利保护</option>
-                                    </select>
+                                    <label class="form-label">职务</label>
+                                    <input type="text" class="form-control" id="position" name="position" placeholder="请输入职务">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">公司规模</label>
-                                    <select class="form-select" id="companySize" name="companySize">
-                                        <option value="">请选择</option>
-                                        <option value="小型企业">小型企业</option>
-                                        <option value="中型企业">中型企业</option>
-                                        <option value="大型企业">大型企业</option>
-                                        <option value="上市公司">上市公司</option>
-                                    </select>
+                                    <label class="form-label">QQ/微信</label>
+                                    <input type="text" class="form-control" id="qqWeixin" name="qqWeixin" placeholder="请输入QQ号或微信号">
                                 </div>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="mb-3">
-                                    <label class="form-label">行业</label>
-                                    <select class="form-select" id="industry" name="industry">
-                                        <option value="">请选择</option>
-                                        <option value="农业">农业</option>
-                                        <option value="种业">种业</option>
-                                        <option value="生物技术">生物技术</option>
-                                        <option value="科研院所">科研院所</option>
-                                        <option value="其他">其他</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">年营业额</label>
-                                    <select class="form-select" id="annualRevenue" name="annualRevenue">
-                                        <option value="">请选择</option>
-                                        <option value="100万以下">100万以下</option>
-                                        <option value="100-500万">100-500万</option>
-                                        <option value="500-1000万">500-1000万</option>
-                                        <option value="1000万以上">1000万以上</option>
-                                    </select>
+                                    <label class="form-label">合作内容</label>
+                                    <textarea class="form-control" id="cooperationContent" name="cooperationContent" rows="3" placeholder="请输入合作内容"></textarea>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="mb-3">
+                                        <div class="mb-3">
                             <label class="form-label">详细地址</label>
                             <textarea class="form-control" id="address" name="address" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3">
+                                        </div>
+                                        <div class="mb-3">
                             <label class="form-label">备注</label>
                             <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
-                        </div>
+                                        </div>
                     </form>
-                </div>
+                                    </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" onclick="saveCustomer()">保存</button>
-                </div>
-            </div>
-        </div>
-    </div>
+                                        </div>
+                                    </div>
+                                        </div>
+                                    </div>
 
     <!-- 客户详情模态框 -->
     <div class="modal fade" id="customerDetailModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">客户详情</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+                                </div>
                 <div class="modal-body">
                     <!-- 标签页导航 -->
                     <ul class="nav nav-tabs mb-3" id="customerDetailTabs" role="tablist">
@@ -389,38 +350,38 @@
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                        </div>
+                                    </div>
+                                        </div>
+                                    </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
     <!-- 新增/编辑沟通记录模态框 -->
     <div class="modal fade" id="communicationModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="communicationModalTitle">新增沟通记录</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+                            </div>
                 <div class="modal-body">
                     <form id="communicationForm">
                         <input type="hidden" id="communicationId" name="id">
-                        <div class="row">
+                                <div class="row">
                             <div class="col-md-6">
-                                <div class="mb-3">
+                                        <div class="mb-3">
                                     <label class="form-label">客户名称</label>
                                     <input type="text" class="form-control" id="customerSelect" name="customerId" readonly>
                                     <input type="hidden" id="customerIdHidden">
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
                             <div class="col-md-6">
-                                <div class="mb-3">
+                                        <div class="mb-3">
                                     <label class="form-label">沟通类型 *</label>
                                     <select class="form-select" id="communicationTypeSelect" name="communicationType" required>
                                         <option value="">请选择类型</option>
@@ -430,12 +391,12 @@
                                         <option value="4">面谈</option>
                                         <option value="5">其他</option>
                                     </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
+                                        </div>
+                                    </div>
+                                        </div>
+                                <div class="row">
                             <div class="col-md-6">
-                                <div class="mb-3">
+                                        <div class="mb-3">
                                     <label class="form-label">重要程度 *</label>
                                     <select class="form-select" id="importanceSelect" name="importance" required>
                                         <option value="">请选择重要程度</option>
@@ -443,19 +404,19 @@
                                         <option value="2">中</option>
                                         <option value="3">低</option>
                                     </select>
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
                             <div class="col-md-6">
-                                <div class="mb-3">
+                                        <div class="mb-3">
                                     <label class="form-label">沟通时间 *</label>
                                     <input type="datetime-local" class="form-control" id="communicationTime" name="communicationTime" required>
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
                         </div>
-                        <div class="mb-3">
+                                        <div class="mb-3">
                             <label class="form-label">沟通主题 *</label>
                             <input type="text" class="form-control" id="subject" name="subject" required placeholder="请输入沟通主题...">
-                        </div>
+                                        </div>
                         <div class="mb-3">
                             <label class="form-label">沟通内容 *</label>
                             <textarea class="form-control" id="content" name="content" rows="4" required placeholder="请详细描述沟通内容..."></textarea>
@@ -476,7 +437,7 @@
 
     <!-- 沟通记录详情模态框 -->
     <div class="modal fade" id="communicationDetailModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">沟通记录详情</h5>
@@ -494,7 +455,7 @@
 
     <!-- AI识别模态框 -->
     <div class="modal fade" id="aiRecognitionModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
@@ -508,7 +469,7 @@
                         <ul class="mb-0">
                             <li>支持从Excel、Word等文档中复制数据直接粘贴</li>
                             <li>每行一个客户，字段用制表符或逗号分隔</li>
-                            <li>必填字段：客户名称、联系人、电话、客户类型、申请性质、地区</li>
+                            <li>必填字段：客户名称、联系人、电话、客户类型、地区</li>
                             <li>系统会自动识别和整理数据格式</li>
                         </ul>
                     </div>
@@ -576,7 +537,9 @@
                                         <th>联系人</th>
                                         <th>电话</th>
                                         <th>客户类型</th>
-                                        <th>申请性质</th>
+                                        <th>职务</th>
+                                        <th>QQ/微信</th>
+                                        <th>合作内容</th>
                                         <th>地区</th>
                                         <th>状态</th>
                                     </tr>
@@ -627,7 +590,7 @@
 
     <!-- 文件上传批量导入模态框 -->
     <div class="modal fade" id="fileUploadModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
@@ -691,7 +654,9 @@
                                         <th>联系人</th>
                                         <th>电话</th>
                                         <th>客户类型</th>
-                                        <th>申请性质</th>
+                                        <th>职务</th>
+                                        <th>QQ/微信</th>
+                                        <th>合作内容</th>
                                         <th>地区</th>
                                         <th>状态</th>
                                     </tr>

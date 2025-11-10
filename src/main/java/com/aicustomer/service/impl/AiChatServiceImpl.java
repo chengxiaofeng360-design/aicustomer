@@ -2,6 +2,9 @@ package com.aicustomer.service.impl;
 
 import com.aicustomer.entity.AiChat;
 import com.aicustomer.service.AiChatService;
+import com.aicustomer.service.DeepSeekService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,11 +16,21 @@ import java.util.Map;
 /**
  * AI聊天服务实现类
  * 
+ * 使用DeepSeek大模型提供智能对话服务
+ * 
  * @author AI Customer Management System
  * @version 1.0.0
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AiChatServiceImpl implements AiChatService {
+    
+    private final DeepSeekService deepSeekService;
+    
+    // 系统提示词，定义AI助手的角色和行为
+    private static final String SYSTEM_PROMPT = "你是一个专业的客户服务AI助手，负责回答客户关于产品、服务、技术支持等方面的问题。" +
+            "请用友好、专业、简洁的语言回答客户问题。如果遇到无法回答的问题，建议客户联系人工客服。";
     
     @Override
     public AiChat sendMessage(String sessionId, String userMessage, Long customerId) {
@@ -27,7 +40,10 @@ public class AiChatServiceImpl implements AiChatService {
         chat.setCustomerId(customerId);
         chat.setMessageType(1); // 1:用户消息
         chat.setContent(userMessage);
-        chat.setReplyContent(generateAiResponse(userMessage));
+        
+        // 使用DeepSeek生成AI回复
+        String aiReply = generateAiResponse(userMessage);
+        chat.setReplyContent(aiReply);
         chat.setReplyTime(LocalDateTime.now());
         chat.setSatisfactionScore(0);
         chat.setCreateTime(LocalDateTime.now());
@@ -63,8 +79,32 @@ public class AiChatServiceImpl implements AiChatService {
         return stats;
     }
     
+    /**
+     * 使用DeepSeek生成AI回复
+     * 如果DeepSeek服务不可用，则回退到规则匹配
+     */
     private String generateAiResponse(String userMessage) {
-        // 简单的AI回复生成逻辑
+        // 优先使用DeepSeek AI
+        if (deepSeekService.isAvailable()) {
+            try {
+                String aiReply = deepSeekService.chat(userMessage, SYSTEM_PROMPT);
+                log.debug("DeepSeek生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(), aiReply.length());
+                return aiReply;
+            } catch (Exception e) {
+                log.error("DeepSeek API调用失败，回退到规则匹配: {}", e.getMessage());
+                // 回退到规则匹配
+                return generateFallbackResponse(userMessage);
+            }
+        } else {
+            log.warn("DeepSeek服务不可用，使用规则匹配生成回复");
+            return generateFallbackResponse(userMessage);
+        }
+    }
+    
+    /**
+     * 规则匹配回退方案（当DeepSeek不可用时使用）
+     */
+    private String generateFallbackResponse(String userMessage) {
         String lowerMessage = userMessage.toLowerCase();
         
         if (lowerMessage.contains("产品") || lowerMessage.contains("服务")) {

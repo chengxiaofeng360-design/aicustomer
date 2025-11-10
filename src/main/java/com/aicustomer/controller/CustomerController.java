@@ -71,13 +71,13 @@ public class CustomerController {
                                            @RequestParam(defaultValue = "10") Integer pageSize,
                                            Customer customer) {
         try {
-            PageResult<Customer> pageResult = customerService.page(pageNum, pageSize, customer);
-            // 对敏感数据进行脱敏处理
-            List<Customer> maskedList = pageResult.getList().stream()
-                    .map(sensitiveDataService::maskSensitiveData)
-                    .collect(java.util.stream.Collectors.toList());
-            pageResult.setList(maskedList);
-            return Result.success(pageResult);
+        PageResult<Customer> pageResult = customerService.page(pageNum, pageSize, customer);
+        // 对敏感数据进行脱敏处理
+        List<Customer> maskedList = pageResult.getList().stream()
+                .map(sensitiveDataService::maskSensitiveData)
+                .collect(java.util.stream.Collectors.toList());
+        pageResult.setList(maskedList);
+        return Result.success(pageResult);
         } catch (Exception e) {
             // 如果数据库连接失败或其他异常，返回空结果而不是抛出异常
             e.printStackTrace();
@@ -102,10 +102,10 @@ public class CustomerController {
                 customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int)(Math.random() * 1000));
             }
             
-            // 检查客户编号是否已存在
-            if (customerService.existsByCustomerCode(customer.getCustomerCode())) {
-                return Result.error("客户编号已存在");
-            }
+        // 检查客户编号是否已存在
+        if (customerService.existsByCustomerCode(customer.getCustomerCode())) {
+            return Result.error("客户编号已存在");
+        }
             
             // 设置默认值
             if (customer.getCustomerType() == null) {
@@ -122,12 +122,12 @@ public class CustomerController {
             }
             
             System.out.println("保存客户数据: " + customer.getCustomerName() + ", 类型: " + customer.getCustomerType() + ", 编号: " + customer.getCustomerCode());
-            
-            boolean success = customerService.save(customer);
-            if (success) {
-                return Result.success("客户保存成功");
-            }
-            return Result.error("客户保存失败");
+        
+        boolean success = customerService.save(customer);
+        if (success) {
+            return Result.success("客户保存成功");
+        }
+        return Result.error("客户保存失败");
         } catch (Exception e) {
             System.err.println("保存客户异常: " + e.getMessage());
             e.printStackTrace();
@@ -159,11 +159,11 @@ public class CustomerController {
                 }
             }
             
-            boolean success = customerService.update(customer);
-            if (success) {
-                return Result.success("客户更新成功");
-            }
-            return Result.error("客户更新失败");
+        boolean success = customerService.update(customer);
+        if (success) {
+            return Result.success("客户更新成功");
+        }
+        return Result.error("客户更新失败");
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error("客户更新失败: " + e.getMessage());
@@ -182,11 +182,11 @@ public class CustomerController {
                 return Result.error("客户不存在");
             }
             
-            boolean success = customerService.deleteById(id);
-            if (success) {
-                return Result.success("客户删除成功");
-            }
-            return Result.error("客户删除失败");
+        boolean success = customerService.deleteById(id);
+        if (success) {
+            return Result.success("客户删除成功");
+        }
+        return Result.error("客户删除失败");
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error("客户删除失败: " + e.getMessage());

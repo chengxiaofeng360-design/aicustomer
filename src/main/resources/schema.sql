@@ -16,7 +16,12 @@ CREATE TABLE IF NOT EXISTS customer (
     fax VARCHAR(20) COMMENT '传真',
     organization_code VARCHAR(50) COMMENT '机构代码或身份证号码',
     nationality VARCHAR(50) COMMENT '国籍或所在国（地区）',
-    applicant_nature TINYINT COMMENT '申请人性质(1:个人,2:企业,3:科研院所,4:其他)',
+    
+    -- 新增字段
+    position VARCHAR(100) COMMENT '职务',
+    qq_weixin VARCHAR(100) COMMENT 'QQ/微信',
+    cooperation_content TEXT COMMENT '合作内容',
+    region VARCHAR(50) COMMENT '地区',
     
     -- 代理机构信息
     agency_name VARCHAR(200) COMMENT '代理机构名称',
@@ -50,6 +55,73 @@ CREATE TABLE IF NOT EXISTS customer (
     version INT NOT NULL DEFAULT 1 COMMENT '版本号'
 );
 
+-- 客户标签表
+CREATE TABLE IF NOT EXISTS customer_tag (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    customer_id BIGINT NOT NULL COMMENT '客户ID',
+    tag_name VARCHAR(50) NOT NULL COMMENT '标签名称',
+    tag_type TINYINT NOT NULL DEFAULT 2 COMMENT '标签类型(1:系统标签,2:自定义标签,3:AI标签)',
+    tag_color VARCHAR(20) DEFAULT '#007bff' COMMENT '标签颜色',
+    tag_description VARCHAR(200) COMMENT '标签描述',
+    weight INT DEFAULT 0 COMMENT '标签权重',
+    is_visible TINYINT DEFAULT 1 COMMENT '是否显示(0:隐藏,1:显示)',
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    create_by VARCHAR(50) COMMENT '创建人',
+    update_by VARCHAR(50) COMMENT '更新人',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)',
+    version INT NOT NULL DEFAULT 1 COMMENT '版本号',
+    INDEX idx_customer_id (customer_id),
+    INDEX idx_tag_name (tag_name),
+    INDEX idx_tag_type (tag_type),
+    INDEX idx_deleted (deleted)
+) COMMENT='客户标签表';
+
+-- 客户详细信息表
+CREATE TABLE IF NOT EXISTS customer_detail (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    customer_id BIGINT NOT NULL UNIQUE COMMENT '客户ID',
+    customer_code VARCHAR(50) COMMENT '客户编号',
+    industry_category VARCHAR(100) COMMENT '行业分类',
+    business_type VARCHAR(100) COMMENT '业务类型',
+    importance TINYINT COMMENT '重要程度(1:一般,2:重要,3:非常重要)',
+    tags VARCHAR(500) COMMENT '客户标签(多个标签用逗号分隔)',
+    value_score INT COMMENT '客户价值评分(0-100分)',
+    lifecycle_stage TINYINT COMMENT '生命周期阶段(1:潜在,2:接触,3:合作,4:维护,5:流失)',
+    total_amount DECIMAL(18,2) DEFAULT 0 COMMENT '累计消费金额',
+    cooperation_count INT DEFAULT 0 COMMENT '合作次数',
+    credit_level TINYINT COMMENT '信用评估等级(1:A,2:B,3:C,4:D)',
+    satisfaction_score TINYINT COMMENT '客户满意度评分(1-5分)',
+    completeness INT DEFAULT 0 COMMENT '信息完整度(0-100%)',
+    customer_create_time TIMESTAMP COMMENT '客户创建时间',
+    first_cooperation_time TIMESTAMP COMMENT '首次合作时间',
+    last_cooperation_time TIMESTAMP COMMENT '最后合作时间',
+    churn_time TIMESTAMP COMMENT '客户流失时间',
+    churn_reason VARCHAR(500) COMMENT '流失原因',
+    company_size TINYINT COMMENT '公司规模(1:微型,2:小型,3:中型,4:大型)',
+    annual_revenue DECIMAL(18,2) COMMENT '年营业额',
+    employee_count INT COMMENT '员工数量',
+    primary_contact VARCHAR(100) COMMENT '主要联系人',
+    decision_maker VARCHAR(100) COMMENT '决策人',
+    purchase_cycle TINYINT COMMENT '采购周期(1:月度,2:季度,3:半年度,4:年度)',
+    budget_range VARCHAR(200) COMMENT '预算范围',
+    competitors VARCHAR(500) COMMENT '竞争对手',
+    special_requirements TEXT COMMENT '特殊要求',
+    preferences TEXT COMMENT '客户偏好',
+    risk_level TINYINT COMMENT '风险等级(1:低,2:中,3:高)',
+    risk_description VARCHAR(500) COMMENT '风险描述',
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    create_by VARCHAR(50) COMMENT '创建人',
+    update_by VARCHAR(50) COMMENT '更新人',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)',
+    version INT NOT NULL DEFAULT 1 COMMENT '版本号',
+    INDEX idx_customer_id (customer_id),
+    INDEX idx_customer_code (customer_code),
+    INDEX idx_lifecycle_stage (lifecycle_stage),
+    INDEX idx_deleted (deleted)
+) COMMENT='客户详细信息表';
+
 -- 用户表（用于系统管理）
 CREATE TABLE IF NOT EXISTS sys_user (
     id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
@@ -74,31 +146,35 @@ INSERT INTO sys_user (username, password, real_name, email, phone, status, creat
 -- 插入示例客户数据
 INSERT INTO customer (
     customer_code, customer_name, contact_person, customer_type, phone, email, address,
-    postal_code, fax, organization_code, nationality, applicant_nature,
+    postal_code, fax, organization_code, nationality,
     agency_name, agency_code, agency_address, agency_postal_code,
     agent_name, agent_phone, agent_fax, agent_mobile, agent_email,
     is_sensitive, protection_password,
+    position, qq_weixin, cooperation_content,
     customer_level, status, remark, source, last_contact_time, create_by, update_by
 ) VALUES
 ('CUST001', 'ABC科技有限公司', '张伟', 2, '13812345678', 'zhangwei@abctech.com', '广东省深圳市南山区科技园',
- '518000', '0755-12345678', '91440300123456789X', '中国', 2,
+ '518000', '0755-12345678', '91440300123456789X', '中国',
  '深圳知识产权代理有限公司', '91440300987654321Y', '深圳市福田区知识产权大厦', '518000',
  '王律师', '0755-87654321', '0755-87654322', '13987654321', 'wang@ipagency.com',
  TRUE, '$2a$10$Ll/hmxK4s3sZJj8JNSQeBufrsBqHipuRJmzq.mNIy3sTx6HA5HJ3i',
+ '总经理', 'QQ:123456789', '新品种保护申请、技术咨询服务',
  2, 1, '重要客户，需要重点关注', 1, '2024-01-15 10:30:00', 'admin', 'admin'),
 
 ('CUST002', 'XYZ咨询公司', '李娜', 2, '13987654321', 'lina@xyzconsult.com', '北京市朝阳区国贸大厦',
- '100000', '010-12345678', '91110000123456789X', '中国', 2,
+ '100000', '010-12345678', '91110000123456789X', '中国',
  '北京知识产权代理事务所', '91110000987654321Y', '北京市海淀区中关村大街', '100000',
  '刘律师', '010-87654321', '010-87654322', '13812345678', 'liu@bjip.com',
  FALSE, NULL,
+ '市场总监', '微信:lina_xyz', '品种审定、市场推广合作',
  1, 1, '咨询类客户', 2, '2024-01-14 15:20:00', 'admin', 'admin'),
 
 ('CUST003', '张三', '张三', 1, '13612345678', 'zhangsan@email.com', '上海市浦东新区陆家嘴',
- '200000', '', '310101199001011234', '中国', 1,
+ '200000', '', '310101199001011234', '中国',
  '', '', '', '',
  '', '', '', '', '',
  TRUE, '$2a$10$Ll/hmxK4s3sZJj8JNSQeBufrsBqHipuRJmzq.mNIy3sTx6HA5HJ3i',
+ '研究员', 'QQ:987654321', '个人新品种保护申请',
  1, 1, '个人发明者', 1, '2024-01-13 09:15:00', 'admin', 'admin');
 
 -- 社交平台相关表

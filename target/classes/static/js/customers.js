@@ -44,47 +44,57 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 2000); // 延迟2秒启动，确保页面完全加载
 });
 
-    // 加载客户列表
-    function loadCustomers() {
-        const tbody = document.getElementById('customerTableBody');
+// 加载客户列表
+function loadCustomers() {
+    const tbody = document.getElementById('customerTableBody');
         tbody.innerHTML = '<tr><td colspan="11" class="text-center">加载中...</td></tr>';
 
-        // 构建查询参数
-        const params = new URLSearchParams();
-        params.append('pageNum', '1');
-        params.append('pageSize', '1000');
-        
-        const customerName = document.getElementById('customerName')?.value;
-        const customerType = document.getElementById('customerType')?.value;
+    // 构建查询参数
+    const params = new URLSearchParams();
+    params.append('pageNum', '1');
+    params.append('pageSize', '1000');
+    
+    const customerName = document.getElementById('customerName')?.value;
+    const customerType = document.getElementById('customerType')?.value;
         const customerLevel = document.getElementById('customerLevel')?.value;
-        const applicationType = document.getElementById('applicationType')?.value;
-        const region = document.getElementById('region')?.value;
-        
-        if (customerName) {
-            params.append('customerName', customerName);
-        }
-        if (customerType && customerTypeReverseMap[customerType]) {
-            params.append('customerType', customerTypeReverseMap[customerType]);
-        }
+    const region = document.getElementById('region')?.value;
+    
+    if (customerName) {
+        params.append('customerName', customerName);
+    }
+    if (customerType && customerTypeReverseMap[customerType]) {
+        params.append('customerType', customerTypeReverseMap[customerType]);
+    }
         if (customerLevel && customerLevelReverseMap[customerLevel]) {
             params.append('customerLevel', customerLevelReverseMap[customerLevel]);
-        }
-        
-        fetch('/api/customer/page?' + params.toString())
-        .then(response => response.json())
+    }
+    
+    fetch('/api/customer/page?' + params.toString())
+        .then(response => {
+            if (!response.ok) {
+                // 如果HTTP状态码不是200，尝试解析错误信息
+                return response.json().then(err => {
+                    throw new Error(err.message || '服务器错误: ' + response.status);
+                });
+            }
+            return response.json();
+        })
         .then(result => {
-            if (result.code === 200 && result.data) {
-                customers = result.data.list || result.data;
+            console.log('API响应:', result);
+            if (result && result.code === 200 && result.data) {
+                customers = result.data.list || result.data || [];
                 renderCustomerTable(customers);
                 updateTotalCount();
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + (result.message || '未知错误') + '</td></tr>';
-                }
-            })
-            .catch(error => {
-                console.error('加载客户列表失败:', error);
-                tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败，请刷新页面重试</td></tr>';
-            });
+            } else {
+                const errorMsg = (result && result.message) || (result && result.error) || '未知错误';
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + errorMsg + '</td></tr>';
+            }
+        })
+        .catch(error => {
+            console.error('加载客户列表失败:', error);
+            const errorMsg = error.message || '网络错误或服务器未响应';
+            tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
+        });
 }
 
 // 渲染客户表格
@@ -122,7 +132,8 @@ function renderCustomerTable(customerList) {
             '<td class="table-cell-truncate">' +
                 '<span class="badge ' + levelBadgeClass + '">' + customerLevelText + '</span>' +
             '</td>' +
-            '<td class="table-cell-truncate" title="' + (customer.applicationType || '') + '">' + (customer.applicationType || '') + '</td>' +
+            '<td class="table-cell-truncate" title="' + (customer.position || '') + '">' + (customer.position || '') + '</td>' +
+            '<td class="table-cell-truncate" title="' + (customer.qqWeixin || '') + '">' + (customer.qqWeixin || '') + '</td>' +
             '<td class="table-cell-truncate" title="' + (customer.region || '') + '">' + (customer.region || '') + '</td>' +
             '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
             '<td class="table-cell-truncate" title="' + createTime + '">' + createTime + '</td>' +
@@ -159,7 +170,6 @@ function resetFilters() {
     document.getElementById('customerName').value = '';
     document.getElementById('customerType').value = '';
     document.getElementById('customerLevel').value = '';
-    document.getElementById('applicationType').value = '';
     document.getElementById('region').value = '';
     loadCustomers();
 }
@@ -197,25 +207,25 @@ function parseImportData() {
     lines.forEach((line, index) => {
         const fields = line.split(/[\t,|]/).map(field => field.trim());
         
-        if (fields.length < 6) {
+        if (fields.length < 5) {
             hasError = true;
             parsedData.push({
                 customerName: fields[0] || '',
                 contactPerson: fields[1] || '',
                 phone: fields[2] || '',
                 customerType: fields[3] || '',
-                applicationType: fields[4] || '',
-                region: fields[5] || '',
-                industry: fields[6] || '',
-                annualRevenue: fields[7] || '',
+                position: fields[4] || '',
+                qqWeixin: fields[5] || '',
+                cooperationContent: fields[6] || '',
+                region: fields[7] || '',
                 status: 'error',
-                error: '字段不足，至少需要6个字段'
+                error: '字段不足，至少需要5个字段'
             });
             return;
         }
 
         // 验证必填字段
-        const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]];
+        const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[7]];
         const missingFields = requiredFields.some(field => !field);
         
         if (missingFields) {
@@ -225,10 +235,10 @@ function parseImportData() {
                 contactPerson: fields[1] || '',
                 phone: fields[2] || '',
                 customerType: fields[3] || '',
-                applicationType: fields[4] || '',
-                region: fields[5] || '',
-                industry: fields[6] || '',
-                annualRevenue: fields[7] || '',
+                position: fields[4] || '',
+                qqWeixin: fields[5] || '',
+                cooperationContent: fields[6] || '',
+                region: fields[7] || '',
                 status: 'error',
                 error: '必填字段不能为空'
             });
@@ -238,10 +248,10 @@ function parseImportData() {
                 contactPerson: fields[1],
                 phone: fields[2],
                 customerType: fields[3],
-                applicationType: fields[4],
-                region: fields[5],
-                industry: fields[6] || '',
-                annualRevenue: fields[7] || '',
+                position: fields[4] || '',
+                qqWeixin: fields[5] || '',
+                cooperationContent: fields[6] || '',
+                region: fields[7],
                 address: fields[8] || '',
                 remark: fields[9] || '',
                 status: 'valid'
@@ -271,7 +281,9 @@ function displayImportPreview(data) {
             <td>${item.contactPerson}</td>
             <td>${item.phone}</td>
             <td>${item.customerType}</td>
-            <td>${item.applicationType}</td>
+            <td>${item.position || ''}</td>
+            <td>${item.qqWeixin || ''}</td>
+            <td>${item.cooperationContent || ''}</td>
             <td>${item.region}</td>
             <td>
                 ${item.status === 'error' ? 
@@ -304,6 +316,12 @@ const KEYWORD = '木木';
 
 // 初始化语音识别
 function initVoiceRecognition() {
+    // 检查网络状态
+    if (navigator.onLine === false) {
+        console.warn('网络不可用，语音识别功能已禁用');
+        return;
+    }
+    
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
@@ -365,7 +383,27 @@ function initVoiceRecognition() {
 
         recognition.onerror = function(event) {
             console.error('语音识别错误:', event.error);
+            
+            // 对network错误进行特殊处理（网络问题不影响主要功能）
+            if (event.error === 'network') {
+                // network错误通常是网络连接问题，不影响其他功能，静默处理
+                console.warn('语音识别网络连接失败，功能已禁用');
+                hideVoiceStatus();
+                stopVoiceInput();
+                // 可以选择性地显示一个非错误性的提示
+                // showVoiceStatus('语音识别需要网络连接，当前网络不可用');
+                return;
+            }
+            
+            // 其他错误才显示错误提示
+            if (event.error === 'not-allowed') {
+                showVoiceStatus('语音识别权限被拒绝，请在浏览器设置中允许麦克风权限');
+            } else if (event.error === 'no-speech') {
+                // 无语音输入是正常情况，不显示错误
+                hideVoiceStatus();
+            } else {
             showVoiceStatus('语音识别出错：' + event.error);
+            }
             stopVoiceInput();
         };
 
@@ -410,6 +448,12 @@ function startVoiceInput() {
 
 // 自动启动语音监听
 function autoStartVoiceListening() {
+    // 检查网络状态，无网络时不启动语音识别
+    if (navigator.onLine === false) {
+        console.warn('网络不可用，跳过语音识别自动启动');
+        return;
+    }
+    
     if (!recognition) {
         initVoiceRecognition();
     }
@@ -419,6 +463,10 @@ function autoStartVoiceListening() {
             recognition.start();
         } catch (error) {
             console.error('自动启动语音识别失败:', error);
+            // 如果是network错误，静默处理
+            if (error.message && error.message.includes('network')) {
+                console.warn('语音识别网络连接失败，已禁用自动启动');
+            }
             // 静默失败，不显示错误提示
         }
     }
@@ -494,8 +542,6 @@ function processVoiceInput(text) {
         .replace(/下一个/g, '\n')      // 将"下一个"替换为换行
         .replace(/客户类型企业客户/g, '企业客户')  // 修复客户类型识别
         .replace(/客户类型个人客户/g, '个人客户')  // 修复客户类型识别
-        .replace(/申请性质新品种申请/g, '新品种申请')  // 修复申请性质识别
-        .replace(/申请性质品种权申请/g, '品种权申请')  // 修复申请性质识别
         .replace(/年收入/g, '')  // 移除"年收入"文字，只保留数字
         .replace(/万/g, '万')    // 确保"万"字正确
         .replace(/\s+/g, ' ')   // 合并多个空格
@@ -537,7 +583,9 @@ function showVoiceHelp() {
 - 关键词：清晰说出"木木"触发录音
 - 数字：13800138000 说成 "一三八零零一三八零零零"
 - 客户类型：说"企业客户"或"个人客户"
-- 申请性质：说"新品种申请"或"品种权申请"
+- 职务：联系人职务
+- QQ/微信：QQ号或微信号
+- 合作内容：合作内容描述
 - 地区：说具体的城市名称
 - 客户分隔：说"下一个客户"来分隔
 
@@ -552,8 +600,8 @@ function showVoiceHelp() {
 注意事项：
 - 请确保在安静的环境中录入
 - 说话要清晰，语速适中
-- 必填字段：客户名称、联系人、电话、客户类型、申请性质、地区
-- 可选字段：行业、年收入、品种名称等
+- 必填字段：客户名称、联系人、电话、客户类型、地区
+- 可选字段：品种名称等
 - 麦克风按钮可用于手动控制监听状态
     `;
     
@@ -764,16 +812,16 @@ function parseCSV(content) {
         if (index === 0) return; // 跳过标题行
         
         const fields = line.split(',').map(field => field.trim().replace(/"/g, ''));
-        if (fields.length >= 6) {
+        if (fields.length >= 5) {
             data.push({
                 customerName: fields[0] || '',
                 contactPerson: fields[1] || '',
                 phone: fields[2] || '',
                 customerType: fields[3] || '',
-                applicationType: fields[4] || '',
-                region: fields[5] || '',
-                industry: fields[6] || '',
-                annualRevenue: fields[7] || '',
+                position: fields[4] || '',
+                qqWeixin: fields[5] || '',
+                cooperationContent: fields[6] || '',
+                region: fields[7] || '',
                 status: 'valid'
             });
         }
@@ -789,16 +837,16 @@ function parseTXT(content) {
     
     lines.forEach(line => {
         const fields = line.split(/[\t,|]/).map(field => field.trim());
-        if (fields.length >= 6) {
+        if (fields.length >= 5) {
             data.push({
                 customerName: fields[0] || '',
                 contactPerson: fields[1] || '',
                 phone: fields[2] || '',
                 customerType: fields[3] || '',
-                applicationType: fields[4] || '',
-                region: fields[5] || '',
-                industry: fields[6] || '',
-                annualRevenue: fields[7] || '',
+                position: fields[4] || '',
+                qqWeixin: fields[5] || '',
+                cooperationContent: fields[6] || '',
+                region: fields[7] || '',
                 status: 'valid'
             });
         }
@@ -816,10 +864,10 @@ function parseComplexFile(content, fileName) {
             contactPerson: '联系人1',
             phone: '13800138001',
             customerType: '企业客户',
-            applicationType: '新品种申请',
+            position: '总经理',
+            qqWeixin: 'QQ:123456789',
+            cooperationContent: '新品种保护申请',
             region: '北京',
-            industry: '农业',
-            annualRevenue: '1000万',
             status: 'valid'
         },
         {
@@ -827,10 +875,10 @@ function parseComplexFile(content, fileName) {
             contactPerson: '联系人2',
             phone: '13800138002',
             customerType: '个人客户',
-            applicationType: '品种权申请',
+            position: '市场总监',
+            qqWeixin: '微信:test_weixin',
+            cooperationContent: '品种权申请',
             region: '上海',
-            industry: '种植业',
-            annualRevenue: '500万',
             status: 'valid'
         }
     ];
@@ -852,7 +900,9 @@ function displayDataPreview() {
             <td>${item.contactPerson}</td>
             <td>${item.phone}</td>
             <td>${item.customerType}</td>
-            <td>${item.applicationType}</td>
+            <td>${item.position || ''}</td>
+            <td>${item.qqWeixin || ''}</td>
+            <td>${item.cooperationContent || ''}</td>
             <td>${item.region}</td>
             <td>
                 ${item.status === 'valid' ? 
@@ -898,10 +948,10 @@ function saveUploadedData() {
             email: item.email || '',
             customerType: customerType,
             customerLevel: customerLevel,
-            applicationType: item.applicationType || '',
+            position: item.position || '',
+            qqWeixin: item.qqWeixin || '',
+            cooperationContent: item.cooperationContent || '',
             region: item.region || '',
-            industry: item.industry || '',
-            annualRevenue: item.annualRevenue || '',
             address: item.address || '',
             remark: item.remark || ''
         };
@@ -966,8 +1016,8 @@ function saveBatchImport() {
     lines.forEach((line) => {
         const fields = line.split(/[\t,|]/).map(field => field.trim());
         
-        if (fields.length >= 6) {
-            const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]];
+        if (fields.length >= 5) {
+            const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[7]];
             const missingFields = requiredFields.some(field => !field);
             
             if (!missingFields) {
@@ -979,11 +1029,11 @@ function saveBatchImport() {
                     contactPerson: fields[1],
                     phone: fields[2],
                     customerType: customerType,
-                    applicationType: fields[4] || '',
-                    region: fields[5] || '',
-                    email: fields[6] || '',
-                    industry: fields[7] || '',
-                    annualRevenue: fields[8] || '',
+                    position: fields[4] || '',
+                    qqWeixin: fields[5] || '',
+                    cooperationContent: fields[6] || '',
+                    region: fields[7] || '',
+                    email: fields[8] || '',
                     address: fields[9] || '',
                     remark: fields[10] || ''
                 };
@@ -1063,7 +1113,12 @@ function viewCustomer(id) {
         });
 }
 
+// 当前查看的客户信息（用于沟通记录）
+let currentViewingCustomer = null;
+
 function showCustomerDetail(customer) {
+    currentViewingCustomer = customer;
+    
     const customerTypeText = customerTypeMap[customer.customerType] || customer.customerType || '未知';
     const customerLevel = customer.customerLevel || 1;
     const customerLevelText = customerLevelMap[customerLevel] || '普通';
@@ -1078,41 +1133,147 @@ function showCustomerDetail(customer) {
     
     const content = 
         '<div class="row">' +
-            '<div class="col-md-4">' +
-                '<h6>基本信息</h6>' +
-                '<p><strong>客户名称：</strong>' + (customer.customerName || '未填写') + '</p>' +
-                '<p><strong>联系人：</strong>' + (customer.contactPerson || '未填写') + '</p>' +
-                '<p><strong>电话：</strong>' + (customer.phone || '未填写') + '</p>' +
-                '<p><strong>邮箱：</strong>' + (customer.email || '未填写') + '</p>' +
-                '<p><strong>公司规模：</strong>' + (customer.companySize || '未填写') + '</p>' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">客户名称</label>' +
+                    '<p class="mb-0">' + (customer.customerName || '未填写') + '</p>' +
+                '</div>' +
             '</div>' +
-            '<div class="col-md-4">' +
-                '<h6>业务信息</h6>' +
-                '<p><strong>客户类型：</strong>' + customerTypeText + '</p>' +
-                '<p><strong>客户等级：</strong><span class="badge ' + levelBadgeClass + ' ms-2">' + customerLevelText + '</span></p>' +
-                '<p><strong>申请性质：</strong>' + (customer.applicationType || '未填写') + '</p>' +
-                '<p><strong>地区：</strong>' + (customer.region || '未填写') + '</p>' +
-                '<p><strong>行业：</strong>' + (customer.industry || '未填写') + '</p>' +
-                '<p><strong>年营业额：</strong>' + (customer.annualRevenue || '未填写') + '</p>' +
-            '</div>' +
-            '<div class="col-md-4">' +
-                '<h6>系统信息</h6>' +
-                '<p><strong>创建时间：</strong>' + createTime + '</p>' +
-                '<p><strong>最后更新：</strong>' + updateTime + '</p>' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">联系人</label>' +
+                    '<p class="mb-0">' + (customer.contactPerson || '未填写') + '</p>' +
+                '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="row mt-3">' +
+        '<div class="row">' +
             '<div class="col-md-6">' +
-                '<h6>地址信息</h6>' +
-                '<p><strong>详细地址：</strong>' + (customer.address || '未填写') + '</p>' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">电话</label>' +
+                    '<p class="mb-0">' + (customer.phone || '未填写') + '</p>' +
+                '</div>' +
             '</div>' +
             '<div class="col-md-6">' +
-                '<h6>备注信息</h6>' +
-                '<p><strong>备注：</strong>' + (customer.remark || '无') + '</p>' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">邮箱</label>' +
+                    '<p class="mb-0">' + (customer.email || '未填写') + '</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="row">' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">客户类型</label>' +
+                    '<p class="mb-0">' + customerTypeText + '</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">客户等级</label>' +
+                    '<p class="mb-0"><span class="badge ' + levelBadgeClass + '">' + customerLevelText + '</span></p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="row">' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">地区</label>' +
+                    '<p class="mb-0">' + (customer.region || '未填写') + '</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="row">' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">职务</label>' +
+                    '<p class="mb-0">' + (customer.position || '未填写') + '</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">QQ/微信</label>' +
+                    '<p class="mb-0">' + (customer.qqWeixin || '未填写') + '</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="row">' +
+            '<div class="col-md-12">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">合作内容</label>' +
+                    '<p class="mb-0 text-break">' + (customer.cooperationContent || '未填写') + '</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="row">' +
+            '<div class="col-md-12">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">详细地址</label>' +
+                    '<p class="mb-0 text-break">' + (customer.address || '未填写') + '</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="row">' +
+            '<div class="col-md-12">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">备注</label>' +
+                    '<p class="mb-0 text-break">' + (customer.remark || '无') + '</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="row mt-3 pt-3 border-top">' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">创建时间</label>' +
+                    '<p class="mb-0 text-muted small">' + createTime + '</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">最后更新</label>' +
+                    '<p class="mb-0 text-muted small">' + updateTime + '</p>' +
+                '</div>' +
             '</div>' +
         '</div>';
     document.getElementById('customerDetailContent').innerHTML = content;
-    new bootstrap.Modal(document.getElementById('customerDetailModal')).show();
+    
+    // 初始化标签页事件监听（移除旧的监听器，添加新的）
+    const communicationsTab = document.getElementById('communicationsTab');
+    if (communicationsTab) {
+        // 移除旧的监听器
+        const newTab = communicationsTab.cloneNode(true);
+        communicationsTab.parentNode.replaceChild(newTab, communicationsTab);
+        
+        // 添加新的监听器
+        document.getElementById('communicationsTab').addEventListener('shown.bs.tab', function() {
+            // 当切换到沟通记录标签页时，加载该客户的沟通记录
+            if (customer.id) {
+                loadCustomerCommunications(customer.id);
+            }
+        });
+    }
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
+    modal.show();
+}
+
+// 为当前客户显示新增沟通记录模态框
+function showAddCommunicationForCurrentCustomer() {
+    if (!currentViewingCustomer || !currentViewingCustomer.id) {
+        alert('无法获取客户信息，请先查看客户详情');
+        return;
+    }
+    showAddCommunicationModalForCustomer(currentViewingCustomer.id, currentViewingCustomer.customerName);
+    
+    // 设置客户名称显示
+    const customerSelect = document.getElementById('customerSelect');
+    const customerIdHidden = document.getElementById('customerIdHidden');
+    if (customerSelect) {
+        customerSelect.value = currentViewingCustomer.customerName || '';
+    }
+    if (customerIdHidden) {
+        customerIdHidden.value = currentViewingCustomer.id;
+    }
 }
 function editCustomer(id) {
     fetch(`/api/customer/${id}`)
@@ -1150,10 +1311,9 @@ function showEditModal(customer) {
     const customerLevelText = customerLevelMap[customerLevel] || '普通';
     document.getElementById('customerLevelSelect').value = customerLevelText;
     document.getElementById('regionSelect').value = customer.region || '';
-    document.getElementById('applicationTypeSelect').value = customer.applicationType || '';
-    document.getElementById('companySize').value = customer.companySize || '';
-    document.getElementById('industry').value = customer.industry || '';
-    document.getElementById('annualRevenue').value = customer.annualRevenue || '';
+    document.getElementById('position').value = customer.position || '';
+    document.getElementById('qqWeixin').value = customer.qqWeixin || '';
+    document.getElementById('cooperationContent').value = customer.cooperationContent || '';
     document.getElementById('address').value = customer.address || '';
     document.getElementById('remarks').value = customer.remark || '';
     new bootstrap.Modal(document.getElementById('customerModal')).show();
@@ -1164,36 +1324,58 @@ function saveCustomer() {
     const form = document.getElementById('customerForm');
     const formData = new FormData(form);
     
+    // 验证必填字段
+    const customerName = formData.get('customerName')?.trim();
+    if (!customerName) {
+        alert('客户姓名/企业名称不能为空！');
+        return;
+    }
+    
     const customerTypeText = formData.get('customerType');
-    const customerType = customerTypeReverseMap[customerTypeText] || customerTypeText;
+    // 确保customerType有值，默认为1（个人客户）
+    let customerType = customerTypeReverseMap[customerTypeText];
+    if (!customerType && customerTypeText) {
+        // 如果映射失败，尝试直接使用原值（可能是数字字符串）
+        customerType = parseInt(customerTypeText) || 1;
+    }
+    if (!customerType) {
+        customerType = 1; // 默认个人客户
+    }
     
     const customerLevelText = formData.get('customerLevel');
-    const customerLevel = customerLevelReverseMap[customerLevelText] || customerLevelText || 1;
+    const customerLevel = customerLevelReverseMap[customerLevelText] || parseInt(customerLevelText) || 1;
+    
+    const customerId = document.getElementById('customerId').value;
     
     const customerData = {
-        customerName: formData.get('customerName'),
-        contactPerson: formData.get('contactPerson'),
-        phone: formData.get('phone'),
-        email: formData.get('email'),
+        customerName: customerName,
+        contactPerson: formData.get('contactPerson') || null,
+        phone: formData.get('phone') || null,
+        email: formData.get('email') || null,
         customerType: customerType,
         customerLevel: customerLevel,
-        region: formData.get('region'),
-        applicationType: formData.get('applicationType'),
-        companySize: formData.get('companySize'),
-        industry: formData.get('industry'),
-        annualRevenue: formData.get('annualRevenue'),
-        address: formData.get('address'),
-        remark: formData.get('remarks')
+        region: formData.get('region') || null,
+        position: formData.get('position') || null,
+        qqWeixin: formData.get('qqWeixin') || null,
+        cooperationContent: formData.get('cooperationContent') || null,
+        address: formData.get('address') || null,
+        remark: formData.get('remarks') || null,
+        status: 1, // 默认状态：正常
+        source: 2  // 默认来源：线下
     };
-
-    const customerId = document.getElementById('customerId').value;
+    
+    // 如果是新增客户，生成客户编号；如果是编辑，保留原有ID和编号
+    if (customerId) {
+        customerData.id = parseInt(customerId);
+    } else {
+        // 新增客户时生成客户编号（格式：CUST + 时间戳 + 随机数）
+        customerData.customerCode = 'CUST' + Date.now() + Math.floor(Math.random() * 1000);
+    }
+    
+    console.log('准备保存客户数据:', customerData);
     
     const url = customerId ? `/api/customer` : `/api/customer`;
     const method = customerId ? 'PUT' : 'POST';
-    
-    if (customerId) {
-        customerData.id = parseInt(customerId);
-    }
     
     fetch(url, {
         method: method,
@@ -1202,19 +1384,29 @@ function saveCustomer() {
         },
         body: JSON.stringify(customerData)
     })
-    .then(response => response.json())
+    .then(response => {
+        // 先尝试解析JSON，如果失败则说明可能是HTML错误页面
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error('服务器错误响应:', text);
+                throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
+            });
+        }
+        return response.json();
+    })
     .then(result => {
+        console.log('服务器响应:', result);
         if (result.code === 200) {
             alert('保存成功！');
             bootstrap.Modal.getInstance(document.getElementById('customerModal')).hide();
             loadCustomers();
         } else {
-            alert('保存失败: ' + (result.message || '未知错误'));
+            alert('保存失败: ' + (result.message || result.msg || '未知错误'));
         }
     })
     .catch(error => {
         console.error('保存客户失败:', error);
-        alert('保存失败，请重试');
+        alert('保存失败: ' + (error.message || '网络错误，请检查服务器连接'));
     });
 }
 

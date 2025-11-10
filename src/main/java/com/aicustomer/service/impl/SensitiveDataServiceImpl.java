@@ -54,7 +54,9 @@ public class SensitiveDataServiceImpl implements SensitiveDataService {
         maskedCustomer.setFax(customer.getFax());
         maskedCustomer.setOrganizationCode(maskString(customer.getOrganizationCode(), 2, 2));
         maskedCustomer.setNationality(customer.getNationality());
-        maskedCustomer.setApplicantNature(customer.getApplicantNature());
+        maskedCustomer.setPosition(customer.getPosition());
+        maskedCustomer.setQqWeixin(customer.getQqWeixin());
+        maskedCustomer.setCooperationContent(customer.getCooperationContent());
         maskedCustomer.setAgencyName(customer.getAgencyName());
         maskedCustomer.setAgencyCode(customer.getAgencyCode());
         maskedCustomer.setAgencyAddress(maskString(customer.getAgencyAddress(), 2, 2));

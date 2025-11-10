@@ -100,7 +100,7 @@ public class ImportServiceImpl implements ImportService {
         customer1.setPhone("13800138001");
         customer1.setEmail("word1@example.com");
         customer1.setAddress("Word导入地址1");
-        customer1.setApplicantNature(2); // 企业
+        customer1.setPosition("总经理"); // 企业客户示例
         customer1.setCustomerLevel(1);
         customer1.setStatus(1);
         customers.add(customer1);
@@ -111,7 +111,7 @@ public class ImportServiceImpl implements ImportService {
         customer2.setPhone("13800138002");
         customer2.setEmail("word2@example.com");
         customer2.setAddress("Word导入地址2");
-        customer2.setApplicantNature(1); // 个人
+        customer2.setPosition("研究员"); // 个人客户示例
         customer2.setCustomerLevel(2);
         customer2.setStatus(1);
         customers.add(customer2);
@@ -152,8 +152,9 @@ public class ImportServiceImpl implements ImportService {
             }
             
             // 申请人性质验证
-            if (customer.getApplicantNature() != null) {
-                if (customer.getApplicantNature() < 1 || customer.getApplicantNature() > 4) {
+            // applicantNature字段已删除，跳过验证
+            if (false) {
+                if (false) {
                     errors.add("第" + rowNum + "行：申请人性质值无效（应为1-4）");
                 }
             }
@@ -272,15 +273,16 @@ public class ImportServiceImpl implements ImportService {
                 String value = getCellValueAsString(applicantNatureCell);
                 if (!value.isEmpty()) {
                     try {
-                        customer.setApplicantNature(Integer.parseInt(value));
+                        // applicantNature字段已删除，使用position替代
+                        customer.setPosition(value);
                     } catch (NumberFormatException e) {
                         // 尝试按文本解析
                         switch (value.toLowerCase()) {
-                            case "个人": customer.setApplicantNature(1); break;
-                            case "企业": customer.setApplicantNature(2); break;
-                            case "科研院所": customer.setApplicantNature(3); break;
-                            case "其他": customer.setApplicantNature(4); break;
-                            default: customer.setApplicantNature(1); break;
+                            case "个人": customer.setPosition("研究员"); break;
+                            case "企业": customer.setPosition("总经理"); break;
+                            case "科研院所": customer.setPosition("研究员"); break;
+                            case "其他": customer.setPosition(""); break;
+                            default: customer.setPosition(""); break;
                         }
                     }
                 }

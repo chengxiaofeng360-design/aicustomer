@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aicustomer.mapper.CustomerDetailMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.aicustomer.entity.CustomerDetail">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="customer_id" property="customerId" jdbcType="BIGINT"/>
+        <result column="customer_code" property="customerCode" jdbcType="VARCHAR"/>
+        <result column="industry_category" property="industryCategory" jdbcType="VARCHAR"/>
+        <result column="business_type" property="businessType" jdbcType="VARCHAR"/>
+        <result column="importance" property="importance" jdbcType="INTEGER"/>
+        <result column="tags" property="tags" jdbcType="VARCHAR"/>
+        <result column="value_score" property="valueScore" jdbcType="INTEGER"/>
+        <result column="lifecycle_stage" property="lifecycleStage" jdbcType="INTEGER"/>
+        <result column="total_amount" property="totalAmount" jdbcType="DECIMAL"/>
+        <result column="cooperation_count" property="cooperationCount" jdbcType="INTEGER"/>
+        <result column="credit_level" property="creditLevel" jdbcType="INTEGER"/>
+        <result column="satisfaction_score" property="satisfactionScore" jdbcType="INTEGER"/>
+        <result column="completeness" property="completeness" jdbcType="INTEGER"/>
+        <result column="customer_create_time" property="customerCreateTime" jdbcType="TIMESTAMP"/>
+        <result column="first_cooperation_time" property="firstCooperationTime" jdbcType="TIMESTAMP"/>
+        <result column="last_cooperation_time" property="lastCooperationTime" jdbcType="TIMESTAMP"/>
+        <result column="churn_time" property="churnTime" jdbcType="TIMESTAMP"/>
+        <result column="churn_reason" property="churnReason" jdbcType="VARCHAR"/>
+        <result column="company_size" property="companySize" jdbcType="INTEGER"/>
+        <result column="annual_revenue" property="annualRevenue" jdbcType="DECIMAL"/>
+        <result column="employee_count" property="employeeCount" jdbcType="INTEGER"/>
+        <result column="primary_contact" property="primaryContact" jdbcType="VARCHAR"/>
+        <result column="decision_maker" property="decisionMaker" jdbcType="VARCHAR"/>
+        <result column="purchase_cycle" property="purchaseCycle" jdbcType="INTEGER"/>
+        <result column="budget_range" property="budgetRange" jdbcType="VARCHAR"/>
+        <result column="competitors" property="competitors" jdbcType="VARCHAR"/>
+        <result column="special_requirements" property="specialRequirements" jdbcType="VARCHAR"/>
+        <result column="preferences" property="preferences" jdbcType="VARCHAR"/>
+        <result column="risk_level" property="riskLevel" jdbcType="INTEGER"/>
+        <result column="risk_description" property="riskDescription" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+        <result column="update_by" property="updateBy" jdbcType="VARCHAR"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="version" property="version" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, customer_id, customer_code, industry_category, business_type, importance, tags,
+        value_score, lifecycle_stage, total_amount, cooperation_count, credit_level,
+        satisfaction_score, completeness, customer_create_time, first_cooperation_time,
+        last_cooperation_time, churn_time, churn_reason, company_size, annual_revenue,
+        employee_count, primary_contact, decision_maker, purchase_cycle, budget_range,
+        competitors, special_requirements, preferences, risk_level, risk_description,
+        create_time, update_time, create_by, update_by, deleted, version
+    </sql>
+
+    <!-- 根据客户ID查询详细信息 -->
+    <select id="selectByCustomerId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM customer_detail
+        WHERE customer_id = #{customerId} AND deleted = 0
+    </select>
+
+    <!-- 插入客户详细信息 -->
+    <insert id="insert" parameterType="com.aicustomer.entity.CustomerDetail" useGeneratedKeys="true" keyProperty="detail.id">
+        INSERT INTO customer_detail (
+            customer_id, customer_code, industry_category, business_type, importance, tags,
+            value_score, lifecycle_stage, total_amount, cooperation_count, credit_level,
+            satisfaction_score, completeness, customer_create_time, first_cooperation_time,
+            last_cooperation_time, churn_time, churn_reason, company_size, annual_revenue,
+            employee_count, primary_contact, decision_maker, purchase_cycle, budget_range,
+            competitors, special_requirements, preferences, risk_level, risk_description,
+            create_time, update_time, create_by, update_by, deleted, version
+        ) VALUES (
+            #{detail.customerId}, #{detail.customerCode}, #{detail.industryCategory},
+            #{detail.businessType}, #{detail.importance}, #{detail.tags},
+            #{detail.valueScore}, #{detail.lifecycleStage}, #{detail.totalAmount},
+            #{detail.cooperationCount}, #{detail.creditLevel}, #{detail.satisfactionScore},
+            #{detail.completeness}, #{detail.customerCreateTime}, #{detail.firstCooperationTime},
+            #{detail.lastCooperationTime}, #{detail.churnTime}, #{detail.churnReason},
+            #{detail.companySize}, #{detail.annualRevenue}, #{detail.employeeCount},
+            #{detail.primaryContact}, #{detail.decisionMaker}, #{detail.purchaseCycle},
+            #{detail.budgetRange}, #{detail.competitors}, #{detail.specialRequirements},
+            #{detail.preferences}, #{detail.riskLevel}, #{detail.riskDescription},
+            #{detail.createTime}, #{detail.updateTime}, #{detail.createBy}, #{detail.updateBy},
+            #{detail.deleted}, #{detail.version}
+        )
+    </insert>
+
+    <!-- 更新客户详细信息 -->
+    <update id="updateByCustomerId" parameterType="com.aicustomer.entity.CustomerDetail">
+        UPDATE customer_detail
+        <set>
+            <if test="detail.customerCode != null and detail.customerCode != ''">
+                customer_code = #{detail.customerCode},
+            </if>
+            <if test="detail.industryCategory != null and detail.industryCategory != ''">
+                industry_category = #{detail.industryCategory},
+            </if>
+            <if test="detail.businessType != null and detail.businessType != ''">
+                business_type = #{detail.businessType},
+            </if>
+            <if test="detail.importance != null">
+                importance = #{detail.importance},
+            </if>
+            <if test="detail.tags != null and detail.tags != ''">
+                tags = #{detail.tags},
+            </if>
+            <if test="detail.valueScore != null">
+                value_score = #{detail.valueScore},
+            </if>
+            <if test="detail.lifecycleStage != null">
+                lifecycle_stage = #{detail.lifecycleStage},
+            </if>
+            <if test="detail.totalAmount != null">
+                total_amount = #{detail.totalAmount},
+            </if>
+            <if test="detail.cooperationCount != null">
+                cooperation_count = #{detail.cooperationCount},
+            </if>
+            <if test="detail.creditLevel != null">
+                credit_level = #{detail.creditLevel},
+            </if>
+            <if test="detail.satisfactionScore != null">
+                satisfaction_score = #{detail.satisfactionScore},
+            </if>
+            <if test="detail.completeness != null">
+                completeness = #{detail.completeness},
+            </if>
+            <if test="detail.customerCreateTime != null">
+                customer_create_time = #{detail.customerCreateTime},
+            </if>
+            <if test="detail.firstCooperationTime != null">
+                first_cooperation_time = #{detail.firstCooperationTime},
+            </if>
+            <if test="detail.lastCooperationTime != null">
+                last_cooperation_time = #{detail.lastCooperationTime},
+            </if>
+            <if test="detail.churnTime != null">
+                churn_time = #{detail.churnTime},
+            </if>
+            <if test="detail.churnReason != null and detail.churnReason != ''">
+                churn_reason = #{detail.churnReason},
+            </if>
+            <if test="detail.companySize != null">
+                company_size = #{detail.companySize},
+            </if>
+            <if test="detail.annualRevenue != null">
+                annual_revenue = #{detail.annualRevenue},
+            </if>
+            <if test="detail.employeeCount != null">
+                employee_count = #{detail.employeeCount},
+            </if>
+            <if test="detail.primaryContact != null and detail.primaryContact != ''">
+                primary_contact = #{detail.primaryContact},
+            </if>
+            <if test="detail.decisionMaker != null and detail.decisionMaker != ''">
+                decision_maker = #{detail.decisionMaker},
+            </if>
+            <if test="detail.purchaseCycle != null">
+                purchase_cycle = #{detail.purchaseCycle},
+            </if>
+            <if test="detail.budgetRange != null and detail.budgetRange != ''">
+                budget_range = #{detail.budgetRange},
+            </if>
+            <if test="detail.competitors != null and detail.competitors != ''">
+                competitors = #{detail.competitors},
+            </if>
+            <if test="detail.specialRequirements != null and detail.specialRequirements != ''">
+                special_requirements = #{detail.specialRequirements},
+            </if>
+            <if test="detail.preferences != null and detail.preferences != ''">
+                preferences = #{detail.preferences},
+            </if>
+            <if test="detail.riskLevel != null">
+                risk_level = #{detail.riskLevel},
+            </if>
+            <if test="detail.riskDescription != null and detail.riskDescription != ''">
+                risk_description = #{detail.riskDescription},
+            </if>
+            <if test="detail.updateTime != null">
+                update_time = #{detail.updateTime},
+            </if>
+            <if test="detail.updateBy != null and detail.updateBy != ''">
+                update_by = #{detail.updateBy},
+            </if>
+            <if test="detail.version != null">
+                version = #{detail.version} + 1,
+            </if>
+        </set>
+        WHERE customer_id = #{detail.customerId} AND deleted = 0
+    </update>
+
+    <!-- 根据客户ID删除详细信息（逻辑删除） -->
+    <update id="deleteByCustomerId" parameterType="java.lang.Long">
+        UPDATE customer_detail
+        SET deleted = 1, update_time = NOW()
+        WHERE customer_id = #{customerId} AND deleted = 0
+    </update>
+
+</mapper>
+

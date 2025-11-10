@@ -752,6 +752,50 @@ body {
     justify-content: flex-end;
 }
 
+/* 模态框最大宽度限制：窗口宽度的70% */
+.modal-dialog-max-70 {
+    max-width: 70vw;
+    width: 70%;
+    margin: 1.75rem auto;
+}
+
+/* 小屏幕响应式处理 */
+@media (max-width: 768px) {
+    .modal-dialog-max-70 {
+        max-width: 95vw;
+        width: 95%;
+        margin: 0.5rem auto;
+    }
+}
+
+/* 客户详情模态框内容优化 */
+#customerDetailContent {
+    padding: 1rem 0;
+}
+
+#customerDetailContent .row {
+    margin-bottom: 1.5rem;
+}
+
+#customerDetailContent h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+#customerDetailContent p {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+#customerDetailContent strong {
+    color: #212529;
+    min-width: 100px;
+    display: inline-block;
+}
+
 /* 工具提示 */
 .tooltip {
     position: relative;

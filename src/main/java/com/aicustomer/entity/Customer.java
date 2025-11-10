@@ -69,9 +69,24 @@ public class Customer extends BaseEntity {
     private String nationality;
     
     /**
-     * 申请人性质 (1:个人, 2:企业, 3:科研院所, 4:其他)
+     * 职务
      */
-    private Integer applicantNature;
+    private String position;
+    
+    /**
+     * QQ/微信
+     */
+    private String qqWeixin;
+    
+    /**
+     * 合作内容
+     */
+    private String cooperationContent;
+    
+    /**
+     * 地区
+     */
+    private String region;
     
     /**
      * 代理机构名称

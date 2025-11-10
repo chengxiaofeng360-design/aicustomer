@@ -2,6 +2,9 @@ package com.aicustomer.service.impl;
 
 import com.aicustomer.entity.AiRecommendation;
 import com.aicustomer.service.AiRecommendationService;
+import com.aicustomer.service.DeepSeekService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,11 +16,17 @@ import java.util.Map;
 /**
  * AI推荐服务实现类
  * 
+ * 使用DeepSeek大模型生成智能推荐
+ * 
  * @author AI Customer Management System
  * @version 1.0.0
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AiRecommendationServiceImpl implements AiRecommendationService {
+    
+    private final DeepSeekService deepSeekService;
     
     @Override
     public Map<String, Object> getRecommendationStatistics(Long customerId) {
@@ -61,11 +70,45 @@ public class AiRecommendationServiceImpl implements AiRecommendationService {
         recommendation.setCustomerId(customerId);
         recommendation.setRecommendationType(1); // 1:产品推荐
         recommendation.setTitle("产品推荐");
-        recommendation.setContent("基于您的购买历史和偏好，推荐以下产品：\n" +
-                "1. 高端智能设备 - 符合您的品质要求\n" +
-                "2. 数据分析工具 - 提升业务效率\n" +
-                "3. 定制化解决方案 - 满足特殊需求");
-        recommendation.setConfidence(88);
+        
+        // 使用DeepSeek生成产品推荐
+        if (deepSeekService.isAvailable()) {
+            String prompt = String.format(
+                "请为客户ID %d生成个性化的产品推荐。\n\n" +
+                "请基于以下维度进行分析：\n" +
+                "1. 客户历史购买记录和偏好\n" +
+                "2. 客户业务需求和场景\n" +
+                "3. 行业趋势和最佳实践\n" +
+                "4. 客户等级和价值\n\n" +
+                "请以结构化格式输出推荐结果，包括：\n" +
+                "- 推荐的产品类型和名称\n" +
+                "- 推荐理由\n" +
+                "- 预期收益或价值\n" +
+                "- 实施建议",
+                customerId
+            );
+            
+            try {
+                String aiResult = deepSeekService.chat(prompt, "你是一个专业的产品推荐专家，擅长基于客户数据生成个性化的产品推荐。");
+                recommendation.setContent(aiResult);
+                recommendation.setConfidence(90);
+            } catch (Exception e) {
+                log.error("DeepSeek产品推荐失败: {}", e.getMessage());
+                recommendation.setContent("基于您的购买历史和偏好，推荐以下产品：\n" +
+                        "1. 高端智能设备 - 符合您的品质要求\n" +
+                        "2. 数据分析工具 - 提升业务效率\n" +
+                        "3. 定制化解决方案 - 满足特殊需求");
+                recommendation.setConfidence(88);
+            }
+        } else {
+            // 回退方案
+            recommendation.setContent("基于您的购买历史和偏好，推荐以下产品：\n" +
+                    "1. 高端智能设备 - 符合您的品质要求\n" +
+                    "2. 数据分析工具 - 提升业务效率\n" +
+                    "3. 定制化解决方案 - 满足特殊需求");
+            recommendation.setConfidence(88);
+        }
+        
         recommendation.setPriority(2);
         recommendation.setStatus(1);
         recommendation.setCreateTime(LocalDateTime.now());
@@ -97,11 +140,45 @@ public class AiRecommendationServiceImpl implements AiRecommendationService {
         recommendation.setCustomerId(customerId);
         recommendation.setRecommendationType(3); // 3:营销策略
         recommendation.setTitle("营销策略推荐");
-        recommendation.setContent("建议采用以下营销策略：\n" +
-                "1. 个性化邮件营销 - 提高打开率\n" +
-                "2. 社交媒体推广 - 扩大品牌影响力\n" +
-                "3. 客户推荐计划 - 利用现有客户资源");
-        recommendation.setConfidence(90);
+        
+        // 使用DeepSeek生成营销推荐
+        if (deepSeekService.isAvailable()) {
+            String prompt = String.format(
+                "请为客户ID %d生成个性化的营销策略推荐。\n\n" +
+                "请考虑以下因素：\n" +
+                "1. 客户特征和偏好\n" +
+                "2. 客户沟通渠道偏好\n" +
+                "3. 最佳营销时机\n" +
+                "4. 营销内容策略\n\n" +
+                "请以结构化格式输出推荐结果，包括：\n" +
+                "- 推荐的营销策略类型\n" +
+                "- 具体实施建议\n" +
+                "- 预期效果\n" +
+                "- 注意事项",
+                customerId
+            );
+            
+            try {
+                String aiResult = deepSeekService.chat(prompt, "你是一个专业的营销策略专家，擅长制定个性化的客户营销方案。");
+                recommendation.setContent(aiResult);
+                recommendation.setConfidence(92);
+            } catch (Exception e) {
+                log.error("DeepSeek营销推荐失败: {}", e.getMessage());
+                recommendation.setContent("建议采用以下营销策略：\n" +
+                        "1. 个性化邮件营销 - 提高打开率\n" +
+                        "2. 社交媒体推广 - 扩大品牌影响力\n" +
+                        "3. 客户推荐计划 - 利用现有客户资源");
+                recommendation.setConfidence(90);
+            }
+        } else {
+            // 回退方案
+            recommendation.setContent("建议采用以下营销策略：\n" +
+                    "1. 个性化邮件营销 - 提高打开率\n" +
+                    "2. 社交媒体推广 - 扩大品牌影响力\n" +
+                    "3. 客户推荐计划 - 利用现有客户资源");
+            recommendation.setConfidence(90);
+        }
+        
         recommendation.setPriority(3);
         recommendation.setStatus(1);
         recommendation.setCreateTime(LocalDateTime.now());

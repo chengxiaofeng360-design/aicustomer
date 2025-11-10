@@ -187,6 +187,8 @@ com.aicustomer/
 
 ### AI服务
 - **阿里云NLS SDK**: 4.6.4（com.aliyun:aliyun-java-sdk-core）
+- **OpenAI Java SDK**: 0.18.0（com.theokanning.openai-gpt3-java:service）- 用于调用DeepSeek API（DeepSeek兼容OpenAI API格式）
+- **DeepSeek API**: 通过OpenAI兼容接口调用，模型：deepseek-chat
 
 ### 测试框架
 - **Spring Boot Test**: Spring Boot 2.4.4内置版本
@@ -218,6 +220,12 @@ com.aicustomer/
 - 使用Flexbox和Grid布局
 - 响应式设计必须支持移动端
 - 禁止使用CSS预处理器（Sass、Less等）
+
+#### 模态框（Modal）规范
+- **最大宽度限制**: 所有模态框的最大宽度不得超过窗口宽度的70%
+- **响应式处理**: 在小屏幕设备（宽度≤768px）上，模态框最大宽度可调整为95%
+- **实现方式**: 使用自定义CSS类 `.modal-dialog-max-70` 替代Bootstrap默认的 `modal-xl`、`modal-lg` 等类
+- **适用场景**: 客户详情、客户编辑、沟通记录等所有模态框
 
 #### JavaScript编码规范
 - 使用ES6+语法
@@ -503,6 +511,7 @@ Jsoup 1.15.4
 OpenCV Java 4.5.1-2
 Selenium 4.15.0
 阿里云NLS SDK 4.6.4
+OpenAI Java SDK 0.18.0 (用于DeepSeek API)
 ```
 
 ### 前端技术（白名单）
