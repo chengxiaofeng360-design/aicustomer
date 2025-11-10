@@ -35,14 +35,23 @@ public class DatabaseInitializer {
         
         try {
             // 检查customer表是否存在
-            boolean tableExists = checkTableExists("customer");
+            boolean customerTableExists = checkTableExists("customer");
+            boolean communicationTableExists = checkTableExists("communication_record");
             
-            if (!tableExists) {
+            if (!customerTableExists) {
                 log.info("检测到customer表不存在，开始初始化数据库表结构...");
                 initializeDatabase();
             } else {
                 log.info("数据库表已存在，检查并更新表结构...");
                 updateTableStructure();
+                
+                // 检查并创建communication_record表（如果不存在）
+                if (!communicationTableExists) {
+                    log.info("检测到communication_record表不存在，开始创建...");
+                    createCommunicationRecordTable();
+                } else {
+                    log.debug("communication_record表已存在，跳过创建");
+                }
             }
         } catch (Exception e) {
             log.error("数据库初始化失败: {}", e.getMessage(), e);
@@ -265,6 +274,59 @@ public class DatabaseInitializer {
         } catch (Exception e) {
             log.debug("检查列是否存在时出错: {}", e.getMessage());
             return false;
+        }
+    }
+    
+    /**
+     * 创建communication_record表
+     */
+    private void createCommunicationRecordTable() {
+        try {
+            String sql = "CREATE TABLE IF NOT EXISTS communication_record (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID', " +
+                    "customer_id BIGINT NOT NULL COMMENT '客户ID', " +
+                    "customer_name VARCHAR(100) NOT NULL COMMENT '客户姓名', " +
+                    "communication_type TINYINT NOT NULL COMMENT '沟通类型(1:微信,2:电话,3:邮件,4:会面,5:其他)', " +
+                    "communication_time DATETIME NOT NULL COMMENT '沟通时间', " +
+                    "content TEXT COMMENT '沟通内容', " +
+                    "summary VARCHAR(1000) COMMENT '沟通摘要', " +
+                    "importance TINYINT DEFAULT 1 COMMENT '重要程度(1:一般,2:重要,3:非常重要)', " +
+                    "sentiment TINYINT COMMENT '情感分析结果(1:积极,2:中性,3:消极)', " +
+                    "satisfaction_score TINYINT COMMENT '满意度评分(1-5分)', " +
+                    "keywords VARCHAR(500) COMMENT '关键词(多个关键词用逗号分隔)', " +
+                    "important_info TEXT COMMENT '重要信息标记', " +
+                    "follow_up_task VARCHAR(1000) COMMENT '后续任务', " +
+                    "task_deadline DATETIME COMMENT '任务截止时间', " +
+                    "task_status TINYINT DEFAULT 1 COMMENT '任务状态(1:待处理,2:进行中,3:已完成,4:已取消)', " +
+                    "communicator_id BIGINT COMMENT '沟通人员ID', " +
+                    "communicator_name VARCHAR(100) COMMENT '沟通人员姓名', " +
+                    "attachment_path VARCHAR(500) COMMENT '附件路径', " +
+                    "channel_detail VARCHAR(200) COMMENT '沟通渠道详情', " +
+                    "duration INT COMMENT '沟通时长(分钟)', " +
+                    "response_time INT COMMENT '客户响应时间(分钟)', " +
+                    "is_read TINYINT DEFAULT 0 COMMENT '是否已读(0:未读,1:已读)', " +
+                    "is_processed TINYINT DEFAULT 0 COMMENT '是否已处理(0:未处理,1:已处理)', " +
+                    "process_result TEXT COMMENT '处理结果', " +
+                    "process_time DATETIME COMMENT '处理时间', " +
+                    "create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
+                    "update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
+                    "create_by VARCHAR(50) COMMENT '创建人', " +
+                    "update_by VARCHAR(50) COMMENT '更新人', " +
+                    "deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)', " +
+                    "version INT NOT NULL DEFAULT 1 COMMENT '版本号', " +
+                    "INDEX idx_customer_id (customer_id), " +
+                    "INDEX idx_communication_type (communication_type), " +
+                    "INDEX idx_communication_time (communication_time), " +
+                    "INDEX idx_importance (importance), " +
+                    "INDEX idx_communicator_id (communicator_id), " +
+                    "INDEX idx_create_time (create_time), " +
+                    "INDEX idx_deleted (deleted)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='沟通记录表'";
+            
+            jdbcTemplate.execute(sql);
+            log.info("✅ communication_record表创建成功");
+        } catch (Exception e) {
+            log.error("❌ 创建communication_record表失败: {}", e.getMessage(), e);
         }
     }
 }

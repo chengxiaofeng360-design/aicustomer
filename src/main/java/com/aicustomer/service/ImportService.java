@@ -3,6 +3,7 @@ package com.aicustomer.service;
 import com.aicustomer.entity.Customer;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,14 @@ public interface ImportService {
      * @return 解析结果
      */
     ImportResult parseExcel(MultipartFile file);
+    
+    /**
+     * 解析CSV文件
+     * 
+     * @param file CSV文件
+     * @return 解析结果
+     */
+    ImportResult parseCSV(MultipartFile file);
     
     /**
      * 解析Word文件
@@ -81,11 +90,23 @@ public interface ImportService {
         private boolean valid;
         private List<String> errors;
         private List<String> warnings;
+        private int validCount;
+        private int invalidCount;
         
         public ValidationResult(boolean valid, List<String> errors, List<String> warnings) {
             this.valid = valid;
-            this.errors = errors;
-            this.warnings = warnings;
+            this.errors = errors != null ? errors : new ArrayList<>();
+            this.warnings = warnings != null ? warnings : new ArrayList<>();
+            this.validCount = 0;
+            this.invalidCount = this.errors.size();
+        }
+        
+        public ValidationResult(boolean valid, List<String> errors, List<String> warnings, int validCount, int invalidCount) {
+            this.valid = valid;
+            this.errors = errors != null ? errors : new ArrayList<>();
+            this.warnings = warnings != null ? warnings : new ArrayList<>();
+            this.validCount = validCount;
+            this.invalidCount = invalidCount;
         }
         
         // Getters and Setters
@@ -95,6 +116,10 @@ public interface ImportService {
         public void setErrors(List<String> errors) { this.errors = errors; }
         public List<String> getWarnings() { return warnings; }
         public void setWarnings(List<String> warnings) { this.warnings = warnings; }
+        public int getValidCount() { return validCount; }
+        public void setValidCount(int validCount) { this.validCount = validCount; }
+        public int getInvalidCount() { return invalidCount; }
+        public void setInvalidCount(int invalidCount) { this.invalidCount = invalidCount; }
     }
     
     /**

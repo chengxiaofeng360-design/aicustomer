@@ -111,7 +111,7 @@ function renderCustomerCommunications(communications, tbodyId = 'customerCommuni
         const importanceText = getImportanceText(communication.importance);
         const importanceClass = getImportanceClass(communication.importance);
         const commTime = formatDateTime(communication.communicationTime);
-        const subject = communication.subject || communication.content || '无主题';
+        const subject = communication.summary || communication.content || '无主题';
         
         row.innerHTML = 
             '<td class="table-cell-truncate" title="' + typeText + '">' + typeText + '</td>' +
@@ -145,7 +145,7 @@ function showAddCommunicationModalForCustomer(customerId, customerName) {
     document.getElementById('communicationForm').reset();
     document.getElementById('communicationId').value = '';
     
-    // 自动填充客户信息
+    // 自动填充客户信息（即使字段隐藏，也要设置值以便保存时使用）
     const customerSelect = document.getElementById('customerSelect');
     const customerIdHidden = document.getElementById('customerIdHidden');
     if (customerSelect) {
@@ -196,14 +196,13 @@ function showCommunicationDetail(communication) {
         '<div class="row">' +
             '<div class="col-md-6">' +
                 '<h6>基本信息</h6>' +
-                '<p><strong>客户名称：</strong>' + (communication.customerName || '未填写') + '</p>' +
                 '<p><strong>沟通类型：</strong>' + typeText + '</p>' +
                 '<p><strong>重要程度：</strong>' + importanceText + '</p>' +
                 '<p><strong>沟通时间：</strong>' + commTime + '</p>' +
             '</div>' +
             '<div class="col-md-6">' +
                 '<h6>详细信息</h6>' +
-                '<p><strong>沟通主题：</strong>' + (communication.subject || communication.summary || '无主题') + '</p>' +
+                '<p><strong>沟通主题：</strong>' + (communication.summary || '无主题') + '</p>' +
                 '<p><strong>操作人：</strong>' + (communication.communicatorName || communication.operator || '未填写') + '</p>' +
                 '<p><strong>创建时间：</strong>' + createTime + '</p>' +
             '</div>' +
@@ -271,7 +270,7 @@ function showEditCommunicationModal(communication) {
         document.getElementById('communicationTime').value = localDateTime;
     }
     
-    document.getElementById('subject').value = communication.subject || communication.summary || '';
+    document.getElementById('subject').value = communication.summary || '';
     document.getElementById('content').value = communication.content || '';
     document.getElementById('followUp').value = communication.followUpTask || '';
     
@@ -294,18 +293,65 @@ function saveCommunication() {
     
     // 获取客户名称
     const customerSelect = document.getElementById('customerSelect');
-    const customerName = (customerSelect && customerSelect.value) || '';
+    // 优先从customerSelect获取（即使字段隐藏，值也应该被设置）
+    let customerName = (customerSelect && customerSelect.value) || '';
+    
+    // 如果customerSelect为空，尝试从customers.js中的当前客户信息获取
+    if (!customerName && typeof currentViewingCustomer !== 'undefined' && currentViewingCustomer) {
+        customerName = currentViewingCustomer.customerName || '';
+    }
+    
+    // 如果还是没有，尝试通过customerId查询客户信息
+    if (!customerName && customerId) {
+        console.warn('客户名称为空，尝试通过customerId查询:', customerId);
+        // 如果customerName为空，尝试从currentViewingCustomer获取
+        if (typeof currentViewingCustomer !== 'undefined' && currentViewingCustomer && currentViewingCustomer.id == customerId) {
+            customerName = currentViewingCustomer.customerName || '';
+        }
+        // 如果还是没有，使用一个默认值（避免数据库NOT NULL约束错误）
+        if (!customerName) {
+            customerName = '客户ID:' + customerId;
+            console.warn('使用默认客户名称:', customerName);
+        }
+    }
+    
+    console.log('获取到的客户信息 - ID:', customerId, '名称:', customerName);
+    
+    // 处理日期时间格式：将 datetime-local 格式转换为 ISO 8601 格式
+    let communicationTime = formData.get('communicationTime');
+    if (communicationTime) {
+        // datetime-local 格式是 "YYYY-MM-DDTHH:mm"，需要转换为 "YYYY-MM-DDTHH:mm:ss"
+        if (communicationTime.length === 16) {
+            communicationTime = communicationTime + ':00';
+        }
+    }
     
     const communicationData = {
         customerId: parseInt(customerId),
-        customerName: customerName,
+        customerName: customerName || '',
         communicationType: parseInt(formData.get('communicationType')),
-        importance: parseInt(formData.get('importance')),
-        communicationTime: formData.get('communicationTime'),
-        subject: formData.get('subject'),
-        content: formData.get('content'),
-        followUpTask: formData.get('followUp')
+        importance: parseInt(formData.get('importance')) || 1,
+        communicationTime: communicationTime || null,
+        summary: formData.get('subject') || '', // 将subject映射到summary字段
+        content: formData.get('content') || '',
+        followUpTask: formData.get('followUp') || ''
     };
+    
+    // 验证必填字段
+    if (!communicationData.customerId || isNaN(communicationData.customerId)) {
+        alert('客户ID不能为空！');
+        return;
+    }
+    if (!communicationData.customerName || communicationData.customerName.trim() === '') {
+        alert('客户名称不能为空！');
+        return;
+    }
+    if (!communicationData.communicationType || isNaN(communicationData.communicationType)) {
+        alert('请选择沟通类型！');
+        return;
+    }
+    
+    console.log('准备发送的沟通记录数据:', communicationData);
     
     const url = communicationId ? `/api/communication/${communicationId}` : `/api/communication`;
     const method = communicationId ? 'PUT' : 'POST';

@@ -64,9 +64,18 @@ public class CommunicationController {
     @PostMapping
     public Result<String> addCommunication(@RequestBody CommunicationRecord record) {
         try {
+            // 打印接收到的数据，用于调试
+            System.out.println("接收到沟通记录数据: " + record);
+            System.out.println("客户ID: " + record.getCustomerId());
+            System.out.println("客户名称: " + record.getCustomerName());
+            System.out.println("沟通类型: " + record.getCommunicationType());
+            System.out.println("沟通时间: " + record.getCommunicationTime());
+            
             communicationService.addCommunication(record);
             return Result.success("沟通记录添加成功");
         } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("添加沟通记录失败: " + e.getMessage());
             return Result.error("沟通记录添加失败: " + e.getMessage());
         }
     }

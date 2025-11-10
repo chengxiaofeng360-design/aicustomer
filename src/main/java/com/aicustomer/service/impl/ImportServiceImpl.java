@@ -10,7 +10,10 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,6 +91,207 @@ public class ImportServiceImpl implements ImportService {
     }
     
     @Override
+    public ImportResult parseCSV(MultipartFile file) {
+        List<Customer> customers = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+        
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            
+            String line;
+            int lineNumber = 0;
+            
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                line = line.trim();
+                
+                if (line.isEmpty()) {
+                    continue;
+                }
+                
+                // 解析CSV行（处理引号内的逗号）
+                String[] fields = parseCSVLine(line);
+                
+                if (lineNumber == 1) {
+                    // 第一行是表头，跳过
+                    continue;
+                }
+                
+                try {
+                    Customer customer = parseCustomerFromCSVFields(fields, lineNumber);
+                    if (customer != null) {
+                        customers.add(customer);
+                    }
+                } catch (Exception e) {
+                    errors.add("第" + lineNumber + "行数据解析失败: " + e.getMessage());
+                }
+            }
+            
+            if (customers.isEmpty()) {
+                return new ImportResult(false, "没有解析到有效的客户数据", null, errors);
+            }
+            
+            boolean success = errors.isEmpty();
+            String message = String.format("解析完成：成功%d条，失败%d条", customers.size(), errors.size());
+            return new ImportResult(success, message, customers, errors);
+            
+        } catch (IOException e) {
+            return new ImportResult(false, "CSV文件读取失败: " + e.getMessage(), null, null);
+        }
+    }
+    
+    /**
+     * 解析CSV行（处理引号内的逗号）
+     */
+    private String[] parseCSVLine(String line) {
+        List<String> fields = new ArrayList<>();
+        StringBuilder currentField = new StringBuilder();
+        boolean inQuotes = false;
+        
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            
+            if (c == '"') {
+                if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    // 转义的双引号
+                    currentField.append('"');
+                    i++; // 跳过下一个引号
+                } else {
+                    // 切换引号状态
+                    inQuotes = !inQuotes;
+                }
+            } else if (c == ',' && !inQuotes) {
+                // 字段分隔符
+                fields.add(currentField.toString().trim());
+                currentField = new StringBuilder();
+            } else {
+                currentField.append(c);
+            }
+        }
+        
+        // 添加最后一个字段
+        fields.add(currentField.toString().trim());
+        
+        return fields.toArray(new String[0]);
+    }
+    
+    /**
+     * 从CSV字段数组解析客户数据
+     */
+    private Customer parseCustomerFromCSVFields(String[] fields, int lineNumber) {
+        if (fields.length < 3) {
+            throw new RuntimeException("字段数量不足，至少需要客户名称、联系人、电话");
+        }
+        
+        Customer customer = new Customer();
+        
+        // 客户名称（必填，索引0）
+        String customerName = fields.length > 0 ? fields[0].trim() : "";
+        if (customerName.isEmpty()) {
+            throw new RuntimeException("客户名称不能为空");
+        }
+        customer.setCustomerName(customerName);
+        
+        // 联系人（必填，索引1）
+        String contactPerson = fields.length > 1 ? fields[1].trim() : "";
+        if (contactPerson.isEmpty()) {
+            throw new RuntimeException("联系人不能为空");
+        }
+        customer.setContactPerson(contactPerson);
+        
+        // 电话（必填，索引2）
+        String phone = fields.length > 2 ? fields[2].trim() : "";
+        if (phone.isEmpty()) {
+            throw new RuntimeException("电话不能为空");
+        }
+        customer.setPhone(phone);
+        
+        // 邮箱（索引3）
+        if (fields.length > 3) {
+            customer.setEmail(fields[3].trim());
+        }
+        
+        // 客户类型（索引4）
+        if (fields.length > 4 && !fields[4].trim().isEmpty()) {
+            String typeStr = fields[4].trim();
+            if (typeStr.equals("个人")) {
+                customer.setCustomerType(1);
+            } else if (typeStr.equals("企业")) {
+                customer.setCustomerType(2);
+            } else if (typeStr.equals("科研院所")) {
+                customer.setCustomerType(3);
+            } else {
+                try {
+                    customer.setCustomerType(Integer.parseInt(typeStr));
+                } catch (NumberFormatException e) {
+                    customer.setCustomerType(1); // 默认个人
+                }
+            }
+        } else {
+            customer.setCustomerType(1); // 默认个人
+        }
+        
+        // 客户等级（索引5）
+        if (fields.length > 5 && !fields[5].trim().isEmpty()) {
+            String levelStr = fields[5].trim();
+            if (levelStr.equals("普通")) {
+                customer.setCustomerLevel(1);
+            } else if (levelStr.equals("VIP")) {
+                customer.setCustomerLevel(2);
+            } else if (levelStr.equals("钻石")) {
+                customer.setCustomerLevel(3);
+            } else {
+                try {
+                    customer.setCustomerLevel(Integer.parseInt(levelStr));
+                } catch (NumberFormatException e) {
+                    customer.setCustomerLevel(1); // 默认普通
+                }
+            }
+        } else {
+            customer.setCustomerLevel(1); // 默认普通
+        }
+        
+        // 地区（索引6）
+        if (fields.length > 6) {
+            customer.setRegion(fields[6].trim());
+        }
+        
+        // 职务（索引7）
+        if (fields.length > 7) {
+            customer.setPosition(fields[7].trim());
+        }
+        
+        // QQ/微信（索引8）
+        if (fields.length > 8) {
+            customer.setQqWeixin(fields[8].trim());
+        }
+        
+        // 合作内容（索引9）
+        if (fields.length > 9) {
+            customer.setCooperationContent(fields[9].trim());
+        }
+        
+        // 详细地址（索引10）
+        if (fields.length > 10) {
+            customer.setAddress(fields[10].trim());
+        }
+        
+        // 备注（索引11）
+        if (fields.length > 11) {
+            customer.setRemark(fields[11].trim());
+        }
+        
+        // 设置默认值
+        customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int)(Math.random() * 1000));
+        customer.setStatus(1);
+        customer.setSource(2);
+        customer.setCreateTime(LocalDateTime.now());
+        customer.setUpdateTime(LocalDateTime.now());
+        
+        return customer;
+    }
+    
+    @Override
     public ImportResult parseWord(MultipartFile file) {
         // Word文件解析比较复杂，这里先返回模拟数据
         List<Customer> customers = new ArrayList<>();
@@ -161,7 +365,9 @@ public class ImportServiceImpl implements ImportService {
         }
         
         boolean valid = errors.isEmpty();
-        return new ValidationResult(valid, errors, warnings);
+        int validCount = customers.size() - errors.size();
+        int invalidCount = errors.size();
+        return new ValidationResult(valid, errors, warnings, validCount, invalidCount);
     }
     
     @Override

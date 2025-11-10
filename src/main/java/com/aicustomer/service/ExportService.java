@@ -1,5 +1,7 @@
 package com.aicustomer.service;
 
+import com.aicustomer.entity.Customer;
+
 import java.io.ByteArrayOutputStream;
 
 /**
@@ -11,9 +13,26 @@ import java.io.ByteArrayOutputStream;
 public interface ExportService {
     
     /**
-     * 导出客户数据到Excel
+     * 生成客户导入Excel模版
      */
-    ByteArrayOutputStream exportCustomersToExcel();
+    ByteArrayOutputStream generateCustomerTemplate();
+    
+    /**
+     * 导出客户数据到Excel（根据查询条件）
+     */
+    ByteArrayOutputStream exportCustomersToExcel(Customer queryCustomer);
+    
+    /**
+     * 导出客户数据到CSV（根据查询条件）
+     */
+    ByteArrayOutputStream exportCustomersToCSV(Customer queryCustomer);
+    
+    /**
+     * 导出客户数据到Excel（无参数，兼容旧接口）
+     */
+    default ByteArrayOutputStream exportCustomersToExcel() {
+        return exportCustomersToExcel(new Customer());
+    }
     
     /**
      * 导出沟通记录到Excel

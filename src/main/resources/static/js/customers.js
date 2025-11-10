@@ -1,6 +1,11 @@
 // 客户数据（从API获取）
 let customers = [];
-let selectedCustomers = [];
+// 已删除批量删除功能，不再需要selectedCustomers
+
+// 分页相关变量
+let currentPage = 1;
+let pageSize = 10; // 每页显示10条记录
+let totalRecords = 0; // 总记录数
 
 // 客户类型映射
 const customerTypeMap = {
@@ -32,6 +37,7 @@ const customerLevelReverseMap = {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
+    loadStatistics();
     loadCustomers();
     updateTotalCount();
     
@@ -44,15 +50,73 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 2000); // 延迟2秒启动，确保页面完全加载
 });
 
+// 加载统计数据
+function loadStatistics() {
+    fetch('/api/customer/statistics')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('获取统计数据失败');
+            }
+            return response.json();
+        })
+        .then(result => {
+            if (result && result.code === 200 && result.data) {
+                const stats = result.data;
+                
+                // 更新客户总数
+                const totalElement = document.getElementById('statsTotalCustomers');
+                if (totalElement) {
+                    totalElement.textContent = formatNumber(stats.totalCustomers || 0);
+                }
+                
+                // 更新重要用户（VIP和钻石客户数量，除去普通用户）
+                const satisfactionElement = document.getElementById('statsSatisfaction');
+                if (satisfactionElement) {
+                    const vipDiamondCount = (stats.vipCount || 0) + (stats.diamondCount || 0);
+                    satisfactionElement.textContent = formatNumber(vipDiamondCount);
+                }
+                
+                // 更新本月新增
+                const newThisMonthElement = document.getElementById('statsNewThisMonth');
+                if (newThisMonthElement) {
+                    newThisMonthElement.textContent = formatNumber(stats.newThisMonth || 0);
+                }
+                
+                // 更新潜在客户
+                const potentialElement = document.getElementById('statsPotentialCustomers');
+                if (potentialElement) {
+                    potentialElement.textContent = formatNumber(stats.potentialCount || 0);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('加载统计数据失败:', error);
+            // 失败时显示默认值
+            const totalElement = document.getElementById('statsTotalCustomers');
+            if (totalElement) totalElement.textContent = '0';
+            const newThisMonthElement = document.getElementById('statsNewThisMonth');
+            if (newThisMonthElement) newThisMonthElement.textContent = '0';
+            const potentialElement = document.getElementById('statsPotentialCustomers');
+            if (potentialElement) potentialElement.textContent = '0';
+        });
+}
+
+// 格式化数字（添加千位分隔符）
+function formatNumber(num) {
+    if (num === null || num === undefined) return '0';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
 // 加载客户列表
-function loadCustomers() {
+function loadCustomers(page = currentPage) {
+    currentPage = page;
     const tbody = document.getElementById('customerTableBody');
         tbody.innerHTML = '<tr><td colspan="11" class="text-center">加载中...</td></tr>';
 
     // 构建查询参数
     const params = new URLSearchParams();
-    params.append('pageNum', '1');
-    params.append('pageSize', '1000');
+    params.append('pageNum', currentPage.toString());
+    params.append('pageSize', pageSize.toString());
     
     const customerName = document.getElementById('customerName')?.value;
     const customerType = document.getElementById('customerType')?.value;
@@ -68,6 +132,9 @@ function loadCustomers() {
         if (customerLevel && customerLevelReverseMap[customerLevel]) {
             params.append('customerLevel', customerLevelReverseMap[customerLevel]);
     }
+    if (region) {
+        params.append('region', region);
+    }
     
     fetch('/api/customer/page?' + params.toString())
         .then(response => {
@@ -82,9 +149,12 @@ function loadCustomers() {
         .then(result => {
             console.log('API响应:', result);
             if (result && result.code === 200 && result.data) {
-                customers = result.data.list || result.data || [];
+                const pageResult = result.data;
+                customers = pageResult.list || [];
+                totalRecords = pageResult.total || 0;
                 renderCustomerTable(customers);
                 updateTotalCount();
+                renderPagination();
             } else {
                 const errorMsg = (result && result.message) || (result && result.error) || '未知错误';
                 tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + errorMsg + '</td></tr>';
@@ -122,9 +192,6 @@ function renderCustomerTable(customerList) {
         const createTime = customer.createTime ? new Date(customer.createTime).toLocaleString('zh-CN') : '';
         
         row.innerHTML = 
-            '<td>' +
-                '<input type="checkbox" class="customer-checkbox" value="' + customer.id + '" onchange="toggleCustomerSelection(' + customer.id + ')">' +
-            '</td>' +
             '<td class="table-cell-truncate" title="' + (customer.customerName || '') + '">' + (customer.customerName || '') + '</td>' +
             '<td class="table-cell-truncate" title="' + (customer.contactPerson || '') + '">' + (customer.contactPerson || '') + '</td>' +
             '<td class="table-cell-truncate" title="' + (customer.phone || '') + '">' + (customer.phone || '') + '</td>' +
@@ -138,15 +205,17 @@ function renderCustomerTable(customerList) {
             '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
             '<td class="table-cell-truncate" title="' + createTime + '">' + createTime + '</td>' +
             '<td>' +
-                '<button class="btn btn-sm btn-outline-primary me-1" onclick="viewCustomer(' + customer.id + ')">' +
-                    '<i class="bi bi-eye"></i> 详情' +
-                '</button>' +
-                '<button class="btn btn-sm btn-outline-warning me-1" onclick="editCustomer(' + customer.id + ')">' +
-                    '<i class="bi bi-pencil"></i> 编辑' +
-                '</button>' +
-                '<button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(' + customer.id + ')">' +
-                    '<i class="bi bi-trash"></i> 删除' +
-                '</button>' +
+                '<div class="action-buttons">' +
+                    '<button class="btn btn-sm btn-outline-primary" onclick="viewCustomer(' + customer.id + ')" title="查看详情">' +
+                        '<i class="bi bi-eye"></i> 详情' +
+                    '</button>' +
+                    '<button class="btn btn-sm btn-outline-warning" onclick="editCustomer(' + customer.id + ')" title="编辑客户">' +
+                        '<i class="bi bi-pencil"></i> 编辑' +
+                    '</button>' +
+                    '<button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(' + customer.id + ')" title="删除客户">' +
+                        '<i class="bi bi-trash"></i> 删除' +
+                    '</button>' +
+                '</div>' +
             '</td>';
         tbody.appendChild(row);
     });
@@ -155,14 +224,124 @@ function renderCustomerTable(customerList) {
 // 更新总记录数
 function updateTotalCount() {
     const totalCountElement = document.getElementById('totalCustomers');
+    const paginationInfoElement = document.getElementById('paginationInfo');
+    
+    const start = totalRecords > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+    const end = Math.min(currentPage * pageSize, totalRecords);
+    
     if (totalCountElement) {
-        totalCountElement.textContent = customers.length;
+        totalCountElement.textContent = formatNumber(totalRecords);
+    }
+    
+    if (paginationInfoElement) {
+        if (totalRecords > 0) {
+            paginationInfoElement.textContent = `共 ${formatNumber(totalRecords)} 条记录，当前显示第 ${start}-${end} 条`;
+        } else {
+            paginationInfoElement.textContent = '共 0 条记录，当前显示第 0-0 条';
+        }
+    }
+}
+
+// 渲染分页控件
+function renderPagination() {
+    const paginationNav = document.getElementById('paginationNav');
+    if (!paginationNav) return;
+    
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    paginationNav.innerHTML = '';
+    
+    if (totalPages <= 1) {
+        return; // 只有一页或没有数据时，不显示分页控件
+    }
+    
+    // 上一页按钮
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="previousPage()">上一页</a>`;
+    paginationNav.appendChild(prevLi);
+    
+    // 页码按钮（最多显示7个页码）
+    const maxVisiblePages = 7;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // 第一页
+    if (startPage > 1) {
+        const firstLi = document.createElement('li');
+        firstLi.className = 'page-item';
+        firstLi.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="goToPage(1)">1</a>`;
+        paginationNav.appendChild(firstLi);
+        
+        if (startPage > 2) {
+            const ellipsisLi = document.createElement('li');
+            ellipsisLi.className = 'page-item disabled';
+            ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+            paginationNav.appendChild(ellipsisLi);
+        }
+    }
+    
+    // 页码按钮
+    for (let i = startPage; i <= endPage; i++) {
+        const pageLi = document.createElement('li');
+        pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+        pageLi.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="goToPage(${i})">${i}</a>`;
+        paginationNav.appendChild(pageLi);
+    }
+    
+    // 最后一页
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const ellipsisLi = document.createElement('li');
+            ellipsisLi.className = 'page-item disabled';
+            ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+            paginationNav.appendChild(ellipsisLi);
+        }
+        
+        const lastLi = document.createElement('li');
+        lastLi.className = 'page-item';
+        lastLi.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="goToPage(${totalPages})">${totalPages}</a>`;
+        paginationNav.appendChild(lastLi);
+    }
+    
+    // 下一页按钮
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="nextPage()">下一页</a>`;
+    paginationNav.appendChild(nextLi);
+}
+
+// 跳转到指定页码
+function goToPage(page) {
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    if (page < 1 || page > totalPages || page === currentPage) {
+        return;
+    }
+    loadCustomers(page);
+}
+
+// 上一页
+function previousPage() {
+    if (currentPage > 1) {
+        goToPage(currentPage - 1);
+    }
+}
+
+// 下一页
+function nextPage() {
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    if (currentPage < totalPages) {
+        goToPage(currentPage + 1);
     }
 }
 
 // 搜索客户
 function searchCustomers() {
-    loadCustomers(); // 直接调用loadCustomers，它已经包含了搜索参数
+    currentPage = 1; // 搜索时重置到第一页
+    loadCustomers(1); // 直接调用loadCustomers，它已经包含了搜索参数
 }
 
 // 重置筛选条件
@@ -189,7 +368,39 @@ function showAIRecognition() {
 
 // 显示文件上传模态框
 function showFileUpload() {
-    new bootstrap.Modal(document.getElementById('fileUploadModal')).show();
+    // 重置文件上传状态
+    uploadedFiles = [];
+    processedData = [];
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    const filePreview = document.getElementById('filePreview');
+    const dataPreview = document.getElementById('dataPreview');
+    if (filePreview) {
+        filePreview.style.display = 'none';
+    }
+    if (dataPreview) {
+        dataPreview.style.display = 'none';
+    }
+    const filePreviewBody = document.getElementById('filePreviewBody');
+    const dataPreviewBody = document.getElementById('dataPreviewBody');
+    if (filePreviewBody) {
+        filePreviewBody.innerHTML = '';
+    }
+    if (dataPreviewBody) {
+        dataPreviewBody.innerHTML = '';
+    }
+    
+    // 显示模态框
+    const modalElement = document.getElementById('fileUploadModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        console.error('找不到fileUploadModal元素');
+        alert('无法打开文件上传对话框，请刷新页面重试');
+    }
 }
 
 // 解析导入数据
@@ -617,6 +828,16 @@ function initFileUpload() {
     const fileInput = document.getElementById('fileInput');
     const fileUploadArea = document.getElementById('fileUploadArea');
 
+    if (!fileInput) {
+        console.error('找不到fileInput元素');
+        return;
+    }
+    
+    if (!fileUploadArea) {
+        console.error('找不到fileUploadArea元素');
+        return;
+    }
+
     // 文件选择事件
     fileInput.addEventListener('change', handleFileSelect);
 
@@ -624,6 +845,43 @@ function initFileUpload() {
     fileUploadArea.addEventListener('dragover', handleDragOver);
     fileUploadArea.addEventListener('dragleave', handleDragLeave);
     fileUploadArea.addEventListener('drop', handleFileDrop);
+    
+    // 点击整个上传区域也可以选择文件
+    fileUploadArea.addEventListener('click', function(e) {
+        // 如果点击的不是按钮或其子元素，则触发文件选择
+        const clickedButton = e.target.closest('button');
+        if (!clickedButton) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        }
+    });
+    
+    // 确保按钮点击也能触发文件选择（延迟执行，确保DOM已加载）
+    setTimeout(function() {
+        const selectFileBtn = document.getElementById('selectFileBtn');
+        if (selectFileBtn) {
+            selectFileBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (fileInput) {
+                    fileInput.click();
+                }
+            });
+        } else {
+            // 如果找不到id，尝试通过querySelector查找
+            const btn = fileUploadArea.querySelector('button');
+            if (btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (fileInput) {
+                        fileInput.click();
+                    }
+                });
+            }
+        }
+    }, 100);
 }
 
 // 处理文件选择
@@ -653,6 +911,10 @@ function handleFileDrop(event) {
 
 // 添加文件
 function addFiles(files) {
+    if (!files || files.length === 0) {
+        return;
+    }
+    
     files.forEach(file => {
         if (isValidFileType(file)) {
             uploadedFiles.push({
@@ -663,11 +925,14 @@ function addFiles(files) {
                 status: '待处理'
             });
         } else {
-            alert(`不支持的文件格式：${file.name}`);
+            alert(`不支持的文件格式：${file.name}\n请上传Excel（.xlsx, .xls）或CSV（.csv）格式的文件！`);
         }
     });
-    updateFilePreview();
-    document.getElementById('processFilesBtn').disabled = false;
+    
+    if (uploadedFiles.length > 0) {
+        updateFilePreview();
+        console.log('已添加文件:', uploadedFiles.map(f => f.name).join(', '));
+    }
 }
 
 // 验证文件类型
@@ -746,8 +1011,10 @@ function removeFile(index) {
     uploadedFiles.splice(index, 1);
     updateFilePreview();
     if (uploadedFiles.length === 0) {
-        document.getElementById('filePreview').style.display = 'none';
-        document.getElementById('processFilesBtn').disabled = true;
+        const filePreview = document.getElementById('filePreview');
+        if (filePreview) {
+            filePreview.style.display = 'none';
+        }
     }
 }
 
@@ -917,8 +1184,83 @@ function displayDataPreview() {
     document.getElementById('dataPreview').style.display = 'block';
 }
 
-// 保存上传的数据
+// 保存上传的数据（使用新的导入接口）
 function saveUploadedData() {
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('请先选择要上传的文件！');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const fileName = file.name.toLowerCase();
+    
+    // 检查文件格式
+    if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls') && !fileName.endsWith('.csv')) {
+        alert('请上传Excel（.xlsx, .xls）或CSV（.csv）格式的文件！');
+        return;
+    }
+    
+    // 创建FormData
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // 显示加载提示
+    const saveBtn = document.getElementById('saveUploadedBtn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 导入中...';
+    
+    // 调用导入接口
+    fetch('/api/customer/import', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+        
+        if (result.code === 200) {
+            const successCount = result.data.successCount || 0;
+            const failureCount = result.data.failureCount || 0;
+            const errors = result.data.errors || [];
+            
+            let message = `导入完成！\n成功：${successCount} 条\n失败：${failureCount} 条`;
+            if (errors.length > 0) {
+                message += '\n\n错误详情：\n' + errors.slice(0, 5).join('\n');
+                if (errors.length > 5) {
+                    message += `\n...还有 ${errors.length - 5} 条错误`;
+                }
+            }
+            
+            alert(message);
+            
+            // 关闭模态框并刷新列表
+            const modal = bootstrap.Modal.getInstance(document.getElementById('fileUploadModal'));
+            if (modal) {
+                modal.hide();
+            }
+            loadCustomers();
+            
+            // 清空文件输入
+            fileInput.value = '';
+            document.getElementById('filePreview').style.display = 'none';
+            document.getElementById('dataPreview').style.display = 'none';
+        } else {
+            alert('导入失败: ' + (result.message || '未知错误'));
+        }
+    })
+    .catch(error => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+        console.error('导入失败:', error);
+        alert('导入失败，请重试');
+    });
+}
+
+// 旧的保存上传数据方法（保留用于兼容）
+function saveUploadedDataOld() {
     if (processedData.length === 0) {
         alert('没有要保存的数据！');
         return;
@@ -1132,7 +1474,7 @@ function showCustomerDetail(customer) {
     const updateTime = customer.updateTime ? new Date(customer.updateTime).toLocaleString('zh-CN') : createTime;
     
     const content = 
-        '<div class="row">' +
+        '<div class="row g-3">' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">客户名称</label>' +
@@ -1146,7 +1488,7 @@ function showCustomerDetail(customer) {
                 '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="row">' +
+        '<div class="row g-3">' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">电话</label>' +
@@ -1160,7 +1502,7 @@ function showCustomerDetail(customer) {
                 '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="row">' +
+        '<div class="row g-3">' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">客户类型</label>' +
@@ -1174,7 +1516,7 @@ function showCustomerDetail(customer) {
                 '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="row">' +
+        '<div class="row g-3">' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">地区</label>' +
@@ -1182,7 +1524,7 @@ function showCustomerDetail(customer) {
                 '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="row">' +
+        '<div class="row g-3">' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">职务</label>' +
@@ -1196,7 +1538,7 @@ function showCustomerDetail(customer) {
                 '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="row">' +
+        '<div class="row g-3">' +
             '<div class="col-md-12">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">合作内容</label>' +
@@ -1204,7 +1546,7 @@ function showCustomerDetail(customer) {
                 '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="row">' +
+        '<div class="row g-3">' +
             '<div class="col-md-12">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">详细地址</label>' +
@@ -1212,7 +1554,7 @@ function showCustomerDetail(customer) {
                 '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="row">' +
+        '<div class="row g-3">' +
             '<div class="col-md-12">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">备注</label>' +
@@ -1220,7 +1562,7 @@ function showCustomerDetail(customer) {
                 '</div>' +
             '</div>' +
         '</div>' +
-        '<div class="row mt-3 pt-3 border-top">' +
+        '<div class="row g-3 mt-3 pt-3 border-top">' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">创建时间</label>' +
@@ -1432,64 +1774,7 @@ function deleteCustomer(id) {
     }
 }
 
-// 批量删除
-function batchDelete() {
-    if (selectedCustomers.length === 0) {
-        alert('请先选择要删除的客户！');
-        return;
-    }
-    
-    if (confirm('确定要删除选中的 ' + selectedCustomers.length + ' 个客户吗？')) {
-        fetch('/api/customer/batch', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(selectedCustomers)
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.code === 200) {
-                alert('批量删除成功！');
-                selectedCustomers = [];
-                loadCustomers();
-            } else {
-                alert('批量删除失败: ' + (result.message || '未知错误'));
-            }
-        })
-        .catch(error => {
-            console.error('批量删除失败:', error);
-            alert('批量删除失败，请重试');
-        });
-    }
-}
-
-// 全选/取消全选
-function toggleSelectAll() {
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.customer-checkbox');
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = selectAll.checked;
-        if (selectAll.checked) {
-            if (!selectedCustomers.includes(parseInt(checkbox.value))) {
-                selectedCustomers.push(parseInt(checkbox.value));
-            }
-        } else {
-            selectedCustomers = selectedCustomers.filter(id => id !== parseInt(checkbox.value));
-        }
-    });
-}
-
-// 切换客户选择状态
-function toggleCustomerSelection(id) {
-    const index = selectedCustomers.indexOf(id);
-    if (index > -1) {
-        selectedCustomers.splice(index, 1);
-    } else {
-        selectedCustomers.push(id);
-    }
-}
+// 批量删除功能已删除
 
 // 获取敏感状态文本
 function getSensitiveStatusText(isSensitive) {
@@ -1551,14 +1836,82 @@ function importCustomers() {
     alert('导入功能开发中...');
 }
 
+// 下载Excel模版
+function downloadTemplate() {
+    fetch('/api/customer/template')
+        .then(response => {
+            if (!response.ok) {
+                // 尝试解析错误信息
+                return response.text().then(text => {
+                    try {
+                        const error = JSON.parse(text);
+                        throw new Error(error.error || error.message || '下载模版失败');
+                    } catch (e) {
+                        throw new Error('下载模版失败: HTTP ' + response.status);
+                    }
+                });
+            }
+            // 获取文件名
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let fileName = '客户导入模版.xlsx';
+            if (contentDisposition) {
+                const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                if (fileNameMatch && fileNameMatch[1]) {
+                    fileName = fileNameMatch[1].replace(/['"]/g, '');
+                    // 处理UTF-8编码的文件名
+                    if (fileName.startsWith('UTF-8\'\'')) {
+                        fileName = decodeURIComponent(fileName.replace('UTF-8\'\'', ''));
+                    }
+                }
+            }
+            return response.blob().then(blob => ({ blob, fileName }));
+        })
+        .then(({ blob, fileName }) => {
+            // 创建下载链接
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+            console.error('下载模版失败:', error);
+            alert('下载模版失败: ' + (error.message || '未知错误，请重试'));
+        });
+}
+
 // 导出客户
 function exportCustomers() {
-    const dataStr = JSON.stringify(customers, null, 2);
-    const dataBlob = new Blob([dataStr], {type: 'application/json'});
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'customers_' + new Date().toISOString().split('T')[0] + '.json';
-    link.click();
-    URL.revokeObjectURL(url);
+    try {
+        // 获取当前筛选条件
+        const params = new URLSearchParams();
+        const customerName = document.getElementById('customerNameFilter').value;
+        const customerType = document.getElementById('customerTypeFilter').value;
+        const customerLevel = document.getElementById('customerLevelFilter').value;
+        const region = document.getElementById('regionFilter').value;
+        
+        if (customerName) params.append('customerName', customerName);
+        if (customerType) params.append('customerType', customerType);
+        if (customerLevel) params.append('customerLevel', customerLevel);
+        if (region) params.append('region', region);
+        
+        // 询问用户导出格式
+        const format = confirm('点击"确定"导出Excel格式，点击"取消"导出CSV格式') ? 'excel' : 'csv';
+        params.append('format', format);
+        
+        const link = document.createElement('a');
+        link.href = '/api/customer/export?' + params.toString();
+        link.download = '客户数据.' + (format === 'excel' ? 'xlsx' : 'csv');
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+        console.error('导出失败:', error);
+        alert('导出失败，请重试');
+    }
 }

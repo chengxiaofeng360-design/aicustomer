@@ -120,4 +120,9 @@ public interface CustomerService {
      * 更新客户生命周期
      */
     void updateCustomerLifecycle(Long customerId, String lifecycleStage);
+    
+    /**
+     * 获取客户统计数据
+     */
+    java.util.Map<String, Object> getCustomerStatistics();
 }
