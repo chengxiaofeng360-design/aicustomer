@@ -59,7 +59,16 @@
 
         <!-- 搜索和筛选区域 -->
         <div class="card mb-3">
-            <div class="card-body">
+              <div class="card-body">
+                <!-- 切换搜索区域显示/隐藏的按钮（横向窄倒三角） -->
+                <div style="margin: 0; padding: 0;">
+                    <button class="btn p-0" style="min-width: 14px; padding: 0; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border: none; background: none;" onclick="toggleSearchPanel()" id="toggleButton">
+                        <i class="bi bi-chevron-down" style="font-size: 0.65rem; color: #495057;"></i>
+                    </button>
+                </div>
+                
+                <!-- 搜索和操作按钮区域（初始隐藏） -->
+                <div id="searchPanel" style="display: none;">
                 <!-- 第一排：搜索条件 -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-3">
@@ -128,6 +137,24 @@
                         </div>
                     </div>
                 </div>
+                </div> <!-- 结束搜索面板容器 -->
+                
+                <!-- JavaScript 切换逻辑 -->
+                <script>
+                function toggleSearchPanel() {
+                    const panel = document.getElementById('searchPanel');
+                    const toggleIcon = document.querySelector('#toggleButton i');
+                    if (panel.style.display === 'none' || panel.style.display === '') {
+                        panel.style.display = 'block';
+                        toggleIcon.classList.remove('bi-chevron-down');
+                        toggleIcon.classList.add('bi-chevron-up');
+                    } else {
+                        panel.style.display = 'none';
+                        toggleIcon.classList.remove('bi-chevron-up');
+                        toggleIcon.classList.add('bi-chevron-down');
+                    }
+                }
+                </script>
             </div>
         </div>
 
@@ -335,11 +362,8 @@
                     <div class="tab-content" id="customerDetailTabContent">
                         <!-- 基本信息标签页 -->
                         <div class="tab-pane fade show active" id="basicInfo" role="tabpanel">
-                            <div id="customerDetailContent">
-                                <!-- 客户基本信息内容将通过JavaScript动态加载 -->
-                            </div>
+                            <div id="customerDetailContent"></div>
                         </div>
-                        
                         <!-- 沟通记录标签页 -->
                         <div class="tab-pane fade" id="communications" role="tabpanel">
                             <div class="d-flex justify-content-between align-items-center mb-3">
