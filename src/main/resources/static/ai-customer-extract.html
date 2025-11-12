@@ -207,7 +207,7 @@
                             parsedInfo = JSON.parse(extractedInfo.aiResult);
                         } catch (e) {
                             console.error('解析AI结果失败:', e);
-                            // 如果解析失败，使用原始数据
+                            // 如果解析失败，尝试使用原始数据
                             parsedInfo = extractedInfo;
                         }
                     } else {
@@ -216,13 +216,13 @@
                     }
                     
                     // 填充解析结果
-                    document.getElementById('customerName').textContent = parsedInfo.customerName || '-';
+                    document.getElementById('customerName').textContent = parsedInfo.customerName || parsedInfo.name || '-';
                     document.getElementById('customerType').textContent = parsedInfo.customerType || '-';
-                    document.getElementById('phoneNumber').textContent = parsedInfo.phoneNumber || '-';
-                    document.getElementById('email').textContent = parsedInfo.email || '-';
-                    document.getElementById('companyName').textContent = parsedInfo.companyName || '-';
-                    document.getElementById('position').textContent = parsedInfo.position || '-';
-                    document.getElementById('address').textContent = parsedInfo.address || '-';
+                    document.getElementById('phoneNumber').textContent = parsedInfo.phoneNumber || parsedInfo.phone || parsedInfo.mobile || '-';
+                    document.getElementById('email').textContent = parsedInfo.email || parsedInfo.emailAddress || '-';
+                    document.getElementById('companyName').textContent = parsedInfo.companyName || parsedInfo.company || '-';
+                    document.getElementById('position').textContent = parsedInfo.position || parsedInfo.jobTitle || '-';
+                    document.getElementById('address').textContent = parsedInfo.address || parsedInfo.location || '-';
                     document.getElementById('originalText').textContent = text;
                     
                     // 隐藏加载动画，显示结果

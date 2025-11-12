@@ -3,6 +3,7 @@ package com.aicustomer.controller;
 import com.aicustomer.common.Result;
 import com.aicustomer.entity.Customer;
 import com.aicustomer.service.DeepSeekService;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,8 @@ public class AiCustomerExtractController {
     
     @Autowired
     private DeepSeekService deepSeekService;
+    
+    private final Gson gson = new Gson();
     
     /**
      * 从文本中提取客户信息
@@ -89,9 +92,20 @@ public class AiCustomerExtractController {
             
             String aiResult = deepSeekService.chat(prompt, systemPrompt);
             
-            // 将AI返回的结果放入info中
-            info.put("aiProcessed", true);
-            info.put("aiResult", aiResult);
+            // 尝试解析AI返回的JSON结果
+            try {
+                // 验证AI返回的结果是否为有效的JSON格式
+                gson.fromJson(aiResult, Map.class);
+                // 如果解析成功，将AI返回的结果放入info中
+                info.put("aiProcessed", true);
+                info.put("aiResult", aiResult);
+            } catch (Exception e) {
+                // 如果解析失败，将原始结果放入info中
+                log.warn("AI返回的结果不是有效的JSON格式: {}", aiResult);
+                info.put("aiProcessed", true);
+                info.put("aiResult", aiResult);
+                info.put("rawResult", true);
+            }
             
         } catch (Exception e) {
             log.error("AI提取客户信息失败: {}", e.getMessage(), e);
