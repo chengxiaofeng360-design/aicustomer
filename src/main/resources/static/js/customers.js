@@ -44,10 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化文件上传功能
     initFileUpload();
     
-    // 自动启动语音监听
-    setTimeout(() => {
-        autoStartVoiceListening();
-    }, 2000); // 延迟2秒启动，确保页面完全加载
+    // 不再自动启动语音识别，只在用户点击打开模态框时启动
+    // 移除自动启动，避免权限错误和用户体验问题
 });
 
 // 加载统计数据
@@ -111,7 +109,7 @@ function formatNumber(num) {
 function loadCustomers(page = currentPage) {
     currentPage = page;
     const tbody = document.getElementById('customerTableBody');
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">加载中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">加载中...</td></tr>';
 
     // 构建查询参数
     const params = new URLSearchParams();
@@ -157,13 +155,13 @@ function loadCustomers(page = currentPage) {
                 renderPagination();
             } else {
                 const errorMsg = (result && result.message) || (result && result.error) || '未知错误';
-                tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + errorMsg + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">加载失败: ' + errorMsg + '</td></tr>';
             }
         })
         .catch(error => {
             console.error('加载客户列表失败:', error);
             const errorMsg = error.message || '网络错误或服务器未响应';
-            tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
         });
 }
 
@@ -173,7 +171,7 @@ function renderCustomerTable(customerList) {
     tbody.innerHTML = '';
     
     if (customerList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">暂无数据</td></tr>';
         return;
     }
 
@@ -200,21 +198,21 @@ function renderCustomerTable(customerList) {
                 '<span class="badge ' + levelBadgeClass + '">' + customerLevelText + '</span>' +
             '</td>' +
             '<td class="table-cell-truncate" title="' + (customer.position || '') + '">' + (customer.position || '') + '</td>' +
-            '<td class="table-cell-truncate" title="' + (customer.qqWeixin || '') + '">' + (customer.qqWeixin || '') + '</td>' +
-            '<td class="table-cell-truncate" title="' + (customer.region || '') + '">' + (customer.region || '') + '</td>' +
             '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
-            '<td class="table-cell-truncate" title="' + createTime + '">' + createTime + '</td>' +
             '<td>' +
                 '<div class="action-buttons">' +
+                    '<button class="btn btn-sm btn-outline-info" onclick="openCommunicationModal(' + customer.id + ', \'' + (customer.customerName || '').replace(/'/g, '\\\'') + '\')" title="沟通记录">' +
+                    '<i class="bi bi-chat-dots"></i> 沟通记录' +
+                '</button>' +
                     '<button class="btn btn-sm btn-outline-primary" onclick="viewCustomer(' + customer.id + ')" title="查看详情">' +
-                        '<i class="bi bi-eye"></i> 详情' +
-                    '</button>' +
+                    '<i class="bi bi-eye"></i> 详情' +
+                '</button>' +
                     '<button class="btn btn-sm btn-outline-warning" onclick="editCustomer(' + customer.id + ')" title="编辑客户">' +
-                        '<i class="bi bi-pencil"></i> 编辑' +
-                    '</button>' +
+                    '<i class="bi bi-pencil"></i> 编辑' +
+                '</button>' +
                     '<button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(' + customer.id + ')" title="删除客户">' +
-                        '<i class="bi bi-trash"></i> 删除' +
-                    '</button>' +
+                    '<i class="bi bi-trash"></i> 删除' +
+                '</button>' +
                 '</div>' +
             '</td>';
         tbody.appendChild(row);
@@ -368,13 +366,57 @@ function showAIRecognition() {
 
 // 显示文件上传模态框
 function showFileUpload() {
+    console.log('显示文件上传模态框...');
+    
     // 重置文件上传状态
+    resetImportFileSelection(true);
+    
+    // 显示模态框
+    const modalElement = document.getElementById('fileUploadModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        
+        // 模态框显示后，重新初始化文件上传功能
+        modalElement.addEventListener('shown.bs.modal', function onModalShown() {
+            console.log('模态框已显示，重新初始化文件上传功能');
+            // 移除事件监听器，避免重复绑定
+            modalElement.removeEventListener('shown.bs.modal', onModalShown);
+            // 重新初始化文件上传功能
+            initFileUpload();
+        }, { once: true });
+        
+        // 如果模态框已经显示，立即初始化
+        setTimeout(function() {
+            if (modalElement.classList.contains('show')) {
+                console.log('模态框已显示，立即初始化文件上传功能');
+                initFileUpload();
+            }
+        }, 100);
+    } else {
+        console.error('找不到fileUploadModal元素');
+        alert('无法打开文件上传对话框，请刷新页面重试');
+    }
+}
+
+// 注意：文件选择现在通过HTML的label标签实现，无需JavaScript触发
+// label标签的for属性关联到fileInput，点击label会自动触发文件选择对话框
+
+// 清空批量导入选择
+function resetImportFileSelection(silent = false) {
     uploadedFiles = [];
     processedData = [];
+    
     const fileInput = document.getElementById('fileInput');
     if (fileInput) {
         fileInput.value = '';
     }
+    
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    if (fileUploadArea) {
+        fileUploadArea.classList.remove('drag-over');
+    }
+    
     const filePreview = document.getElementById('filePreview');
     const dataPreview = document.getElementById('dataPreview');
     if (filePreview) {
@@ -383,6 +425,7 @@ function showFileUpload() {
     if (dataPreview) {
         dataPreview.style.display = 'none';
     }
+    
     const filePreviewBody = document.getElementById('filePreviewBody');
     const dataPreviewBody = document.getElementById('dataPreviewBody');
     if (filePreviewBody) {
@@ -392,14 +435,8 @@ function showFileUpload() {
         dataPreviewBody.innerHTML = '';
     }
     
-    // 显示模态框
-    const modalElement = document.getElementById('fileUploadModal');
-    if (modalElement) {
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-    } else {
-        console.error('找不到fileUploadModal元素');
-        alert('无法打开文件上传对话框，请刷新页面重试');
+    if (!silent) {
+        console.info('已清空批量导入文件选择');
     }
 }
 
@@ -606,10 +643,17 @@ function initVoiceRecognition() {
                 return;
             }
             
-            // 其他错误才显示错误提示
+            // 对not-allowed错误进行静默处理（权限被拒绝，不影响其他功能）
             if (event.error === 'not-allowed') {
-                showVoiceStatus('语音识别权限被拒绝，请在浏览器设置中允许麦克风权限');
-            } else if (event.error === 'no-speech') {
+                console.warn('语音识别权限被拒绝，功能已禁用');
+                hideVoiceStatus();
+                stopVoiceInput();
+                // 不显示错误提示，避免打扰用户
+                return;
+            }
+            
+            // 其他错误才显示错误提示
+            if (event.error === 'no-speech') {
                 // 无语音输入是正常情况，不显示错误
                 hideVoiceStatus();
             } else {
@@ -825,8 +869,11 @@ let processedData = [];
 
 // 初始化文件上传
 function initFileUpload() {
+    console.log('初始化文件上传功能...');
+    
     const fileInput = document.getElementById('fileInput');
     const fileUploadArea = document.getElementById('fileUploadArea');
+    const selectFileBtn = document.getElementById('selectFileBtn');
 
     if (!fileInput) {
         console.error('找不到fileInput元素');
@@ -837,57 +884,78 @@ function initFileUpload() {
         console.error('找不到fileUploadArea元素');
         return;
     }
+    
+    console.log('找到fileInput和fileUploadArea元素');
 
     // 文件选择事件
-    fileInput.addEventListener('change', handleFileSelect);
+    fileInput.addEventListener('change', function(e) {
+        console.log('文件选择事件触发，文件数量:', e.target.files.length);
+        handleFileSelect(e);
+    });
 
     // 拖拽事件
     fileUploadArea.addEventListener('dragover', handleDragOver);
     fileUploadArea.addEventListener('dragleave', handleDragLeave);
     fileUploadArea.addEventListener('drop', handleFileDrop);
     
-    // 点击整个上传区域也可以选择文件
+    // 点击整个上传区域也可以选择文件（通过label触发）
     fileUploadArea.addEventListener('click', function(e) {
-        // 如果点击的不是按钮或其子元素，则触发文件选择
+        // 如果点击的不是按钮、label或其子元素，则触发文件选择
         const clickedButton = e.target.closest('button');
-        if (!clickedButton) {
-            e.preventDefault();
-            e.stopPropagation();
-            fileInput.click();
-        }
-    });
-    
-    // 确保按钮点击也能触发文件选择（延迟执行，确保DOM已加载）
-    setTimeout(function() {
-        const selectFileBtn = document.getElementById('selectFileBtn');
-        if (selectFileBtn) {
-            selectFileBtn.addEventListener('click', function(e) {
+        const clickedLabel = e.target.closest('label');
+        const clickedInput = e.target.closest('input[type="file"]');
+        if (!clickedButton && !clickedLabel && !clickedInput) {
+            // 点击上传区域时，通过label触发文件选择
+            const fileInputLabel = document.querySelector('label[for="fileInput"]');
+            if (fileInputLabel) {
                 e.preventDefault();
                 e.stopPropagation();
+                // 直接点击label内部的文件输入
+                const fileInput = document.getElementById('fileInput');
                 if (fileInput) {
                     fileInput.click();
                 }
-            });
-        } else {
-            // 如果找不到id，尝试通过querySelector查找
-            const btn = fileUploadArea.querySelector('button');
-            if (btn) {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (fileInput) {
-                        fileInput.click();
-                    }
-                });
             }
         }
-    }, 100);
+    });
+    
+    // label标签已经通过for属性关联到fileInput，文件输入在label内部
+    if (selectFileBtn) {
+        console.log('[IMPORT] [前端] 找到selectFileBtn（label），文件输入在label内部');
+        console.log('[IMPORT] [前端] fileInput位置:', fileInput.parentElement === selectFileBtn ? '在label内部' : '不在label内部');
+        
+        // 添加label点击事件监听（用于调试）
+        selectFileBtn.addEventListener('click', function(e) {
+            console.log('[IMPORT] [前端] label被点击', {
+                target: e.target.tagName,
+                currentTarget: e.currentTarget.tagName,
+                fileInputExists: !!fileInput,
+                fileInputInLabel: fileInput && fileInput.parentElement === selectFileBtn
+            });
+        });
+    } else {
+        console.warn('[IMPORT] [前端] 未找到selectFileBtn（label）');
+    }
+    
+    console.log('文件上传功能初始化完成');
 }
 
 // 处理文件选择
 function handleFileSelect(event) {
     const files = Array.from(event.target.files);
+    console.log('[IMPORT] [前端] 文件选择事件触发', {
+        timestamp: new Date().toISOString(),
+        fileCount: files.length,
+        fileNames: files.map(f => f.name),
+        fileSizes: files.map(f => f.size)
+    });
+    
+    if (files.length > 0) {
+        console.log('[IMPORT] [前端] 文件选择成功，开始处理文件');
     addFiles(files);
+    } else {
+        console.log('[IMPORT] [前端] 未选择文件');
+    }
 }
 
 // 处理拖拽悬停
@@ -906,6 +974,12 @@ function handleFileDrop(event) {
     event.preventDefault();
     event.currentTarget.classList.remove('drag-over');
     const files = Array.from(event.dataTransfer.files);
+    console.log('[IMPORT] [前端] 文件拖拽事件触发', {
+        timestamp: new Date().toISOString(),
+        fileCount: files.length,
+        fileNames: files.map(f => f.name),
+        fileSizes: files.map(f => f.size)
+    });
     addFiles(files);
 }
 
@@ -930,7 +1004,7 @@ function addFiles(files) {
     });
     
     if (uploadedFiles.length > 0) {
-        updateFilePreview();
+    updateFilePreview();
         console.log('已添加文件:', uploadedFiles.map(f => f.name).join(', '));
     }
 }
@@ -1479,14 +1553,14 @@ function showCustomerDetail(customer) {
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">客户名称</label>' +
                     '<p class="mb-0">' + (customer.customerName || '未填写') + '</p>' +
-                '</div>' +
+            '</div>' +
             '</div>' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">联系人</label>' +
                     '<p class="mb-0">' + (customer.contactPerson || '未填写') + '</p>' +
-                '</div>' +
             '</div>' +
+        '</div>' +
         '</div>' +
         '<div class="row g-3">' +
             '<div class="col-md-6">' +
@@ -1597,6 +1671,78 @@ function showCustomerDetail(customer) {
     // 显示模态框
     const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
     modal.show();
+}
+
+// 打开客户沟通记录列表模态框
+function openCommunicationModal(customerId, customerName) {
+    // 保存当前客户信息
+    currentViewingCustomer = { id: customerId, customerName: customerName };
+    
+    // 创建并显示沟通记录模态框
+    const modalHtml = `
+        <div class="modal fade" id="communicationModal" tabindex="-1" aria-labelledby="communicationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="communicationModalLabel">${customerName} - 沟通记录</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h6>沟通记录列表</h6>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="showAddCommunicationForCurrentCustomer()">
+                                <i class="bi bi-plus"></i> 新增记录
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>沟通方式</th>
+                                        <th>主题</th>
+                                        <th>重要性</th>
+                                        <th>沟通时间</th>
+                                        <th>负责人</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customerCommunicationTableBody">
+                                    <!-- 沟通记录将在这里动态加载 -->
+                                    <tr><td colspan="7" class="text-center">加载中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 检查是否已存在模态框元素，如果存在则移除
+    let existingModal = document.getElementById('communicationModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // 添加模态框到文档中
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('communicationModal'));
+    modal.show();
+    
+    // 加载客户沟通记录
+    loadCustomerCommunications(customerId, 'customerCommunicationTableBody');
+    
+    // 模态框关闭时的清理
+    const communicationModal = document.getElementById('communicationModal');
+    communicationModal.addEventListener('hidden.bs.modal', function() {
+        // 可以在这里添加清理代码
+        currentViewingCustomer = null;
+    });
 }
 
 // 为当前客户显示新增沟通记录模态框
@@ -1887,31 +2033,127 @@ function downloadTemplate() {
 // 导出客户
 function exportCustomers() {
     try {
-        // 获取当前筛选条件
+        // 获取当前筛选条件（添加空值检查，使用正确的元素ID）
         const params = new URLSearchParams();
-        const customerName = document.getElementById('customerNameFilter').value;
-        const customerType = document.getElementById('customerTypeFilter').value;
-        const customerLevel = document.getElementById('customerLevelFilter').value;
-        const region = document.getElementById('regionFilter').value;
+        const customerNameEl = document.getElementById('customerName');
+        const customerTypeEl = document.getElementById('customerType');
+        const customerLevelEl = document.getElementById('customerLevel');
+        const regionEl = document.getElementById('region');
+        
+        const customerName = customerNameEl ? customerNameEl.value.trim() : '';
+        const customerType = customerTypeEl ? customerTypeEl.value.trim() : '';
+        const customerLevel = customerLevelEl ? customerLevelEl.value.trim() : '';
+        const region = regionEl ? regionEl.value.trim() : '';
         
         if (customerName) params.append('customerName', customerName);
-        if (customerType) params.append('customerType', customerType);
-        if (customerLevel) params.append('customerLevel', customerLevel);
+        if (customerType) {
+            // 将显示文本转换为数字
+            const typeValue = customerTypeReverseMap[customerType] || customerType;
+            params.append('customerType', typeValue);
+        }
+        if (customerLevel) {
+            // 将显示文本转换为数字
+            const levelValue = customerLevelReverseMap[customerLevel] || customerLevel;
+            params.append('customerLevel', levelValue);
+        }
         if (region) params.append('region', region);
         
         // 询问用户导出格式
         const format = confirm('点击"确定"导出Excel格式，点击"取消"导出CSV格式') ? 'excel' : 'csv';
         params.append('format', format);
         
-        const link = document.createElement('a');
-        link.href = '/api/customer/export?' + params.toString();
-        link.download = '客户数据.' + (format === 'excel' ? 'xlsx' : 'csv');
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const url = '/api/customer/export?' + params.toString();
+        const fileName = '客户数据_' + new Date().toISOString().split('T')[0] + '.' + (format === 'excel' ? 'xlsx' : 'csv');
+        
+        // 显示加载提示
+        const loadingMsg = format === 'excel' ? '正在导出Excel文件，请稍候...' : '正在导出CSV文件，请稍候...';
+        console.log('开始导出:', url);
+        
+        // 使用 fetch API 下载文件
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': format === 'excel' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'text/csv'
+            }
+        })
+        .then(response => {
+            console.log('导出响应状态:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                // 尝试解析错误信息
+                return response.text().then(text => {
+                    try {
+                        const error = JSON.parse(text);
+                        throw new Error(error.error || error.message || '导出失败: ' + response.status);
+                    } catch (e) {
+                        if (e instanceof Error && e.message.startsWith('导出失败')) {
+                            throw e;
+                        }
+                        throw new Error('导出失败: ' + response.status + ' ' + response.statusText);
+                    }
+                });
+            }
+            
+            // 检查响应类型
+            const contentType = response.headers.get('content-type');
+            console.log('响应Content-Type:', contentType);
+            
+            if (contentType && contentType.includes('application/json')) {
+                // 如果是JSON响应，说明是错误
+                return response.json().then(data => {
+                    throw new Error(data.error || data.message || '导出失败');
+                });
+            }
+            
+            // 返回二进制数据
+            return response.blob();
+        })
+        .then(blob => {
+            console.log('导出成功，文件大小:', blob.size, 'bytes');
+            
+            // 检查blob类型，如果是JSON说明是错误响应
+            if (blob.type && blob.type.includes('application/json')) {
+                return blob.text().then(text => {
+                    try {
+                        const error = JSON.parse(text);
+                        throw new Error(error.error || error.message || '导出失败');
+                    } catch (e) {
+                        if (e instanceof Error && e.message.startsWith('导出失败')) {
+                            throw e;
+                        }
+                        throw new Error('导出失败: ' + text);
+                    }
+                });
+            }
+            
+            if (blob.size === 0) {
+                throw new Error('导出的文件为空，请检查是否有数据可导出');
+            }
+            
+            // 创建下载链接
+            const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+            link.download = fileName;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+    link.click();
+            
+            // 清理
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+            
+            console.log('文件下载完成:', fileName);
+        })
+        .catch(error => {
+            console.error('导出失败:', error);
+            const errorMsg = error.message || '未知错误，请重试';
+            alert('导出失败: ' + errorMsg + '\n\n如果问题持续，请检查浏览器控制台获取详细信息。');
+        });
     } catch (error) {
-        console.error('导出失败:', error);
-        alert('导出失败，请重试');
+        console.error('导出异常:', error);
+        alert('导出失败: ' + (error.message || '请重试'));
     }
 }

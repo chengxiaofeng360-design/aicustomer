@@ -141,9 +141,18 @@ function renderCustomerCommunications(communications, tbodyId = 'customerCommuni
 // 显示新增沟通记录模态框（在客户详情中）
 function showAddCommunicationModalForCustomer(customerId, customerName) {
     currentCustomerIdForCommunication = customerId;
-    document.getElementById('communicationModalTitle').textContent = '新增沟通记录';
-    document.getElementById('communicationForm').reset();
-    document.getElementById('communicationId').value = '';
+    const communicationModalTitle = document.getElementById('communicationModalTitle');
+    if (communicationModalTitle) {
+        communicationModalTitle.textContent = '新增沟通记录';
+    }
+    const communicationForm = document.getElementById('communicationForm');
+    if (communicationForm) {
+        communicationForm.reset();
+    }
+    const communicationId = document.getElementById('communicationId');
+    if (communicationId) {
+        communicationId.value = '';
+    }
     
     // 自动填充客户信息（即使字段隐藏，也要设置值以便保存时使用）
     const customerSelect = document.getElementById('customerSelect');
