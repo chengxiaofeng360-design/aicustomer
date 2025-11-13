@@ -344,55 +344,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                 <div class="modal-body">
-                    <!-- 标签页导航 -->
-                    <ul class="nav nav-tabs mb-3" id="customerDetailTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="basicInfoTab" data-bs-toggle="tab" data-bs-target="#basicInfo" type="button" role="tab">
-                                <i class="bi bi-info-circle me-1"></i>基本信息
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="communicationsTab" data-bs-toggle="tab" data-bs-target="#communications" type="button" role="tab">
-                                <i class="bi bi-chat-dots me-1"></i>沟通记录
-                            </button>
-                        </li>
-                    </ul>
-                    
-                    <!-- 标签页内容 -->
-                    <div class="tab-content" id="customerDetailTabContent">
-                        <!-- 基本信息标签页 -->
-                        <div class="tab-pane fade show active" id="basicInfo" role="tabpanel">
-                            <div id="customerDetailContent"></div>
-                        </div>
-                        <!-- 沟通记录标签页 -->
-                        <div class="tab-pane fade" id="communications" role="tabpanel">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0">沟通记录列表</h6>
-                                <button class="btn btn-sm btn-primary" id="addCommunicationBtn" onclick="showAddCommunicationForCurrentCustomer()">
-                                    <i class="bi bi-plus"></i> 新增沟通记录
-                                </button>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>沟通类型</th>
-                                            <th>沟通主题</th>
-                                            <th>重要程度</th>
-                                            <th>沟通时间</th>
-                                            <th>操作人</th>
-                                            <th>操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="customerCommunicationTableBody">
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted">点击上方"基本信息"标签查看客户信息</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                        </div>
-                                    </div>
-                                        </div>
+                    <!-- 只显示客户基本信息，不显示沟通记录 -->
+                    <div id="customerDetailContent"></div>
                                     </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>

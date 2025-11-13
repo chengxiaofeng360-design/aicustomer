@@ -1652,22 +1652,6 @@ function showCustomerDetail(customer) {
         '</div>';
     document.getElementById('customerDetailContent').innerHTML = content;
     
-    // 初始化标签页事件监听（移除旧的监听器，添加新的）
-    const communicationsTab = document.getElementById('communicationsTab');
-    if (communicationsTab) {
-        // 移除旧的监听器
-        const newTab = communicationsTab.cloneNode(true);
-        communicationsTab.parentNode.replaceChild(newTab, communicationsTab);
-        
-        // 添加新的监听器
-        document.getElementById('communicationsTab').addEventListener('shown.bs.tab', function() {
-            // 当切换到沟通记录标签页时，加载该客户的沟通记录
-            if (customer.id) {
-                loadCustomerCommunications(customer.id);
-            }
-        });
-    }
-    
     // 显示模态框
     const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
     modal.show();
@@ -1678,71 +1662,71 @@ function openCommunicationModal(customerId, customerName) {
     // 保存当前客户信息
     currentViewingCustomer = { id: customerId, customerName: customerName };
     
-    // 创建并显示沟通记录模态框
-    const modalHtml = `
-        <div class="modal fade" id="communicationModal" tabindex="-1" aria-labelledby="communicationModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="communicationModalLabel">${customerName} - 沟通记录</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <h6>沟通记录列表</h6>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="showAddCommunicationForCurrentCustomer()">
-                                <i class="bi bi-plus"></i> 新增记录
-                            </button>
+    // 检查是否已存在模态框元素
+    let communicationModal = document.getElementById('communicationListModal');
+    if (!communicationModal) {
+        // 创建并显示沟通记录列表模态框（使用不同的ID避免冲突）
+        const modalHtml = `
+            <div class="modal fade" id="communicationListModal" tabindex="-1" aria-labelledby="communicationListModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="communicationListModalLabel">${customerName} - 沟通记录</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>沟通方式</th>
-                                        <th>主题</th>
-                                        <th>重要性</th>
-                                        <th>沟通时间</th>
-                                        <th>负责人</th>
-                                        <th>操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="customerCommunicationTableBody">
-                                    <!-- 沟通记录将在这里动态加载 -->
-                                    <tr><td colspan="7" class="text-center">加载中...</td></tr>
-                                </tbody>
-                            </table>
+                        <div class="modal-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h6>沟通记录列表</h6>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="showAddCommunicationForCurrentCustomer()">
+                                    <i class="bi bi-plus"></i> 新增记录
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>沟通方式</th>
+                                            <th>主题</th>
+                                            <th>重要性</th>
+                                            <th>沟通时间</th>
+                                            <th>负责人</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customerCommunicationTableBody">
+                                        <!-- 沟通记录将在这里动态加载 -->
+                                        <tr><td colspan="7" class="text-center">加载中...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    `;
-    
-    // 检查是否已存在模态框元素，如果存在则移除
-    let existingModal = document.getElementById('communicationModal');
-    if (existingModal) {
-        existingModal.remove();
+        `;
+        
+        // 添加模态框到文档中
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        communicationModal = document.getElementById('communicationListModal');
+        
+        // 模态框关闭时的清理
+        communicationModal.addEventListener('hidden.bs.modal', function() {
+            // 清理当前查看的客户
+            currentViewingCustomer = null;
+            // 移除模态框元素
+            this.remove();
+        });
     }
     
-    // 添加模态框到文档中
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
     // 显示模态框
-    const modal = new bootstrap.Modal(document.getElementById('communicationModal'));
+    const modal = new bootstrap.Modal(communicationModal);
     modal.show();
     
     // 加载客户沟通记录
     loadCustomerCommunications(customerId, 'customerCommunicationTableBody');
-    
-    // 模态框关闭时的清理
-    const communicationModal = document.getElementById('communicationModal');
-    communicationModal.addEventListener('hidden.bs.modal', function() {
-        // 可以在这里添加清理代码
-        currentViewingCustomer = null;
-    });
 }
 
 // 为当前客户显示新增沟通记录模态框
