@@ -4,6 +4,7 @@ com/aicustomer/service/TaskProgressReportService.class
 com/aicustomer/service/ImportService.class
 com/aicustomer/mapper/TeamTaskMapper.class
 com/aicustomer/controller/ExportController.class
+com/aicustomer/controller/AiCustomerExtractController.class
 com/aicustomer/controller/SocialCommentController.class
 com/aicustomer/config/DatabaseConfig.class
 com/aicustomer/entity/TaskProgressReport.class

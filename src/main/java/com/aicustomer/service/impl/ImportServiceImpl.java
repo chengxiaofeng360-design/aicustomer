@@ -357,11 +357,6 @@ public class ImportServiceImpl implements ImportService {
             
             // 申请人性质验证
             // applicantNature字段已删除，跳过验证
-            if (false) {
-                if (false) {
-                    errors.add("第" + rowNum + "行：申请人性质值无效（应为1-4）");
-                }
-            }
         }
         
         boolean valid = errors.isEmpty();
@@ -419,180 +414,129 @@ public class ImportServiceImpl implements ImportService {
         Customer customer = new Customer();
         
         try {
-            // 客户名称（必填）
+            // 根据新的模板格式解析：客户名称、联系人、电话、邮箱、客户类型、客户等级、地区、职务、QQ/微信、合作内容、详细地址、备注
+            // 客户名称（必填，索引0）
             Cell customerNameCell = row.getCell(0);
-            if (customerNameCell != null) {
-                customer.setCustomerName(getCellValueAsString(customerNameCell));
+            String customerName = customerNameCell != null ? getCellValueAsString(customerNameCell).trim() : "";
+            if (customerName.isEmpty()) {
+                throw new RuntimeException("客户名称不能为空");
             }
+            customer.setCustomerName(customerName);
             
-            // 联系人（必填）
+            // 联系人（必填，索引1）
             Cell contactPersonCell = row.getCell(1);
-            if (contactPersonCell != null) {
-                customer.setContactPerson(getCellValueAsString(contactPersonCell));
+            String contactPerson = contactPersonCell != null ? getCellValueAsString(contactPersonCell).trim() : "";
+            if (contactPerson.isEmpty()) {
+                throw new RuntimeException("联系人不能为空");
             }
+            customer.setContactPerson(contactPerson);
             
-            // 电话
+            // 电话（索引2）
             Cell phoneCell = row.getCell(2);
             if (phoneCell != null) {
-                customer.setPhone(getCellValueAsString(phoneCell));
+                customer.setPhone(getCellValueAsString(phoneCell).trim());
             }
             
-            // 邮箱
+            // 邮箱（索引3）
             Cell emailCell = row.getCell(3);
             if (emailCell != null) {
-                customer.setEmail(getCellValueAsString(emailCell));
+                customer.setEmail(getCellValueAsString(emailCell).trim());
             }
             
-            // 地址
-            Cell addressCell = row.getCell(4);
-            if (addressCell != null) {
-                customer.setAddress(getCellValueAsString(addressCell));
-            }
-            
-            // 邮政编码
-            Cell postalCodeCell = row.getCell(5);
-            if (postalCodeCell != null) {
-                customer.setPostalCode(getCellValueAsString(postalCodeCell));
-            }
-            
-            // 传真
-            Cell faxCell = row.getCell(6);
-            if (faxCell != null) {
-                customer.setFax(getCellValueAsString(faxCell));
-            }
-            
-            // 机构代码
-            Cell orgCodeCell = row.getCell(7);
-            if (orgCodeCell != null) {
-                customer.setOrganizationCode(getCellValueAsString(orgCodeCell));
-            }
-            
-            // 国籍
-            Cell nationalityCell = row.getCell(8);
-            if (nationalityCell != null) {
-                customer.setNationality(getCellValueAsString(nationalityCell));
-            }
-            
-            // 申请人性质
-            Cell applicantNatureCell = row.getCell(9);
-            if (applicantNatureCell != null) {
-                String value = getCellValueAsString(applicantNatureCell);
-                if (!value.isEmpty()) {
+            // 客户类型（索引4）
+            Cell customerTypeCell = row.getCell(4);
+            if (customerTypeCell != null) {
+                String typeStr = getCellValueAsString(customerTypeCell).trim();
+                if (!typeStr.isEmpty()) {
+                    if (typeStr.equals("个人")) {
+                        customer.setCustomerType(1);
+                    } else if (typeStr.equals("企业")) {
+                        customer.setCustomerType(2);
+                    } else if (typeStr.equals("科研院所")) {
+                        customer.setCustomerType(3);
+                    } else {
                     try {
-                        // applicantNature字段已删除，使用position替代
-                        customer.setPosition(value);
+                            customer.setCustomerType(Integer.parseInt(typeStr));
                     } catch (NumberFormatException e) {
-                        // 尝试按文本解析
-                        switch (value.toLowerCase()) {
-                            case "个人": customer.setPosition("研究员"); break;
-                            case "企业": customer.setPosition("总经理"); break;
-                            case "科研院所": customer.setPosition("研究员"); break;
-                            case "其他": customer.setPosition(""); break;
-                            default: customer.setPosition(""); break;
+                            customer.setCustomerType(1); // 默认个人
                         }
                     }
+                } else {
+                    customer.setCustomerType(1); // 默认个人
                 }
+            } else {
+                customer.setCustomerType(1); // 默认个人
             }
             
-            // 代理机构名称
-            Cell agencyNameCell = row.getCell(10);
-            if (agencyNameCell != null) {
-                customer.setAgencyName(getCellValueAsString(agencyNameCell));
-            }
-            
-            // 代理机构代码
-            Cell agencyCodeCell = row.getCell(11);
-            if (agencyCodeCell != null) {
-                customer.setAgencyCode(getCellValueAsString(agencyCodeCell));
-            }
-            
-            // 代理机构地址
-            Cell agencyAddressCell = row.getCell(12);
-            if (agencyAddressCell != null) {
-                customer.setAgencyAddress(getCellValueAsString(agencyAddressCell));
-            }
-            
-            // 代理机构邮编
-            Cell agencyPostalCodeCell = row.getCell(13);
-            if (agencyPostalCodeCell != null) {
-                customer.setAgencyPostalCode(getCellValueAsString(agencyPostalCodeCell));
-            }
-            
-            // 代理人姓名
-            Cell agentNameCell = row.getCell(14);
-            if (agentNameCell != null) {
-                customer.setAgentName(getCellValueAsString(agentNameCell));
-            }
-            
-            // 代理人电话
-            Cell agentPhoneCell = row.getCell(15);
-            if (agentPhoneCell != null) {
-                customer.setAgentPhone(getCellValueAsString(agentPhoneCell));
-            }
-            
-            // 代理人传真
-            Cell agentFaxCell = row.getCell(16);
-            if (agentFaxCell != null) {
-                customer.setAgentFax(getCellValueAsString(agentFaxCell));
-            }
-            
-            // 代理人手机
-            Cell agentMobileCell = row.getCell(17);
-            if (agentMobileCell != null) {
-                customer.setAgentMobile(getCellValueAsString(agentMobileCell));
-            }
-            
-            // 代理人邮箱
-            Cell agentEmailCell = row.getCell(18);
-            if (agentEmailCell != null) {
-                customer.setAgentEmail(getCellValueAsString(agentEmailCell));
-            }
-            
-            // 客户等级
-            Cell customerLevelCell = row.getCell(19);
+            // 客户等级（索引5）
+            Cell customerLevelCell = row.getCell(5);
             if (customerLevelCell != null) {
-                String value = getCellValueAsString(customerLevelCell);
-                if (!value.isEmpty()) {
+                String levelStr = getCellValueAsString(customerLevelCell).trim();
+                if (!levelStr.isEmpty()) {
+                    if (levelStr.equals("普通")) {
+                        customer.setCustomerLevel(1);
+                    } else if (levelStr.equals("VIP")) {
+                        customer.setCustomerLevel(2);
+                    } else if (levelStr.equals("钻石")) {
+                        customer.setCustomerLevel(3);
+                    } else {
                     try {
-                        customer.setCustomerLevel(Integer.parseInt(value));
+                            customer.setCustomerLevel(Integer.parseInt(levelStr));
                     } catch (NumberFormatException e) {
-                        switch (value.toLowerCase()) {
-                            case "普通": customer.setCustomerLevel(1); break;
-                            case "高级": case "vip": customer.setCustomerLevel(2); break;
-                            case "钻石": customer.setCustomerLevel(3); break;
-                            default: customer.setCustomerLevel(1); break;
+                            customer.setCustomerLevel(1); // 默认普通
                         }
                     }
+                } else {
+                    customer.setCustomerLevel(1); // 默认普通
                 }
             } else {
                 customer.setCustomerLevel(1); // 默认普通
             }
             
-            // 客户状态
-            Cell statusCell = row.getCell(20);
-            if (statusCell != null) {
-                String value = getCellValueAsString(statusCell);
-                if (!value.isEmpty()) {
-                    try {
-                        customer.setStatus(Integer.parseInt(value));
-                    } catch (NumberFormatException e) {
-                        switch (value.toLowerCase()) {
-                            case "正常": customer.setStatus(1); break;
-                            case "待跟进": customer.setStatus(2); break;
-                            case "流失": customer.setStatus(3); break;
-                            default: customer.setStatus(1); break;
-                        }
-                    }
-                }
-            } else {
-                customer.setStatus(1); // 默认正常
+            // 地区（索引6）
+            Cell regionCell = row.getCell(6);
+            if (regionCell != null) {
+                customer.setRegion(getCellValueAsString(regionCell).trim());
             }
             
-            // 备注
-            Cell remarkCell = row.getCell(21);
-            if (remarkCell != null) {
-                customer.setRemark(getCellValueAsString(remarkCell));
+            // 职务（索引7）
+            Cell positionCell = row.getCell(7);
+            if (positionCell != null) {
+                customer.setPosition(getCellValueAsString(positionCell).trim());
             }
+            
+            // QQ/微信（索引8）
+            Cell qqWeixinCell = row.getCell(8);
+            if (qqWeixinCell != null) {
+                customer.setQqWeixin(getCellValueAsString(qqWeixinCell).trim());
+            }
+            
+            // 合作内容（索引9）
+            Cell cooperationContentCell = row.getCell(9);
+            if (cooperationContentCell != null) {
+                customer.setCooperationContent(getCellValueAsString(cooperationContentCell).trim());
+            }
+            
+            // 详细地址（索引10）
+            Cell addressCell = row.getCell(10);
+            if (addressCell != null) {
+                customer.setAddress(getCellValueAsString(addressCell).trim());
+            }
+            
+            // 备注（索引11）
+            Cell remarkCell = row.getCell(11);
+            if (remarkCell != null) {
+                customer.setRemark(getCellValueAsString(remarkCell).trim());
+            }
+            
+            // 设置默认值
+            if (customer.getCustomerCode() == null || customer.getCustomerCode().trim().isEmpty()) {
+                customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int)(Math.random() * 1000));
+            }
+            customer.setStatus(1); // 默认正常
+            customer.setSource(2); // 默认线下
+            customer.setCreateTime(LocalDateTime.now());
+            customer.setUpdateTime(LocalDateTime.now());
             
             return customer;
             

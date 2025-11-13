@@ -109,7 +109,7 @@ function formatNumber(num) {
 function loadCustomers(page = currentPage) {
     currentPage = page;
     const tbody = document.getElementById('customerTableBody');
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">加载中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">加载中...</td></tr>';
 
     // 构建查询参数
     const params = new URLSearchParams();
@@ -155,13 +155,13 @@ function loadCustomers(page = currentPage) {
                 renderPagination();
             } else {
                 const errorMsg = (result && result.message) || (result && result.error) || '未知错误';
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">加载失败: ' + errorMsg + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + errorMsg + '</td></tr>';
             }
         })
         .catch(error => {
             console.error('加载客户列表失败:', error);
             const errorMsg = error.message || '网络错误或服务器未响应';
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
         });
 }
 
@@ -171,7 +171,7 @@ function renderCustomerTable(customerList) {
     tbody.innerHTML = '';
     
     if (customerList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">暂无数据</td></tr>';
         return;
     }
 
@@ -198,12 +198,12 @@ function renderCustomerTable(customerList) {
                 '<span class="badge ' + levelBadgeClass + '">' + customerLevelText + '</span>' +
             '</td>' +
             '<td class="table-cell-truncate" title="' + (customer.position || '') + '">' + (customer.position || '') + '</td>' +
+            '<td class="table-cell-truncate" title="' + (customer.qqWeixin || '') + '">' + (customer.qqWeixin || '') + '</td>' +
+            '<td class="table-cell-truncate" title="' + (customer.region || '') + '">' + (customer.region || '') + '</td>' +
             '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
+            '<td class="table-cell-truncate" title="' + createTime + '">' + createTime + '</td>' +
             '<td>' +
                 '<div class="action-buttons">' +
-                    '<button class="btn btn-sm btn-outline-info" onclick="openCommunicationModal(' + customer.id + ', \'' + (customer.customerName || '').replace(/'/g, '\\\'') + '\')" title="沟通记录">' +
-                    '<i class="bi bi-chat-dots"></i> 沟通记录' +
-                '</button>' +
                     '<button class="btn btn-sm btn-outline-primary" onclick="viewCustomer(' + customer.id + ')" title="查看详情">' +
                     '<i class="bi bi-eye"></i> 详情' +
                 '</button>' +
@@ -903,36 +903,20 @@ function initFileUpload() {
         // 如果点击的不是按钮、label或其子元素，则触发文件选择
         const clickedButton = e.target.closest('button');
         const clickedLabel = e.target.closest('label');
-        const clickedInput = e.target.closest('input[type="file"]');
-        if (!clickedButton && !clickedLabel && !clickedInput) {
+        if (!clickedButton && !clickedLabel) {
             // 点击上传区域时，通过label触发文件选择
             const fileInputLabel = document.querySelector('label[for="fileInput"]');
             if (fileInputLabel) {
                 e.preventDefault();
                 e.stopPropagation();
-                // 直接点击label内部的文件输入
-                const fileInput = document.getElementById('fileInput');
-                if (fileInput) {
-                    fileInput.click();
-                }
+                fileInputLabel.click();
             }
         }
     });
     
-    // label标签已经通过for属性关联到fileInput，文件输入在label内部
+    // label标签已经通过for属性关联到fileInput，无需额外处理
     if (selectFileBtn) {
-        console.log('[IMPORT] [前端] 找到selectFileBtn（label），文件输入在label内部');
-        console.log('[IMPORT] [前端] fileInput位置:', fileInput.parentElement === selectFileBtn ? '在label内部' : '不在label内部');
-        
-        // 添加label点击事件监听（用于调试）
-        selectFileBtn.addEventListener('click', function(e) {
-            console.log('[IMPORT] [前端] label被点击', {
-                target: e.target.tagName,
-                currentTarget: e.currentTarget.tagName,
-                fileInputExists: !!fileInput,
-                fileInputInLabel: fileInput && fileInput.parentElement === selectFileBtn
-            });
-        });
+        console.log('[IMPORT] [前端] 找到selectFileBtn（label），文件选择通过label标签实现');
     } else {
         console.warn('[IMPORT] [前端] 未找到selectFileBtn（label）');
     }
@@ -952,7 +936,7 @@ function handleFileSelect(event) {
     
     if (files.length > 0) {
         console.log('[IMPORT] [前端] 文件选择成功，开始处理文件');
-    addFiles(files);
+        addFiles(files);
     } else {
         console.log('[IMPORT] [前端] 未选择文件');
     }
@@ -1652,81 +1636,25 @@ function showCustomerDetail(customer) {
         '</div>';
     document.getElementById('customerDetailContent').innerHTML = content;
     
-    // 显示模态框
-    const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
-    modal.show();
-}
-
-// 打开客户沟通记录列表模态框
-function openCommunicationModal(customerId, customerName) {
-    // 保存当前客户信息
-    currentViewingCustomer = { id: customerId, customerName: customerName };
-    
-    // 检查是否已存在模态框元素
-    let communicationModal = document.getElementById('communicationListModal');
-    if (!communicationModal) {
-        // 创建并显示沟通记录列表模态框（使用不同的ID避免冲突）
-        const modalHtml = `
-            <div class="modal fade" id="communicationListModal" tabindex="-1" aria-labelledby="communicationListModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="communicationListModalLabel">${customerName} - 沟通记录</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="d-flex justify-content-between mb-3">
-                                <h6>沟通记录列表</h6>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="showAddCommunicationForCurrentCustomer()">
-                                    <i class="bi bi-plus"></i> 新增记录
-                                </button>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>沟通方式</th>
-                                            <th>主题</th>
-                                            <th>重要性</th>
-                                            <th>沟通时间</th>
-                                            <th>负责人</th>
-                                            <th>操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="customerCommunicationTableBody">
-                                        <!-- 沟通记录将在这里动态加载 -->
-                                        <tr><td colspan="7" class="text-center">加载中...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+    // 初始化标签页事件监听（移除旧的监听器，添加新的）
+    const communicationsTab = document.getElementById('communicationsTab');
+    if (communicationsTab) {
+        // 移除旧的监听器
+        const newTab = communicationsTab.cloneNode(true);
+        communicationsTab.parentNode.replaceChild(newTab, communicationsTab);
         
-        // 添加模态框到文档中
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        communicationModal = document.getElementById('communicationListModal');
-        
-        // 模态框关闭时的清理
-        communicationModal.addEventListener('hidden.bs.modal', function() {
-            // 清理当前查看的客户
-            currentViewingCustomer = null;
-            // 移除模态框元素
-            this.remove();
+        // 添加新的监听器
+        document.getElementById('communicationsTab').addEventListener('shown.bs.tab', function() {
+            // 当切换到沟通记录标签页时，加载该客户的沟通记录
+            if (customer.id) {
+                loadCustomerCommunications(customer.id);
+            }
         });
     }
     
     // 显示模态框
-    const modal = new bootstrap.Modal(communicationModal);
+    const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
     modal.show();
-    
-    // 加载客户沟通记录
-    loadCustomerCommunications(customerId, 'customerCommunicationTableBody');
 }
 
 // 为当前客户显示新增沟通记录模态框

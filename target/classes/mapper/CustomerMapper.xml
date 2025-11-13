@@ -91,6 +91,9 @@
         <if test="customer.customerLevel != null">
             AND customer_level = #{customer.customerLevel}
         </if>
+        <if test="customer.region != null and customer.region != ''">
+            AND region = #{customer.region}
+        </if>
         <if test="customer.status != null">
             AND status = #{customer.status}
         </if>
@@ -118,6 +121,9 @@
         <if test="customer.customerLevel != null">
             AND customer_level = #{customer.customerLevel}
         </if>
+        <if test="customer.region != null and customer.region != ''">
+            AND region = #{customer.region}
+        </if>
         <if test="customer.status != null">
             AND status = #{customer.status}
         </if>
@@ -144,6 +150,9 @@
         </if>
         <if test="customer.customerLevel != null">
             AND customer_level = #{customer.customerLevel}
+        </if>
+        <if test="customer.region != null and customer.region != ''">
+            AND region = #{customer.region}
         </if>
         <if test="customer.status != null">
             AND status = #{customer.status}

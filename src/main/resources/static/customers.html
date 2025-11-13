@@ -59,16 +59,7 @@
 
         <!-- 搜索和筛选区域 -->
         <div class="card mb-3">
-              <div class="card-body">
-                <!-- 切换搜索区域显示/隐藏的按钮（横向窄倒三角） -->
-                <div style="margin: 0; padding: 0;">
-                    <button class="btn p-0" style="min-width: 14px; padding: 0; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border: none; background: none;" onclick="toggleSearchPanel()" id="toggleButton">
-                        <i class="bi bi-chevron-down" style="font-size: 0.65rem; color: #495057;"></i>
-                    </button>
-                </div>
-                
-                <!-- 搜索和操作按钮区域（初始隐藏） -->
-                <div id="searchPanel" style="display: none;">
+            <div class="card-body">
                 <!-- 第一排：搜索条件 -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-3">
@@ -137,24 +128,6 @@
                         </div>
                     </div>
                 </div>
-                </div> <!-- 结束搜索面板容器 -->
-                
-                <!-- JavaScript 切换逻辑 -->
-                <script>
-                function toggleSearchPanel() {
-                    const panel = document.getElementById('searchPanel');
-                    const toggleIcon = document.querySelector('#toggleButton i');
-                    if (panel.style.display === 'none' || panel.style.display === '') {
-                        panel.style.display = 'block';
-                        toggleIcon.classList.remove('bi-chevron-down');
-                        toggleIcon.classList.add('bi-chevron-up');
-                    } else {
-                        panel.style.display = 'none';
-                        toggleIcon.classList.remove('bi-chevron-up');
-                        toggleIcon.classList.add('bi-chevron-down');
-                    }
-                }
-                </script>
             </div>
         </div>
 
@@ -176,7 +149,10 @@
                                 <th>客户类型</th>
                                 <th>客户等级</th>
                                 <th>职务</th>
-                                <th>敏感状态</th>
+                                <th>QQ/微信</th>
+                                <th>地区</th>
+                                <th>敏感信息</th>
+                                <th>创建时间</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
@@ -344,8 +320,58 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                 <div class="modal-body">
-                    <!-- 只显示客户基本信息，不显示沟通记录 -->
-                    <div id="customerDetailContent"></div>
+                    <!-- 标签页导航 -->
+                    <ul class="nav nav-tabs mb-3" id="customerDetailTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="basicInfoTab" data-bs-toggle="tab" data-bs-target="#basicInfo" type="button" role="tab">
+                                <i class="bi bi-info-circle me-1"></i>基本信息
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="communicationsTab" data-bs-toggle="tab" data-bs-target="#communications" type="button" role="tab">
+                                <i class="bi bi-chat-dots me-1"></i>沟通记录
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- 标签页内容 -->
+                    <div class="tab-content" id="customerDetailTabContent">
+                        <!-- 基本信息标签页 -->
+                        <div class="tab-pane fade show active" id="basicInfo" role="tabpanel">
+                            <div id="customerDetailContent">
+                                <!-- 客户基本信息内容将通过JavaScript动态加载 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 沟通记录标签页 -->
+                        <div class="tab-pane fade" id="communications" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">沟通记录列表</h6>
+                                <button class="btn btn-sm btn-primary" id="addCommunicationBtn" onclick="showAddCommunicationForCurrentCustomer()">
+                                    <i class="bi bi-plus"></i> 新增沟通记录
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>沟通类型</th>
+                                            <th>沟通主题</th>
+                                            <th>重要程度</th>
+                                            <th>沟通时间</th>
+                                            <th>操作人</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customerCommunicationTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">点击上方"基本信息"标签查看客户信息</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                        </div>
+                                    </div>
+                                        </div>
                                     </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
@@ -594,14 +620,14 @@
                                 <p class="import-dropzone-desc">支持 Excel（.xlsx、.xls）与 CSV（.csv，UTF-8）格式文件，可同时选择多个文件批量导入。</p>
                                 <div class="import-dropzone-actions">
                                     <label for="fileInput" class="btn btn-primary" id="selectFileBtn" style="pointer-events: auto; position: relative; z-index: 10; cursor: pointer; margin: 0;">
-                                    <i class="bi bi-folder2-open"></i> 选择文件
-                                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" multiple style="position: absolute; opacity: 0; width: 0; height: 0; overflow: hidden;">
+                                        <i class="bi bi-folder2-open"></i> 选择文件
                                     </label>
                                     <button class="btn btn-outline-secondary" type="button" onclick="resetImportFileSelection(); return false;" style="pointer-events: auto; position: relative; z-index: 10;">
                                         <i class="bi bi-arrow-counterclockwise"></i> 清空选择
-                                </button>
+                                    </button>
+                                </div>
                             </div>
-                            </div>
+                            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls,.csv" multiple style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 1; pointer-events: none;">
                         </div>
                         <div class="import-upload-hint">
                             <i class="bi bi-shield-check"></i>

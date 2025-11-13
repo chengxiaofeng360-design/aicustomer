@@ -102,11 +102,11 @@ public class AiRecommendationServiceImpl implements AiRecommendationService {
             }
         } else {
             // 回退方案
-            recommendation.setContent("基于您的购买历史和偏好，推荐以下产品：\n" +
-                    "1. 高端智能设备 - 符合您的品质要求\n" +
-                    "2. 数据分析工具 - 提升业务效率\n" +
-                    "3. 定制化解决方案 - 满足特殊需求");
-            recommendation.setConfidence(88);
+        recommendation.setContent("基于您的购买历史和偏好，推荐以下产品：\n" +
+                "1. 高端智能设备 - 符合您的品质要求\n" +
+                "2. 数据分析工具 - 提升业务效率\n" +
+                "3. 定制化解决方案 - 满足特殊需求");
+        recommendation.setConfidence(88);
         }
         
         recommendation.setPriority(2);
@@ -172,11 +172,11 @@ public class AiRecommendationServiceImpl implements AiRecommendationService {
             }
         } else {
             // 回退方案
-            recommendation.setContent("建议采用以下营销策略：\n" +
-                    "1. 个性化邮件营销 - 提高打开率\n" +
-                    "2. 社交媒体推广 - 扩大品牌影响力\n" +
-                    "3. 客户推荐计划 - 利用现有客户资源");
-            recommendation.setConfidence(90);
+        recommendation.setContent("建议采用以下营销策略：\n" +
+                "1. 个性化邮件营销 - 提高打开率\n" +
+                "2. 社交媒体推广 - 扩大品牌影响力\n" +
+                "3. 客户推荐计划 - 利用现有客户资源");
+        recommendation.setConfidence(90);
         }
         
         recommendation.setPriority(3);
