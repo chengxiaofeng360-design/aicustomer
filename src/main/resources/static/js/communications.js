@@ -264,32 +264,65 @@ function showCommunicationDetail(communication) {
         detailContent.innerHTML = content;
         console.log('设置详情内容完成');
         
-        const modalElement = document.getElementById('communicationDetailModal');
-        console.log('找到communicationDetailModal:', modalElement);
-        
-        if (modalElement) {
-            // 直接测试模态框显示
+        // 首先隐藏可能存在的沟通记录列表模态框
+        const listModalElement = document.getElementById('communicationListModal');
+        if (listModalElement) {
             try {
-                // 移除可能存在的modal-backdrop
-                const backdrops = document.querySelectorAll('.modal-backdrop');
-                backdrops.forEach(backdrop => backdrop.remove());
+                // 获取模态框实例并隐藏
+                const listModal = bootstrap.Modal.getInstance(listModalElement);
+                if (listModal) {
+                    listModal.hide();
+                }
                 
-                // 确保modal元素没有hide类
-                modalElement.classList.remove('hide');
-                
-                // 显示模态框
-                const modal = new bootstrap.Modal(modalElement);
-                console.log('创建模态框实例:', modal);
-                modal.show();
-                console.log('调用模态框show()方法');
+                // 等待隐藏动画完成后移除模态框和遮罩层
+                setTimeout(() => {
+                    // 移除模态框元素
+                    if (listModalElement.parentNode) {
+                        listModalElement.parentNode.removeChild(listModalElement);
+                    }
+                    
+                    // 移除可能存在的遮罩层
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => {
+                        if (backdrop.parentNode) {
+                            backdrop.parentNode.removeChild(backdrop);
+                        }
+                    });
+                }, 150); // 等待Bootstrap的隐藏动画完成
             } catch (error) {
-                console.error('显示模态框时发生错误:', error);
-                alert('显示模态框时发生错误: ' + error.message);
+                console.warn('隐藏沟通记录列表模态框时发生错误:', error);
             }
-        } else {
-            console.error('未找到communicationDetailModal元素');
-            alert('未找到详情模态框，请检查页面结构');
         }
+        
+        // 等待一段时间确保列表模态框完全隐藏后再显示详情模态框
+        setTimeout(() => {
+            const modalElement = document.getElementById('communicationDetailModal');
+            console.log('找到communicationDetailModal:', modalElement);
+            
+            if (modalElement) {
+                try {
+                    // 确保移除所有可能存在的遮罩层
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => {
+                        if (backdrop.parentNode) {
+                            backdrop.parentNode.removeChild(backdrop);
+                        }
+                    });
+                    
+                    // 显示详情模态框
+                    const modal = new bootstrap.Modal(modalElement);
+                    console.log('创建模态框实例:', modal);
+                    modal.show();
+                    console.log('调用模态框show()方法');
+                } catch (error) {
+                    console.error('显示模态框时发生错误:', error);
+                    alert('显示模态框时发生错误: ' + error.message);
+                }
+            } else {
+                console.error('未找到communicationDetailModal元素');
+                alert('未找到详情模态框，请检查页面结构');
+            }
+        }, 200); // 等待足够时间确保列表模态框完全隐藏
     } else {
         console.error('未找到communicationDetailContent元素');
         alert('未找到详情内容容器，请检查页面结构');
@@ -334,6 +367,19 @@ function testCommunicationDetailModal() {
 
 // 编辑沟通记录（从客户列表中）
 function editCommunicationFromCustomer(id) {
+    // 首先隐藏可能存在的沟通记录详情模态框
+    const detailModalElement = document.getElementById('communicationDetailModal');
+    if (detailModalElement) {
+        try {
+            const detailModal = bootstrap.Modal.getInstance(detailModalElement);
+            if (detailModal) {
+                detailModal.hide();
+            }
+        } catch (error) {
+            console.warn('隐藏沟通记录详情模态框时发生错误:', error);
+        }
+    }
+    
     fetch(`/api/communication/${id}`)
         .then(response => response.json())
         .then(result => {
@@ -564,6 +610,19 @@ function saveCommunication() {
 function deleteCommunicationFromCustomer(id) {
     if (!confirm('确定要删除这个沟通记录吗？')) {
         return;
+    }
+    
+    // 首先隐藏可能存在的沟通记录详情模态框
+    const detailModalElement = document.getElementById('communicationDetailModal');
+    if (detailModalElement) {
+        try {
+            const detailModal = bootstrap.Modal.getInstance(detailModalElement);
+            if (detailModal) {
+                detailModal.hide();
+            }
+        } catch (error) {
+            console.warn('隐藏沟通记录详情模态框时发生错误:', error);
+        }
     }
     
     fetch(`/api/communication/${id}`, {

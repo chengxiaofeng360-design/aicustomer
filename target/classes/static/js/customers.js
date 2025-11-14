@@ -1553,14 +1553,14 @@ function showCustomerDetail(customer) {
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">客户名称</label>' +
                     '<p class="mb-0">' + (customer.customerName || '未填写') + '</p>' +
-            '</div>' +
+                '</div>' +
             '</div>' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">联系人</label>' +
                     '<p class="mb-0">' + (customer.contactPerson || '未填写') + '</p>' +
+                '</div>' +
             '</div>' +
-        '</div>' +
         '</div>' +
         '<div class="row g-3">' +
             '<div class="col-md-6">' +
@@ -1657,6 +1657,7 @@ function showCustomerDetail(customer) {
     modal.show();
 }
 
+
 // 打开客户沟通记录列表模态框
 function openCommunicationModal(customerId, customerName) {
     // 保存当前客户信息
@@ -1672,12 +1673,14 @@ function openCommunicationModal(customerId, customerName) {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <h6>沟通记录列表</h6>
+                        <!-- 新增记录按钮移到顶部 -->
+                        <div class="d-flex justify-content-end mb-3">
                             <button type="button" class="btn btn-primary btn-sm" onclick="showAddCommunicationForCurrentCustomer()">
                                 <i class="bi bi-plus"></i> 新增记录
                             </button>
                         </div>
+                        
+                        <!-- 沟通记录列表 -->
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
                                 <thead>
