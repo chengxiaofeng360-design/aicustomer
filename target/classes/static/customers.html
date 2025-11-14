@@ -368,91 +368,7 @@
         </div>
     </div>
                         
-    <!-- 新增/编辑沟通记录模态框 -->
-    <div class="modal fade" id="communicationModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-max-70">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="communicationModalTitle">新增沟通记录</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                <div class="modal-body">
-                    <form id="communicationForm">
-                        <input type="hidden" id="communicationId" name="id">
-                                <input type="hidden" id="customerIdHidden">
-                                <div class="row">
-                            <div class="col-md-6">
-                                        <div class="mb-3">
-                                    <label class="form-label">沟通类型 *</label>
-                                    <select class="form-select" id="communicationTypeSelect" name="communicationType" required>
-                                        <option value="">请选择类型</option>
-                                        <option value="1">电话</option>
-                                        <option value="2">邮件</option>
-                                        <option value="3">微信</option>
-                                        <option value="4">面谈</option>
-                                        <option value="5">其他</option>
-                                    </select>
-                                        </div>
-                                    </div>
-                                        </div>
-                                <div class="row">
-                            <div class="col-md-6">
-                                        <div class="mb-3">
-                                    <label class="form-label">重要程度 *</label>
-                                    <select class="form-select" id="importanceSelect" name="importance" required>
-                                        <option value="">请选择重要程度</option>
-                                        <option value="1">高</option>
-                                        <option value="2">中</option>
-                                        <option value="3">低</option>
-                                    </select>
-                                        </div>
-                                    </div>
-                            <div class="col-md-6">
-                                        <div class="mb-3">
-                                    <label class="form-label">沟通时间 *</label>
-                                    <input type="datetime-local" class="form-control" id="communicationTime" name="communicationTime" required>
-                                        </div>
-                                    </div>
-                                </div>
-                                        <div class="mb-3">
-                            <label class="form-label">沟通主题 *</label>
-                            <input type="text" class="form-control" id="subject" name="subject" required placeholder="请输入沟通主题...">
-                                        </div>
-                                        <div class="mb-3">
-                            <label class="form-label">沟通内容 *</label>
-                            <textarea class="form-control" id="content" name="content" rows="4" required placeholder="请详细描述沟通内容..."></textarea>
-                                        </div>
-                                        <div class="mb-3">
-                            <label class="form-label">后续跟进</label>
-                            <textarea class="form-control" id="followUp" name="followUp" rows="3" placeholder="后续跟进计划..."></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveCommunication()">保存</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- 沟通记录详情模态框 -->
-    <div class="modal fade" id="communicationDetailModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-max-70">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">沟通记录详情</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="communicationDetailContent">
-                    <!-- 沟通记录详情内容将通过JavaScript动态加载 -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- AI识别模态框 -->
     <div class="modal fade" id="aiRecognitionModal" tabindex="-1">
@@ -683,7 +599,6 @@
         </div>
     </div>
 
-    <script src="/js/communications.js"></script>
     <script src="/js/customers.js"></script>
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
 </body>
