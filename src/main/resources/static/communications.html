@@ -21,94 +21,11 @@
             </a>
         </div>
         
-        <!-- 统计卡片 -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">2,456</div>
-                    <div class="stats-label">沟通记录</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">156</div>
-                    <div class="stats-label">本月新增</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">89%</div>
-                    <div class="stats-label">客户满意度</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">45</div>
-                    <div class="stats-label">待跟进</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 搜索和筛选区域 -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-2">
-                        <label class="form-label">沟通类型</label>
-                        <select class="form-select" id="communicationType">
-                            <option value="">全部</option>
-                            <option value="1">电话</option>
-                            <option value="2">邮件</option>
-                            <option value="3">微信</option>
-                            <option value="4">面谈</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">客户</label>
-                        <select class="form-select" id="customerId">
-                            <option value="">全部</option>
-                            <option value="1">张三</option>
-                            <option value="2">李四农业科技有限公司</option>
-                            <option value="3">王五种子研究所</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">重要程度</label>
-                        <select class="form-select" id="importance">
-                            <option value="">全部</option>
-                            <option value="1">高</option>
-                            <option value="2">中</option>
-                            <option value="3">低</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">开始日期</label>
-                        <input type="date" class="form-control" id="startDate">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">结束日期</label>
-                        <input type="date" class="form-control" id="endDate">
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button class="btn btn-primary me-2" onclick="searchCommunications()">
-                            <i class="bi bi-search"></i> 搜索
-                        </button>
-                        <button class="btn btn-secondary" onclick="resetSearch()">
-                            <i class="bi bi-arrow-clockwise"></i> 重置
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- 操作按钮区域 -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <button class="btn btn-primary" onclick="showAddCommunicationModal()">
                     <i class="bi bi-plus"></i> 新增沟通记录
-                </button>
-                <button class="btn btn-success" onclick="exportCommunications()">
-                    <i class="bi bi-download"></i> 导出
                 </button>
                 <button class="btn btn-warning" onclick="batchDelete()">
                     <i class="bi bi-trash"></i> 批量删除
@@ -151,7 +68,7 @@
 
     <!-- 新增/编辑沟通记录模态框 -->
     <div class="modal fade" id="communicationModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="communicationModalTitle">新增沟通记录</h5>
@@ -229,7 +146,7 @@
 
     <!-- 沟通记录详情模态框 -->
     <div class="modal fade" id="communicationDetailModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">沟通记录详情</h5>
@@ -299,8 +216,18 @@
             const tbody = document.getElementById('communicationTableBody');
             tbody.innerHTML = '<tr><td colspan="8" class="text-center">加载中...</td></tr>';
 
+            // 解析URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const customerId = urlParams.get('customerId');
+            
+            // 构建API请求URL
+            let url = '/api/communication/list?pageNum=1&pageSize=100';
+            if (customerId) {
+                url += `&customerId=${customerId}`;
+            }
+
             // 从API获取沟通记录（使用分页接口，获取前100条记录）
-            fetch('/api/communication/list?pageNum=1&pageSize=100')
+            fetch(url)
                 .then(response => response.json())
                 .then(result => {
                     if (result.code === 200 && result.data && result.data.records) {
@@ -512,7 +439,7 @@
                                 <div class="col-md-6">
                                     <h6>其他信息</h6>
                                     <p><strong>操作人员：</strong>${communication.communicatorName || communication.createBy || '未知'}</p>
-                                    <p><strong>创建时间：</strong>${formatDate(communication.createTime)}</p>
+                                    <p><strong>创建时间：</strong>${formatDateTime(communication.createTime)}</p>
                                 </div>
                             </div>
                             <div class="row mt-3">
