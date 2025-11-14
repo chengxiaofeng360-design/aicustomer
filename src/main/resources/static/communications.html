@@ -165,77 +165,95 @@
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script>
         // 模拟沟通记录数据
-        let communications = [
-            {
-                id: 1,
-                customerName: '张三',
-                communicationType: 1,
-                subject: '种子采购咨询',
-                content: '客户咨询了水稻种子的价格和种植技术',
-                importance: 1,
-                communicationTime: '2024-01-25T10:30:00',
-                followUp: '需要提供详细的产品资料',
-                operator: '李四',
-                createTime: '2024-01-25'
-            },
-            {
-                id: 2,
-                customerName: '李四农业科技有限公司',
-                communicationType: 2,
-                subject: '合同条款讨论',
-                content: '通过邮件讨论了合同的具体条款和价格',
-                importance: 2,
-                communicationTime: '2024-01-24T14:20:00',
-                followUp: '等待客户回复最终确认',
-                operator: '王五',
-                createTime: '2024-01-24'
-            },
-            {
-                id: 3,
-                customerName: '王五种子研究所',
-                communicationType: 4,
-                subject: '技术合作洽谈',
-                content: '面谈讨论了技术合作的具体方案',
-                importance: 1,
-                communicationTime: '2024-01-23T09:15:00',
-                followUp: '准备合作方案书',
-                operator: '赵六',
-                createTime: '2024-01-23'
-            }
-        ];
-
+        let communications = [];
         let selectedCommunications = [];
+        
+        // 从URL参数获取客户ID（如果存在）
+        let currentCustomerId = null;
+        let currentCustomerName = null;
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 解析URL参数，获取客户ID
+            const urlParams = new URLSearchParams(window.location.search);
+            currentCustomerId = urlParams.get('customerId');
+            
+            // 如果有客户ID，加载客户信息
+            if (currentCustomerId) {
+                loadCustomerInfo(currentCustomerId);
+            }
+            
             loadCommunications();
         });
+        
+        // 加载客户信息
+        function loadCustomerInfo(customerId) {
+            fetch(`/api/customer/${customerId}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.code === 200 && result.data) {
+                        currentCustomerName = result.data.customerName;
+                        // 更新页面标题，显示当前客户名称
+                        const pageTitle = document.querySelector('.page-title');
+                        if (pageTitle && currentCustomerName) {
+                            pageTitle.innerHTML = '<i class="bi bi-chat-dots-fill"></i> 沟通记录管理 - ' + currentCustomerName;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('加载客户信息失败:', error);
+                });
+        }
 
         // 加载沟通记录列表
         function loadCommunications() {
             const tbody = document.getElementById('communicationTableBody');
+            if (!tbody) {
+                console.error('找不到沟通记录表格tbody元素');
+                return;
+            }
+            
             tbody.innerHTML = '<tr><td colspan="8" class="text-center">加载中...</td></tr>';
 
-            // 解析URL参数
-            const urlParams = new URLSearchParams(window.location.search);
-            const customerId = urlParams.get('customerId');
-            
+            // 使用全局的currentCustomerId（如果存在）
             // 构建API请求URL
             let url = '/api/communication/list?pageNum=1&pageSize=100';
-            if (customerId) {
-                url += `&customerId=${customerId}`;
+            if (currentCustomerId) {
+                url += `&customerId=${currentCustomerId}`;
+                console.log('加载沟通记录，客户ID:', currentCustomerId);
+            } else {
+                console.log('加载沟通记录，无客户ID过滤');
             }
 
             // 从API获取沟通记录（使用分页接口，获取前100条记录）
             fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP错误: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(result => {
-                    if (result.code === 200 && result.data && result.data.records) {
-                        communications = result.data.records || [];
+                    console.log('加载沟通记录响应:', result);
+                    if (result.code === 200 && result.data) {
+                        // 处理分页结果 - 后端返回的是PageResult，使用list字段
+                        if (result.data.list && Array.isArray(result.data.list)) {
+                            communications = result.data.list;
+                        } else if (result.data.records && Array.isArray(result.data.records)) {
+                            // 兼容其他可能的格式
+                            communications = result.data.records;
+                        } else if (Array.isArray(result.data)) {
+                            communications = result.data;
+                        } else {
+                            communications = [];
+                        }
+                        console.log('加载到沟通记录数量:', communications.length);
+                        console.log('沟通记录数据:', communications);
                         renderCommunications(communications);
                     } else {
                         communications = [];
                         tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无沟通记录</td></tr>';
+                        console.warn('加载沟通记录失败:', result.message || '未知错误');
                     }
                 })
                 .catch(error => {
@@ -247,6 +265,11 @@
         // 渲染沟通记录
         function renderCommunications(commList) {
             const tbody = document.getElementById('communicationTableBody');
+            if (!tbody) {
+                console.error('找不到沟通记录表格tbody元素');
+                return;
+            }
+            
             tbody.innerHTML = '';
 
             if (!commList || commList.length === 0) {
@@ -255,31 +278,60 @@
             }
 
             commList.forEach(communication => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <input type="checkbox" class="communication-checkbox" value="${communication.id}" onchange="toggleCommunicationSelection(${communication.id})">
-                    </td>
-                    <td class="table-cell-truncate" title="${communication.customerName}">${communication.customerName}</td>
-                    <td class="table-cell-truncate" title="${getCommunicationTypeText(communication.communicationType)}">${getCommunicationTypeText(communication.communicationType)}</td>
-                    <td class="table-cell-truncate" title="${communication.summary || communication.content}">${communication.summary || communication.content}</td>
-                    <td><span class="badge ${getImportanceClass(communication.importance)}">${getImportanceText(communication.importance)}</span></td>
-                    <td class="table-cell-truncate" title="${formatDateTime(communication.communicationTime)}">${formatDateTime(communication.communicationTime)}</td>
-                    <td class="table-cell-truncate" title="${communication.communicatorName || communication.operator}">${communication.communicatorName || communication.operator}</td>
-                    <td>
-                        <button class="btn btn-outline-primary btn-sm" onclick="viewCommunication(${communication.id})" title="查看详情">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn btn-outline-warning btn-sm" onclick="editCommunication(${communication.id})" title="编辑">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-outline-danger btn-sm" onclick="deleteCommunication(${communication.id})" title="删除">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
+                if (!communication || !communication.id) {
+                    console.warn('无效的沟通记录数据:', communication);
+                    return;
+                }
+                
+                try {
+                    const row = document.createElement('tr');
+                    // 安全地获取各个字段的值，避免null/undefined导致显示问题
+                    const customerName = (communication.customerName || '').trim() || '未知客户';
+                    const communicationType = communication.communicationType || 0;
+                    const summary = (communication.summary || '').trim();
+                    const content = (communication.content || '').trim();
+                    const displayContent = summary || content || '无内容';
+                    const importance = communication.importance || 1;
+                    const communicationTime = communication.communicationTime || communication.createTime || '';
+                    const communicatorName = (communication.communicatorName || communication.operator || '').trim() || '未知';
+                    
+                    row.innerHTML = `
+                        <td>
+                            <input type="checkbox" class="communication-checkbox" value="${communication.id}" onchange="toggleCommunicationSelection(${communication.id})">
+                        </td>
+                        <td class="table-cell-truncate" title="${escapeHtml(customerName)}">${escapeHtml(customerName)}</td>
+                        <td class="table-cell-truncate" title="${getCommunicationTypeText(communicationType)}">${getCommunicationTypeText(communicationType)}</td>
+                        <td class="table-cell-truncate" title="${escapeHtml(displayContent)}">${escapeHtml(displayContent)}</td>
+                        <td><span class="badge ${getImportanceClass(importance)}">${getImportanceText(importance)}</span></td>
+                        <td class="table-cell-truncate" title="${formatDateTime(communicationTime)}">${formatDateTime(communicationTime)}</td>
+                        <td class="table-cell-truncate" title="${escapeHtml(communicatorName)}">${escapeHtml(communicatorName)}</td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm" onclick="viewCommunication(${communication.id})" title="查看详情">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" onclick="editCommunication(${communication.id})" title="编辑">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteCommunication(${communication.id})" title="删除">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                } catch (error) {
+                    console.error('渲染沟通记录失败:', error, communication);
+                }
             });
+        }
+        
+        // HTML转义函数，防止XSS攻击和显示问题
+        function escapeHtml(text) {
+            if (text == null || text === undefined) {
+                return '';
+            }
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // 搜索沟通记录
@@ -293,7 +345,8 @@
             
             // 获取元素值
             const communicationType = communicationTypeElement ? communicationTypeElement.value : '';
-            const customerId = customerIdElement ? customerIdElement.value : '';
+            // 如果有全局客户ID，优先使用全局ID；否则使用搜索框中的值
+            const customerId = currentCustomerId || (customerIdElement ? customerIdElement.value : '');
             const importance = importanceElement ? importanceElement.value : '';
             const startDate = startDateElement ? startDateElement.value : '';
             const endDate = endDateElement ? endDateElement.value : '';
@@ -323,10 +376,24 @@
 
             // 发送搜索请求到后端
             fetch(`/api/communication/list?${params.toString()}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP错误: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(result => {
-                    if (result.code === 200 && result.data && result.data.records) {
-                        let filteredCommunications = result.data.records || [];
+                    console.log('搜索沟通记录响应:', result);
+                    if (result.code === 200 && result.data) {
+                        // 处理分页结果 - 后端返回的是PageResult，使用list字段
+                        let filteredCommunications = [];
+                        if (result.data.list && Array.isArray(result.data.list)) {
+                            filteredCommunications = result.data.list;
+                        } else if (result.data.records && Array.isArray(result.data.records)) {
+                            filteredCommunications = result.data.records;
+                        } else if (Array.isArray(result.data)) {
+                            filteredCommunications = result.data;
+                        }
                         
                         // 如果有日期范围过滤条件，在前端进行过滤
                         if (startDate) {
@@ -340,9 +407,11 @@
                             );
                         }
                         
+                        console.log('搜索到沟通记录数量:', filteredCommunications.length);
                         renderCommunications(filteredCommunications);
                     } else {
                         tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无沟通记录</td></tr>';
+                        console.warn('搜索沟通记录失败:', result.message || '未知错误');
                     }
                 })
                 .catch(error => {
@@ -395,22 +464,54 @@
                 communicationId.value = '';
             }
             
-            // 清空客户ID
-            if (customerId) {
-                customerId.value = '';
-            }
-            
-            // 添加事件监听器，当客户选择变化时更新customerId隐藏字段
-            if (customerSelect) {
-                // 先移除可能存在的旧事件监听器
-                customerSelect.replaceWith(customerSelect.cloneNode(true));
-                const newCustomerSelect = document.getElementById('customerSelect');
-                newCustomerSelect.addEventListener('change', function() {
-                    const customerIdElement = document.getElementById('modalCustomerId');
-                    if (customerIdElement) {
-                        customerIdElement.value = this.value;
-                    }
-                });
+            // 如果有从客户管理带过来的客户ID，自动设置并锁定
+            if (currentCustomerId) {
+                // 设置隐藏的客户ID字段
+                if (customerId) {
+                    customerId.value = currentCustomerId;
+                }
+                
+                // 设置客户选择下拉框
+                if (customerSelect) {
+                    // 清空现有选项
+                    customerSelect.innerHTML = '';
+                    
+                    // 如果有客户名称，显示客户名称；否则显示客户ID
+                    const displayName = currentCustomerName || ('客户ID: ' + currentCustomerId);
+                    customerSelect.innerHTML = `<option value="${currentCustomerId}" selected>${displayName}</option>`;
+                    
+                    // 禁用客户选择（因为是从客户管理跳转过来的，必须绑定到这个客户）
+                    customerSelect.disabled = true;
+                    customerSelect.style.backgroundColor = '#e9ecef';
+                    customerSelect.style.cursor = 'not-allowed';
+                }
+            } else {
+                // 如果没有客户ID，允许选择客户
+                if (customerId) {
+                    customerId.value = '';
+                }
+                
+                if (customerSelect) {
+                    // 先移除可能存在的旧事件监听器
+                    customerSelect.replaceWith(customerSelect.cloneNode(true));
+                    const newCustomerSelect = document.getElementById('customerSelect');
+                    
+                    // 恢复下拉框为可选择状态
+                    newCustomerSelect.disabled = false;
+                    newCustomerSelect.style.backgroundColor = '';
+                    newCustomerSelect.style.cursor = '';
+                    
+                    // 加载客户列表（如果需要）
+                    loadCustomerOptions(newCustomerSelect);
+                    
+                    // 添加事件监听器，当客户选择变化时更新customerId隐藏字段
+                    newCustomerSelect.addEventListener('change', function() {
+                        const customerIdElement = document.getElementById('modalCustomerId');
+                        if (customerIdElement) {
+                            customerIdElement.value = this.value;
+                        }
+                    });
+                }
             }
             
             // 显示模态框
@@ -418,46 +519,111 @@
                 new bootstrap.Modal(communicationModal).show();
             }
         }
+        
+        // 加载客户选项（当没有指定客户ID时使用）
+        function loadCustomerOptions(selectElement) {
+            // 如果下拉框已经有选项，不需要重新加载
+            if (selectElement && selectElement.options.length > 1) {
+                return;
+            }
+            
+            // 从API获取客户列表
+            fetch('/api/customer/list?pageNum=1&pageSize=1000')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.code === 200 && result.data && Array.isArray(result.data)) {
+                        const customers = result.data;
+                        if (selectElement) {
+                            // 清空现有选项（保留"请选择客户"）
+                            selectElement.innerHTML = '<option value="">请选择客户</option>';
+                            
+                            // 添加客户选项
+                            customers.forEach(customer => {
+                                const option = document.createElement('option');
+                                option.value = customer.id;
+                                option.textContent = customer.customerName || ('客户ID: ' + customer.id);
+                                selectElement.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('加载客户列表失败:', error);
+                });
+        }
 
         // 查看沟通记录详情
         function viewCommunication(id) {
+            if (!id) {
+                alert('沟通记录ID不能为空');
+                return;
+            }
+            
+            console.log('查看沟通记录详情，ID:', id);
+            
             // 从API获取沟通记录详情
             fetch(`/api/communication/${id}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP错误: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(result => {
+                    console.log('获取沟通记录详情响应:', result);
                     if (result.code === 200 && result.data) {
                         const communication = result.data;
-                        const content = `
+                        
+                        console.log('查看沟通记录 - 完整数据:', communication);
+                        console.log('查看沟通记录 - 字段值:', {
+                            summary: communication.summary,
+                            content: communication.content,
+                            followUpTask: communication.followUpTask
+                        });
+                        
+                        // 安全地获取各个字段的值
+                        const customerName = escapeHtml(communication.customerName || '未知客户');
+                        const communicationType = getCommunicationTypeText(communication.communicationType || 0);
+                        const importance = getImportanceText(communication.importance || 1);
+                        const communicationTime = formatDateTime(communication.communicationTime || communication.createTime);
+                        const communicatorName = escapeHtml(communication.communicatorName || communication.createBy || '未知');
+                        const createTime = formatDateTime(communication.createTime);
+                        // 注意：数据库字段是summary, content, followUpTask
+                        const summary = escapeHtml(communication.summary || '无');
+                        const content = escapeHtml(communication.content || '无');
+                        const followUpTask = escapeHtml(communication.followUpTask || '无');
+                        
+                        const contentHtml = `
                             <div class="row">
                                 <div class="col-md-6">
                                     <h6>基本信息</h6>
-                                    <p><strong>客户名称：</strong>${communication.customerName}</p>
-                                    <p><strong>沟通类型：</strong>${getCommunicationTypeText(communication.communicationType)}</p>
-                                    <p><strong>重要程度：</strong>${getImportanceText(communication.importance)}</p>
-                                    <p><strong>沟通时间：</strong>${formatDateTime(communication.communicationTime)}</p>
+                                    <p><strong>客户名称：</strong>${customerName}</p>
+                                    <p><strong>沟通类型：</strong>${communicationType}</p>
+                                    <p><strong>重要程度：</strong>${importance}</p>
+                                    <p><strong>沟通时间：</strong>${communicationTime}</p>
                                 </div>
                                 <div class="col-md-6">
                                     <h6>其他信息</h6>
-                                    <p><strong>操作人员：</strong>${communication.communicatorName || communication.createBy || '未知'}</p>
-                                    <p><strong>创建时间：</strong>${formatDateTime(communication.createTime)}</p>
+                                    <p><strong>操作人员：</strong>${communicatorName}</p>
+                                    <p><strong>创建时间：</strong>${createTime}</p>
                                 </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-12">
                                     <h6>沟通主题</h6>
-                                    <p>${communication.summary || '无'}</p>
+                                    <p>${summary}</p>
                                 </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-12">
                                     <h6>沟通内容</h6>
-                                    <p>${communication.content || '无'}</p>
+                                    <p style="white-space: pre-wrap;">${content}</p>
                                 </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-12">
                                     <h6>后续跟进</h6>
-                                    <p>${communication.followUpTask || '无'}</p>
+                                    <p style="white-space: pre-wrap;">${followUpTask}</p>
                                 </div>
                             </div>
                         `;
@@ -468,12 +634,20 @@
                         
                         // 设置详情内容
                         if (communicationDetailContent) {
-                            communicationDetailContent.innerHTML = content;
+                            communicationDetailContent.innerHTML = contentHtml;
+                        } else {
+                            console.error('找不到communicationDetailContent元素');
+                            alert('无法显示详情，页面元素缺失');
+                            return;
                         }
                         
                         // 显示详情模态框
                         if (communicationDetailModal) {
-                            new bootstrap.Modal(communicationDetailModal).show();
+                            const modal = new bootstrap.Modal(communicationDetailModal);
+                            modal.show();
+                        } else {
+                            console.error('找不到communicationDetailModal元素');
+                            alert('无法显示详情对话框，页面元素缺失');
                         }
                     } else {
                         alert('获取沟通记录详情失败: ' + (result.message || '未知错误'));
@@ -481,16 +655,29 @@
                 })
                 .catch(error => {
                     console.error('获取沟通记录详情失败:', error);
-                    alert('获取沟通记录详情失败: 网络错误');
+                    alert('获取沟通记录详情失败: ' + error.message);
                 });
         }
 
         // 编辑沟通记录
         function editCommunication(id) {
+            if (!id) {
+                alert('沟通记录ID不能为空');
+                return;
+            }
+            
+            console.log('编辑沟通记录，ID:', id);
+            
             // 从API获取沟通记录详情
             fetch(`/api/communication/${id}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP错误: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(result => {
+                    console.log('获取沟通记录详情响应（编辑）:', result);
                     if (result.code === 200 && result.data) {
                         const communication = result.data;
                         
@@ -501,11 +688,16 @@
                         const customerIdElem = document.getElementById('modalCustomerId');
                         const communicationTypeSelect = document.getElementById('communicationTypeSelect');
                         const importanceSelect = document.getElementById('importanceSelect');
-                        const communicationTime = document.getElementById('communicationTime');
+                        const communicationTimeInput = document.getElementById('communicationTime');
                         const subject = document.getElementById('subject');
                         const content = document.getElementById('content');
                         const followUp = document.getElementById('followUp');
                         const communicationModal = document.getElementById('communicationModal');
+                        
+                        if (!communicationModal) {
+                            alert('无法打开编辑对话框，页面元素缺失');
+                            return;
+                        }
                         
                         // 设置模态框标题
                         if (communicationModalTitle) {
@@ -514,18 +706,38 @@
                         
                         // 设置沟通记录ID
                         if (communicationId) {
-                            communicationId.value = communication.id;
+                            communicationId.value = communication.id || '';
                         }
                         
                         // 设置客户选择
                         if (customerSelect) {
-                            customerSelect.value = communication.customerId || '';
-                            customerSelect.readOnly = true;
+                            // 如果有全局客户ID，使用全局ID并锁定；否则使用记录中的客户ID
+                            const targetCustomerId = currentCustomerId || communication.customerId || '';
+                            
+                            // 如果是从客户管理跳转过来的，锁定客户选择
+                            if (currentCustomerId) {
+                                customerSelect.disabled = true;
+                                customerSelect.style.backgroundColor = '#e9ecef';
+                                customerSelect.style.cursor = 'not-allowed';
+                                
+                                // 设置显示名称
+                                const displayName = currentCustomerName || ('客户ID: ' + currentCustomerId);
+                                customerSelect.innerHTML = `<option value="${currentCustomerId}" selected>${displayName}</option>`;
+                            } else {
+                                // 如果没有全局客户ID，需要加载客户列表并设置当前值
+                                customerSelect.readOnly = true;
+                                customerSelect.disabled = false;
+                                // 这里可以加载客户列表，但编辑时通常不允许修改客户
+                                if (targetCustomerId) {
+                                    customerSelect.value = targetCustomerId;
+                                }
+                            }
                         }
                         
                         // 设置客户ID隐藏字段
                         if (customerIdElem) {
-                            customerIdElem.value = communication.customerId || '';
+                            // 优先使用全局客户ID
+                            customerIdElem.value = currentCustomerId || communication.customerId || '';
                         }
                         
                         // 设置沟通类型
@@ -539,38 +751,60 @@
                         }
                         
                         // 格式化时间用于datetime-local输入
-                        if (communication.communicationTime && communicationTime) {
-                            const date = new Date(communication.communicationTime);
-                            const localDateTime = date.toISOString().slice(0, 16);
-                            communicationTime.value = localDateTime;
+                        if (communicationTimeInput) {
+                            if (communication.communicationTime) {
+                                try {
+                                    const date = new Date(communication.communicationTime);
+                                    if (!isNaN(date.getTime())) {
+                                        // 转换为本地时区的datetime-local格式
+                                        const year = date.getFullYear();
+                                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                                        const day = String(date.getDate()).padStart(2, '0');
+                                        const hours = String(date.getHours()).padStart(2, '0');
+                                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                                        communicationTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                                    } else {
+                                        communicationTimeInput.value = '';
+                                    }
+                                } catch (error) {
+                                    console.error('格式化时间失败:', error);
+                                    communicationTimeInput.value = '';
+                                }
+                            } else {
+                                communicationTimeInput.value = '';
+                            }
                         }
                         
-                        // 设置主题
+                        // 设置主题（注意：表单字段的name是summary，id是subject）
                         if (subject) {
                             subject.value = communication.summary || '';
+                            console.log('设置主题:', communication.summary);
                         }
                         
                         // 设置内容
                         if (content) {
                             content.value = communication.content || '';
+                            console.log('设置内容:', communication.content);
                         }
                         
-                        // 设置后续跟进
+                        // 设置后续跟进（注意：表单字段的name是followUpTask，id是followUp）
                         if (followUp) {
                             followUp.value = communication.followUpTask || '';
+                            console.log('设置后续跟进:', communication.followUpTask);
                         }
                         
+                        console.log('编辑沟通记录 - 完整数据:', communication);
+                        
                         // 显示模态框
-                        if (communicationModal) {
-                            new bootstrap.Modal(communicationModal).show();
-                        }
+                        const modal = new bootstrap.Modal(communicationModal);
+                        modal.show();
                     } else {
                         alert('获取沟通记录详情失败: ' + (result.message || '未知错误'));
                     }
                 })
                 .catch(error => {
                     console.error('获取沟通记录详情失败:', error);
-                    alert('获取沟通记录详情失败: 网络错误');
+                    alert('获取沟通记录详情失败: ' + error.message);
                 });
         }
 
@@ -588,9 +822,9 @@
             const communicationIdElement = document.getElementById('communicationId');
             const communicationId = communicationIdElement ? communicationIdElement.value : '';
             
-            // 获取客户ID
+            // 获取客户ID：优先使用全局currentCustomerId，其次使用表单中的值
             const customerIdElement = document.getElementById('modalCustomerId');
-            let customerId = customerIdElement ? customerIdElement.value : '';
+            let customerId = currentCustomerId || (customerIdElement ? customerIdElement.value : '');
             
             if (!customerId) {
                 // 尝试从customerSelect获取
@@ -603,11 +837,13 @@
                 }
             }
             
-            // 获取客户名称
-            const customerSelect = document.getElementById('customerSelect');
-            let customerName = '';
-            if (customerSelect && customerSelect.selectedIndex >= 0) {
-                customerName = customerSelect.options[customerSelect.selectedIndex].text;
+            // 获取客户名称：优先使用全局currentCustomerName，其次从下拉框获取
+            let customerName = currentCustomerName || '';
+            if (!customerName) {
+                const customerSelect = document.getElementById('customerSelect');
+                if (customerSelect && customerSelect.selectedIndex >= 0) {
+                    customerName = customerSelect.options[customerSelect.selectedIndex].text;
+                }
             }
             
             // 处理日期时间格式：将 datetime-local 格式转换为 ISO 8601 格式
@@ -620,16 +856,20 @@
             }
             
             // 构建沟通记录数据
+            // 注意：表单字段的name属性是 summary, content, followUpTask
+            // 不要使用id（subject, followUp）来获取值
             const communicationData = {
                 customerId: parseInt(customerId),
                 customerName: customerName || '',
-                communicationType: parseInt(formData.get('communicationType')),
+                communicationType: parseInt(formData.get('communicationType')) || 0,
                 importance: parseInt(formData.get('importance')) || 1,
                 communicationTime: communicationTime || null,
-                summary: formData.get('subject') || '',
+                summary: formData.get('summary') || '',  // 使用name属性，不是id
                 content: formData.get('content') || '',
-                followUpTask: formData.get('followUp') || ''
+                followUpTask: formData.get('followUpTask') || ''  // 使用name属性，不是id
             };
+            
+            console.log('保存沟通记录数据:', communicationData);
 
             let url = '/api/communication';
             let method = 'POST';
@@ -651,9 +891,9 @@
             })
             .then(response => response.json())
             .then(result => {
+                console.log('保存沟通记录响应:', result);
                 if (result.code === 200) {
-                    loadCommunications();
-                    // 获取模态框实例并隐藏
+                    // 先关闭模态框
                     const communicationModal = document.getElementById('communicationModal');
                     if (communicationModal) {
                         const modalInstance = bootstrap.Modal.getInstance(communicationModal);
@@ -661,36 +901,57 @@
                             modalInstance.hide();
                         }
                     }
+                    
+                    // 延迟一下再刷新，确保数据库事务已提交
+                    setTimeout(() => {
+                        loadCommunications();
+                    }, 300);
+                    
                     alert('保存成功！');
                 } else {
-                    alert('保存失败: ' + result.message);
+                    alert('保存失败: ' + (result.message || '未知错误'));
                 }
             })
             .catch(error => {
                 console.error('保存沟通记录失败:', error);
-                alert('保存失败: 网络错误');
+                alert('保存失败: 网络错误 - ' + error.message);
             });
         }
 
         // 删除沟通记录
         function deleteCommunication(id) {
+            if (!id) {
+                alert('沟通记录ID不能为空');
+                return;
+            }
+            
             if (confirm('确定要删除这个沟通记录吗？')) {
+                console.log('删除沟通记录，ID:', id);
                 // 发送删除请求到后端
                 fetch(`/api/communication/${id}`, {
                     method: 'DELETE'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP错误: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(result => {
+                    console.log('删除沟通记录响应:', result);
                     if (result.code === 200) {
-                        loadCommunications();
+                        // 延迟一下再刷新，确保数据库事务已提交
+                        setTimeout(() => {
+                            loadCommunications();
+                        }, 300);
                         alert('删除成功！');
                     } else {
-                        alert('删除失败: ' + result.message);
+                        alert('删除失败: ' + (result.message || '未知错误'));
                     }
                 })
                 .catch(error => {
                     console.error('删除沟通记录失败:', error);
-                    alert('删除失败: 网络错误');
+                    alert('删除失败: 网络错误 - ' + error.message);
                 });
             }
         }
@@ -703,20 +964,38 @@
             }
             
             if (confirm(`确定要删除选中的 ${selectedCommunications.length} 条沟通记录吗？`)) {
+                console.log('批量删除沟通记录，IDs:', selectedCommunications);
                 // 批量删除，为每条记录调用删除API
                 const deletePromises = selectedCommunications.map(id => {
                     return fetch(`/api/communication/${id}`, {
                         method: 'DELETE'
-                    }).then(response => response.json());
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('HTTP错误: ' + response.status);
+                        }
+                        return response.json();
+                    });
                 });
 
                 Promise.all(deletePromises)
                 .then(results => {
-                    const successCount = results.filter(result => result.code === 200).length;
+                    console.log('批量删除响应:', results);
+                    const successCount = results.filter(result => result && result.code === 200).length;
                     const failedCount = selectedCommunications.length - successCount;
                     
-                    loadCommunications();
+                    // 清空选择
                     selectedCommunications = [];
+                    // 更新全选复选框
+                    const selectAll = document.getElementById('selectAll');
+                    if (selectAll) {
+                        selectAll.checked = false;
+                    }
+                    
+                    // 延迟一下再刷新，确保数据库事务已提交
+                    setTimeout(() => {
+                        loadCommunications();
+                    }, 300);
                     
                     if (failedCount === 0) {
                         alert(`成功删除 ${successCount} 条沟通记录！`);
@@ -726,7 +1005,7 @@
                 })
                 .catch(error => {
                     console.error('批量删除沟通记录失败:', error);
-                    alert('批量删除失败: 网络错误');
+                    alert('批量删除失败: 网络错误 - ' + error.message);
                 });
             }
         }
@@ -762,8 +1041,9 @@
 
         // 刷新数据
         function refreshData() {
+            console.log('刷新沟通记录列表');
             loadCommunications();
-            alert('刷新成功！');
+            // 不显示alert，避免干扰用户体验
         }
 
         // 导出沟通记录
@@ -811,8 +1091,26 @@
 
         // 格式化日期时间
         function formatDateTime(dateTimeString) {
-            const date = new Date(dateTimeString);
-            return date.toLocaleString('zh-CN');
+            if (!dateTimeString) {
+                return '未知';
+            }
+            try {
+                const date = new Date(dateTimeString);
+                if (isNaN(date.getTime())) {
+                    return '无效日期';
+                }
+                return date.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            } catch (error) {
+                console.error('格式化日期时间失败:', error, dateTimeString);
+                return '日期格式错误';
+            }
         }
     </script>
 </body>

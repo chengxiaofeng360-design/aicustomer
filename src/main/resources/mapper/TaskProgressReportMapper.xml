@@ -7,77 +7,69 @@
         <id column="id" property="id"/>
         <result column="task_id" property="taskId"/>
         <result column="task_name" property="taskName"/>
-        <result column="employee_id" property="employeeId"/>
-        <result column="employee_name" property="employeeName"/>
         <result column="report_type" property="reportType"/>
         <result column="report_title" property="reportTitle"/>
         <result column="report_content" property="reportContent"/>
-        <result column="progress" property="progress"/>
-        <result column="work_duration" property="workDuration"/>
-        <result column="work_results" property="workResults"/>
-        <result column="problems" property="problems"/>
-        <result column="solutions" property="solutions"/>
-        <result column="next_plan" property="nextPlan"/>
-        <result column="support_needed" property="supportNeeded"/>
-        <result column="work_location" property="workLocation"/>
-        <result column="work_mode" property="workMode"/>
-        <result column="attachments" property="attachments"/>
-        <result column="report_status" property="reportStatus"/>
-        <result column="reviewer_id" property="reviewerId"/>
-        <result column="reviewer_name" property="reviewerName"/>
-        <result column="review_time" property="reviewTime"/>
-        <result column="review_comment" property="reviewComment"/>
-        <result column="quality_score" property="qualityScore"/>
-        <result column="efficiency_score" property="efficiencyScore"/>
-        <result column="attitude_score" property="attitudeScore"/>
-        <result column="overall_score" property="overallScore"/>
-        <result column="is_abnormal" property="isAbnormal"/>
-        <result column="abnormal_reason" property="abnormalReason"/>
-        <result column="supervision_note" property="supervisionNote"/>
+        <result column="employee_name" property="employeeName"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
     <!-- 查询任务进度汇报列表 -->
     <select id="findReports" resultMap="TaskProgressReportResultMap">
-        SELECT * FROM task_progress_report
+        SELECT 
+            r.id,
+            r.task_id,
+            COALESCE(NULLIF(r.task_name, ''), t.title, t.name, CONCAT('任务', r.task_id)) as task_name,
+            r.report_type,
+            r.report_title,
+            r.report_content,
+            r.employee_name,
+            r.create_time,
+            r.update_time
+        FROM task_progress_report r
+        LEFT JOIN team_task t ON r.task_id = t.id AND t.deleted = 0
         <where>
+            r.deleted = 0
             <if test="taskId != null">
-                AND task_id = #{taskId}
+                AND r.task_id = #{taskId}
             </if>
-            <if test="employeeId != null">
-                AND employee_id = #{employeeId}
+            <if test="employeeName != null and employeeName != ''">
+                AND r.employee_name = #{employeeName}
             </if>
             <if test="reportType != null">
-                AND report_type = #{reportType}
-            </if>
-            <if test="reportStatus != null">
-                AND report_status = #{reportStatus}
+                AND r.report_type = #{reportType}
             </if>
         </where>
-        ORDER BY create_time DESC
+        ORDER BY r.create_time DESC
         LIMIT #{offset}, #{limit}
     </select>
 
     <!-- 根据ID查询任务进度汇报 -->
     <select id="findById" resultMap="TaskProgressReportResultMap">
-        SELECT * FROM task_progress_report WHERE id = #{id}
+        SELECT 
+            r.id,
+            r.task_id,
+            COALESCE(NULLIF(r.task_name, ''), t.title, t.name, CONCAT('任务', r.task_id)) as task_name,
+            r.report_type,
+            r.report_title,
+            r.report_content,
+            r.employee_name,
+            r.create_time,
+            r.update_time
+        FROM task_progress_report r
+        LEFT JOIN team_task t ON r.task_id = t.id AND t.deleted = 0
+        WHERE r.id = #{id} AND r.deleted = 0
     </select>
 
     <!-- 插入任务进度汇报 -->
     <insert id="insert" parameterType="com.aicustomer.entity.TaskProgressReport" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO task_progress_report (
-            task_id, task_name, employee_id, employee_name, report_type, report_title, report_content,
-            progress, work_duration, work_results, problems, solutions, next_plan, support_needed,
-            work_location, work_mode, attachments, report_status, reviewer_id, reviewer_name,
-            review_time, review_comment, quality_score, efficiency_score, attitude_score,
-            overall_score, is_abnormal, abnormal_reason, supervision_note, create_time, update_time
+            task_id, task_name, report_type, report_title, report_content, employee_name,
+            create_time, update_time, deleted, version
         ) VALUES (
-            #{taskId}, #{taskName}, #{employeeId}, #{employeeName}, #{reportType}, #{reportTitle}, #{reportContent},
-            #{progress}, #{workDuration}, #{workResults}, #{problems}, #{solutions}, #{nextPlan}, #{supportNeeded},
-            #{workLocation}, #{workMode}, #{attachments}, #{reportStatus}, #{reviewerId}, #{reviewerName},
-            #{reviewTime}, #{reviewComment}, #{qualityScore}, #{efficiencyScore}, #{attitudeScore},
-            #{overallScore}, #{isAbnormal}, #{abnormalReason}, #{supervisionNote}, #{createTime}, #{updateTime}
+            #{taskId}, #{taskName}, #{reportType}, #{reportTitle}, #{reportContent}, #{employeeName},
+            #{createTime}, #{updateTime}, 0, 1
         )
     </insert>
 
@@ -86,57 +78,33 @@
         UPDATE task_progress_report SET
             task_id = #{taskId},
             task_name = #{taskName},
-            employee_id = #{employeeId},
-            employee_name = #{employeeName},
             report_type = #{reportType},
             report_title = #{reportTitle},
             report_content = #{reportContent},
-            progress = #{progress},
-            work_duration = #{workDuration},
-            work_results = #{workResults},
-            problems = #{problems},
-            solutions = #{solutions},
-            next_plan = #{nextPlan},
-            support_needed = #{supportNeeded},
-            work_location = #{workLocation},
-            work_mode = #{workMode},
-            attachments = #{attachments},
-            report_status = #{reportStatus},
-            reviewer_id = #{reviewerId},
-            reviewer_name = #{reviewerName},
-            review_time = #{reviewTime},
-            review_comment = #{reviewComment},
-            quality_score = #{qualityScore},
-            efficiency_score = #{efficiencyScore},
-            attitude_score = #{attitudeScore},
-            overall_score = #{overallScore},
-            is_abnormal = #{isAbnormal},
-            abnormal_reason = #{abnormalReason},
-            supervision_note = #{supervisionNote},
-            update_time = #{updateTime}
-        WHERE id = #{id}
+            employee_name = #{employeeName},
+            update_time = #{updateTime},
+            version = version + 1
+        WHERE id = #{id} AND deleted = 0
     </update>
 
-    <!-- 删除任务进度汇报 -->
-    <delete id="delete">
-        DELETE FROM task_progress_report WHERE id = #{id}
-    </delete>
+    <!-- 删除任务进度汇报（逻辑删除） -->
+    <update id="delete">
+        UPDATE task_progress_report SET deleted = 1, update_time = NOW() WHERE id = #{id} AND deleted = 0
+    </update>
 
     <!-- 获取汇报总数 -->
     <select id="countReports" resultType="int">
         SELECT COUNT(*) FROM task_progress_report
         <where>
+            deleted = 0
             <if test="taskId != null">
                 AND task_id = #{taskId}
             </if>
-            <if test="employeeId != null">
-                AND employee_id = #{employeeId}
+            <if test="employeeName != null and employeeName != ''">
+                AND employee_name = #{employeeName}
             </if>
             <if test="reportType != null">
                 AND report_type = #{reportType}
-            </if>
-            <if test="reportStatus != null">
-                AND report_status = #{reportStatus}
             </if>
         </where>
     </select>

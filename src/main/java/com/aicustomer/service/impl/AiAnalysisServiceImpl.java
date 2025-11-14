@@ -115,11 +115,11 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
             }
         } else {
             // 回退方案
-            analysis.setContent("对内容的情感分析结果：\n" +
-                    "1. 整体情感：积极 (75%)\n" +
-                    "2. 关键词：满意、推荐、优质\n" +
-                    "3. 建议：客户满意度较高，可考虑推荐相关产品");
-            analysis.setConfidence(88);
+        analysis.setContent("对内容的情感分析结果：\n" +
+                "1. 整体情感：积极 (75%)\n" +
+                "2. 关键词：满意、推荐、优质\n" +
+                "3. 建议：客户满意度较高，可考虑推荐相关产品");
+        analysis.setConfidence(88);
         }
         
         analysis.setImportance(2);
@@ -164,12 +164,12 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
             }
         } else {
             // 回退方案
-            analysis.setContent("基于客户历史数据和市场趋势，预测客户未来需求：\n" +
-                    "1. 产品需求：高端智能设备\n" +
-                    "2. 服务需求：定制化解决方案\n" +
-                    "3. 时间节点：未来3个月内\n" +
-                    "4. 推荐策略：主动联系，提供试用机会");
-            analysis.setConfidence(90);
+        analysis.setContent("基于客户历史数据和市场趋势，预测客户未来需求：\n" +
+                "1. 产品需求：高端智能设备\n" +
+                "2. 服务需求：定制化解决方案\n" +
+                "3. 时间节点：未来3个月内\n" +
+                "4. 推荐策略：主动联系，提供试用机会");
+        analysis.setConfidence(90);
         }
         
         analysis.setImportance(3);
@@ -213,12 +213,12 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
             }
         } else {
             // 回退方案
-            analysis.setContent("客户风险评估结果：\n" +
-                    "1. 信用风险：低\n" +
-                    "2. 流失风险：中\n" +
-                    "3. 支付风险：低\n" +
-                    "4. 建议措施：加强客户关系维护，定期回访");
-            analysis.setConfidence(85);
+        analysis.setContent("客户风险评估结果：\n" +
+                "1. 信用风险：低\n" +
+                "2. 流失风险：中\n" +
+                "3. 支付风险：低\n" +
+                "4. 建议措施：加强客户关系维护，定期回访");
+        analysis.setConfidence(85);
         }
         
         analysis.setImportance(3);

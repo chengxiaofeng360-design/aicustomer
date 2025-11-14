@@ -1,7 +1,9 @@
 package com.aicustomer.controller;
 
+import com.aicustomer.common.PageResult;
 import com.aicustomer.common.Result;
 import com.aicustomer.entity.TaskProgressReport;
+import com.aicustomer.mapper.TaskProgressReportMapper;
 import com.aicustomer.service.TaskProgressReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,19 +23,28 @@ public class TaskProgressReportController {
     @Autowired
     private TaskProgressReportService reportService;
 
+    @Autowired
+    private TaskProgressReportMapper reportMapper;
+
     /**
-     * 获取任务进度汇报列表
+     * 获取任务进度汇报列表（分页）
      */
     @GetMapping("/reports")
-    public Result<List<TaskProgressReport>> getReports(@RequestParam(required = false) Long taskId,
-                                                       @RequestParam(required = false) Long employeeId,
-                                                       @RequestParam(required = false) Integer reportType,
-                                                       @RequestParam(required = false) Integer reportStatus,
-                                                       @RequestParam(defaultValue = "1") Integer page,
-                                                       @RequestParam(defaultValue = "10") Integer size) {
+    public Result<PageResult<TaskProgressReport>> getReports(@RequestParam(required = false) Long taskId,
+                                                             @RequestParam(required = false) String employeeName,
+                                                             @RequestParam(required = false) Integer reportType,
+                                                             @RequestParam(defaultValue = "1") Integer page,
+                                                             @RequestParam(defaultValue = "10") Integer size) {
         try {
-            List<TaskProgressReport> reports = reportService.getReports(taskId, employeeId, reportType, reportStatus, page, size);
-            return Result.success(reports);
+            List<TaskProgressReport> reports = reportService.getReports(taskId, employeeName, reportType, page, size);
+            int total = reportMapper.countReports(taskId, employeeName, reportType);
+            PageResult<TaskProgressReport> pageResult = new PageResult<>();
+            pageResult.setList(reports);
+            pageResult.setTotal((long) total);
+            pageResult.setPageNum(page);
+            pageResult.setPageSize(size);
+            pageResult.setPages((int) Math.ceil((double) total / size));
+            return Result.success(pageResult);
         } catch (Exception e) {
             return Result.error("获取任务进度汇报失败: " + e.getMessage());
         }
@@ -62,8 +73,25 @@ public class TaskProgressReportController {
     @PostMapping("/reports")
     public Result<TaskProgressReport> createReport(@RequestBody TaskProgressReport report) {
         try {
+            if (report.getTaskId() == null) {
+                return Result.error("任务ID不能为空");
+            }
+            if (report.getReportType() == null) {
+                return Result.error("汇报类型不能为空");
+            }
+            if (report.getReportTitle() == null || report.getReportTitle().trim().isEmpty()) {
+                return Result.error("汇报标题不能为空");
+            }
+            if (report.getReportContent() == null || report.getReportContent().trim().isEmpty()) {
+                return Result.error("汇报内容不能为空");
+            }
+            if (report.getEmployeeName() == null || report.getEmployeeName().trim().isEmpty()) {
+                return Result.error("员工姓名不能为空");
+            }
             TaskProgressReport createdReport = reportService.createReport(report);
             return Result.success(createdReport);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
             return Result.error("创建任务进度汇报失败: " + e.getMessage());
         }
@@ -75,9 +103,14 @@ public class TaskProgressReportController {
     @PutMapping("/reports/{id}")
     public Result<TaskProgressReport> updateReport(@PathVariable Long id, @RequestBody TaskProgressReport report) {
         try {
+            if (report == null) {
+                return Result.error("汇报数据不能为空");
+            }
             report.setId(id);
             TaskProgressReport updatedReport = reportService.updateReport(report);
             return Result.success(updatedReport);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
             return Result.error("更新任务进度汇报失败: " + e.getMessage());
         }
@@ -89,51 +122,15 @@ public class TaskProgressReportController {
     @DeleteMapping("/reports/{id}")
     public Result<String> deleteReport(@PathVariable Long id) {
         try {
+            if (id == null) {
+                return Result.error("汇报ID不能为空");
+            }
             reportService.deleteReport(id);
             return Result.success("删除成功");
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
             return Result.error("删除任务进度汇报失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 审核任务进度汇报
-     */
-    @PostMapping("/reports/{id}/review")
-    public Result<TaskProgressReport> reviewReport(@PathVariable Long id,
-                                                   @RequestParam Long reviewerId,
-                                                   @RequestParam String reviewerName,
-                                                   @RequestParam Integer reportStatus,
-                                                   @RequestParam(required = false) String reviewComment,
-                                                   @RequestParam(required = false) Integer qualityScore,
-                                                   @RequestParam(required = false) Integer efficiencyScore,
-                                                   @RequestParam(required = false) Integer attitudeScore) {
-        try {
-            TaskProgressReport report = reportService.reviewReport(id, reviewerId, reviewerName, reportStatus, reviewComment, qualityScore, efficiencyScore, attitudeScore);
-            return Result.success(report);
-        } catch (Exception e) {
-            return Result.error("审核任务进度汇报失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 获取汇报统计信息
-     */
-    @GetMapping("/statistics")
-    public Result<Object> getReportStatistics(@RequestParam(required = false) Long employeeId,
-                                              @RequestParam(required = false) Long taskId) {
-        try {
-            Object statistics;
-            if (employeeId != null) {
-                statistics = reportService.getReportStats(employeeId);
-            } else if (taskId != null) {
-                statistics = reportService.getTaskProgressStats(taskId);
-            } else {
-                return Result.error("请指定员工ID或任务ID");
-            }
-            return Result.success(statistics);
-        } catch (Exception e) {
-            return Result.error("获取汇报统计失败: " + e.getMessage());
         }
     }
 }
