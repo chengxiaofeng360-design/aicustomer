@@ -4,6 +4,7 @@ import com.aicustomer.entity.Customer;
 import com.aicustomer.service.CustomerService;
 import com.aicustomer.service.ImportService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -24,6 +25,7 @@ import java.util.List;
  * @author AI Customer Management System
  * @version 1.0.0
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImportServiceImpl implements ImportService {
@@ -71,7 +73,9 @@ public class ImportServiceImpl implements ImportService {
                         customers.add(customer);
                     }
                 } catch (Exception e) {
-                    errors.add("第" + (i + 1) + "行数据解析失败: " + e.getMessage());
+                    String errorMsg = "第" + (i + 1) + "行数据解析失败: " + e.getMessage();
+                    errors.add(errorMsg);
+                    log.error("Excel解析错误，行号: {}, 错误信息: {}", i + 1, e.getMessage(), e);
                 }
             }
             
@@ -84,8 +88,10 @@ public class ImportServiceImpl implements ImportService {
             return new ImportResult(true, "成功解析" + customers.size() + "条客户数据", customers, errors);
             
         } catch (IOException e) {
+            log.error("Excel文件读取失败: {}", file.getOriginalFilename(), e);
             return new ImportResult(false, "文件读取失败: " + e.getMessage(), null, null);
         } catch (Exception e) {
+            log.error("Excel文件解析失败: {}", file.getOriginalFilename(), e);
             return new ImportResult(false, "文件解析失败: " + e.getMessage(), null, null);
         }
     }
@@ -123,7 +129,9 @@ public class ImportServiceImpl implements ImportService {
                         customers.add(customer);
                     }
                 } catch (Exception e) {
-                    errors.add("第" + lineNumber + "行数据解析失败: " + e.getMessage());
+                    String errorMsg = "第" + lineNumber + "行数据解析失败: " + e.getMessage();
+                    errors.add(errorMsg);
+                    log.error("CSV解析错误，行号: {}, 错误信息: {}", lineNumber, e.getMessage(), e);
                 }
             }
             
@@ -136,6 +144,7 @@ public class ImportServiceImpl implements ImportService {
             return new ImportResult(success, message, customers, errors);
             
         } catch (IOException e) {
+            log.error("CSV文件读取失败: {}", file.getOriginalFilename(), e);
             return new ImportResult(false, "CSV文件读取失败: " + e.getMessage(), null, null);
         }
     }
@@ -179,8 +188,8 @@ public class ImportServiceImpl implements ImportService {
      * 从CSV字段数组解析客户数据
      */
     private Customer parseCustomerFromCSVFields(String[] fields, int lineNumber) {
-        if (fields.length < 3) {
-            throw new RuntimeException("字段数量不足，至少需要客户名称、联系人、电话");
+        if (fields.length < 2) {
+            throw new RuntimeException("字段数量不足，必填项：客户名称、电话");
         }
         
         Customer customer = new Customer();
@@ -188,21 +197,18 @@ public class ImportServiceImpl implements ImportService {
         // 客户名称（必填，索引0）
         String customerName = fields.length > 0 ? fields[0].trim() : "";
         if (customerName.isEmpty()) {
-            throw new RuntimeException("客户名称不能为空");
+            throw new RuntimeException("客户名称不能为空（必填项：客户名称、电话）");
         }
         customer.setCustomerName(customerName);
         
-        // 联系人（必填，索引1）
+        // 联系人（可选，索引1）
         String contactPerson = fields.length > 1 ? fields[1].trim() : "";
-        if (contactPerson.isEmpty()) {
-            throw new RuntimeException("联系人不能为空");
-        }
         customer.setContactPerson(contactPerson);
         
         // 电话（必填，索引2）
         String phone = fields.length > 2 ? fields[2].trim() : "";
         if (phone.isEmpty()) {
-            throw new RuntimeException("电话不能为空");
+            throw new RuntimeException("电话不能为空（必填项：客户名称、电话）");
         }
         customer.setPhone(phone);
         
@@ -281,12 +287,26 @@ public class ImportServiceImpl implements ImportService {
             customer.setRemark(fields[11].trim());
         }
         
-        // 设置默认值
-        customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int)(Math.random() * 1000));
-        customer.setStatus(1);
-        customer.setSource(2);
+        // 设置默认值，确保必填字段不为空
+        if (customer.getCustomerType() == null) {
+            customer.setCustomerType(1); // 默认个人客户
+        }
+        if (customer.getCustomerLevel() == null) {
+            customer.setCustomerLevel(1); // 默认普通
+        }
+        if (customer.getStatus() == null) {
+            customer.setStatus(1); // 默认正常
+        }
+        if (customer.getSource() == null) {
+            customer.setSource(2); // 默认线下
+        }
+        if (customer.getCustomerCode() == null || customer.getCustomerCode().trim().isEmpty()) {
+            customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int)(Math.random() * 1000));
+        }
         customer.setCreateTime(LocalDateTime.now());
         customer.setUpdateTime(LocalDateTime.now());
+        customer.setDeleted(0);
+        customer.setVersion(1);
         
         return customer;
     }
@@ -332,36 +352,16 @@ public class ImportServiceImpl implements ImportService {
             Customer customer = customers.get(i);
             int rowNum = i + 1;
             
-            // 必填字段验证
+            // 必填字段验证：只验证客户名称和电话
             if (customer.getCustomerName() == null || customer.getCustomerName().trim().isEmpty()) {
-                errors.add("第" + rowNum + "行：客户名称不能为空");
+                errors.add("第" + rowNum + "行：客户名称不能为空（必填项：客户名称、电话）");
             }
             
-            if (customer.getContactPerson() == null || customer.getContactPerson().trim().isEmpty()) {
-                errors.add("第" + rowNum + "行：联系人不能为空");
+            if (customer.getPhone() == null || customer.getPhone().trim().isEmpty()) {
+                errors.add("第" + rowNum + "行：电话不能为空（必填项：客户名称、电话）");
             }
             
-            // 邮箱格式验证
-            if (customer.getEmail() != null && !customer.getEmail().trim().isEmpty()) {
-                if (!customer.getEmail().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
-                    warnings.add("第" + rowNum + "行：邮箱格式可能不正确");
-                }
-            }
-            
-            // 手机号格式验证
-            if (customer.getPhone() != null && !customer.getPhone().trim().isEmpty()) {
-                if (!customer.getPhone().matches("^1[3-9]\\d{9}$")) {
-                    warnings.add("第" + rowNum + "行：手机号格式可能不正确");
-                }
-            }
-            
-            // 申请人性质验证
-            // applicantNature字段已删除，跳过验证
-            if (false) {
-                if (false) {
-                    errors.add("第" + rowNum + "行：申请人性质值无效（应为1-4）");
-                }
-            }
+            // 其他字段均为可选，不进行必填验证
         }
         
         boolean valid = errors.isEmpty();
@@ -387,6 +387,20 @@ public class ImportServiceImpl implements ImportService {
                 customer.setDeleted(0);
                 customer.setVersion(1);
                 
+                // 设置默认值，避免必填字段为空
+                if (customer.getCustomerType() == null) {
+                    customer.setCustomerType(1); // 默认个人客户
+                }
+                if (customer.getCustomerLevel() == null) {
+                    customer.setCustomerLevel(1); // 默认普通
+                }
+                if (customer.getStatus() == null) {
+                    customer.setStatus(1); // 默认正常
+                }
+                if (customer.getSource() == null) {
+                    customer.setSource(2); // 默认线下
+                }
+                
                 // 生成客户编号
                 if (customer.getCustomerCode() == null || customer.getCustomerCode().trim().isEmpty()) {
                     customer.setCustomerCode("CUST" + System.currentTimeMillis() + (i + 1));
@@ -402,7 +416,10 @@ public class ImportServiceImpl implements ImportService {
                 }
             } catch (Exception e) {
                 failureCount++;
-                errors.add("第" + rowNum + "行：保存失败 - " + e.getMessage());
+                String errorMsg = "第" + rowNum + "行：保存失败 - " + e.getMessage();
+                errors.add(errorMsg);
+                log.error("保存客户数据失败，行号: {}, 客户名称: {}, 错误信息: {}", 
+                    rowNum, customer.getCustomerName(), e.getMessage(), e);
             }
         }
         
@@ -421,21 +438,31 @@ public class ImportServiceImpl implements ImportService {
         try {
             // 客户名称（必填）
             Cell customerNameCell = row.getCell(0);
+            String customerName = "";
             if (customerNameCell != null) {
-                customer.setCustomerName(getCellValueAsString(customerNameCell));
+                customerName = getCellValueAsString(customerNameCell);
             }
+            if (customerName.trim().isEmpty()) {
+                throw new RuntimeException("客户名称不能为空（必填项：客户名称、电话）");
+            }
+            customer.setCustomerName(customerName);
             
-            // 联系人（必填）
+            // 联系人（可选）
             Cell contactPersonCell = row.getCell(1);
             if (contactPersonCell != null) {
                 customer.setContactPerson(getCellValueAsString(contactPersonCell));
             }
             
-            // 电话
+            // 电话（必填）
             Cell phoneCell = row.getCell(2);
+            String phone = "";
             if (phoneCell != null) {
-                customer.setPhone(getCellValueAsString(phoneCell));
+                phone = getCellValueAsString(phoneCell);
             }
+            if (phone.trim().isEmpty()) {
+                throw new RuntimeException("电话不能为空（必填项：客户名称、电话）");
+            }
+            customer.setPhone(phone);
             
             // 邮箱
             Cell emailCell = row.getCell(3);
@@ -594,9 +621,31 @@ public class ImportServiceImpl implements ImportService {
                 customer.setRemark(getCellValueAsString(remarkCell));
             }
             
+            // 设置默认值，确保必填字段不为空
+            if (customer.getCustomerType() == null) {
+                customer.setCustomerType(1); // 默认个人客户
+            }
+            if (customer.getCustomerLevel() == null) {
+                customer.setCustomerLevel(1); // 默认普通
+            }
+            if (customer.getStatus() == null) {
+                customer.setStatus(1); // 默认正常
+            }
+            if (customer.getSource() == null) {
+                customer.setSource(2); // 默认线下
+            }
+            if (customer.getCustomerCode() == null || customer.getCustomerCode().trim().isEmpty()) {
+                customer.setCustomerCode("CUST" + System.currentTimeMillis() + rowNum);
+            }
+            customer.setCreateTime(LocalDateTime.now());
+            customer.setUpdateTime(LocalDateTime.now());
+            customer.setDeleted(0);
+            customer.setVersion(1);
+            
             return customer;
             
         } catch (Exception e) {
+            log.error("Excel行解析错误，行号: {}, 错误信息: {}", rowNum, e.getMessage(), e);
             throw new RuntimeException("解析第" + rowNum + "行数据时发生错误: " + e.getMessage(), e);
         }
     }

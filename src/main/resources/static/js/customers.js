@@ -380,16 +380,26 @@ function showFileUpload() {
         // 模态框显示后，重新初始化文件上传功能
         modalElement.addEventListener('shown.bs.modal', function onModalShown() {
             console.log('模态框已显示，重新初始化文件上传功能');
-            // 移除事件监听器，避免重复绑定
-            modalElement.removeEventListener('shown.bs.modal', onModalShown);
+            // 重置初始化标志，允许重新初始化
+            fileUploadInitialized = false;
             // 重新初始化文件上传功能
             initFileUpload();
         }, { once: true });
+        
+        // 模态框关闭时清理状态
+        modalElement.addEventListener('hidden.bs.modal', function onModalHidden() {
+            console.log('模态框已关闭，清理文件上传状态');
+            // 重置初始化标志
+            fileUploadInitialized = false;
+            // 清空文件选择
+            resetImportFileSelection(true);
+        }, { once: false });
         
         // 如果模态框已经显示，立即初始化
         setTimeout(function() {
             if (modalElement.classList.contains('show')) {
                 console.log('模态框已显示，立即初始化文件上传功能');
+                fileUploadInitialized = false;
                 initFileUpload();
             }
         }, 100);
@@ -868,6 +878,8 @@ let uploadedFiles = [];
 let processedData = [];
 
 // 初始化文件上传
+let fileUploadInitialized = false;
+
 function initFileUpload() {
     console.log('初始化文件上传功能...');
     
@@ -885,13 +897,20 @@ function initFileUpload() {
         return;
     }
     
+    // 如果已经初始化过，先移除旧的事件监听器（通过克隆元素来移除所有监听器）
+    if (fileUploadInitialized) {
+        console.log('文件上传功能已初始化，跳过重复初始化');
+        return;
+    }
+    
     console.log('找到fileInput和fileUploadArea元素');
 
-    // 文件选择事件
-    fileInput.addEventListener('change', function(e) {
+    // 文件选择事件（使用命名函数，方便后续移除）
+    const handleFileChange = function(e) {
         console.log('文件选择事件触发，文件数量:', e.target.files.length);
         handleFileSelect(e);
-    });
+    };
+    fileInput.addEventListener('change', handleFileChange);
 
     // 拖拽事件
     fileUploadArea.addEventListener('dragover', handleDragOver);
@@ -937,6 +956,7 @@ function initFileUpload() {
         console.warn('[IMPORT] [前端] 未找到selectFileBtn（label）');
     }
     
+    fileUploadInitialized = true;
     console.log('文件上传功能初始化完成');
 }
 
@@ -989,8 +1009,15 @@ function addFiles(files) {
         return;
     }
     
+    let addedCount = 0;
     files.forEach(file => {
         if (isValidFileType(file)) {
+            // 检查文件是否已经存在（通过文件名和大小判断）
+            const exists = uploadedFiles.some(f => 
+                f.name === file.name && f.file.size === file.size
+            );
+            
+            if (!exists) {
             uploadedFiles.push({
                 file: file,
                 name: file.name,
@@ -998,12 +1025,16 @@ function addFiles(files) {
                 size: formatFileSize(file.size),
                 status: '待处理'
             });
+                addedCount++;
+        } else {
+                console.log('文件已存在，跳过:', file.name);
+            }
         } else {
             alert(`不支持的文件格式：${file.name}\n请上传Excel（.xlsx, .xls）或CSV（.csv）格式的文件！`);
         }
     });
     
-    if (uploadedFiles.length > 0) {
+    if (addedCount > 0) {
     updateFilePreview();
         console.log('已添加文件:', uploadedFiles.map(f => f.name).join(', '));
     }
@@ -1260,13 +1291,20 @@ function displayDataPreview() {
 
 // 保存上传的数据（使用新的导入接口）
 function saveUploadedData() {
-    const fileInput = document.getElementById('fileInput');
-    if (!fileInput.files || fileInput.files.length === 0) {
+    // 从uploadedFiles数组获取文件，而不是从fileInput
+    if (!uploadedFiles || uploadedFiles.length === 0) {
         alert('请先选择要上传的文件！');
         return;
     }
     
-    const file = fileInput.files[0];
+    // 只支持上传一个文件
+    if (uploadedFiles.length > 1) {
+        alert('目前只支持一次上传一个文件，请先移除多余的文件！');
+        return;
+    }
+    
+    const fileData = uploadedFiles[0];
+    const file = fileData.file;
     const fileName = file.name.toLowerCase();
     
     // 检查文件格式
@@ -1290,7 +1328,25 @@ function saveUploadedData() {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        // 检查响应状态
+        if (!response.ok) {
+            // 尝试解析错误信息
+            return response.text().then(text => {
+                try {
+                    const error = JSON.parse(text);
+                    throw new Error(error.message || error.error || '导入失败: HTTP ' + response.status);
+                } catch (e) {
+                    if (e instanceof Error && e.message.includes('导入失败')) {
+                        throw e;
+                    }
+                    throw new Error('导入失败: HTTP ' + response.status + ' ' + response.statusText);
+                }
+            });
+        }
+        // 解析JSON响应
+        return response.json();
+    })
     .then(result => {
         saveBtn.disabled = false;
         saveBtn.innerHTML = originalText;
@@ -1317,19 +1373,28 @@ function saveUploadedData() {
             }
             loadCustomers();
             
-            // 清空文件输入
-            fileInput.value = '';
+            // 清空文件输入和上传文件列表
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            uploadedFiles = [];
+            processedData = [];
             document.getElementById('filePreview').style.display = 'none';
             document.getElementById('dataPreview').style.display = 'none';
         } else {
-            alert('导入失败: ' + (result.message || '未知错误'));
+            const errorMsg = result.message || result.error || '未知错误';
+            console.error('导入失败:', result);
+            alert('导入失败: ' + errorMsg);
         }
     })
     .catch(error => {
         saveBtn.disabled = false;
         saveBtn.innerHTML = originalText;
         console.error('导入失败:', error);
-        alert('导入失败，请重试');
+        const errorMsg = error.message || '网络错误或服务器异常，请检查文件格式后重试';
+        alert('导入失败: ' + errorMsg);
+        // 不清空文件，允许用户重试
     });
 }
 
@@ -1563,14 +1628,14 @@ function showCustomerDetail(customer) {
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">客户名称</label>' +
                     '<p class="mb-0">' + (customer.customerName || '未填写') + '</p>' +
-                '</div>' +
+            '</div>' +
             '</div>' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">联系人</label>' +
                     '<p class="mb-0">' + (customer.contactPerson || '未填写') + '</p>' +
-                '</div>' +
             '</div>' +
+        '</div>' +
         '</div>' +
         '<div class="row g-3">' +
             '<div class="col-md-6">' +

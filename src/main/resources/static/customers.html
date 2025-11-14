@@ -59,7 +59,7 @@
 
         <!-- 搜索和筛选区域 -->
         <div class="card mb-3">
-              <div class="card-body">
+            <div class="card-body">
                 <!-- 切换搜索区域显示/隐藏的按钮（横向窄倒三角） -->
                 <div style="margin: 0; padding: 0;">
                     <button class="btn p-0" style="min-width: 14px; padding: 0; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border: none; background: none;" onclick="toggleSearchPanel()" id="toggleButton">
@@ -110,10 +110,10 @@
                     <div class="col-12">
                         <div class="d-flex flex-wrap gap-2 justify-content-between">
                             <div class="operation-buttons">
-                                <button class="btn btn-success" onclick="showAddCustomerModal()">
-                                    <i class="bi bi-plus-circle"></i> 新增客户
-                                </button>
-                            <button class="btn btn-info" onclick="showAIRecognition()">
+                            <button class="btn btn-success" onclick="showAddCustomerModal()">
+                                <i class="bi bi-plus-circle"></i> 新增客户
+                            </button>
+                            <button class="btn btn-info" onclick="showAIRecognition()" style="display: none;">
                                 <i class="bi bi-robot"></i> AI识别
                             </button>
                             <button class="btn btn-success" onclick="showFileUpload()">
@@ -304,15 +304,15 @@
                                     <textarea class="form-control" id="cooperationContent" name="cooperationContent" rows="3" placeholder="请输入合作内容"></textarea>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
+                                </div>
+                                <div class="row">
                             <div class="col-md-12">
-                                <div class="mb-3">
+                                        <div class="mb-3">
                                     <label class="form-label" for="address">详细地址</label>
                                     <textarea class="form-control" id="address" name="address" rows="2" placeholder="请输入详细地址"></textarea>
-                                </div>
-                            </div>
-                        </div>
+                                        </div>
+                                    </div>
+                                        </div>
                                 <div class="row">
                             <div class="col-md-12">
                                         <div class="mb-3">
@@ -320,9 +320,9 @@
                                     <textarea class="form-control" id="remarks" name="remarks" rows="3" placeholder="请输入备注信息"></textarea>
                                         </div>
                                     </div>
-                                        </div>
+                        </div>
                     </form>
-                                    </div>
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle"></i> 取消
@@ -330,10 +330,10 @@
                     <button type="button" class="btn btn-primary" onclick="saveCustomer()">
                         <i class="bi bi-check-circle"></i> 保存
                     </button>
-                                        </div>
-                                    </div>
-                                        </div>
-                                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 客户详情模态框 -->
     <div class="modal fade" id="customerDetailModal" tabindex="-1">
@@ -342,7 +342,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">客户详情</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
+                </div>
                 <div class="modal-body">
                     <!-- 标签页导航 -->
                     <ul class="nav nav-tabs mb-3" id="customerDetailTabs" role="tablist">
@@ -367,8 +367,6 @@
             </div>
         </div>
     </div>
-                        
-
 
     <!-- AI识别模态框 -->
     <div class="modal fade" id="aiRecognitionModal" tabindex="-1">
