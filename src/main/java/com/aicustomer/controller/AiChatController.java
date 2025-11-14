@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,17 +24,31 @@ public class AiChatController {
     private final AiChatService aiChatService;
     
     /**
-     * 发送消息
+     * 发送消息（支持多轮对话）
      */
     @PostMapping("/send")
     public Result<Map<String, Object>> sendMessage(@RequestBody Map<String, Object> request) {
         try {
+            System.out.println("【AI聊天】收到发送消息请求");
+            System.out.println("【AI聊天】请求参数: " + request);
+            
             String sessionId = request.get("sessionId").toString();
             String userMessage = request.get("message").toString();
             Long customerId = request.get("customerId") != null ? 
                 Long.valueOf(request.get("customerId").toString()) : null;
             
-            AiChat response = aiChatService.sendMessage(sessionId, userMessage, customerId);
+            System.out.println("【AI聊天】会话ID: " + sessionId);
+            System.out.println("【AI聊天】用户消息: " + userMessage);
+            System.out.println("【AI聊天】客户ID: " + customerId);
+            
+            // 支持传递对话历史（用于多轮对话）
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> history = (List<Map<String, String>>) request.get("history");
+            System.out.println("【AI聊天】对话历史条数: " + (history != null ? history.size() : 0));
+            
+            AiChat response = aiChatService.sendMessage(sessionId, userMessage, customerId, history);
+            
+            System.out.println("【AI聊天】AI回复内容: " + (response.getReplyContent() != null ? response.getReplyContent().substring(0, Math.min(100, response.getReplyContent().length())) + "..." : "null"));
             
             // 构建返回结果
             Map<String, Object> result = new HashMap<>();
@@ -44,8 +59,12 @@ public class AiChatController {
             result.put("content", response.getContent());
             result.put("createTime", response.getCreateTime());
             
+            System.out.println("【AI聊天】返回成功");
             return Result.success(result);
         } catch (Exception e) {
+            System.out.println("【AI聊天】异常: " + e.getMessage());
+            System.out.println("【AI聊天】异常类型: " + e.getClass().getName());
+            e.printStackTrace();
             return Result.error("发送消息失败: " + e.getMessage());
         }
     }

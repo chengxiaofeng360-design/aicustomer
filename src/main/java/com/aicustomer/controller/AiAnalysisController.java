@@ -195,4 +195,43 @@ public class AiAnalysisController {
             return Result.error("获取分析历史失败: " + e.getMessage());
         }
     }
+
+    /**
+     * 获取业务机会列表
+     */
+    @GetMapping("/business-opportunities")
+    public Result<List<Map<String, Object>>> getBusinessOpportunities() {
+        try {
+            List<Map<String, Object>> opportunities = aiAnalysisService.getBusinessOpportunities();
+            return Result.success(opportunities);
+        } catch (Exception e) {
+            return Result.error("获取业务机会失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取客户维护提醒
+     */
+    @GetMapping("/customer-reminders")
+    public Result<Map<String, Object>> getCustomerReminders() {
+        try {
+            Map<String, Object> reminders = aiAnalysisService.getCustomerReminders();
+            return Result.success(reminders);
+        } catch (Exception e) {
+            return Result.error("获取客户提醒失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 分析客户合作潜力
+     */
+    @GetMapping("/cooperation-potential/{customerId}")
+    public Result<Map<String, Object>> analyzeCooperationPotential(@PathVariable Long customerId) {
+        try {
+            Map<String, Object> analysis = aiAnalysisService.analyzeCooperationPotential(customerId);
+            return Result.success(analysis);
+        } catch (Exception e) {
+            return Result.error("分析合作潜力失败: " + e.getMessage());
+        }
+    }
 }

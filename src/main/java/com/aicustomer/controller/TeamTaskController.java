@@ -31,10 +31,10 @@ public class TeamTaskController {
      */
     @GetMapping("/tasks")
     public Result<PageResult<TeamTask>> getTasks(@RequestParam(required = false) Long assigneeId,
-                                                   @RequestParam(required = false) Integer status,
-                                                   @RequestParam(required = false) Integer priority,
-                                                   @RequestParam(defaultValue = "1") Integer page,
-                                                   @RequestParam(defaultValue = "10") Integer size) {
+                                           @RequestParam(required = false) Integer status,
+                                           @RequestParam(required = false) Integer priority,
+                                           @RequestParam(defaultValue = "1") Integer page,
+                                           @RequestParam(defaultValue = "10") Integer size) {
         try {
             List<TeamTask> tasks = taskService.getTasks(assigneeId, status, priority, page, size);
             int total = taskMapper.countTasks(assigneeId, status, priority);

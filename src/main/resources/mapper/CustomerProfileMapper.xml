@@ -38,4 +38,43 @@
         WHERE id = #{id}
     </update>
 
+    <select id="findUpcomingBirthdays" resultType="java.util.HashMap">
+        SELECT 
+            cp.customer_id as customerId,
+            c.customer_name as customerName,
+            DATE_FORMAT(cp.birthday, '%Y-%m-%d') as birthday,
+            cp.interests,
+            CASE 
+                WHEN DATEDIFF(
+                    DATE_ADD(cp.birthday, INTERVAL YEAR(CURDATE()) - YEAR(cp.birthday) YEAR),
+                    CURDATE()
+                ) >= 0 THEN DATEDIFF(
+                    DATE_ADD(cp.birthday, INTERVAL YEAR(CURDATE()) - YEAR(cp.birthday) YEAR),
+                    CURDATE()
+                )
+                ELSE DATEDIFF(
+                    DATE_ADD(cp.birthday, INTERVAL YEAR(CURDATE()) + 1 - YEAR(cp.birthday) YEAR),
+                    CURDATE()
+                )
+            END as daysUntil
+        FROM customer_profile cp
+        INNER JOIN customer c ON cp.customer_id = c.id
+        WHERE cp.birthday IS NOT NULL
+        AND c.deleted = 0
+        AND c.status = 1
+        AND (
+            DATEDIFF(
+                DATE_ADD(cp.birthday, INTERVAL YEAR(CURDATE()) - YEAR(cp.birthday) YEAR),
+                CURDATE()
+            ) BETWEEN 0 AND #{days}
+            OR
+            DATEDIFF(
+                DATE_ADD(cp.birthday, INTERVAL YEAR(CURDATE()) + 1 - YEAR(cp.birthday) YEAR),
+                CURDATE()
+            ) BETWEEN 0 AND #{days}
+        )
+        ORDER BY daysUntil ASC
+        LIMIT 50
+    </select>
+
 </mapper>

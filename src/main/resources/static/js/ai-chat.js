@@ -1,6 +1,7 @@
 let chatHistory = [];
 let isTyping = false;
-let currentChatId = Date.now();
+let currentChatId = Date.now().toString();
+let conversationHistory = []; // 用于保存对话历史，传递给DeepSeek
 
 // 侧边栏折叠/展开功能
 function toggleSidebar() {
@@ -32,14 +33,25 @@ function initializeChat() {
 }
 
 // 发送消息
-function sendMessage() {
+async function sendMessage() {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
     
     if (!message) return;
     
+    // 禁用发送按钮和输入框
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    input.disabled = true;
+    
     // 添加用户消息
     addMessage(message, 'user');
+    
+    // 添加到对话历史
+    conversationHistory.push({
+        role: 'user',
+        content: message
+    });
     
     // 清空输入框并重置高度
     input.value = '';
@@ -48,12 +60,85 @@ function sendMessage() {
     // 显示正在输入状态
     showTypingIndicator();
     
-    // 模拟AI回复
-    setTimeout(() => {
+        try {
+        // 调用后端API（传递对话历史以支持多轮对话）
+        console.log('【前端】开始调用后端API');
+        console.log('【前端】请求参数:', {
+            sessionId: currentChatId,
+            message: message,
+            historyCount: conversationHistory.length
+        });
+        
+        const response = await fetch('/api/ai-chat/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sessionId: currentChatId,
+                message: message,
+                customerId: null,
+                history: conversationHistory // 传递对话历史
+            })
+        });
+        
+        console.log('【前端】收到响应，状态码:', response.status);
+        const result = await response.json();
+        console.log('【前端】响应结果:', result);
+        
+        // 隐藏正在输入状态
         hideTypingIndicator();
-        const aiResponse = generateAIResponse(message);
-        addMessage(aiResponse, 'ai');
-    }, 1500 + Math.random() * 1000);
+        
+        if (result.success && result.data) {
+            const aiResponse = result.data.replyContent || result.data.content;
+            console.log('【前端】AI回复内容:', aiResponse ? aiResponse.substring(0, 100) + '...' : 'null');
+            
+            if (aiResponse && aiResponse.trim()) {
+                // 添加AI回复到对话历史
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: aiResponse
+                });
+                
+                // 显示AI回复
+                addMessage(aiResponse, 'ai');
+            } else {
+                console.error('【前端】错误: AI回复为空');
+                const errorMsg = '抱歉，AI服务返回了空回复，请检查后端日志。';
+                addMessage(errorMsg, 'ai');
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: errorMsg
+                });
+            }
+        } else {
+            // 如果后端失败，显示错误信息
+            console.error('【前端】后端返回失败:', result.message || '未知错误');
+            console.error('【前端】完整响应:', result);
+            const errorMsg = '后端API调用失败: ' + (result.message || '未知错误') + '。请查看控制台日志。';
+            addMessage(errorMsg, 'ai');
+            conversationHistory.push({
+                role: 'assistant',
+                content: errorMsg
+            });
+        }
+    } catch (error) {
+        console.error('发送消息失败:', error);
+        hideTypingIndicator();
+        
+        // 显示错误提示
+        const errorMessage = '抱歉，AI服务暂时无法响应。' + (error.message ? '错误：' + error.message : '');
+        addMessage(errorMessage, 'ai');
+        conversationHistory.push({
+            role: 'assistant',
+            content: errorMessage
+        });
+    } finally {
+        // 恢复发送按钮和输入框
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+    }
 }
 
 // 发送快速消息
@@ -644,7 +729,8 @@ function handleKeyPress(event) {
 function startNewChat() {
     if (confirm('确定要开始新对话吗？当前对话记录将被清空。')) {
         chatHistory = [];
-        currentChatId = Date.now();
+        conversationHistory = []; // 清空对话历史
+        currentChatId = Date.now().toString();
         document.getElementById('chatMessages').innerHTML = `
             <div class="message ai-message">
                 <div class="message-avatar">
@@ -694,6 +780,9 @@ function clearChat() {
     if (confirm('确定要清空当前对话吗？')) {
         document.getElementById('chatMessages').innerHTML = '';
         chatHistory = [];
+        conversationHistory = []; // 清空对话历史
+        // 重新显示欢迎消息
+        initializeChat();
     }
 }
 

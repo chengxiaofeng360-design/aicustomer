@@ -169,6 +169,44 @@
         WHERE id = #{id} AND deleted = 0
     </update>
 
+    <select id="selectRecentCommunications" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM communication_record
+        WHERE deleted = 0
+        AND communication_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        ORDER BY communication_time DESC
+    </select>
+
+    <select id="selectRecentByCustomerId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM communication_record
+        WHERE customer_id = #{customerId} AND deleted = 0
+        AND communication_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        ORDER BY communication_time DESC
+    </select>
+
+    <select id="selectCustomersNoContact" resultType="java.util.HashMap">
+        SELECT 
+            c.id as customerId,
+            c.customer_name as customerName,
+            c.customer_level as customerLevel,
+            MAX(cr.communication_time) as lastContactTime,
+            CASE 
+                WHEN MAX(cr.communication_time) IS NULL THEN DATEDIFF(NOW(), c.create_time)
+                ELSE DATEDIFF(NOW(), MAX(cr.communication_time))
+            END as daysSinceLastContact
+        FROM customer c
+        LEFT JOIN communication_record cr ON c.id = cr.customer_id AND cr.deleted = 0
+        WHERE c.deleted = 0
+        AND c.status = 1
+        GROUP BY c.id, c.customer_name, c.customer_level, c.create_time
+        HAVING daysSinceLastContact >= #{days}
+        ORDER BY daysSinceLastContact DESC
+        LIMIT 50
+    </select>
+
 </mapper>
 
 

@@ -43,12 +43,15 @@ public class DeepSeekService {
     public String generateResponse(List<Map<String, String>> messages) {
         String apiKey = deepSeekConfig.getApiKey();
         if (apiKey == null || apiKey.trim().isEmpty()) {
-            log.warn("DeepSeek API Key未配置，返回默认回复");
+            log.warn("【DeepSeek】API Key未配置，返回默认回复");
+            System.out.println("【DeepSeek】警告: API Key未配置");
             return "抱歉，AI服务暂未配置，请联系管理员。";
         }
         
         try {
             String url = deepSeekConfig.getBaseUrl() + "/chat/completions";
+            log.info("【DeepSeek】开始调用API，URL: {}", url);
+            System.out.println("【DeepSeek】开始调用API，URL: " + url);
             
             // 构建请求体
             Map<String, Object> requestBody = new HashMap<>();
@@ -56,6 +59,11 @@ public class DeepSeekService {
             requestBody.put("messages", messages);
             requestBody.put("max_tokens", deepSeekConfig.getMaxTokens());
             requestBody.put("temperature", deepSeekConfig.getTemperature());
+            
+            log.info("【DeepSeek】请求参数 - 模型: {}, 消息数: {}, max_tokens: {}, temperature: {}", 
+                deepSeekConfig.getModel(), messages.size(), deepSeekConfig.getMaxTokens(), deepSeekConfig.getTemperature());
+            System.out.println("【DeepSeek】请求参数 - 模型: " + deepSeekConfig.getModel() + 
+                ", 消息数: " + messages.size() + ", max_tokens: " + deepSeekConfig.getMaxTokens());
             
             // 设置请求头
             HttpHeaders headers = new HttpHeaders();
@@ -65,6 +73,8 @@ public class DeepSeekService {
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
             
             // 发送请求
+            log.info("【DeepSeek】发送HTTP请求...");
+            System.out.println("【DeepSeek】发送HTTP请求...");
             ResponseEntity<String> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,
@@ -72,24 +82,42 @@ public class DeepSeekService {
                 String.class
             );
             
+            log.info("【DeepSeek】收到响应，状态码: {}", response.getStatusCode());
+            System.out.println("【DeepSeek】收到响应，状态码: " + response.getStatusCode());
+            
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                log.info("【DeepSeek】响应体长度: {}", response.getBody().length());
+                System.out.println("【DeepSeek】响应体长度: " + response.getBody().length());
+                
                 // 解析响应
                 JsonObject jsonResponse = gson.fromJson(response.getBody(), JsonObject.class);
                 if (jsonResponse.has("choices") && jsonResponse.getAsJsonArray("choices").size() > 0) {
                     JsonObject choice = jsonResponse.getAsJsonArray("choices").get(0).getAsJsonObject();
                     JsonObject message = choice.getAsJsonObject("message");
                     String content = message.get("content").getAsString();
-                    log.debug("DeepSeek API调用成功，返回内容长度: {}", content.length());
+                    log.info("【DeepSeek】API调用成功，返回内容长度: {}", content.length());
+                    System.out.println("【DeepSeek】API调用成功，返回内容长度: " + content.length());
                     return content;
+                } else {
+                    log.error("【DeepSeek】响应中没有choices字段或choices为空");
+                    System.out.println("【DeepSeek】错误: 响应中没有choices字段或choices为空");
+                    System.out.println("【DeepSeek】完整响应: " + response.getBody());
                 }
+            } else {
+                log.error("【DeepSeek】API调用失败，状态码: {}, 响应: {}", response.getStatusCode(), response.getBody());
+                System.out.println("【DeepSeek】错误: API调用失败");
+                System.out.println("【DeepSeek】状态码: " + response.getStatusCode());
+                System.out.println("【DeepSeek】响应内容: " + response.getBody());
             }
             
-            log.error("DeepSeek API调用失败，响应: {}", response.getBody());
             return "抱歉，AI服务暂时无法响应，请稍后重试。";
             
         } catch (Exception e) {
-            log.error("调用DeepSeek API异常: {}", e.getMessage(), e);
-            return "抱歉，AI服务调用异常，请稍后重试。";
+            log.error("【DeepSeek】调用API异常: {}", e.getMessage(), e);
+            System.out.println("【DeepSeek】异常: " + e.getMessage());
+            System.out.println("【DeepSeek】异常类型: " + e.getClass().getName());
+            e.printStackTrace();
+            return "抱歉，AI服务调用异常，请稍后重试。错误信息: " + e.getMessage();
         }
     }
     

@@ -1,6 +1,11 @@
 package com.aicustomer.service.impl;
 
 import com.aicustomer.entity.AiAnalysis;
+import com.aicustomer.entity.CommunicationRecord;
+import com.aicustomer.entity.Customer;
+import com.aicustomer.mapper.CommunicationMapper;
+import com.aicustomer.mapper.CustomerMapper;
+import com.aicustomer.mapper.CustomerProfileMapper;
 import com.aicustomer.service.AiAnalysisService;
 import com.aicustomer.service.DeepSeekService;
 import lombok.RequiredArgsConstructor;
@@ -8,10 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * AI分析服务实现类
@@ -27,6 +30,16 @@ import java.util.Map;
 public class AiAnalysisServiceImpl implements AiAnalysisService {
     
     private final DeepSeekService deepSeekService;
+    private final CommunicationMapper communicationMapper;
+    private final CustomerMapper customerMapper;
+    private final CustomerProfileMapper customerProfileMapper;
+
+    // 业务关键词列表
+    private static final List<String> BUSINESS_KEYWORDS = Arrays.asList(
+        "合作", "需求", "需要", "想要", "考虑", "计划", "项目", "方案", "服务",
+        "产品", "技术", "咨询", "支持", "帮助", "申请", "办理", "购买", "采购",
+        "扩大", "发展", "扩展", "升级", "改进", "优化", "定制", "个性化"
+    );
     
     @Override
     public Map<String, Object> getAnalysisStatistics(Long customerId) {
@@ -283,5 +296,309 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         result.put("pages", 10);
         
         return result;
+    }
+
+    @Override
+    public List<Map<String, Object>> getBusinessOpportunities() {
+        List<Map<String, Object>> opportunities = new ArrayList<>();
+        
+        try {
+            // 查询最近30天的沟通记录
+            List<CommunicationRecord> recentCommunications = communicationMapper.selectRecentCommunications(30);
+            
+            // 按客户分组
+            Map<Long, List<CommunicationRecord>> customerCommunications = recentCommunications.stream()
+                .collect(Collectors.groupingBy(CommunicationRecord::getCustomerId));
+            
+            // 分析每个客户的沟通记录，识别业务机会
+            for (Map.Entry<Long, List<CommunicationRecord>> entry : customerCommunications.entrySet()) {
+                Long customerId = entry.getKey();
+                List<CommunicationRecord> records = entry.getValue();
+                
+                // 分析沟通内容，提取业务关键词
+                Set<String> keywords = new HashSet<>();
+                StringBuilder allContent = new StringBuilder();
+                
+                for (CommunicationRecord record : records) {
+                    String content = record.getContent();
+                    if (content != null && !content.trim().isEmpty()) {
+                        allContent.append(content).append(" ");
+                        
+                        // 提取关键词
+                        for (String keyword : BUSINESS_KEYWORDS) {
+                            if (content.contains(keyword)) {
+                                keywords.add(keyword);
+                            }
+                        }
+                    }
+                    
+                    // 也检查summary和keywords字段
+                    if (record.getSummary() != null) {
+                        allContent.append(record.getSummary()).append(" ");
+                    }
+                    if (record.getKeywords() != null && !record.getKeywords().trim().isEmpty()) {
+                        String[] existingKeywords = record.getKeywords().split(",");
+                        for (String kw : existingKeywords) {
+                            String trimmed = kw.trim();
+                            if (!trimmed.isEmpty()) {
+                                keywords.add(trimmed);
+                            }
+                        }
+                    }
+                }
+                
+                // 如果发现业务关键词，创建业务机会
+                if (!keywords.isEmpty() && records.size() > 0) {
+                    CommunicationRecord latestRecord = records.get(0);
+                    Customer customer = customerMapper.selectById(customerId);
+                    
+                    if (customer != null) {
+                        Map<String, Object> opportunity = new HashMap<>();
+                        opportunity.put("id", System.currentTimeMillis() + customerId); // 临时ID
+                        opportunity.put("customerId", customerId);
+                        opportunity.put("customerName", customer.getCustomerName());
+                        opportunity.put("description", generateOpportunityDescription(keywords, records.size()));
+                        opportunity.put("keywords", new ArrayList<>(keywords));
+                        opportunity.put("priority", determinePriority(keywords, records.size()));
+                        opportunity.put("detectedTime", latestRecord.getCommunicationTime());
+                        opportunity.put("communicationCount", records.size());
+                        
+                        opportunities.add(opportunity);
+                    }
+                }
+            }
+            
+            // 按优先级和检测时间排序
+            opportunities.sort((a, b) -> {
+                String priorityA = (String) a.get("priority");
+                String priorityB = (String) b.get("priority");
+                int priorityCompare = getPriorityValue(priorityB).compareTo(getPriorityValue(priorityA));
+                if (priorityCompare != 0) return priorityCompare;
+                
+                LocalDateTime timeA = (LocalDateTime) a.get("detectedTime");
+                LocalDateTime timeB = (LocalDateTime) b.get("detectedTime");
+                if (timeA != null && timeB != null) {
+                    return timeB.compareTo(timeA);
+                }
+                return 0;
+            });
+            
+            log.info("识别到 {} 个业务机会（基于 {} 条沟通记录）", opportunities.size(), recentCommunications.size());
+            
+        } catch (Exception e) {
+            log.error("获取业务机会失败", e);
+            // 返回空列表而不是抛出异常
+        }
+        
+        return opportunities;
+    }
+
+    @Override
+    public Map<String, Object> getCustomerReminders() {
+        Map<String, Object> reminders = new HashMap<>();
+        
+        try {
+            // 查询未来7天内的生日
+            List<Map<String, Object>> birthdays = customerProfileMapper.findUpcomingBirthdays(7);
+            // 确保daysUntil是Integer类型
+            for (Map<String, Object> birthday : birthdays) {
+                Object daysUntil = birthday.get("daysUntil");
+                if (daysUntil != null) {
+                    if (daysUntil instanceof Long) {
+                        birthday.put("daysUntil", ((Long) daysUntil).intValue());
+                    } else if (daysUntil instanceof Number) {
+                        birthday.put("daysUntil", ((Number) daysUntil).intValue());
+                    }
+                }
+            }
+            reminders.put("birthdays", birthdays);
+            
+            // 查询超过30天未沟通的客户
+            List<Map<String, Object>> noContacts = communicationMapper.selectCustomersNoContact(30);
+            // 确保daysSinceLastContact是Integer类型
+            for (Map<String, Object> noContact : noContacts) {
+                Object daysSince = noContact.get("daysSinceLastContact");
+                if (daysSince != null) {
+                    if (daysSince instanceof Long) {
+                        noContact.put("daysSinceLastContact", ((Long) daysSince).intValue());
+                    } else if (daysSince instanceof Number) {
+                        noContact.put("daysSinceLastContact", ((Number) daysSince).intValue());
+                    }
+                }
+            }
+            reminders.put("noContacts", noContacts);
+            
+            // 统计重要客户数量
+            Customer queryCustomer = new Customer();
+            queryCustomer.setCustomerLevel(2); // VIP
+            Long vipCount = customerMapper.selectCount(queryCustomer);
+            queryCustomer.setCustomerLevel(3); // 钻石
+            Long diamondCount = customerMapper.selectCount(queryCustomer);
+            reminders.put("importantCustomerCount", (vipCount != null ? vipCount : 0) + (diamondCount != null ? diamondCount : 0));
+            
+            log.info("客户提醒统计 - 生日提醒: {}, 待跟进客户: {}, 重要客户: {}", 
+                birthdays.size(), noContacts.size(), reminders.get("importantCustomerCount"));
+            
+        } catch (Exception e) {
+            log.error("获取客户提醒失败", e);
+            reminders.put("birthdays", new ArrayList<>());
+            reminders.put("noContacts", new ArrayList<>());
+            reminders.put("importantCustomerCount", 0);
+        }
+        
+        return reminders;
+    }
+
+    @Override
+    public Map<String, Object> analyzeCooperationPotential(Long customerId) {
+        Map<String, Object> analysis = new HashMap<>();
+        
+        try {
+            Customer customer = customerMapper.selectById(customerId);
+            if (customer == null) {
+                analysis.put("score", 0);
+                analysis.put("description", "客户不存在");
+                return analysis;
+            }
+            
+            int totalScore = 0;
+            List<Map<String, Object>> dimensions = new ArrayList<>();
+            
+            // 维度1: 客户等级 (0-30分)
+            int levelScore = 0;
+            if (customer.getCustomerLevel() != null) {
+                levelScore = customer.getCustomerLevel() * 10; // 1->10, 2->20, 3->30
+            }
+            totalScore += levelScore;
+            dimensions.add(createDimension("客户等级", levelScore, "客户等级越高，合作潜力越大"));
+            
+            // 维度2: 沟通频率 (0-25分)
+            List<CommunicationRecord> recentCommunications = communicationMapper.selectRecentByCustomerId(customerId, 30);
+            int communicationScore = Math.min(recentCommunications.size() * 5, 25);
+            totalScore += communicationScore;
+            dimensions.add(createDimension("沟通频率", communicationScore, "最近30天沟通" + recentCommunications.size() + "次"));
+            
+            // 维度3: 客户状态 (0-20分)
+            int statusScore = customer.getStatus() != null && customer.getStatus() == 1 ? 20 : 0;
+            totalScore += statusScore;
+            dimensions.add(createDimension("客户状态", statusScore, customer.getStatus() == 1 ? "正常" : "非正常"));
+            
+            // 维度4: 客户类型 (0-15分)
+            int typeScore = 0;
+            if (customer.getCustomerType() != null) {
+                // 企业客户通常合作潜力更大
+                typeScore = customer.getCustomerType() == 2 ? 15 : 10;
+            }
+            totalScore += typeScore;
+            dimensions.add(createDimension("客户类型", typeScore, customer.getCustomerType() == 2 ? "企业客户" : "个人客户"));
+            
+            // 维度5: 信息完整度 (0-10分)
+            int completenessScore = calculateCompletenessScore(customer);
+            totalScore += completenessScore;
+            dimensions.add(createDimension("信息完整度", completenessScore, "客户信息越完整，合作可能性越高"));
+            
+            analysis.put("score", totalScore);
+            analysis.put("dimensions", dimensions);
+            analysis.put("description", generateCooperationDescription(totalScore));
+            analysis.put("suggestions", generateCooperationSuggestions(totalScore, customer, recentCommunications.size()));
+            
+            log.info("客户 {} 合作潜力分析完成，评分: {}", customerId, totalScore);
+            
+        } catch (Exception e) {
+            log.error("分析合作潜力失败，客户ID: {}", customerId, e);
+            analysis.put("score", 0);
+            analysis.put("description", "分析失败: " + e.getMessage());
+        }
+        
+        return analysis;
+    }
+
+    // 辅助方法
+    private String generateOpportunityDescription(Set<String> keywords, int communicationCount) {
+        StringBuilder desc = new StringBuilder("客户在最近沟通中提到了");
+        List<String> keywordList = new ArrayList<>(keywords);
+        if (keywordList.size() > 3) {
+            desc.append(String.join("、", keywordList.subList(0, 3))).append("等");
+        } else {
+            desc.append(String.join("、", keywordList));
+        }
+        desc.append("相关需求，最近").append(communicationCount).append("次沟通显示有合作意向。");
+        return desc.toString();
+    }
+
+    private String determinePriority(Set<String> keywords, int communicationCount) {
+        // 高优先级关键词
+        Set<String> highPriorityKeywords = new HashSet<>(Arrays.asList("合作", "购买", "采购", "项目", "方案"));
+        boolean hasHighPriorityKeyword = keywords.stream().anyMatch(highPriorityKeywords::contains);
+        
+        if (hasHighPriorityKeyword && communicationCount >= 3) {
+            return "high";
+        } else if (communicationCount >= 2 || keywords.size() >= 3) {
+            return "medium";
+        } else {
+            return "low";
+        }
+    }
+
+    private Integer getPriorityValue(String priority) {
+        switch (priority) {
+            case "high": return 3;
+            case "medium": return 2;
+            case "low": return 1;
+            default: return 0;
+        }
+    }
+
+    private Map<String, Object> createDimension(String name, int score, String description) {
+        Map<String, Object> dim = new HashMap<>();
+        dim.put("name", name);
+        dim.put("score", score);
+        dim.put("description", description);
+        return dim;
+    }
+
+    private int calculateCompletenessScore(Customer customer) {
+        int score = 0;
+        if (customer.getPhone() != null && !customer.getPhone().trim().isEmpty()) score += 2;
+        if (customer.getEmail() != null && !customer.getEmail().trim().isEmpty()) score += 2;
+        if (customer.getAddress() != null && !customer.getAddress().trim().isEmpty()) score += 2;
+        if (customer.getContactPerson() != null && !customer.getContactPerson().trim().isEmpty()) score += 2;
+        if (customer.getRemark() != null && !customer.getRemark().trim().isEmpty()) score += 2;
+        return score;
+    }
+
+    private String generateCooperationDescription(int score) {
+        if (score >= 80) {
+            return "该客户具有很高的合作潜力，建议重点跟进，提供个性化服务方案。";
+        } else if (score >= 60) {
+            return "该客户具有较好的合作潜力，建议加强沟通，了解具体需求。";
+        } else if (score >= 40) {
+            return "该客户有一定的合作潜力，建议定期维护关系，寻找合作机会。";
+        } else {
+            return "该客户合作潜力较低，建议保持基础联系，等待合适时机。";
+        }
+    }
+
+    private List<String> generateCooperationSuggestions(int score, Customer customer, int communicationCount) {
+        List<String> suggestions = new ArrayList<>();
+        
+        if (score >= 80) {
+            suggestions.add("建议主动联系，提供定制化服务方案");
+            suggestions.add("安排专人跟进，建立长期合作关系");
+            if (communicationCount < 5) {
+                suggestions.add("增加沟通频率，深入了解客户需求");
+            }
+        } else if (score >= 60) {
+            suggestions.add("定期沟通，了解客户最新需求");
+            suggestions.add("提供相关产品和服务信息");
+            if (customer.getCustomerLevel() == null || customer.getCustomerLevel() == 1) {
+                suggestions.add("考虑升级客户等级，提供VIP服务");
+            }
+        } else {
+            suggestions.add("保持基础联系，定期发送行业资讯");
+            suggestions.add("关注客户动态，寻找合作机会");
+        }
+        
+        return suggestions;
     }
 }

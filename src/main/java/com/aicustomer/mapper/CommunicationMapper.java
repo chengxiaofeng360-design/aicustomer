@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 沟通记录Mapper接口
@@ -61,6 +62,21 @@ public interface CommunicationMapper {
      * 标记重要信息
      */
     int markAsImportant(@Param("id") Long id, @Param("important") boolean important);
+
+    /**
+     * 查询最近N天的沟通记录（用于业务机会识别）
+     */
+    List<CommunicationRecord> selectRecentCommunications(@Param("days") int days);
+
+    /**
+     * 根据客户ID查询最近N天的沟通记录
+     */
+    List<CommunicationRecord> selectRecentByCustomerId(@Param("customerId") Long customerId, @Param("days") int days);
+
+    /**
+     * 查询长时间未沟通的客户（超过N天）
+     */
+    List<Map<String, Object>> selectCustomersNoContact(@Param("days") int days);
 }
 
 

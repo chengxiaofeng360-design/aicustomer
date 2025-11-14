@@ -57,4 +57,19 @@ public interface AiAnalysisService {
      * 获取分析历史
      */
     Map<String, Object> getAnalysisHistory(int pageNum, int pageSize);
+
+    /**
+     * 获取业务机会列表
+     */
+    List<Map<String, Object>> getBusinessOpportunities();
+
+    /**
+     * 获取客户维护提醒（生日、长时间未沟通）
+     */
+    Map<String, Object> getCustomerReminders();
+
+    /**
+     * 分析客户合作潜力
+     */
+    Map<String, Object> analyzeCooperationPotential(Long customerId);
 }

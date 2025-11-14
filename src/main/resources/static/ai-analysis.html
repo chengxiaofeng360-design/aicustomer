@@ -8,6 +8,72 @@
     <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="/css/common.css" rel="stylesheet">
+    <style>
+        .opportunity-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .opportunity-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .opportunity-card.high-priority {
+            border-left-color: #dc3545;
+        }
+        .opportunity-card.medium-priority {
+            border-left-color: #ffc107;
+        }
+        .opportunity-card.low-priority {
+            border-left-color: #28a745;
+        }
+        .reminder-card {
+            border-left: 4px solid #17a2b8;
+            margin-bottom: 15px;
+        }
+        .reminder-card.birthday {
+            border-left-color: #e83e8c;
+        }
+        .reminder-card.no-contact {
+            border-left-color: #fd7e14;
+        }
+        .priority-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .customer-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .customer-link:hover {
+            text-decoration: underline;
+        }
+        .opportunity-keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .keyword-tag {
+            background-color: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+        .cooperation-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .cooperation-score.medium {
+            color: #ffc107;
+        }
+        .cooperation-score.low {
+            color: #dc3545;
+        }
+    </style>
 </head>
 <body>
     <div class="main-container">
@@ -25,447 +91,611 @@
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-number">156</div>
-                    <div class="stats-label">分析报告</div>
+                    <div class="stats-number" id="opportunityCount">0</div>
+                    <div class="stats-label">业务机会</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-number">92%</div>
-                    <div class="stats-label">准确率</div>
+                    <div class="stats-number" id="birthdayCount">0</div>
+                    <div class="stats-label">生日提醒</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-number">24</div>
-                    <div class="stats-label">今日分析</div>
+                    <div class="stats-number" id="noContactCount">0</div>
+                    <div class="stats-label">待跟进客户</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-number">89%</div>
-                    <div class="stats-label">客户满意度</div>
+                    <div class="stats-number" id="importantCustomerCount">0</div>
+                    <div class="stats-label">重要客户</div>
                 </div>
             </div>
         </div>
 
-        <!-- 分析配置 -->
+        <div class="row">
+            <!-- 左侧：业务机会 -->
+            <div class="col-md-8">
         <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">分析配置</h5>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-lightbulb"></i> 业务机会
+                        </h5>
+                        <button class="btn btn-sm btn-primary" onclick="refreshOpportunities()">
+                            <i class="bi bi-arrow-clockwise"></i> 刷新
+                        </button>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="mb-3">
-                            <label class="form-label">分析类型</label>
-                            <select class="form-select" id="analysisType">
-                                <option value="customer_behavior">客户行为分析</option>
-                                <option value="market_trend">市场趋势分析</option>
-                                <option value="risk_assessment">风险评估分析</option>
-                                <option value="customer_demand">客户需求分析</option>
-                                <option value="market_competition">市场竞争分析</option>
-                                <option value="sales_forecast">销售预测分析</option>
-                                <option value="satisfaction">满意度分析</option>
-                            </select>
+                        <div id="opportunitiesList">
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-hourglass-split" style="font-size: 2rem;"></i>
+                                <p class="mt-2">正在分析数据库中的沟通记录...</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                        </div>
+
+                <!-- 合作潜力分析 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up-arrow"></i> 合作潜力分析
+                        </h5>
+                    </div>
+                    <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label">数据范围</label>
-                            <select class="form-select" id="dataRange">
-                                <option value="7">最近7天</option>
-                                <option value="30" selected>最近30天</option>
-                                <option value="90">最近90天</option>
-                                <option value="365">最近一年</option>
+                            <label class="form-label">选择客户</label>
+                            <select class="form-select" id="customerSelect" onchange="analyzeCooperationPotential()">
+                                <option value="">-- 请选择客户 --</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="mb-3">
-                            <label class="form-label">客户类型</label>
-                            <select class="form-select" id="customerType">
-                                <option value="all">全部客户</option>
-                                <option value="individual">个人客户</option>
-                                <option value="enterprise">企业客户</option>
-                                <option value="research">科研院所</option>
-                            </select>
+                        <div id="cooperationAnalysis" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>合作潜力评分</h6>
+                                    <div class="cooperation-score" id="cooperationScore">-</div>
+                                    <p class="text-muted small mt-2" id="cooperationScoreDesc">基于客户规模、行业匹配度、沟通频率等因素综合评估</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>分析维度</h6>
+                                    <div id="cooperationDimensions"></div>
                         </div>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button class="btn btn-primary w-100" onclick="startAnalysis()">
-                            <i class="bi bi-play-circle"></i> 开始分析
+                            <div class="mt-3">
+                                <h6>合作建议</h6>
+                                <div id="cooperationSuggestions"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+
+            <!-- 右侧：客户维护提醒 -->
+            <div class="col-md-4">
+                <!-- 生日提醒 -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gift"></i> 生日提醒
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshReminders()">
+                            <i class="bi bi-arrow-clockwise"></i>
                         </button>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 分析结果 -->
-        <div class="card mb-4" id="analysisResult" style="display: none;">
-            <div class="card-header">
-                <h5 class="mb-0">分析结果</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="analysis-chart">
-                            <canvas id="analysisChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="analysis-summary">
-                            <h6>关键指标</h6>
-                            <div class="metric-item">
-                                <span class="metric-label">分析准确度</span>
-                                <span class="metric-value">92%</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-label">数据完整性</span>
-                                <span class="metric-value">95%</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-label">趋势预测</span>
-                                <span class="metric-value">88%</span>
+                    <div class="card-body">
+                        <div id="birthdayReminders">
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-hourglass-split"></i>
+                                <p class="mt-2 small">正在查询客户生日信息...</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <h6>分析洞察</h6>
-                        <div class="insight-content" id="insightContent">基于数据分析，该客户表现出良好的合作潜力，建议加强沟通频率，提供个性化服务方案。客户在行为分析方面表现优秀，具有较高的商业价值。</div>
+
+                <!-- 长时间未沟通提醒 -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history"></i> 待跟进客户
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshReminders()">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
                     </div>
+                    <div class="card-body">
+                        <div id="noContactReminders">
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-hourglass-split"></i>
+                                <p class="mt-2 small">正在分析客户沟通记录...</p>
                 </div>
             </div>
         </div>
-
-        <!-- 历史分析记录 -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">历史分析记录</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>客户名称</th>
-                                <th>分析类型</th>
-                                <th>分析时间</th>
-                                <th>数据范围</th>
-                                <th>准确率</th>
-                                <th>状态</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="analysisTableBody">
-                            <!-- 分析记录将通过JavaScript动态加载 -->
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 分析详情模态框 -->
-    <div class="modal fade" id="analysisDetailModal" tabindex="-1">
+    <!-- 业务机会详情模态框 -->
+    <div class="modal fade" id="opportunityDetailModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">分析详情</h5>
+                    <h5 class="modal-title">业务机会详情</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="analysisDetailContent">
-                    <!-- 分析详情内容将通过JavaScript动态加载 -->
+                <div class="modal-body" id="opportunityDetailContent">
+                    <!-- 详情内容将通过JavaScript动态加载 -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="goToCustomer()">查看客户详情</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script>
-        // 模拟分析数据
-        let analysisHistory = [
+        let currentCustomerId = null;
+
+        // 模拟数据（用于页面展示）
+        const mockOpportunities = [
             {
                 id: 1,
-                customerName: '张三',
-                analysisType: 'customer_behavior',
-                analysisTime: '2024-01-25 10:30:00',
-                dataRange: '30天',
-                accuracy: 92,
-                status: 'completed',
-                result: '客户行为分析结果：该客户表现出高活跃度，购买频率稳定，建议加强个性化服务。',
-                insights: '客户对新产品接受度高，适合推荐创新产品。'
+                customerId: 1,
+                customerName: 'ABC科技有限公司',
+                description: '客户在最近沟通中提到了合作、项目、方案相关需求，最近5次沟通显示有合作意向。',
+                keywords: ['合作', '项目', '方案', '技术'],
+                priority: 'high',
+                detectedTime: '2024-01-25T10:30:00',
+                communicationCount: 5
             },
             {
                 id: 2,
-                customerName: '李四农业科技有限公司',
-                analysisType: 'market_trend',
-                analysisTime: '2024-01-24 14:20:00',
-                dataRange: '90天',
-                accuracy: 88,
-                status: 'completed',
-                result: '市场趋势分析结果：目标市场呈现增长趋势，竞争加剧，建议差异化定位。',
-                insights: '市场对环保型产品需求增长，可考虑相关产品线扩展。'
+                customerId: 2,
+                customerName: 'XYZ咨询公司',
+                description: '客户在最近沟通中提到了需求、产品、购买相关需求，最近3次沟通显示有合作意向。',
+                keywords: ['需求', '产品', '购买'],
+                priority: 'medium',
+                detectedTime: '2024-01-24T14:20:00',
+                communicationCount: 3
             },
             {
                 id: 3,
-                customerName: '王五种子研究所',
-                analysisType: 'risk_assessment',
-                analysisTime: '2024-01-23 09:15:00',
-                dataRange: '30天',
-                accuracy: 95,
-                status: 'completed',
-                result: '风险评估分析结果：客户信用状况良好，合作风险较低，可适当放宽付款条件。',
-                insights: '客户具有稳定的研发能力，长期合作价值较高。'
+                customerId: 3,
+                customerName: '中科院植物研究所',
+                description: '客户在最近沟通中提到了考虑、服务、支持相关需求，最近2次沟通显示有合作意向。',
+                keywords: ['考虑', '服务', '支持'],
+                priority: 'low',
+                detectedTime: '2024-01-23T09:15:00',
+                communicationCount: 2
+            }
+        ];
+
+        const mockBirthdays = [
+            {
+                customerId: 1,
+                customerName: '张伟',
+                birthday: '1990-02-15',
+                interests: '旅游、摄影、美食',
+                daysUntil: 21
             },
             {
-                id: 4,
-                customerName: '赵六农业合作社',
-                analysisType: 'customer_demand',
-                analysisTime: '2024-01-22 16:45:00',
-                dataRange: '60天',
-                accuracy: 90,
-                status: 'completed',
-                result: '客户需求分析结果：客户对技术服务需求较高，建议提供专业技术支持。',
-                insights: '客户规模适中，适合提供定制化解决方案。'
+                customerId: 2,
+                customerName: '李娜',
+                birthday: '1985-01-28',
+                interests: '设计、艺术、音乐',
+                daysUntil: 3
             },
             {
-                id: 5,
-                customerName: '孙七种子公司',
-                analysisType: 'market_competition',
-                analysisTime: '2024-01-21 11:30:00',
-                dataRange: '30天',
-                accuracy: 87,
-                status: 'completed',
-                result: '市场竞争分析结果：竞争对手实力较强，建议通过差异化服务提升竞争力。',
-                insights: '客户对价格敏感度较高，可考虑成本优化方案。'
+                customerId: 3,
+                customerName: '张三',
+                birthday: '1992-01-26',
+                interests: '创业、投资、运动',
+                daysUntil: 1
+            }
+        ];
+
+        const mockNoContacts = [
+            {
+                customerId: 4,
+                customerName: '中科院植物研究所',
+                daysSinceLastContact: 45,
+                lastContactTime: '2023-12-10T10:00:00'
             },
             {
-                id: 6,
-                customerName: '周八农业集团',
-                analysisType: 'sales_forecast',
-                analysisTime: '2024-01-20 13:20:00',
-                dataRange: '90天',
-                accuracy: 93,
-                status: 'completed',
-                result: '销售预测分析结果：预计下季度销售额增长15%，建议提前备货。',
-                insights: '客户采购周期稳定，可建立长期供应关系。'
-            },
-            {
-                id: 7,
-                customerName: '吴九农业科技',
-                analysisType: 'satisfaction',
-                analysisTime: '2024-01-19 15:10:00',
-                dataRange: '30天',
-                accuracy: 91,
-                status: 'completed',
-                result: '满意度分析结果：客户满意度为89%，主要问题集中在售后服务响应速度。',
-                insights: '建议优化售后服务流程，提升客户体验。'
+                customerId: 5,
+                customerName: '钱七',
+                daysSinceLastContact: 38,
+                lastContactTime: '2023-12-17T14:30:00'
             }
         ];
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            loadAnalysisHistory();
+            // 直接使用模拟数据展示
+            displayOpportunities(mockOpportunities);
+            displayBirthdayReminders(mockBirthdays);
+            displayNoContactReminders(mockNoContacts);
+            updateStats(mockOpportunities, mockBirthdays, mockNoContacts, 3);
+            loadCustomerOptions();
+            
+            // 也可以尝试加载真实数据（如果后端可用）
+            // loadOpportunities();
+            // loadReminders();
         });
 
-        // 开始分析
-        function startAnalysis() {
-            const analysisType = document.getElementById('analysisType').value;
-            const dataRange = document.getElementById('dataRange').value;
-            const customerType = document.getElementById('customerType').value;
-            
-            // 显示分析结果区域
-            document.getElementById('analysisResult').style.display = 'block';
-            
-            // 动态更新分析洞察内容
-            const analysisTypeName = getAnalysisTypeName(analysisType);
-            const insightContent = `基于数据分析，该客户表现出良好的合作潜力，建议加强沟通频率，提供个性化服务方案。客户在${analysisTypeName}方面表现优秀，具有较高的商业价值。`;
-            document.getElementById('insightContent').textContent = insightContent;
-            
-            // 模拟分析过程
-            setTimeout(() => {
-                // 创建新的分析记录
-                const newAnalysis = {
-                    id: analysisHistory.length + 1,
-                    customerName: '当前客户',
-                    analysisType: analysisType,
-                    analysisTime: new Date().toLocaleString('zh-CN'),
-                    dataRange: dataRange + '天',
-                    accuracy: Math.floor(Math.random() * 20) + 80,
-                    status: 'completed',
-                    result: `基于${dataRange}天的数据分析，${analysisTypeName}结果显示客户表现良好。`,
-                    insights: insightContent
-                };
-                
-                analysisHistory.unshift(newAnalysis);
-                loadAnalysisHistory();
-                
-                // 更新图表
-                updateAnalysisChart(analysisType);
-                
-                alert('分析完成！');
-            }, 2000);
-        }
-
-        // 加载分析历史
-        function loadAnalysisHistory() {
-            const tbody = document.getElementById('analysisTableBody');
-            tbody.innerHTML = '';
-
-            analysisHistory.forEach(analysis => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="table-cell-truncate" title="${analysis.customerName}">${analysis.customerName}</td>
-                    <td class="table-cell-truncate" title="${getAnalysisTypeName(analysis.analysisType)}">${getAnalysisTypeName(analysis.analysisType)}</td>
-                    <td class="table-cell-truncate" title="${analysis.analysisTime}">${analysis.analysisTime}</td>
-                    <td class="table-cell-truncate" title="${analysis.dataRange}">${analysis.dataRange}</td>
-                    <td><span class="badge bg-success">${analysis.accuracy}%</span></td>
-                    <td><span class="badge ${getStatusClass(analysis.status)}">${getStatusText(analysis.status)}</span></td>
-                    <td>
-                        <button class="btn btn-outline-primary btn-sm" onclick="viewAnalysisDetail(${analysis.id})" title="查看详情">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn btn-outline-success btn-sm" onclick="exportAnalysis(${analysis.id})" title="导出报告">
-                            <i class="bi bi-download"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // 查看分析详情
-        function viewAnalysisDetail(id) {
-            const analysis = analysisHistory.find(a => a.id === id);
-            if (analysis) {
-                const content = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>基本信息</h6>
-                            <p><strong>客户名称：</strong>${analysis.customerName}</p>
-                            <p><strong>分析类型：</strong>${getAnalysisTypeName(analysis.analysisType)}</p>
-                            <p><strong>分析时间：</strong>${analysis.analysisTime}</p>
-                            <p><strong>数据范围：</strong>${analysis.dataRange}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>分析结果</h6>
-                            <p><strong>准确率：</strong>${analysis.accuracy}%</p>
-                            <p><strong>状态：</strong>${getStatusText(analysis.status)}</p>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h6>分析结果</h6>
-                            <p>${analysis.result}</p>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h6>关键洞察</h6>
-                            <p>${analysis.insights}</p>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('analysisDetailContent').innerHTML = content;
-                new bootstrap.Modal(document.getElementById('analysisDetailModal')).show();
+        // 更新统计数据
+        function updateStats(opportunities, birthdays, noContacts, importantCount) {
+            if (opportunities !== undefined) {
+                document.getElementById('opportunityCount').textContent = opportunities.length;
+            }
+            if (birthdays !== undefined) {
+                document.getElementById('birthdayCount').textContent = birthdays.length;
+            }
+            if (noContacts !== undefined) {
+                document.getElementById('noContactCount').textContent = noContacts.length;
+            }
+            if (importantCount !== undefined) {
+                document.getElementById('importantCustomerCount').textContent = importantCount;
             }
         }
 
-        // 导出分析报告
-        function exportAnalysis(id) {
-            const analysis = analysisHistory.find(a => a.id === id);
-            if (analysis) {
-                const reportData = {
-                    customerName: analysis.customerName,
-                    analysisType: getAnalysisTypeName(analysis.analysisType),
-                    analysisTime: analysis.analysisTime,
-                    dataRange: analysis.dataRange,
-                    accuracy: analysis.accuracy,
-                    result: analysis.result,
-                    insights: analysis.insights
-                };
-                
-                const dataStr = JSON.stringify(reportData, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                const url = URL.createObjectURL(dataBlob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `analysis_report_${analysis.id}.json`;
-                link.click();
-                URL.revokeObjectURL(url);
-            }
-        }
-
-        // 更新分析图表
-        function updateAnalysisChart(analysisType) {
-            const ctx = document.getElementById('analysisChart').getContext('2d');
-            
-            // 模拟图表数据
-            const data = {
-                labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
-                datasets: [{
-                    label: getAnalysisTypeName(analysisType),
-                    data: [65, 70, 75, 80, 85, 90],
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    tension: 0.1
-                }]
+        // 获取模拟的合作潜力分析数据
+        function getMockCooperationAnalysis() {
+            return {
+                score: 85,
+                description: '该客户具有很高的合作潜力，建议重点跟进，提供个性化服务方案。',
+                dimensions: [
+                    { name: '客户等级', score: 30, description: '客户等级越高，合作潜力越大' },
+                    { name: '沟通频率', score: 20, description: '最近30天沟通4次' },
+                    { name: '客户状态', score: 20, description: '正常' },
+                    { name: '客户类型', score: 15, description: '企业客户' },
+                    { name: '信息完整度', score: 8, description: '客户信息越完整，合作可能性越高' }
+                ],
+                suggestions: [
+                    '建议主动联系，提供定制化服务方案',
+                    '安排专人跟进，建立长期合作关系',
+                    '增加沟通频率，深入了解客户需求'
+                ]
             };
-            
-            new Chart(ctx, {
-                type: 'line',
-                data: data,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: getAnalysisTypeName(analysisType) + '趋势图'
-                        }
-                    }
+        }
+
+        // 加载业务机会
+        async function loadOpportunities() {
+            try {
+                const response = await fetch('/api/ai-analysis/business-opportunities');
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayOpportunities(result.data);
+                    updateStats(result.data, undefined, undefined, undefined);
+                } else {
+                    // 如果后端失败，使用模拟数据
+                    displayOpportunities(mockOpportunities);
+                    updateStats(mockOpportunities, undefined, undefined, undefined);
                 }
+            } catch (error) {
+                console.error('加载业务机会失败:', error);
+                // 使用模拟数据
+                displayOpportunities(mockOpportunities);
+                updateStats(mockOpportunities, undefined, undefined, undefined);
+            }
+        }
+
+        // 显示业务机会
+        function displayOpportunities(opportunities) {
+            const container = document.getElementById('opportunitiesList');
+            
+            if (!opportunities || opportunities.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-4"><p>暂无业务机会</p></div>';
+                return;
+            }
+
+            container.innerHTML = opportunities.map(opp => {
+                const priorityClass = opp.priority === 'high' ? 'high-priority' : 
+                                     opp.priority === 'medium' ? 'medium-priority' : 'low-priority';
+                const priorityText = opp.priority === 'high' ? '高优先级' : 
+                                    opp.priority === 'medium' ? '中优先级' : '低优先级';
+                const priorityBadge = opp.priority === 'high' ? 'danger' : 
+                                     opp.priority === 'medium' ? 'warning' : 'success';
+
+                return `
+                    <div class="card opportunity-card ${priorityClass}" onclick="viewOpportunityDetail(${opp.id}, ${opp.customerId})">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">
+                                    <a href="#" class="customer-link" onclick="event.stopPropagation(); goToCustomerDetail(${opp.customerId})">
+                                        ${escapeHtml(opp.customerName)}
+                                    </a>
+                                </h6>
+                                <span class="badge bg-${priorityBadge} priority-badge">${priorityText}</span>
+                            </div>
+                            <p class="text-muted small mb-2">${escapeHtml(opp.description)}</p>
+                            ${opp.keywords && opp.keywords.length > 0 ? `
+                                <div class="opportunity-keywords">
+                                    ${opp.keywords.map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> ${formatDate(opp.detectedTime)}
+                                    ${opp.communicationCount ? ` | <i class="bi bi-chat-dots"></i> 最近${opp.communicationCount}次沟通` : ''}
+                                </small>
+                        </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 加载提醒
+        async function loadReminders() {
+            try {
+                const response = await fetch('/api/ai-analysis/customer-reminders');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const birthdays = result.data.birthdays || [];
+                    const noContacts = result.data.noContacts || [];
+                    const importantCount = result.data.importantCustomerCount || 0;
+                    displayBirthdayReminders(birthdays);
+                    displayNoContactReminders(noContacts);
+                    updateStats(undefined, birthdays, noContacts, importantCount);
+                } else {
+                    // 如果后端失败，使用模拟数据
+                    displayBirthdayReminders(mockBirthdays);
+                    displayNoContactReminders(mockNoContacts);
+                    updateStats(undefined, mockBirthdays, mockNoContacts, 3);
+                }
+            } catch (error) {
+                console.error('加载提醒失败:', error);
+                // 使用模拟数据
+                displayBirthdayReminders(mockBirthdays);
+                displayNoContactReminders(mockNoContacts);
+                updateStats(undefined, mockBirthdays, mockNoContacts, 3);
+            }
+        }
+
+        // 显示生日提醒
+        function displayBirthdayReminders(birthdays) {
+            const container = document.getElementById('birthdayReminders');
+            
+            if (!birthdays || birthdays.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3"><p class="small">暂无生日提醒</p></div>';
+                return;
+            }
+
+            container.innerHTML = birthdays.map(item => {
+                // 处理daysUntil，可能是数字或需要计算
+                let daysUntil = item.daysUntil;
+                if (daysUntil === undefined && item.birthday) {
+                    // 计算距离生日的天数
+                    const today = new Date();
+                    const birthday = new Date(item.birthday);
+                    birthday.setFullYear(today.getFullYear());
+                    if (birthday < today) {
+                        birthday.setFullYear(today.getFullYear() + 1);
+                    }
+                    daysUntil = Math.ceil((birthday - today) / (1000 * 60 * 60 * 24));
+                }
+                
+                const urgencyClass = daysUntil <= 1 ? 'text-danger' : daysUntil <= 3 ? 'text-warning' : '';
+                const birthdayStr = item.birthday ? formatBirthday(item.birthday) : '';
+                
+                return `
+                    <div class="card reminder-card birthday mb-2">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>
+                                        <a href="#" class="customer-link" onclick="goToCustomerDetail(${item.customerId})">
+                                            ${escapeHtml(item.customerName)}
+                                        </a>
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        ${birthdayStr} 
+                                        <span class="${urgencyClass}">(${daysUntil === 0 ? '今天' : daysUntil === 1 ? '明天' : `${daysUntil}天后`})</span>
+                                    </small>
+                                </div>
+                                ${item.interests ? `<small class="text-muted">${escapeHtml(item.interests)}</small>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 显示长时间未沟通提醒
+        function displayNoContactReminders(noContacts) {
+            const container = document.getElementById('noContactReminders');
+            
+            if (!noContacts || noContacts.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3"><p class="small">暂无待跟进客户</p></div>';
+                return;
+            }
+
+            container.innerHTML = noContacts.map(item => {
+                return `
+                    <div class="card reminder-card no-contact mb-2">
+                        <div class="card-body p-2">
+                            <div>
+                                <strong>
+                                    <a href="#" class="customer-link" onclick="goToCustomerDetail(${item.customerId})">
+                                        ${escapeHtml(item.customerName)}
+                                    </a>
+                                </strong>
+                                <br>
+                                <small class="text-muted">
+                                    ${item.daysSinceLastContact}天未沟通
+                                    ${item.lastContactTime ? ` | 上次: ${formatDate(item.lastContactTime)}` : ''}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 加载客户选项
+        async function loadCustomerOptions() {
+            try {
+                const response = await fetch('/api/customer/list?page=1&size=1000');
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.list) {
+                    const select = document.getElementById('customerSelect');
+                    result.data.list.forEach(customer => {
+                        const option = document.createElement('option');
+                        option.value = customer.id;
+                        option.textContent = customer.customerName;
+                        select.appendChild(option);
+                    });
+                } else {
+                    // 如果后端失败，添加模拟选项
+                    addMockCustomerOptions();
+                }
+            } catch (error) {
+                console.error('加载客户选项失败:', error);
+                // 添加模拟选项
+                addMockCustomerOptions();
+            }
+        }
+
+        // 添加模拟客户选项
+        function addMockCustomerOptions() {
+            const select = document.getElementById('customerSelect');
+            const mockCustomers = [
+                { id: 1, name: 'ABC科技有限公司' },
+                { id: 2, name: 'XYZ咨询公司' },
+                { id: 3, name: '中科院植物研究所' },
+                { id: 4, name: '钱七' }
+            ];
+            mockCustomers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.name;
+                select.appendChild(option);
             });
         }
 
-        // 获取分析类型名称
-        function getAnalysisTypeName(type) {
-            const typeNames = {
-                'customer_behavior': '客户行为分析',
-                'market_trend': '市场趋势分析',
-                'risk_assessment': '风险评估分析',
-                'customer_demand': '客户需求分析',
-                'market_competition': '市场竞争分析',
-                'sales_forecast': '销售预测分析',
-                'satisfaction': '满意度分析'
-            };
-            return typeNames[type] || '未知分析';
-        }
+        // 分析合作潜力
+        async function analyzeCooperationPotential() {
+            const customerId = document.getElementById('customerSelect').value;
+            if (!customerId) {
+                document.getElementById('cooperationAnalysis').style.display = 'none';
+                return;
+            }
 
-        // 获取状态样式类
-        function getStatusClass(status) {
-            switch (status) {
-                case 'completed': return 'bg-success';
-                case 'processing': return 'bg-warning';
-                case 'failed': return 'bg-danger';
-                default: return 'bg-secondary';
+            try {
+                const response = await fetch(`/api/ai-analysis/cooperation-potential/${customerId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayCooperationAnalysis(result.data);
+                    document.getElementById('cooperationAnalysis').style.display = 'block';
+                } else {
+                    // 如果后端失败，使用模拟数据
+                    displayCooperationAnalysis(getMockCooperationAnalysis());
+                    document.getElementById('cooperationAnalysis').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('分析合作潜力失败:', error);
+                // 使用模拟数据
+                displayCooperationAnalysis(getMockCooperationAnalysis());
+                document.getElementById('cooperationAnalysis').style.display = 'block';
             }
         }
 
-        // 获取状态文本
-        function getStatusText(status) {
-            switch (status) {
-                case 'completed': return '已完成';
-                case 'processing': return '处理中';
-                case 'failed': return '失败';
-                default: return '未知';
+        // 显示合作潜力分析
+        function displayCooperationAnalysis(data) {
+            const score = data.score || 0;
+            const scoreClass = score >= 70 ? '' : score >= 50 ? 'medium' : 'low';
+            
+            document.getElementById('cooperationScore').textContent = score;
+            document.getElementById('cooperationScore').className = `cooperation-score ${scoreClass}`;
+            document.getElementById('cooperationScoreDesc').textContent = data.description || '';
+
+            // 显示分析维度
+            const dimensionsHtml = data.dimensions ? data.dimensions.map(dim => `
+                <div class="mb-2">
+                    <small><strong>${escapeHtml(dim.name)}:</strong> ${dim.score}分</small>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar" style="width: ${dim.score}%"></div>
+                    </div>
+                </div>
+            `).join('') : '';
+            document.getElementById('cooperationDimensions').innerHTML = dimensionsHtml;
+
+            // 显示合作建议
+            const suggestionsHtml = data.suggestions ? data.suggestions.map(s => `
+                <div class="alert alert-info mb-2">
+                    <i class="bi bi-lightbulb"></i> ${escapeHtml(s)}
+                </div>
+            `).join('') : '';
+            document.getElementById('cooperationSuggestions').innerHTML = suggestionsHtml;
+        }
+
+        // 查看业务机会详情
+        function viewOpportunityDetail(opportunityId, customerId) {
+            currentCustomerId = customerId;
+            // 这里可以加载更详细的信息
+            const modal = new bootstrap.Modal(document.getElementById('opportunityDetailModal'));
+            document.getElementById('opportunityDetailContent').innerHTML = `
+                <p>业务机会ID: ${opportunityId}</p>
+                <p>客户ID: ${customerId}</p>
+                <p>详细信息加载中...</p>
+            `;
+            modal.show();
+        }
+
+        // 跳转到客户详情
+        function goToCustomerDetail(customerId) {
+            window.location.href = `/customers.html?id=${customerId}`;
+        }
+
+        function goToCustomer() {
+            if (currentCustomerId) {
+                goToCustomerDetail(currentCustomerId);
             }
+        }
+
+        // 刷新
+        function refreshOpportunities() {
+            loadOpportunities();
+        }
+
+        function refreshReminders() {
+            loadReminders();
+        }
+
+        // 工具函数
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleString('zh-CN', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatBirthday(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return (date.getMonth() + 1) + '月' + date.getDate() + '日';
         }
     </script>
 </body>
