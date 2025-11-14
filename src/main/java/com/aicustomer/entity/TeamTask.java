@@ -17,7 +17,12 @@ import java.time.LocalDateTime;
 public class TeamTask extends BaseEntity {
 
     /**
-     * 任务名称
+     * 任务标题（数据库字段）
+     */
+    private String title;
+
+    /**
+     * 任务名称（兼容字段，映射到title）
      */
     private String name;
 
@@ -25,6 +30,11 @@ public class TeamTask extends BaseEntity {
      * 任务描述
      */
     private String description;
+
+    /**
+     * 任务类型 (1:客户跟进, 2:项目推进, 3:问题处理, 4:会议安排, 5:其他)
+     */
+    private Integer taskType;
 
     /**
      * 负责人ID
@@ -35,6 +45,16 @@ public class TeamTask extends BaseEntity {
      * 负责人姓名
      */
     private String assigneeName;
+
+    /**
+     * 创建人ID
+     */
+    private Long creatorId;
+
+    /**
+     * 创建人姓名
+     */
+    private String creatorName;
 
     /**
      * 优先级 (1:高, 2:中, 3:低)
@@ -52,14 +72,24 @@ public class TeamTask extends BaseEntity {
     private Integer progress;
 
     /**
-     * 开始日期
+     * 开始日期（兼容字段）
      */
     private LocalDate startDate;
 
     /**
-     * 结束日期
+     * 开始时间（数据库字段：start_time）
+     */
+    private LocalDateTime startTime;
+
+    /**
+     * 结束日期（兼容字段）
      */
     private LocalDate endDate;
+
+    /**
+     * 截止时间（数据库字段：deadline）
+     */
+    private LocalDateTime deadline;
 
     /**
      * 工作模式 (1:办公室, 2:远程, 3:混合)
@@ -150,4 +180,68 @@ public class TeamTask extends BaseEntity {
      * 监督备注
      */
     private String supervisionNote;
+
+    /**
+     * 获取任务名称（兼容方法，返回title）
+     */
+    public String getName() {
+        return title != null ? title : name;
+    }
+
+    /**
+     * 设置任务名称（兼容方法，同时设置title）
+     */
+    public void setName(String name) {
+        this.name = name;
+        this.title = name;
+    }
+
+    /**
+     * 获取任务标题
+     */
+    public String getTitle() {
+        return title != null ? title : name;
+    }
+
+    /**
+     * 设置任务标题
+     */
+    public void setTitle(String title) {
+        this.title = title;
+        this.name = title;
+    }
+
+    /**
+     * 获取开始日期（兼容方法）
+     */
+    public LocalDate getStartDate() {
+        return startTime != null ? startTime.toLocalDate() : startDate;
+    }
+
+    /**
+     * 设置开始日期（兼容方法）
+     */
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+        if (startDate != null && startTime == null) {
+            this.startTime = startDate.atStartOfDay();
+        }
+    }
+
+    /**
+     * 获取结束日期（兼容方法）
+     */
+    public LocalDate getEndDate() {
+        return deadline != null ? deadline.toLocalDate() : endDate;
+    }
+
+    /**
+     * 设置结束日期（兼容方法）
+     */
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+        if (endDate != null && deadline == null) {
+            this.deadline = endDate.atStartOfDay();
+        }
+    }
 }

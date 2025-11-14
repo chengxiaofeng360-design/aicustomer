@@ -201,7 +201,9 @@ function renderCustomerTable(customerList) {
             '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
             '<td>' +
                 '<div class="action-buttons">' +
-
+                    '<button class="btn btn-sm btn-outline-info" onclick="goToCommunications(' + customer.id + ')" title="沟通管理">' +
+                    '<i class="bi bi-chat-dots"></i> 沟通管理' +
+                '</button>' +
                     '<button class="btn btn-sm btn-outline-primary" onclick="viewCustomer(' + customer.id + ')" title="查看详情">' +
                     '<i class="bi bi-eye"></i> 详情' +
                 '</button>' +
@@ -1501,6 +1503,16 @@ function saveBatchImport() {
             }
         });
     });
+}
+
+// 跳转到沟通管理页面
+function goToCommunications(customerId) {
+    if (!customerId) {
+        alert('客户ID不能为空');
+        return;
+    }
+    // 跳转到沟通管理页面，并传递客户ID参数
+    window.location.href = `/communications.html?customerId=${customerId}`;
 }
 
 // 查看客户详情

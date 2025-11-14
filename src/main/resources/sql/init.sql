@@ -439,6 +439,27 @@ CREATE TABLE IF NOT EXISTS team_task (
     INDEX idx_deleted (deleted)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='团队任务表';
 
+-- 任务进度汇报表
+CREATE TABLE IF NOT EXISTS task_progress_report (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    task_id BIGINT NOT NULL COMMENT '任务ID',
+    task_name VARCHAR(200) NOT NULL COMMENT '任务名称',
+    report_type TINYINT NOT NULL COMMENT '汇报类型(1:日报, 2:周报, 3:月报, 4:项目汇报, 5:紧急汇报)',
+    report_title VARCHAR(200) NOT NULL COMMENT '汇报标题',
+    report_content TEXT NOT NULL COMMENT '汇报内容',
+    employee_name VARCHAR(100) NOT NULL COMMENT '员工姓名',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    create_by VARCHAR(50) COMMENT '创建人',
+    update_by VARCHAR(50) COMMENT '更新人',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)',
+    version INT NOT NULL DEFAULT 1 COMMENT '版本号',
+    INDEX idx_task_id (task_id),
+    INDEX idx_report_type (report_type),
+    INDEX idx_create_time (create_time),
+    INDEX idx_deleted (deleted)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务进度汇报表';
+
 -- 部门表
 CREATE TABLE IF NOT EXISTS department (
     id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',

@@ -18,10 +18,9 @@ public interface TaskProgressReportMapper {
     /**
      * 查询任务进度汇报列表
      */
-    List<TaskProgressReport> findReports(@Param("employeeId") Long employeeId,
-                                        @Param("taskId") Long taskId,
+    List<TaskProgressReport> findReports(@Param("taskId") Long taskId,
+                                        @Param("employeeName") String employeeName,
                                         @Param("reportType") Integer reportType,
-                                        @Param("reportStatus") Integer reportStatus,
                                         @Param("offset") Integer offset,
                                         @Param("limit") Integer limit);
     
@@ -46,45 +45,14 @@ public interface TaskProgressReportMapper {
     int delete(@Param("id") Long id);
     
     /**
-     * 审核任务进度汇报
+     * 获取汇报总数
      */
-    int reviewReport(@Param("id") Long id,
-                    @Param("reviewerId") Long reviewerId,
-                    @Param("reviewerName") String reviewerName,
-                    @Param("reportStatus") Integer reportStatus,
-                    @Param("reviewComment") String reviewComment,
-                    @Param("qualityScore") Integer qualityScore,
-                    @Param("efficiencyScore") Integer efficiencyScore,
-                    @Param("attitudeScore") Integer attitudeScore,
-                    @Param("overallScore") Double overallScore);
-    
-    /**
-     * 根据员工ID查询汇报列表
-     */
-    List<TaskProgressReport> findByEmployeeId(@Param("employeeId") Long employeeId);
+    int countReports(@Param("taskId") Long taskId,
+                    @Param("employeeName") String employeeName,
+                    @Param("reportType") Integer reportType);
     
     /**
      * 根据任务ID查询汇报列表
      */
     List<TaskProgressReport> findByTaskId(@Param("taskId") Long taskId);
-    
-    /**
-     * 统计员工汇报数量
-     */
-    Integer countReportsByEmployee(@Param("employeeId") Long employeeId);
-    
-    /**
-     * 统计任务汇报数量
-     */
-    Integer countReportsByTask(@Param("taskId") Long taskId);
-    
-    /**
-     * 查询待审核的汇报
-     */
-    List<TaskProgressReport> findPendingReports(@Param("reviewerId") Long reviewerId);
-    
-    /**
-     * 查询异常汇报
-     */
-    List<TaskProgressReport> findAbnormalReports();
 }

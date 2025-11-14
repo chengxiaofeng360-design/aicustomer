@@ -34,9 +34,11 @@ public class DatabaseInitializer {
         }
         
         try {
-            // 检查customer表是否存在
+            // 检查主要表是否存在
             boolean customerTableExists = checkTableExists("customer");
             boolean communicationTableExists = checkTableExists("communication_record");
+            boolean teamTaskTableExists = checkTableExists("team_task");
+            boolean taskProgressReportTableExists = checkTableExists("task_progress_report");
             
             if (!customerTableExists) {
                 log.info("检测到customer表不存在，开始初始化数据库表结构...");
@@ -44,14 +46,30 @@ public class DatabaseInitializer {
             } else {
                 log.info("数据库表已存在，检查并更新表结构...");
                 updateTableStructure();
-                
-                // 检查并创建communication_record表（如果不存在）
-                if (!communicationTableExists) {
-                    log.info("检测到communication_record表不存在，开始创建...");
-                    createCommunicationRecordTable();
-                } else {
-                    log.debug("communication_record表已存在，跳过创建");
-                }
+            }
+            
+            // 检查并创建communication_record表（如果不存在）
+            if (!communicationTableExists) {
+                log.info("检测到communication_record表不存在，开始创建...");
+                createCommunicationRecordTable();
+            } else {
+                log.debug("communication_record表已存在，跳过创建");
+            }
+            
+            // 检查并创建team_task表（如果不存在）
+            if (!teamTaskTableExists) {
+                log.info("检测到team_task表不存在，开始创建...");
+                createTeamTaskTable();
+            } else {
+                log.debug("team_task表已存在，跳过创建");
+            }
+            
+            // 检查并创建task_progress_report表（如果不存在）
+            if (!taskProgressReportTableExists) {
+                log.info("检测到task_progress_report表不存在，开始创建...");
+                createTaskProgressReportTable();
+            } else {
+                log.debug("task_progress_report表已存在，跳过创建");
             }
         } catch (Exception e) {
             log.error("数据库初始化失败: {}", e.getMessage(), e);
@@ -327,6 +345,122 @@ public class DatabaseInitializer {
             log.info("✅ communication_record表创建成功");
         } catch (Exception e) {
             log.error("❌ 创建communication_record表失败: {}", e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * 创建team_task表
+     */
+    private void createTeamTaskTable() {
+        try {
+            String sql = "CREATE TABLE IF NOT EXISTS team_task (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID', " +
+                    "title VARCHAR(200) NOT NULL COMMENT '任务标题', " +
+                    "description TEXT COMMENT '任务描述', " +
+                    "task_type TINYINT NOT NULL COMMENT '任务类型(1:客户跟进,2:项目推进,3:问题处理,4:会议安排,5:其他)', " +
+                    "status TINYINT DEFAULT 1 COMMENT '任务状态(1:待分配,2:进行中,3:待审核,4:已完成,5:已取消)', " +
+                    "priority TINYINT DEFAULT 2 COMMENT '优先级(1:低,2:中,3:高,4:紧急)', " +
+                    "customer_id BIGINT COMMENT '关联客户ID', " +
+                    "customer_name VARCHAR(100) COMMENT '关联客户姓名', " +
+                    "creator_id BIGINT NOT NULL COMMENT '创建人ID', " +
+                    "creator_name VARCHAR(100) NOT NULL COMMENT '创建人姓名', " +
+                    "assignee_id BIGINT COMMENT '负责人ID', " +
+                    "assignee_name VARCHAR(100) COMMENT '负责人姓名', " +
+                    "start_time DATETIME COMMENT '开始时间', " +
+                    "deadline DATETIME COMMENT '截止时间', " +
+                    "completed_time DATETIME COMMENT '完成时间', " +
+                    "estimated_hours INT COMMENT '预计工时(小时)', " +
+                    "actual_hours INT COMMENT '实际工时(小时)', " +
+                    "progress INT DEFAULT 0 COMMENT '任务进度(0-100%)', " +
+                    "result TEXT COMMENT '完成结果', " +
+                    "remark TEXT COMMENT '备注', " +
+                    "parent_task_id BIGINT COMMENT '父任务ID', " +
+                    "level INT DEFAULT 1 COMMENT '任务层级', " +
+                    "need_approval TINYINT DEFAULT 0 COMMENT '是否需要审批(0:否,1:是)', " +
+                    "approver_id BIGINT COMMENT '审批人ID', " +
+                    "approver_name VARCHAR(100) COMMENT '审批人姓名', " +
+                    "approval_time DATETIME COMMENT '审批时间', " +
+                    "approval_result TINYINT COMMENT '审批结果(1:通过,2:拒绝,3:待审批)', " +
+                    "approval_comment TEXT COMMENT '审批意见', " +
+                    "tags VARCHAR(500) COMMENT '任务标签', " +
+                    "attachment_path VARCHAR(500) COMMENT '关联文件路径', " +
+                    "is_public TINYINT DEFAULT 1 COMMENT '是否公开(0:否,1:是)', " +
+                    "visible_user_ids VARCHAR(1000) COMMENT '可见用户ID列表', " +
+                    "work_mode TINYINT COMMENT '工作模式(1:办公室,2:远程,3:混合)', " +
+                    "work_duration INT COMMENT '工作时长(分钟)', " +
+                    "actual_start_time DATETIME COMMENT '实际开始时间', " +
+                    "actual_end_time DATETIME COMMENT '实际结束时间', " +
+                    "work_status TINYINT COMMENT '工作状态(1:工作中,2:休息中,3:会议中,4:离线,5:异常)', " +
+                    "last_active_time DATETIME COMMENT '最后活跃时间', " +
+                    "work_location VARCHAR(200) COMMENT '工作地点', " +
+                    "work_evidence VARCHAR(500) COMMENT '工作证据', " +
+                    "work_log TEXT COMMENT '工作日志', " +
+                    "supervisor_id BIGINT COMMENT '监督人ID', " +
+                    "supervisor_name VARCHAR(100) COMMENT '监督人姓名', " +
+                    "need_supervision TINYINT DEFAULT 0 COMMENT '是否需要监督(0:否,1:是)', " +
+                    "supervision_interval INT COMMENT '监督间隔(分钟)', " +
+                    "last_supervision_time DATETIME COMMENT '最后监督时间', " +
+                    "quality_score TINYINT COMMENT '质量评分(1-5分)', " +
+                    "efficiency_score TINYINT COMMENT '效率评分(1-5分)', " +
+                    "attitude_score TINYINT COMMENT '态度评分(1-5分)', " +
+                    "supervision_note TEXT COMMENT '监督备注', " +
+                    "name VARCHAR(200) COMMENT '任务名称(兼容字段)', " +
+                    "start_date DATE COMMENT '开始日期(兼容字段)', " +
+                    "end_date DATE COMMENT '结束日期(兼容字段)', " +
+                    "create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
+                    "update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
+                    "create_by VARCHAR(50) COMMENT '创建人', " +
+                    "update_by VARCHAR(50) COMMENT '更新人', " +
+                    "deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)', " +
+                    "version INT NOT NULL DEFAULT 1 COMMENT '版本号', " +
+                    "INDEX idx_customer_id (customer_id), " +
+                    "INDEX idx_task_type (task_type), " +
+                    "INDEX idx_status (status), " +
+                    "INDEX idx_priority (priority), " +
+                    "INDEX idx_creator_id (creator_id), " +
+                    "INDEX idx_assignee_id (assignee_id), " +
+                    "INDEX idx_deadline (deadline), " +
+                    "INDEX idx_parent_task_id (parent_task_id), " +
+                    "INDEX idx_create_time (create_time), " +
+                    "INDEX idx_deleted (deleted)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='团队任务表'";
+            
+            jdbcTemplate.execute(sql);
+            log.info("✅ team_task表创建成功");
+        } catch (Exception e) {
+            log.error("❌ 创建team_task表失败: {}", e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * 创建task_progress_report表
+     */
+    private void createTaskProgressReportTable() {
+        try {
+            String sql = "CREATE TABLE IF NOT EXISTS task_progress_report (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID', " +
+                    "task_id BIGINT NOT NULL COMMENT '任务ID', " +
+                    "task_name VARCHAR(200) NOT NULL COMMENT '任务名称', " +
+                    "report_type TINYINT NOT NULL COMMENT '汇报类型(1:日报, 2:周报, 3:月报, 4:项目汇报, 5:紧急汇报)', " +
+                    "report_title VARCHAR(200) NOT NULL COMMENT '汇报标题', " +
+                    "report_content TEXT NOT NULL COMMENT '汇报内容', " +
+                    "employee_name VARCHAR(100) NOT NULL COMMENT '员工姓名', " +
+                    "create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
+                    "update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
+                    "create_by VARCHAR(50) COMMENT '创建人', " +
+                    "update_by VARCHAR(50) COMMENT '更新人', " +
+                    "deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)', " +
+                    "version INT NOT NULL DEFAULT 1 COMMENT '版本号', " +
+                    "INDEX idx_task_id (task_id), " +
+                    "INDEX idx_report_type (report_type), " +
+                    "INDEX idx_create_time (create_time), " +
+                    "INDEX idx_deleted (deleted)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务进度汇报表'";
+            
+            jdbcTemplate.execute(sql);
+            log.info("✅ task_progress_report表创建成功");
+        } catch (Exception e) {
+            log.error("❌ 创建task_progress_report表失败: {}", e.getMessage(), e);
         }
     }
 }

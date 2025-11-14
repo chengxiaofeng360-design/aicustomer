@@ -201,8 +201,8 @@ function renderCustomerTable(customerList) {
             '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
             '<td>' +
                 '<div class="action-buttons">' +
-                    '<button class="btn btn-sm btn-outline-info" onclick="openCommunicationModal(' + customer.id + ', \'' + (customer.customerName || '').replace(/'/g, '\\\'') + '\')" title="沟通记录">' +
-                    '<i class="bi bi-chat-dots"></i> 沟通记录' +
+                    '<button class="btn btn-sm btn-outline-info" onclick="goToCommunications(' + customer.id + ')" title="沟通管理">' +
+                    '<i class="bi bi-chat-dots"></i> 沟通管理' +
                 '</button>' +
                     '<button class="btn btn-sm btn-outline-primary" onclick="viewCustomer(' + customer.id + ')" title="查看详情">' +
                     '<i class="bi bi-eye"></i> 详情' +
@@ -1505,6 +1505,16 @@ function saveBatchImport() {
     });
 }
 
+// 跳转到沟通管理页面
+function goToCommunications(customerId) {
+    if (!customerId) {
+        alert('客户ID不能为空');
+        return;
+    }
+    // 跳转到沟通管理页面，并传递客户ID参数
+    window.location.href = `/communications.html?customerId=${customerId}`;
+}
+
 // 查看客户详情
 function viewCustomer(id) {
     fetch(`/api/customer/${id}`)
@@ -1529,7 +1539,7 @@ function viewCustomer(id) {
         });
 }
 
-// 当前查看的客户信息（用于沟通记录）
+// 当前查看的客户信息
 let currentViewingCustomer = null;
 
 function showCustomerDetail(customer) {
@@ -1658,93 +1668,10 @@ function showCustomerDetail(customer) {
 }
 
 
-// 打开客户沟通记录列表模态框
-function openCommunicationModal(customerId, customerName) {
-    // 保存当前客户信息
-    currentViewingCustomer = { id: customerId, customerName: customerName };
-    
-    // 创建并显示沟通记录模态框（使用不同的ID避免冲突）
-    const modalHtml = `
-        <div class="modal fade" id="communicationListModal" tabindex="-1" aria-labelledby="communicationListModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="communicationListModalLabel">${customerName} - 沟通记录</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <!-- 新增记录按钮移到顶部 -->
-                        <div class="d-flex justify-content-end mb-3">
-                            <button type="button" class="btn btn-primary btn-sm" onclick="showAddCommunicationForCurrentCustomer()">
-                                <i class="bi bi-plus"></i> 新增记录
-                            </button>
-                        </div>
-                        
-                        <!-- 沟通记录列表 -->
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>沟通方式</th>
-                                        <th>主题</th>
-                                        <th>重要性</th>
-                                        <th>沟通时间</th>
-                                        <th>负责人</th>
-                                        <th>操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="customerCommunicationTableBody">
-                                    <!-- 沟通记录将在这里动态加载 -->
-                                    <tr><td colspan="7" class="text-center">加载中...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // 添加模态框到文档中
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
-    // 显示模态框
-    const modal = new bootstrap.Modal(document.getElementById('communicationListModal'));
-    modal.show();
-    
-    // 加载客户沟通记录
-    loadCustomerCommunications(customerId, 'customerCommunicationTableBody');
-    
-    // 模态框关闭时的清理
-    const communicationListModal = document.getElementById('communicationListModal');
-    communicationListModal.addEventListener('hidden.bs.modal', function() {
-        // 清理模态框元素
-        this.remove();
-        currentViewingCustomer = null;
-    });
-}
 
-// 为当前客户显示新增沟通记录模态框
-function showAddCommunicationForCurrentCustomer() {
-    if (!currentViewingCustomer || !currentViewingCustomer.id) {
-        alert('无法获取客户信息，请先查看客户详情');
-        return;
-    }
-    showAddCommunicationModalForCustomer(currentViewingCustomer.id, currentViewingCustomer.customerName);
-    
-    // 设置客户名称显示
-    const customerSelect = document.getElementById('customerSelect');
-    const customerIdHidden = document.getElementById('customerIdHidden');
-    if (customerSelect) {
-        customerSelect.value = currentViewingCustomer.customerName || '';
-    }
-    if (customerIdHidden) {
-        customerIdHidden.value = currentViewingCustomer.id;
-    }
-}
+
+
+
 function editCustomer(id) {
     fetch(`/api/customer/${id}`)
         .then(response => response.json())

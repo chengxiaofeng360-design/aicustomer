@@ -32,8 +32,8 @@
             </div>
             <div class="col-md-2">
                 <div class="stats-card">
-                    <div class="stats-number" id="onlineMembers">5</div>
-                    <div class="stats-label">在线成员</div>
+                    <div class="stats-number" id="importantTasks">0</div>
+                    <div class="stats-label">重要任务</div>
                 </div>
             </div>
             <div class="col-md-2">
@@ -48,110 +48,10 @@
                     <div class="stats-label">已完成任务</div>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="stats-card">
-                    <div class="stats-number" id="taskCompletionRate">25%</div>
-                    <div class="stats-label">任务完成率</div>
-                </div>
-            </div>
         </div>
 
-        <!-- 任务进度跟踪和汇报 -->
+        <!-- 团队任务 -->
         <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-clipboard-data"></i> 任务进度跟踪和汇报
-                </h5>
-                <div>
-                    <button class="btn btn-primary" onclick="showCreateReportModal()">
-                        <i class="bi bi-plus"></i> 新建汇报
-                    </button>
-                    <button class="btn btn-outline-warning" onclick="showPendingReports()">
-                        <i class="bi bi-clock"></i> 待审核
-                    </button>
-                    <button class="btn btn-outline-danger" onclick="showAbnormalReports()">
-                        <i class="bi bi-exclamation-triangle"></i> 异常汇报
-                    </button>
-                    <button class="btn btn-outline-info" onclick="showReportStats()">
-                        <i class="bi bi-graph-up"></i> 汇报统计
-                    </button>
-                </div>
-            </div>
-            <div class="card-body">
-                <!-- 汇报统计卡片 -->
-                <div class="row mb-4">
-                    <div class="col-md-2">
-                        <div class="stats-card">
-                            <div class="stats-number" id="totalReports">0</div>
-                            <div class="stats-label">总汇报数</div>
-                    </div>
-                </div>
-                    <div class="col-md-2">
-                        <div class="stats-card">
-                            <div class="stats-number" id="pendingReports">0</div>
-                            <div class="stats-label">待审核</div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="stats-card">
-                            <div class="stats-number" id="approvedReports">0</div>
-                            <div class="stats-label">已通过</div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="stats-card">
-                            <div class="stats-number" id="abnormalReports">0</div>
-                            <div class="stats-label">异常汇报</div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="stats-card">
-                            <div class="stats-number" id="avgScore">0.0</div>
-                            <div class="stats-label">平均评分</div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="stats-card">
-                            <div class="stats-number" id="reportRate">0%</div>
-                            <div class="stats-label">汇报完成率</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 汇报列表 -->
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>任务名称</th>
-                                <th>员工姓名</th>
-                                <th>汇报类型</th>
-                                <th>汇报标题</th>
-                                <th>进度</th>
-                                <th>工作时长</th>
-                                <th>汇报状态</th>
-                                <th>评分</th>
-                                <th>创建时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reportTableBody">
-                            <!-- 汇报记录将通过JavaScript动态加载 -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- 分页 -->
-                <nav aria-label="汇报记录分页">
-                    <ul class="pagination justify-content-center" id="reportPagination">
-                        <!-- 分页将通过JavaScript动态生成 -->
-                    </ul>
-                </nav>
-            </div>
-        </div>
-
-        <!-- 任务管理 -->
-        <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">团队任务</h5>
                 <div class="d-flex gap-2">
@@ -160,12 +60,6 @@
                     <button class="btn btn-outline-success" onclick="filterTasks('completed')">已完成</button>
                     <button class="btn btn-primary" onclick="showAddTaskModal()">
                         <i class="bi bi-plus"></i> 新建任务
-                    </button>
-                    <button class="btn btn-outline-info" onclick="importTasks()">
-                        <i class="bi bi-upload"></i> 导入
-                    </button>
-                    <button class="btn btn-outline-secondary" onclick="exportTasks()">
-                        <i class="bi bi-download"></i> 导出
                     </button>
                 </div>
             </div>
@@ -188,6 +82,49 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- 任务进度跟踪和汇报 -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-clipboard-data"></i> 任务进度跟踪和汇报
+                </h5>
+                <div>
+                    <button class="btn btn-primary" onclick="showCreateReportModal()">
+                        <i class="bi bi-plus"></i> 新建汇报
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- 汇报列表 -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>任务名称</th>
+                                <th>汇报类型</th>
+                                <th>汇报标题</th>
+                                <th>汇报内容</th>
+                                <th>员工姓名</th>
+                                <th>创建时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody">
+                            <!-- 汇报记录将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页 -->
+                <nav aria-label="汇报记录分页">
+                    <ul class="pagination justify-content-center" id="reportPagination">
+                        <!-- 分页将通过JavaScript动态生成 -->
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
@@ -317,9 +254,10 @@
                                     <label class="form-label">优先级 *</label>
                                     <select class="form-select" id="taskPriority" name="priority" required>
                                         <option value="">请选择优先级</option>
-                                        <option value="high">高</option>
-                                        <option value="medium">中</option>
-                                        <option value="low">低</option>
+                                        <option value="1">低</option>
+                                        <option value="2" selected>中</option>
+                                        <option value="3">高</option>
+                                        <option value="4">紧急</option>
                                     </select>
                                 </div>
                             </div>
@@ -343,6 +281,110 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" onclick="saveTask()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查看任务详情模态框 -->
+    <div class="modal fade" id="taskDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">任务详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="taskDetailForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>任务名称：</strong></label>
+                                    <p id="detailTaskName" class="mb-0"></p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>负责人：</strong></label>
+                                    <p id="detailAssignee" class="mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>优先级：</strong></label>
+                                    <p id="detailPriority" class="mb-0"></p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>截止日期：</strong></label>
+                                    <p id="detailDeadline" class="mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><strong>任务描述：</strong></label>
+                            <p id="detailDescription" class="mb-0 text-muted"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><strong>进度 (%)：</strong></label>
+                            <div class="progress mt-2" style="height: 25px;">
+                                <div class="progress-bar" id="detailProgressBar" role="progressbar" style="width: 0%">
+                                    <span id="detailProgressText">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查看汇报详情模态框 -->
+    <div class="modal fade" id="reportDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">汇报详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>任务名称：</strong>
+                            <p id="reportDetailTaskName" class="mb-0"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>汇报类型：</strong>
+                            <p id="reportDetailType" class="mb-0"></p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>汇报标题：</strong>
+                        <p id="reportDetailTitle" class="mb-0"></p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>汇报内容：</strong>
+                        <p id="reportDetailContent" class="mb-0 text-muted"></p>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>员工姓名：</strong>
+                            <p id="reportDetailEmployeeName" class="mb-0"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>创建时间：</strong>
+                            <p id="reportDetailCreateTime" class="mb-0"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
                 </div>
             </div>
         </div>
@@ -391,124 +433,18 @@
                             <label class="form-label">汇报内容 *</label>
                             <textarea class="form-control" id="reportContent" name="reportContent" rows="4" required></textarea>
                         </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">完成进度 (%) *</label>
-                                    <input type="number" class="form-control" id="reportProgress" name="progress" min="0" max="100" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">工作时长 (分钟)</label>
-                                    <input type="number" class="form-control" id="reportWorkDuration" name="workDuration" min="0">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">工作模式</label>
-                                    <select class="form-select" id="reportWorkMode" name="workMode">
-                                        <option value="">请选择</option>
-                                        <option value="1">办公室</option>
-                                        <option value="2">远程</option>
-                                        <option value="3">混合</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
                         <div class="mb-3">
-                            <label class="form-label">工作成果</label>
-                            <textarea class="form-control" id="reportWorkResults" name="workResults" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">遇到的问题</label>
-                            <textarea class="form-control" id="reportProblems" name="problems" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">解决方案</label>
-                            <textarea class="form-control" id="reportSolutions" name="solutions" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">下一步计划</label>
-                            <textarea class="form-control" id="reportNextPlan" name="nextPlan" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">需要支持</label>
-                            <textarea class="form-control" id="reportSupportNeeded" name="supportNeeded" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">工作地点</label>
-                            <input type="text" class="form-control" id="reportWorkLocation" name="workLocation">
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="reportIsAbnormal" name="isAbnormal">
-                                <label class="form-check-label" for="reportIsAbnormal">标记为异常汇报</label>
-                            </div>
-                        </div>
-                        <div class="mb-3" id="abnormalReasonDiv" style="display: none;">
-                            <label class="form-label">异常原因</label>
-                            <textarea class="form-control" id="reportAbnormalReason" name="abnormalReason" rows="2"></textarea>
+                            <label class="form-label">员工姓名 *</label>
+                            <select class="form-select" id="reportEmployeeName" name="employeeName" required>
+                                <option value="">请选择员工</option>
+                                <!-- 选项将通过JavaScript动态加载 -->
+                            </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" onclick="saveReport()">保存汇报</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 审核汇报模态框 -->
-    <div class="modal fade" id="reviewModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">审核任务进度汇报</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="reviewForm">
-                        <input type="hidden" id="reviewReportId" name="reportId">
-                        <div class="mb-3">
-                            <label class="form-label">审核结果 *</label>
-                            <select class="form-select" id="reviewStatus" name="reportStatus" required>
-                                <option value="">请选择审核结果</option>
-                                <option value="2">通过</option>
-                                <option value="3">需修改</option>
-                                <option value="4">驳回</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">审核意见</label>
-                            <textarea class="form-control" id="reviewComment" name="reviewComment" rows="3"></textarea>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">质量评分 (1-5分)</label>
-                                    <input type="number" class="form-control" id="reviewQualityScore" name="qualityScore" min="1" max="5">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">效率评分 (1-5分)</label>
-                                    <input type="number" class="form-control" id="reviewEfficiencyScore" name="efficiencyScore" min="1" max="5">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">态度评分 (1-5分)</label>
-                                    <input type="number" class="form-control" id="reviewAttitudeScore" name="attitudeScore" min="1" max="5">
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="submitReview()">提交审核</button>
                 </div>
             </div>
         </div>
@@ -601,3 +537,5 @@
     <script src="/js/team.js"></script>
 </body>
 </html>
+
+

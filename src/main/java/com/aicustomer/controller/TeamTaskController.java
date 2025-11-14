@@ -1,7 +1,9 @@
 package com.aicustomer.controller;
 
+import com.aicustomer.common.PageResult;
 import com.aicustomer.common.Result;
 import com.aicustomer.entity.TeamTask;
+import com.aicustomer.mapper.TeamTaskMapper;
 import com.aicustomer.service.TeamTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,18 +23,28 @@ public class TeamTaskController {
     @Autowired
     private TeamTaskService taskService;
 
+    @Autowired
+    private TeamTaskMapper taskMapper;
+
     /**
-     * 获取团队任务列表
+     * 获取团队任务列表（分页）
      */
     @GetMapping("/tasks")
-    public Result<List<TeamTask>> getTasks(@RequestParam(required = false) Long assigneeId,
-                                           @RequestParam(required = false) Integer status,
-                                           @RequestParam(required = false) Integer priority,
-                                           @RequestParam(defaultValue = "1") Integer page,
-                                           @RequestParam(defaultValue = "10") Integer size) {
+    public Result<PageResult<TeamTask>> getTasks(@RequestParam(required = false) Long assigneeId,
+                                                   @RequestParam(required = false) Integer status,
+                                                   @RequestParam(required = false) Integer priority,
+                                                   @RequestParam(defaultValue = "1") Integer page,
+                                                   @RequestParam(defaultValue = "10") Integer size) {
         try {
             List<TeamTask> tasks = taskService.getTasks(assigneeId, status, priority, page, size);
-            return Result.success(tasks);
+            int total = taskMapper.countTasks(assigneeId, status, priority);
+            PageResult<TeamTask> pageResult = new PageResult<>();
+            pageResult.setList(tasks);
+            pageResult.setTotal((long) total);
+            pageResult.setPageNum(page);
+            pageResult.setPageSize(size);
+            pageResult.setPages((int) Math.ceil((double) total / size));
+            return Result.success(pageResult);
         } catch (Exception e) {
             return Result.error("获取团队任务失败: " + e.getMessage());
         }
@@ -61,8 +73,13 @@ public class TeamTaskController {
     @PostMapping("/tasks")
     public Result<TeamTask> createTask(@RequestBody TeamTask task) {
         try {
+            if (task == null) {
+                return Result.error("任务数据不能为空");
+            }
             TeamTask createdTask = taskService.createTask(task);
             return Result.success(createdTask);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
             return Result.error("创建团队任务失败: " + e.getMessage());
         }
@@ -74,9 +91,14 @@ public class TeamTaskController {
     @PutMapping("/tasks/{id}")
     public Result<TeamTask> updateTask(@PathVariable Long id, @RequestBody TeamTask task) {
         try {
+            if (task == null) {
+                return Result.error("任务数据不能为空");
+            }
             task.setId(id);
             TeamTask updatedTask = taskService.updateTask(task);
             return Result.success(updatedTask);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
             return Result.error("更新团队任务失败: " + e.getMessage());
         }
@@ -88,8 +110,13 @@ public class TeamTaskController {
     @DeleteMapping("/tasks/{id}")
     public Result<String> deleteTask(@PathVariable Long id) {
         try {
+            if (id == null) {
+                return Result.error("任务ID不能为空");
+            }
             taskService.deleteTask(id);
             return Result.success("删除成功");
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
             return Result.error("删除团队任务失败: " + e.getMessage());
         }

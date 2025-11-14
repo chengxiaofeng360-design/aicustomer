@@ -842,18 +842,19 @@ body {
 .modal-dialog-max-70 {
     max-width: 70vw;
     width: 70%;
-    margin: 1.75rem auto;
-    z-index: 1050; /* 确保模态框显示在遮罩层上方 */
+    margin: 20px auto !important;
+    z-index: 9999 !important; /* 确保模态框显示在最上层 */
+    position: relative !important;
 }
 
 /* 确保模态框始终显示在最上层 */
 .modal.show {
-    z-index: 1050 !important;
+    z-index: 9999 !important;
 }
 
 /* 修复遮罩层问题 */
 .modal-backdrop {
-    z-index: 1040 !important;
+    z-index: 9998 !important;
 }
 
 /* 小屏幕响应式处理 */
