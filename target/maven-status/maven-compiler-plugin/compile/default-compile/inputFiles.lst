@@ -78,6 +78,7 @@
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/mapper/SocialLikeMapper.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/impl/CustomerAccountServiceImpl.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/impl/TaskReminderServiceImpl.java
+/Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/controller/AiCustomerExtractController.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/config/DatabaseConfig.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/service/impl/TaskProgressReportServiceImpl.java
 /Users/zuozuo/Downloads/cxf/aicustomer/src/main/java/com/aicustomer/controller/AiRecommendationController.java

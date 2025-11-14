@@ -843,6 +843,17 @@ body {
     max-width: 70vw;
     width: 70%;
     margin: 1.75rem auto;
+    z-index: 1050; /* 确保模态框显示在遮罩层上方 */
+}
+
+/* 确保模态框始终显示在最上层 */
+.modal.show {
+    z-index: 1050 !important;
+}
+
+/* 修复遮罩层问题 */
+.modal-backdrop {
+    z-index: 1040 !important;
 }
 
 /* 小屏幕响应式处理 */

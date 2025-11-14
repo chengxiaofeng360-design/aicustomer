@@ -1652,22 +1652,6 @@ function showCustomerDetail(customer) {
         '</div>';
     document.getElementById('customerDetailContent').innerHTML = content;
     
-    // 初始化标签页事件监听（移除旧的监听器，添加新的）
-    const communicationsTab = document.getElementById('communicationsTab');
-    if (communicationsTab) {
-        // 移除旧的监听器
-        const newTab = communicationsTab.cloneNode(true);
-        communicationsTab.parentNode.replaceChild(newTab, communicationsTab);
-        
-        // 添加新的监听器
-        document.getElementById('communicationsTab').addEventListener('shown.bs.tab', function() {
-            // 当切换到沟通记录标签页时，加载该客户的沟通记录
-            if (customer.id) {
-                loadCustomerCommunications(customer.id);
-            }
-        });
-    }
-    
     // 显示模态框
     const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
     modal.show();
@@ -1678,13 +1662,13 @@ function openCommunicationModal(customerId, customerName) {
     // 保存当前客户信息
     currentViewingCustomer = { id: customerId, customerName: customerName };
     
-    // 创建并显示沟通记录模态框
+    // 创建并显示沟通记录模态框（使用不同的ID避免冲突）
     const modalHtml = `
-        <div class="modal fade" id="communicationModal" tabindex="-1" aria-labelledby="communicationModalLabel" aria-hidden="true">
+        <div class="modal fade" id="communicationListModal" tabindex="-1" aria-labelledby="communicationListModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="communicationModalLabel">${customerName} - 沟通记录</h5>
+                        <h5 class="modal-title" id="communicationListModalLabel">${customerName} - 沟通记录</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -1721,26 +1705,21 @@ function openCommunicationModal(customerId, customerName) {
         </div>
     `;
     
-    // 检查是否已存在模态框元素，如果存在则移除
-    let existingModal = document.getElementById('communicationModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
-    
     // 添加模态框到文档中
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     
     // 显示模态框
-    const modal = new bootstrap.Modal(document.getElementById('communicationModal'));
+    const modal = new bootstrap.Modal(document.getElementById('communicationListModal'));
     modal.show();
     
     // 加载客户沟通记录
     loadCustomerCommunications(customerId, 'customerCommunicationTableBody');
     
     // 模态框关闭时的清理
-    const communicationModal = document.getElementById('communicationModal');
-    communicationModal.addEventListener('hidden.bs.modal', function() {
-        // 可以在这里添加清理代码
+    const communicationListModal = document.getElementById('communicationListModal');
+    communicationListModal.addEventListener('hidden.bs.modal', function() {
+        // 清理模态框元素
+        this.remove();
         currentViewingCustomer = null;
     });
 }

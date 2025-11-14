@@ -138,53 +138,80 @@ function renderCustomerCommunications(communications, tbodyId = 'customerCommuni
     });
 }
 
-// 显示新增沟通记录模态框（在客户详情中）
+// 为指定客户显示新增沟通记录模态框
 function showAddCommunicationModalForCustomer(customerId, customerName) {
+    // 保存当前客户ID，用于后续操作
     currentCustomerIdForCommunication = customerId;
+    
+    // 重置表单
     const communicationModalTitle = document.getElementById('communicationModalTitle');
     if (communicationModalTitle) {
         communicationModalTitle.textContent = '新增沟通记录';
     }
+    
     const communicationForm = document.getElementById('communicationForm');
     if (communicationForm) {
         communicationForm.reset();
-    }
-    const communicationId = document.getElementById('communicationId');
-    if (communicationId) {
-        communicationId.value = '';
+        // 清空隐藏的ID字段
+        const communicationIdField = communicationForm.querySelector('#communicationId');
+        if (communicationIdField) {
+            communicationIdField.value = '';
+        }
+        
+        // 设置客户ID（支持多种可能的字段名）
+        const possibleCustomerIdFields = ['#modalCustomerId', '#customerIdHidden'];
+        for (const selector of possibleCustomerIdFields) {
+            const field = communicationForm.querySelector(selector);
+            if (field) {
+                field.value = customerId;
+            }
+        }
+        
+        // 尝试找到customerSelect字段并设置值
+        const customerSelect = communicationForm.querySelector('#customerSelect');
+        if (customerSelect) {
+            customerSelect.value = customerId || '';
+            customerSelect.readOnly = true;
+        }
+        
+        // 设置客户名称显示（如果有customerName字段）
+        const customerNameField = communicationForm.querySelector('#customerName');
+        if (customerNameField) {
+            customerNameField.value = customerName;
+        }
+        
+        // 设置当前时间为默认沟通时间
+        const now = new Date();
+        const localDateTime = now.toISOString().slice(0, 16);
+        const timeInput = document.getElementById('communicationTime');
+        if (timeInput) {
+            timeInput.value = localDateTime;
+        }
     }
     
-    // 自动填充客户信息（即使字段隐藏，也要设置值以便保存时使用）
-    const customerSelect = document.getElementById('customerSelect');
-    const customerIdHidden = document.getElementById('customerIdHidden');
-    if (customerSelect) {
-        customerSelect.value = customerName || '';
-        customerSelect.readOnly = true;
+    // 显示模态框
+    const communicationModal = document.getElementById('communicationModal');
+    if (communicationModal) {
+        new bootstrap.Modal(communicationModal).show();
     }
-    if (customerIdHidden) {
-        customerIdHidden.value = customerId;
-    }
-    
-    // 设置当前时间为默认沟通时间
-    const now = new Date();
-    const localDateTime = now.toISOString().slice(0, 16);
-    const timeInput = document.getElementById('communicationTime');
-    if (timeInput) {
-        timeInput.value = localDateTime;
-    }
-    
-    new bootstrap.Modal(document.getElementById('communicationModal')).show();
 }
 
 // 查看沟通记录详情
 function viewCommunicationDetail(id) {
+    console.log('开始查看沟通记录详情，ID:', id);
     fetch(`/api/communication/${id}`)
-        .then(response => response.json())
+        .then(response => {
+            console.log('API响应状态:', response.status);
+            return response.json();
+        })
         .then(result => {
+            console.log('API响应结果:', result);
             if (result.code === 200 && result.data) {
                 const communication = result.data;
+                console.log('获取到沟通记录数据:', communication);
                 showCommunicationDetail(communication);
             } else {
+                console.error('API返回错误:', result.message || '未知错误');
                 alert('获取沟通记录详情失败: ' + (result.message || '未知错误'));
             }
         })
@@ -196,6 +223,7 @@ function viewCommunicationDetail(id) {
 
 // 显示沟通记录详情内容
 function showCommunicationDetail(communication) {
+    console.log('开始显示沟通记录详情:', communication);
     const typeText = getCommunicationTypeText(communication.communicationType);
     const importanceText = getImportanceText(communication.importance);
     const commTime = formatDateTime(communication.communicationTime);
@@ -230,13 +258,81 @@ function showCommunicationDetail(communication) {
         '</div>';
     
     const detailContent = document.getElementById('communicationDetailContent');
+    console.log('找到communicationDetailContent:', detailContent);
+    
     if (detailContent) {
         detailContent.innerHTML = content;
-        new bootstrap.Modal(document.getElementById('communicationDetailModal')).show();
+        console.log('设置详情内容完成');
+        
+        const modalElement = document.getElementById('communicationDetailModal');
+        console.log('找到communicationDetailModal:', modalElement);
+        
+        if (modalElement) {
+            // 直接测试模态框显示
+            try {
+                // 移除可能存在的modal-backdrop
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+                
+                // 确保modal元素没有hide类
+                modalElement.classList.remove('hide');
+                
+                // 显示模态框
+                const modal = new bootstrap.Modal(modalElement);
+                console.log('创建模态框实例:', modal);
+                modal.show();
+                console.log('调用模态框show()方法');
+            } catch (error) {
+                console.error('显示模态框时发生错误:', error);
+                alert('显示模态框时发生错误: ' + error.message);
+            }
+        } else {
+            console.error('未找到communicationDetailModal元素');
+            alert('未找到详情模态框，请检查页面结构');
+        }
+    } else {
+        console.error('未找到communicationDetailContent元素');
+        alert('未找到详情内容容器，请检查页面结构');
     }
 }
 
-// 编辑沟通记录（从客户详情中）
+// 测试模态框显示的函数（用于调试）
+function testCommunicationDetailModal() {
+    console.log('开始测试沟通记录详情模态框');
+    
+    // 检查Bootstrap是否加载
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap未加载');
+        alert('Bootstrap未加载');
+        return;
+    }
+    
+    const modalElement = document.getElementById('communicationDetailModal');
+    if (modalElement) {
+        console.log('找到模态框元素:', modalElement);
+        
+        // 设置测试内容
+        const detailContent = document.getElementById('communicationDetailContent');
+        if (detailContent) {
+            detailContent.innerHTML = '<p>这是测试内容</p>';
+        }
+        
+        // 显示模态框
+        try {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+            console.log('模态框显示成功');
+        } catch (error) {
+            console.error('模态框显示失败:', error);
+            alert('模态框显示失败: ' + error.message);
+        }
+    } else {
+        console.error('未找到模态框元素');
+        alert('未找到模态框元素');
+    }
+}
+
+// 编辑沟通记录（从客户列表中）
 function editCommunicationFromCustomer(id) {
     fetch(`/api/communication/${id}`)
         .then(response => response.json())
@@ -245,6 +341,7 @@ function editCommunicationFromCustomer(id) {
                 const communication = result.data;
                 showEditCommunicationModal(communication);
             } else {
+                console.error('获取沟通记录失败:', result);
                 alert('获取沟通记录失败: ' + (result.message || '未知错误'));
             }
         })
@@ -256,44 +353,111 @@ function editCommunicationFromCustomer(id) {
 
 // 显示编辑沟通记录模态框
 function showEditCommunicationModal(communication) {
-    document.getElementById('communicationModalTitle').textContent = '编辑沟通记录';
-    document.getElementById('communicationId').value = communication.id;
+    const communicationModalTitle = document.getElementById('communicationModalTitle');
+    if (communicationModalTitle) {
+        communicationModalTitle.textContent = '编辑沟通记录';
+    }
     
+    const communicationIdField = document.getElementById('communicationId');
+    if (communicationIdField) {
+        communicationIdField.value = communication.id;
+    }
+    
+    // 设置客户信息（支持多种可能的字段名）
     const customerSelect = document.getElementById('customerSelect');
-    const customerIdHidden = document.getElementById('customerIdHidden');
     if (customerSelect) {
-        customerSelect.value = communication.customerName || '';
+        customerSelect.value = communication.customerName || communication.customerId || '';
         customerSelect.readOnly = true;
     }
-    if (customerIdHidden) {
-        customerIdHidden.value = communication.customerId || '';
+    
+    // 设置客户ID（支持多种可能的字段名）
+    const possibleCustomerIdFields = ['#modalCustomerId', '#customerIdHidden'];
+    for (const selector of possibleCustomerIdFields) {
+        const field = document.querySelector(selector);
+        if (field) {
+            field.value = communication.customerId || '';
+        }
     }
     
-    document.getElementById('communicationTypeSelect').value = communication.communicationType || '';
-    document.getElementById('importanceSelect').value = communication.importance || '';
+    // 设置沟通类型（支持两种可能的字段名）
+    const communicationTypeField = document.getElementById('communicationTypeSelect') || document.getElementById('communicationType');
+    if (communicationTypeField) {
+        communicationTypeField.value = communication.communicationType || '';
+    }
+    
+    const importanceSelect = document.getElementById('importanceSelect');
+    if (importanceSelect) {
+        importanceSelect.value = communication.importance || '';
+    }
     
     // 格式化时间用于datetime-local输入
-    if (communication.communicationTime) {
+    const communicationTimeField = document.getElementById('communicationTime');
+    if (communicationTimeField && communication.communicationTime) {
         const date = new Date(communication.communicationTime);
         const localDateTime = date.toISOString().slice(0, 16);
-        document.getElementById('communicationTime').value = localDateTime;
+        communicationTimeField.value = localDateTime;
     }
     
-    document.getElementById('subject').value = communication.summary || '';
-    document.getElementById('content').value = communication.content || '';
-    document.getElementById('followUp').value = communication.followUpTask || '';
+    const subjectField = document.getElementById('subject');
+    if (subjectField) {
+        subjectField.value = communication.summary || communication.subject || '';
+    }
     
-    new bootstrap.Modal(document.getElementById('communicationModal')).show();
+    const contentField = document.getElementById('content');
+    if (contentField) {
+        contentField.value = communication.content || '';
+    }
+    
+    const followUpField = document.getElementById('followUp');
+    if (followUpField) {
+        followUpField.value = communication.followUpTask || communication.followUp || '';
+    }
+    
+    // 显示模态框
+    const communicationModal = document.getElementById('communicationModal');
+    if (communicationModal) {
+        new bootstrap.Modal(communicationModal).show();
+    }
 }
 
 // 保存沟通记录
 function saveCommunication() {
     const form = document.getElementById('communicationForm');
+    if (!form) {
+        alert('表单未找到！');
+        return;
+    }
+    
     const formData = new FormData(form);
     
     const communicationId = document.getElementById('communicationId').value;
-    const customerIdHidden = document.getElementById('customerIdHidden');
-    const customerId = (customerIdHidden && customerIdHidden.value) || currentCustomerIdForCommunication;
+    
+    // 尝试从多个可能的地方获取客户ID
+    let customerId = null;
+    
+    // 1. 从modalCustomerId元素获取（来自customers.html的新增/编辑表单）
+    const modalCustomerIdElement = document.getElementById('modalCustomerId');
+    if (modalCustomerIdElement) {
+        customerId = modalCustomerIdElement.value;
+    }
+    
+    // 2. 如果没有，从customerIdHidden元素获取（来自customers.html的模态框）
+    if (!customerId) {
+        const customerIdHiddenElement = document.getElementById('customerIdHidden');
+        if (customerIdHiddenElement) {
+            customerId = customerIdHiddenElement.value;
+        }
+    }
+    
+    // 3. 如果没有，从currentCustomerIdForCommunication变量获取
+    if (!customerId) {
+        customerId = currentCustomerIdForCommunication;
+    }
+    
+    // 4. 如果没有，从currentViewingCustomer获取（客户详情页）
+    if (!customerId && typeof currentViewingCustomer !== 'undefined' && currentViewingCustomer) {
+        customerId = currentViewingCustomer.id;
+    }
     
     if (!customerId) {
         alert('客户ID不能为空！');
@@ -382,7 +546,7 @@ function saveCommunication() {
             alert('保存成功！');
             bootstrap.Modal.getInstance(document.getElementById('communicationModal')).hide();
             
-            // 如果是在客户详情中，重新加载沟通记录
+            // 重新加载沟通记录列表
             if (currentCustomerIdForCommunication) {
                 loadCustomerCommunications(currentCustomerIdForCommunication);
             }
@@ -396,7 +560,7 @@ function saveCommunication() {
     });
 }
 
-// 删除沟通记录（从客户详情中）
+// 删除沟通记录（从客户列表中）
 function deleteCommunicationFromCustomer(id) {
     if (!confirm('确定要删除这个沟通记录吗？')) {
         return;
