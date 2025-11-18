@@ -250,15 +250,69 @@ public class CustomerController {
     @GetMapping("/page")
     public Result<PageResult<Customer>> page(@RequestParam(defaultValue = "1") Integer pageNum,
                                            @RequestParam(defaultValue = "10") Integer pageSize,
-                                           Customer customer) {
+                                           @RequestParam(required = false) String customerName,
+                                           @RequestParam(required = false) String customerType,
+                                           @RequestParam(required = false) String customerLevel,
+                                           @RequestParam(required = false) String region,
+                                           @RequestParam(required = false) List<String> businessType) {
         try {
-        PageResult<Customer> pageResult = customerService.page(pageNum, pageSize, customer);
-        // 对敏感数据进行脱敏处理
-        List<Customer> maskedList = pageResult.getList().stream()
-                .map(sensitiveDataService::maskSensitiveData)
-                .collect(java.util.stream.Collectors.toList());
-        pageResult.setList(maskedList);
-        return Result.success(pageResult);
+            // 构建查询条件
+            Customer queryCustomer = new Customer();
+            if (customerName != null && !customerName.trim().isEmpty()) {
+                queryCustomer.setCustomerName(customerName);
+            }
+            if (customerType != null && !customerType.trim().isEmpty()) {
+                try {
+                    queryCustomer.setCustomerType(Integer.parseInt(customerType));
+                } catch (NumberFormatException e) {
+                    // 忽略无效的类型值
+                }
+            }
+            if (customerLevel != null && !customerLevel.trim().isEmpty()) {
+                try {
+                    queryCustomer.setCustomerLevel(Integer.parseInt(customerLevel));
+                } catch (NumberFormatException e) {
+                    // 忽略无效的等级值
+                }
+            }
+            if (region != null && !region.trim().isEmpty()) {
+                queryCustomer.setRegion(region);
+            }
+            
+            // 处理业务类型参数（支持多个businessType，用于IN查询）
+            List<Integer> businessTypeList = null;
+            if (businessType != null && !businessType.isEmpty()) {
+                businessTypeList = new java.util.ArrayList<>();
+                for (String typeStr : businessType) {
+                    try {
+                        businessTypeList.add(Integer.parseInt(typeStr));
+                    } catch (NumberFormatException e) {
+                        log.warn("无效的业务类型值: {}", typeStr);
+                    }
+                }
+                if (businessTypeList.isEmpty()) {
+                    businessTypeList = null;
+                } else {
+                    log.info("设置业务类型筛选条件: businessTypeList={}", businessTypeList);
+                }
+            }
+            
+            log.info("查询客户列表 - 页码: {}, 每页大小: {}, 查询条件: customerName={}, customerType={}, customerLevel={}, region={}, businessTypeList={}", 
+                    pageNum, pageSize, customerName, customerType, customerLevel, region, businessTypeList);
+            
+            PageResult<Customer> pageResult = customerService.page(pageNum, pageSize, queryCustomer, businessTypeList);
+            log.info("查询结果 - 总数: {}, 当前页数据量: {}", pageResult.getTotal(), pageResult.getList().size());
+            
+            // 如果查询结果为空，记录更详细的信息用于调试
+            if (pageResult.getTotal() == 0) {
+                log.warn("⚠️ 查询结果为空！查询条件: businessTypeList={}, 请检查数据库中是否有匹配的记录", businessTypeList);
+            }
+            // 对敏感数据进行脱敏处理
+            List<Customer> maskedList = pageResult.getList().stream()
+                    .map(sensitiveDataService::maskSensitiveData)
+                    .collect(java.util.stream.Collectors.toList());
+            pageResult.setList(maskedList);
+            return Result.success(pageResult);
         } catch (Exception e) {
             // 如果数据库连接失败或其他异常，返回空结果而不是抛出异常
             log.error("操作异常", e);
@@ -271,9 +325,27 @@ public class CustomerController {
      * 获取客户统计数据
      */
     @GetMapping("/statistics")
-    public Result<Map<String, Object>> getStatistics() {
+    public Result<Map<String, Object>> getStatistics(@RequestParam(required = false) List<String> businessType) {
         try {
-            Map<String, Object> statistics = customerService.getCustomerStatistics();
+            // 处理业务类型参数（支持多个businessType，用于统计筛选）
+            List<Integer> businessTypeList = null;
+            if (businessType != null && !businessType.isEmpty()) {
+                businessTypeList = new java.util.ArrayList<>();
+                for (String typeStr : businessType) {
+                    try {
+                        businessTypeList.add(Integer.parseInt(typeStr));
+                    } catch (NumberFormatException e) {
+                        log.warn("无效的业务类型值: {}", typeStr);
+                    }
+                }
+                if (businessTypeList.isEmpty()) {
+                    businessTypeList = null;
+                } else {
+                    log.info("统计业务类型筛选条件: businessTypeList={}", businessTypeList);
+                }
+            }
+            
+            Map<String, Object> statistics = customerService.getCustomerStatistics(businessTypeList);
             return Result.success(statistics);
         } catch (Exception e) {
             log.error("操作异常", e);

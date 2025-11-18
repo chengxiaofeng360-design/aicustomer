@@ -35,8 +35,68 @@ const customerLevelReverseMap = {
     '钻石': 3
 };
 
+// 进度映射
+const progressMap = {
+    '0': '未开始',
+    '1': '进行中',
+    '2': '暂停中',
+    '3': '已成功',
+    '4': '放弃'
+};
+
+// 进度样式映射
+const progressClassMap = {
+    '0': 'bg-secondary',
+    '1': 'bg-primary',
+    '2': 'bg-warning',
+    '3': 'bg-success',
+    '4': 'bg-danger'
+};
+
+// 业务类型映射（具体业务类型1-6，从系统配置动态加载，这里是默认值）
+let businessTypeMap = {
+    '1': '品种权申请客户',
+    '2': '品种权转化推广客户',
+    '3': '知识产权互补协作客户',
+    '4': '科普教育合作客户',
+    '5': '景观设计服务客户',
+    '6': '图书出版客户'
+};
+
+// 业务类型大类到具体类型的映射（用于分类页面）
+const businessCategoryToTypes = {
+    '品种权业务': [1, 2],  // 品种权业务：品种权申请客户、品种权转化推广客户
+    '知识产权业务': [3],     // 知识产权业务：知识产权互补协作客户
+    '服务业务': [4, 5, 6]   // 服务业务：科普教育合作客户、景观设计服务客户、图书出版客户
+};
+
+// 当前选中的业务类型列表（支持多个）
+let currentBusinessTypeList = null;
+
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
+    // 从URL参数获取业务类型列表（支持多个businessType参数）
+    const urlParams = new URLSearchParams(window.location.search);
+    const businessTypes = urlParams.getAll('businessType'); // 获取所有businessType参数
+    
+    if (businessTypes && businessTypes.length > 0) {
+        currentBusinessTypeList = businessTypes.map(t => parseInt(t)).filter(t => !isNaN(t));
+        // 更新页面标题
+        const pageTitle = document.querySelector('.page-title');
+        if (pageTitle && currentBusinessTypeList.length > 0) {
+            let titleText = '';
+            if (currentBusinessTypeList.length === 1) {
+                titleText = '客户管理 - ' + (businessTypeMap[currentBusinessTypeList[0].toString()] || '客户管理');
+            } else {
+                titleText = '客户管理 - 业务类型客户';
+            }
+            pageTitle.innerHTML = '<i class="bi bi-people-fill"></i> ' + titleText;
+        }
+    }
+    
+    // 从系统配置加载业务类型
+    loadBusinessTypesFromConfig();
+    
     loadStatistics();
     loadCustomers();
     updateTotalCount();
@@ -48,9 +108,107 @@ document.addEventListener('DOMContentLoaded', function() {
     // 移除自动启动，避免权限错误和用户体验问题
 });
 
+// 从系统配置加载业务类型
+function loadBusinessTypesFromConfig() {
+    const url = '/api/system-config/group/' + encodeURIComponent('业务类型');
+    console.log('🔍 加载业务类型配置，URL:', url);
+    
+    fetch(url)
+        .then(response => {
+            console.log('🔍 API响应状态:', response.status, response.statusText);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.warn('⚠️ 系统配置API不存在（404），使用默认业务类型');
+                    updateBusinessTypeSelectOptions();
+                    return null;
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(result => {
+            if (!result) return; // 404情况已处理
+            
+            console.log('🔍 API响应数据:', result);
+            if (result.code === 200 && result.data && result.data.length > 0) {
+                // 清空现有映射
+                businessTypeMap = {};
+                
+                // 按配置键排序并构建映射
+                result.data
+                    .filter(config => config.configKey && config.configKey.startsWith('business.type.'))
+                    .sort((a, b) => {
+                        const numA = parseInt(a.configKey.replace('business.type.', ''));
+                        const numB = parseInt(b.configKey.replace('business.type.', ''));
+                        return numA - numB;
+                    })
+                    .forEach((config) => {
+                        const key = config.configKey.replace('business.type.', '');
+                        businessTypeMap[key] = config.configValue;
+                    });
+                
+                console.log('✅ 已从系统配置加载业务类型:', businessTypeMap);
+            } else {
+                console.log('⚠️ 系统配置中没有业务类型数据，使用默认值');
+            }
+            
+            // 无论是否从配置加载成功，都要更新下拉框选项
+            updateBusinessTypeSelectOptions();
+        })
+        .catch(error => {
+            console.warn('⚠️ 加载业务类型配置失败，使用默认值:', error);
+            // 即使加载失败，也要更新下拉框（使用默认值）
+            updateBusinessTypeSelectOptions();
+        });
+}
+
+// 更新业务类型下拉框选项
+function updateBusinessTypeSelectOptions() {
+    const select = document.getElementById('businessTypeSelect');
+    if (!select) return;
+    
+    // 保存当前选中的值
+    const currentValue = select.value;
+    
+    // 清空现有选项（保留第一个"请选择"选项）
+    const firstOption = select.options[0];
+    select.innerHTML = '';
+    if (firstOption && firstOption.value === '') {
+        select.appendChild(firstOption);
+    } else {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '请选择业务类型';
+        select.appendChild(defaultOption);
+    }
+    
+    // 添加所有业务类型选项（1-6）
+    Object.keys(businessTypeMap).sort((a, b) => parseInt(a) - parseInt(b)).forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = businessTypeMap[key];
+        select.appendChild(option);
+    });
+    
+    // 恢复之前选中的值
+    if (currentValue) {
+        select.value = currentValue;
+    }
+}
+
 // 加载统计数据
 function loadStatistics() {
-    fetch('/api/customer/statistics')
+    // 构建查询参数，包含当前业务类型列表
+    const params = new URLSearchParams();
+    if (currentBusinessTypeList && currentBusinessTypeList.length > 0) {
+        currentBusinessTypeList.forEach(type => {
+            params.append('businessType', type.toString());
+        });
+    }
+    
+    const url = '/api/customer/statistics' + (params.toString() ? '?' + params.toString() : '');
+    
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error('获取统计数据失败');
@@ -109,7 +267,7 @@ function formatNumber(num) {
 function loadCustomers(page = currentPage) {
     currentPage = page;
     const tbody = document.getElementById('customerTableBody');
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">加载中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">加载中...</td></tr>';
 
     // 构建查询参数
     const params = new URLSearchParams();
@@ -134,8 +292,20 @@ function loadCustomers(page = currentPage) {
         params.append('region', region);
     }
     
-    fetch('/api/customer/page?' + params.toString())
+    // 如果有业务类型列表参数，添加到查询条件（支持多个businessType）
+    if (currentBusinessTypeList && currentBusinessTypeList.length > 0) {
+        currentBusinessTypeList.forEach(type => {
+            params.append('businessType', type.toString());
+        });
+    }
+    
+    const apiUrl = '/api/customer/page?' + params.toString();
+    console.log('加载客户列表，URL:', apiUrl);
+    console.log('当前业务类型列表:', currentBusinessTypeList);
+    
+    fetch(apiUrl)
         .then(response => {
+            console.log('API响应状态:', response.status, response.statusText);
             if (!response.ok) {
                 // 如果HTTP状态码不是200，尝试解析错误信息
                 return response.json().then(err => {
@@ -145,23 +315,25 @@ function loadCustomers(page = currentPage) {
             return response.json();
         })
         .then(result => {
-            console.log('API响应:', result);
+            console.log('API响应数据:', result);
             if (result && result.code === 200 && result.data) {
                 const pageResult = result.data;
                 customers = pageResult.list || [];
                 totalRecords = pageResult.total || 0;
+                console.log('加载到客户数量:', customers.length, '总数:', totalRecords);
                 renderCustomerTable(customers);
                 updateTotalCount();
                 renderPagination();
             } else {
                 const errorMsg = (result && result.message) || (result && result.error) || '未知错误';
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">加载失败: ' + errorMsg + '</td></tr>';
+                console.error('API返回错误:', errorMsg, result);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败: ' + errorMsg + '</td></tr>';
             }
         })
         .catch(error => {
             console.error('加载客户列表失败:', error);
             const errorMsg = error.message || '网络错误或服务器未响应';
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
         });
 }
 
@@ -171,7 +343,7 @@ function renderCustomerTable(customerList) {
     tbody.innerHTML = '';
     
     if (customerList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无数据</td></tr>';
         return;
     }
 
@@ -187,17 +359,29 @@ function renderCustomerTable(customerList) {
         } else if (customerLevel === 3) {
             levelBadgeClass = 'bg-primary';
         }
+        
+        // 处理进度字段
+        const progress = customer.progress !== null && customer.progress !== undefined ? customer.progress : 0;
+        const progressText = progressMap[progress] || progressMap['0'];
+        const progressBadgeClass = progressClassMap[progress] || progressClassMap['0'];
+        
+        // 处理业务类型字段
+        const businessType = customer.businessType !== null && customer.businessType !== undefined ? customer.businessType : 1;
+        const businessTypeText = businessType ? (businessTypeMap[businessType.toString()] || '') : '-';
+        
         const createTime = customer.createTime ? new Date(customer.createTime).toLocaleString('zh-CN') : '';
         
         row.innerHTML = 
             '<td class="table-cell-truncate" title="' + (customer.customerName || '') + '">' + (customer.customerName || '') + '</td>' +
             '<td class="table-cell-truncate" title="' + (customer.contactPerson || '') + '">' + (customer.contactPerson || '') + '</td>' +
-            '<td class="table-cell-truncate" title="' + (customer.phone || '') + '">' + (customer.phone || '') + '</td>' +
             '<td class="table-cell-truncate" title="' + customerTypeText + '">' + customerTypeText + '</td>' +
             '<td class="table-cell-truncate">' +
                 '<span class="badge ' + levelBadgeClass + '">' + customerLevelText + '</span>' +
             '</td>' +
-            '<td class="table-cell-truncate" title="' + (customer.position || '') + '">' + (customer.position || '') + '</td>' +
+            '<td class="table-cell-truncate">' +
+                '<span class="badge ' + progressBadgeClass + '">' + progressText + '</span>' +
+            '</td>' +
+            '<td class="table-cell-truncate" title="' + businessTypeText + '">' + businessTypeText + '</td>' +
             '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
             '<td>' +
                 '<div class="action-buttons">' +
@@ -356,8 +540,21 @@ function showAddCustomerModal() {
     document.getElementById('customerModalTitle').textContent = '新增客户';
     document.getElementById('customerForm').reset();
     document.getElementById('customerId').value = '';
+    
+    // 设置默认值：第一种类型（品种权申请客户）
+    const businessTypeSelect = document.getElementById('businessTypeSelect');
+    if (businessTypeSelect) {
+        if (currentBusinessTypeList && currentBusinessTypeList.length === 1) {
+            businessTypeSelect.value = currentBusinessTypeList[0].toString();
+        } else {
+            businessTypeSelect.value = '1'; // 默认第一种类型
+        }
+    }
+    
     new bootstrap.Modal(document.getElementById('customerModal')).show();
 }
+
+// 业务类型下拉框已通过updateBusinessTypeSelectOptions函数更新，无需动态监听
 
 // 显示AI识别模态框
 function showAIRecognition() {
@@ -1619,6 +1816,16 @@ function showCustomerDetail(customer) {
     } else if (customerLevel === 3) {
         levelBadgeClass = 'bg-primary';
     }
+    
+    // 处理进度字段
+    const progress = customer.progress !== null && customer.progress !== undefined ? customer.progress : 0;
+    const progressText = progressMap[progress] || progressMap['0'];
+    const progressBadgeClass = progressClassMap[progress] || progressClassMap['0'];
+    
+    // 处理业务类型字段（现在businessType是具体业务类型1-6）
+    const businessType = customer.businessType || 1;
+    const businessTypeText = businessTypeMap[businessType.toString()] || '未填写';
+    
     const createTime = customer.createTime ? new Date(customer.createTime).toLocaleString('zh-CN') : '';
     const updateTime = customer.updateTime ? new Date(customer.updateTime).toLocaleString('zh-CN') : createTime;
     
@@ -1629,13 +1836,12 @@ function showCustomerDetail(customer) {
                     '<label class="form-label text-muted">客户名称</label>' +
                     '<p class="mb-0">' + (customer.customerName || '未填写') + '</p>' +
             '</div>' +
-            '</div>' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">联系人</label>' +
                     '<p class="mb-0">' + (customer.contactPerson || '未填写') + '</p>' +
+                '</div>' +
             '</div>' +
-        '</div>' +
         '</div>' +
         '<div class="row g-3">' +
             '<div class="col-md-6">' +
@@ -1668,8 +1874,22 @@ function showCustomerDetail(customer) {
         '<div class="row g-3">' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
+                    '<label class="form-label text-muted">业务类型</label>' +
+                    '<p class="mb-0">' + businessTypeText + '</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
                     '<label class="form-label text-muted">地区</label>' +
                     '<p class="mb-0">' + (customer.region || '未填写') + '</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="row g-3">' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
+                    '<label class="form-label text-muted">进度</label>' +
+                    '<p class="mb-0"><span class="badge ' + progressBadgeClass + '">' + progressText + '</span></p>' +
                 '</div>' +
             '</div>' +
         '</div>' +
@@ -1767,18 +1987,61 @@ function showEditModal(customer) {
     document.getElementById('contactPerson').value = customer.contactPerson || '';
     document.getElementById('phone').value = customer.phone || '';
     document.getElementById('email').value = customer.email || '';
-    const customerTypeText = customerTypeMap[customer.customerType] || '';
-    document.getElementById('customerTypeSelect').value = customerTypeText;
+    
+    // 设置客户类型（确保有值）
+    const customerType = customer.customerType || 1;
+    const customerTypeText = customerTypeMap[customerType.toString()] || customerTypeMap['1'];
+    const customerTypeSelect = document.getElementById('customerTypeSelect');
+    if (customerTypeSelect) {
+        customerTypeSelect.value = customerTypeText;
+        console.log('设置客户类型:', customerType, '->', customerTypeText, '实际值:', customerTypeSelect.value);
+    }
+    
+    // 设置客户等级（确保有值）
     const customerLevel = customer.customerLevel || 1;
-    const customerLevelText = customerLevelMap[customerLevel] || '普通';
-    document.getElementById('customerLevelSelect').value = customerLevelText;
-    document.getElementById('regionSelect').value = customer.region || '';
+    const customerLevelText = customerLevelMap[customerLevel.toString()] || '普通';
+    const customerLevelSelect = document.getElementById('customerLevelSelect');
+    if (customerLevelSelect) {
+        customerLevelSelect.value = customerLevelText;
+        console.log('设置客户等级:', customerLevel, '->', customerLevelText, '实际值:', customerLevelSelect.value);
+    }
+    // 设置进度
+    const progress = customer.progress !== null && customer.progress !== undefined ? customer.progress : 0;
+    const progressSelect = document.getElementById('progressSelect');
+    if (progressSelect) {
+        progressSelect.value = progress.toString();
+        console.log('设置进度:', progress, '->', progressSelect.value);
+    }
+    
+    // 设置业务类型（确保有值，默认为1）
+    const businessType = customer.businessType || 1;
+    const businessTypeSelect = document.getElementById('businessTypeSelect');
+    if (businessTypeSelect) {
+        businessTypeSelect.value = businessType.toString();
+        console.log('设置业务类型:', businessType, '->', businessTypeSelect.value);
+    }
+    
+    // 设置地区（确保下拉框中有对应的选项）
+    const regionSelect = document.getElementById('regionSelect');
+    if (regionSelect && customer.region) {
+        regionSelect.value = customer.region;
+        // 如果设置失败，说明下拉框中没有该选项
+        if (regionSelect.value !== customer.region) {
+            console.warn('地区值不在下拉框中:', customer.region);
+        }
+    }
+    
     document.getElementById('position').value = customer.position || '';
     document.getElementById('qqWeixin').value = customer.qqWeixin || '';
     document.getElementById('cooperationContent').value = customer.cooperationContent || '';
     document.getElementById('address').value = customer.address || '';
     document.getElementById('remarks').value = customer.remark || '';
-    new bootstrap.Modal(document.getElementById('customerModal')).show();
+    
+    // 延迟显示模态框，确保所有值都已设置
+    setTimeout(() => {
+        const modal = new bootstrap.Modal(document.getElementById('customerModal'));
+        modal.show();
+    }, 100);
 }
 
 // 保存客户
@@ -1807,6 +2070,10 @@ function saveCustomer() {
     const customerLevelText = formData.get('customerLevel');
     const customerLevel = customerLevelReverseMap[customerLevelText] || parseInt(customerLevelText) || 1;
     
+    const progress = parseInt(formData.get('progress')) || 0;
+    // 默认设置为第一种类型（品种权申请客户）
+    const businessType = formData.get('businessType') ? parseInt(formData.get('businessType')) : 1;
+    
     const customerId = document.getElementById('customerId').value;
     
     const customerData = {
@@ -1816,6 +2083,8 @@ function saveCustomer() {
         email: formData.get('email') || null,
         customerType: customerType,
         customerLevel: customerLevel,
+        progress: progress,
+        businessType: businessType,
         region: formData.get('region') || null,
         position: formData.get('position') || null,
         qqWeixin: formData.get('qqWeixin') || null,

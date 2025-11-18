@@ -39,6 +39,7 @@ public class DatabaseInitializer {
             boolean communicationTableExists = checkTableExists("communication_record");
             boolean teamTaskTableExists = checkTableExists("team_task");
             boolean taskProgressReportTableExists = checkTableExists("task_progress_report");
+            boolean systemConfigTableExists = checkTableExists("system_config");
             
             if (!customerTableExists) {
                 log.info("检测到customer表不存在，开始初始化数据库表结构...");
@@ -47,6 +48,17 @@ public class DatabaseInitializer {
                 log.info("数据库表已存在，检查并更新表结构...");
                 updateTableStructure();
             }
+            
+            // 检查并创建system_config表
+            if (!systemConfigTableExists) {
+                log.info("检测到system_config表不存在，开始创建...");
+                createSystemConfigTable();
+            } else {
+                log.debug("system_config表已存在，跳过创建");
+            }
+            
+            // 初始化系统配置数据（业务类型等）
+            initSystemConfigData();
             
             // 检查并创建communication_record表（如果不存在）
             if (!communicationTableExists) {
@@ -263,6 +275,112 @@ public class DatabaseInitializer {
                 log.debug("region字段已存在，跳过");
             }
             
+            // 检查并添加progress字段（进度）
+            if (!checkColumnExists("customer", "progress")) {
+                log.info("添加progress字段到customer表...");
+                try {
+                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN progress TINYINT DEFAULT 0 COMMENT '进度(0:未开始,1:进行中,2:暂停中,3:已成功,4:放弃)' AFTER remark");
+                    log.info("✅ progress字段添加成功");
+                } catch (Exception e) {
+                    log.error("❌ 添加progress字段失败: {}", e.getMessage());
+                }
+            } else {
+                log.debug("progress字段已存在，跳过");
+            }
+            
+            // 检查并添加/修改business_type字段（具体业务类型1-6）
+            boolean businessTypeExists = checkColumnExists("customer", "business_type");
+            log.info("检查business_type字段: {}", businessTypeExists ? "已存在" : "不存在");
+            
+            if (!businessTypeExists) {
+                log.info("开始添加business_type字段到customer表...");
+                try {
+                    // 先检查progress字段是否存在，如果不存在则添加到末尾
+                    boolean progressExists = checkColumnExists("customer", "progress");
+                    String alterSql;
+                    if (progressExists) {
+                        alterSql = "ALTER TABLE customer ADD COLUMN business_type TINYINT DEFAULT 1 COMMENT '具体业务类型(1:品种权申请客户,2:品种权转化推广客户,3:知识产权互补协作客户,4:科普教育合作客户,5:景观设计服务客户,6:图书出版客户)' AFTER progress";
+                    } else {
+                        alterSql = "ALTER TABLE customer ADD COLUMN business_type TINYINT DEFAULT 1 COMMENT '具体业务类型(1:品种权申请客户,2:品种权转化推广客户,3:知识产权互补协作客户,4:科普教育合作客户,5:景观设计服务客户,6:图书出版客户)'";
+                    }
+                    log.info("执行SQL: {}", alterSql);
+                    jdbcTemplate.execute(alterSql);
+                    log.info("✅ business_type字段添加成功");
+                } catch (Exception e) {
+                    log.error("❌ 添加business_type字段失败: {}", e.getMessage(), e);
+                }
+            } else {
+                log.info("business_type字段已存在，更新字段注释...");
+                try {
+                    // 更新字段注释
+                    String alterSql = "ALTER TABLE customer MODIFY COLUMN business_type TINYINT DEFAULT 1 COMMENT '具体业务类型(1:品种权申请客户,2:品种权转化推广客户,3:知识产权互补协作客户,4:科普教育合作客户,5:景观设计服务客户,6:图书出版客户)'";
+                    jdbcTemplate.execute(alterSql);
+                    log.info("✅ business_type字段注释更新成功");
+                } catch (Exception e) {
+                    log.warn("⚠️ 更新business_type字段注释失败: {}", e.getMessage());
+                }
+            }
+            
+            // 删除business_sub_type字段（如果存在）- 强制删除，忽略错误
+            try {
+                boolean businessSubTypeExists = checkColumnExists("customer", "business_sub_type");
+                if (businessSubTypeExists) {
+                    log.info("检测到business_sub_type字段存在，开始删除...");
+                    try {
+                        // 尝试删除字段
+                        jdbcTemplate.execute("ALTER TABLE customer DROP COLUMN business_sub_type");
+                        log.info("✅ business_sub_type字段删除成功");
+                        
+                        // 验证删除是否成功
+                        boolean stillExists = checkColumnExists("customer", "business_sub_type");
+                        if (stillExists) {
+                            log.warn("⚠️ business_sub_type字段删除后仍然存在，可能需要手动删除");
+                        } else {
+                            log.info("✅ 已验证business_sub_type字段已成功删除");
+                        }
+                    } catch (Exception e) {
+                        log.error("❌ 删除business_sub_type字段失败: {}", e.getMessage(), e);
+                        // 尝试使用IF EXISTS语法（MySQL 5.7+支持）
+                        try {
+                            jdbcTemplate.execute("ALTER TABLE customer DROP COLUMN IF EXISTS business_sub_type");
+                            log.info("✅ 使用IF EXISTS语法删除business_sub_type字段");
+                        } catch (Exception e2) {
+                            log.error("❌ 使用IF EXISTS语法删除business_sub_type字段也失败: {}", e2.getMessage());
+                        }
+                    }
+                } else {
+                    log.info("business_sub_type字段不存在，跳过删除");
+                }
+            } catch (Exception e) {
+                log.warn("⚠️ 检查business_sub_type字段时出错: {}", e.getMessage());
+            }
+            
+            // 将现有客户的businessType设置为默认值1（品种权申请客户）
+            try {
+                boolean businessTypeExistsForUpdate = checkColumnExists("customer", "business_type");
+                
+                if (businessTypeExistsForUpdate) {
+                    // 先查询总客户数
+                    Integer totalCustomers = jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM customer WHERE deleted = 0", Integer.class);
+                    log.info("数据库中总客户数: {}", totalCustomers);
+                    
+                    // 更新所有未删除的客户，包括 business_type 为 NULL 的
+                    int updatedCount = jdbcTemplate.update(
+                        "UPDATE customer SET business_type = 1 WHERE deleted = 0 AND (business_type IS NULL OR business_type = 0)"
+                    );
+                    if (updatedCount > 0) {
+                        log.info("✅ 已将 {} 条现有客户记录的业务类型设置为默认值1（品种权申请客户）", updatedCount);
+                    } else {
+                        log.info("ℹ️ 没有需要更新的客户记录");
+                    }
+                } else {
+                    log.warn("⚠️ business_type字段不存在，跳过更新现有客户业务类型");
+                }
+            } catch (Exception e) {
+                log.error("❌ 更新现有客户业务类型失败: {}", e.getMessage(), e);
+            }
+            
             // 检查并删除applicant_nature字段（如果存在）
             if (checkColumnExists("customer", "applicant_nature")) {
                 log.info("删除applicant_nature字段从customer表...");
@@ -277,6 +395,85 @@ public class DatabaseInitializer {
             log.info("✅ 表结构更新完成");
         } catch (Exception e) {
             log.error("❌ 更新表结构失败: {}", e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * 创建system_config表
+     */
+    private void createSystemConfigTable() {
+        try {
+            String sql = "CREATE TABLE IF NOT EXISTS system_config (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID', " +
+                    "config_key VARCHAR(200) NOT NULL UNIQUE COMMENT '配置键（唯一标识）', " +
+                    "config_value TEXT NOT NULL COMMENT '配置值', " +
+                    "config_type VARCHAR(20) NOT NULL DEFAULT 'STRING' COMMENT '配置类型(STRING,NUMBER,BOOLEAN,JSON)', " +
+                    "description VARCHAR(500) COMMENT '配置描述', " +
+                    "config_group VARCHAR(100) DEFAULT '其他' COMMENT '配置分组', " +
+                    "create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
+                    "update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
+                    "deleted TINYINT DEFAULT 0 COMMENT '是否删除(0:未删除,1:已删除)', " +
+                    "INDEX idx_config_key (config_key), " +
+                    "INDEX idx_config_group (config_group), " +
+                    "INDEX idx_deleted (deleted)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统配置表'";
+            jdbcTemplate.execute(sql);
+            log.info("✅ system_config表创建成功");
+        } catch (Exception e) {
+            log.error("❌ 创建system_config表失败: {}", e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * 初始化系统配置数据
+     */
+    private void initSystemConfigData() {
+        try {
+            // 业务类型配置数据
+            String[][] businessTypes = {
+                {"business.type.1", "品种权申请客户", "STRING", "品种权业务 - 品种权申请客户", "业务类型"},
+                {"business.type.2", "品种权转化推广客户", "STRING", "品种权业务 - 品种权转化推广客户", "业务类型"},
+                {"business.type.3", "知识产权互补协作客户", "STRING", "知识产权业务 - 知识产权互补协作客户", "业务类型"},
+                {"business.type.4", "科普教育合作客户", "STRING", "服务业务 - 科普教育合作客户", "业务类型"},
+                {"business.type.5", "景观设计服务客户", "STRING", "服务业务 - 景观设计服务客户", "业务类型"},
+                {"business.type.6", "图书出版客户", "STRING", "服务业务 - 图书出版客户", "业务类型"}
+            };
+            
+            int insertedCount = 0;
+            int skippedCount = 0;
+            
+            for (String[] config : businessTypes) {
+                String configKey = config[0];
+                String configValue = config[1];
+                String configType = config[2];
+                String description = config[3];
+                String configGroup = config[4];
+                
+                // 检查配置是否已存在
+                Integer exists = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM system_config WHERE config_key = ? AND deleted = 0",
+                    Integer.class, configKey);
+                
+                if (exists == null || exists == 0) {
+                    // 插入新配置
+                    jdbcTemplate.update(
+                        "INSERT INTO system_config (config_key, config_value, config_type, description, config_group, create_time, update_time, deleted) " +
+                        "VALUES (?, ?, ?, ?, ?, NOW(), NOW(), 0)",
+                        configKey, configValue, configType, description, configGroup);
+                    insertedCount++;
+                } else {
+                    skippedCount++;
+                }
+            }
+            
+            if (insertedCount > 0) {
+                log.info("✅ 已初始化 {} 条业务类型配置数据", insertedCount);
+            }
+            if (skippedCount > 0) {
+                log.debug("跳过 {} 条已存在的配置数据", skippedCount);
+            }
+        } catch (Exception e) {
+            log.error("❌ 初始化系统配置数据失败: {}", e.getMessage(), e);
         }
     }
     

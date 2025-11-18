@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -112,12 +114,79 @@ public class DeepSeekService {
             
             return "抱歉，AI服务暂时无法响应，请稍后重试。";
             
+        } catch (HttpClientErrorException e) {
+            // 处理HTTP错误响应（如402余额不足、401认证失败等）
+            HttpStatus statusCode = e.getStatusCode();
+            String responseBody = e.getResponseBodyAsString();
+            
+            log.error("【DeepSeek】API调用HTTP错误，状态码: {}, 响应: {}", statusCode, responseBody);
+            System.out.println("【DeepSeek】HTTP错误，状态码: " + statusCode);
+            System.out.println("【DeepSeek】响应内容: " + responseBody);
+            
+            // 特别处理402余额不足错误
+            if (statusCode == HttpStatus.PAYMENT_REQUIRED || statusCode.value() == 402) {
+                try {
+                    // 尝试解析错误响应，提取详细信息
+                    JsonObject errorResponse = gson.fromJson(responseBody, JsonObject.class);
+                    if (errorResponse.has("error")) {
+                        JsonObject error = errorResponse.getAsJsonObject("error");
+                        String errorMessage = error.has("message") ? error.get("message").getAsString() : "余额不足";
+                        
+                        if (errorMessage.contains("Insufficient Balance") || errorMessage.contains("余额不足")) {
+                            return "⚠️ **DeepSeek账户余额不足**\n\n" +
+                                   "您的DeepSeek API账户余额已用完，无法继续使用AI服务。\n\n" +
+                                   "**解决方案：**\n" +
+                                   "1. 登录DeepSeek平台（https://platform.deepseek.com）\n" +
+                                   "2. 为账户充值\n" +
+                                   "3. 充值后即可恢复正常使用\n\n" +
+                                   "如有疑问，请联系系统管理员。";
+                        }
+                    }
+                } catch (Exception parseException) {
+                    // 解析失败，使用默认提示
+                }
+                return "⚠️ **DeepSeek账户余额不足**\n\n" +
+                       "您的DeepSeek API账户余额已用完，请登录DeepSeek平台充值后继续使用。\n\n" +
+                       "如需帮助，请联系系统管理员。";
+            }
+            
+            // 处理其他HTTP错误
+            if (statusCode == HttpStatus.UNAUTHORIZED || statusCode.value() == 401) {
+                return "⚠️ **API认证失败**\n\n" +
+                       "DeepSeek API密钥无效或已过期，请联系系统管理员更新API密钥。";
+            }
+            
+            // 通用的HTTP错误提示
+            String errorMsg = "DeepSeek API调用失败（状态码: " + statusCode.value() + "）";
+            try {
+                JsonObject errorResponse = gson.fromJson(responseBody, JsonObject.class);
+                if (errorResponse.has("error")) {
+                    JsonObject error = errorResponse.getAsJsonObject("error");
+                    if (error.has("message")) {
+                        errorMsg = error.get("message").getAsString();
+                    }
+                }
+            } catch (Exception parseException) {
+                // 解析失败，使用默认提示
+            }
+            return "⚠️ **AI服务调用失败**\n\n" + errorMsg + "\n\n请稍后重试或联系系统管理员。";
+            
+        } catch (RestClientException e) {
+            // 处理网络连接错误等
+            log.error("【DeepSeek】网络连接错误: {}", e.getMessage(), e);
+            System.out.println("【DeepSeek】网络连接错误: " + e.getMessage());
+            return "⚠️ **网络连接失败**\n\n" +
+                   "无法连接到DeepSeek API服务，请检查网络连接后重试。\n\n" +
+                   "错误信息: " + e.getMessage();
+                   
         } catch (Exception e) {
             log.error("【DeepSeek】调用API异常: {}", e.getMessage(), e);
             System.out.println("【DeepSeek】异常: " + e.getMessage());
             System.out.println("【DeepSeek】异常类型: " + e.getClass().getName());
             e.printStackTrace();
-            return "抱歉，AI服务调用异常，请稍后重试。错误信息: " + e.getMessage();
+            return "⚠️ **AI服务调用异常**\n\n" +
+                   "抱歉，AI服务调用时发生未知错误，请稍后重试。\n\n" +
+                   "错误信息: " + e.getMessage();
         }
     }
     

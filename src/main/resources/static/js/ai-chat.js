@@ -24,7 +24,46 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始化聊天界面
     initializeChat();
+    
+    // 初始化键盘快捷键
+    initKeyboardShortcuts();
 });
+
+// 初始化键盘快捷键
+function initKeyboardShortcuts() {
+    document.addEventListener('keydown', function(event) {
+        // Ctrl/Cmd + K: 聚焦到输入框
+        if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+            event.preventDefault();
+            const input = document.getElementById('messageInput');
+            if (input) {
+                input.focus();
+            }
+        }
+        
+        // Esc: 关闭弹窗和模态框
+        if (event.key === 'Escape') {
+            // 关闭表情选择器
+            const emojiPicker = document.getElementById('emojiPicker');
+            if (emojiPicker && emojiPicker.style.display !== 'none') {
+                emojiPicker.style.display = 'none';
+                emojiPickerVisible = false;
+            }
+            
+            // 关闭图片模态框
+            const imageModal = document.querySelector('.image-modal');
+            if (imageModal) {
+                imageModal.remove();
+            }
+            
+            // 取消语音识别结果
+            const voiceResult = document.getElementById('voiceRecognitionResult');
+            if (voiceResult) {
+                cancelVoiceText();
+            }
+        }
+    });
+}
 
 // 初始化聊天界面
 function initializeChat() {
@@ -41,7 +80,10 @@ async function sendMessage() {
     
     // 禁用发送按钮和输入框
     const sendBtn = document.getElementById('sendBtn');
-    sendBtn.disabled = true;
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="bi bi-hourglass-split"></i><span class="send-label">发送中...</span>';
+    }
     input.disabled = true;
     
     // 添加用户消息
@@ -82,16 +124,14 @@ async function sendMessage() {
             })
         });
         
-        console.log('【前端】收到响应，状态码:', response.status);
         const result = await response.json();
-        console.log('【前端】响应结果:', result);
         
         // 隐藏正在输入状态
         hideTypingIndicator();
         
-        if (result.success && result.data) {
+        // 检查HTTP状态码和业务状态码
+        if (response.ok && result.code === 200 && result.data) {
             const aiResponse = result.data.replyContent || result.data.content;
-            console.log('【前端】AI回复内容:', aiResponse ? aiResponse.substring(0, 100) + '...' : 'null');
             
             if (aiResponse && aiResponse.trim()) {
                 // 添加AI回复到对话历史
@@ -103,7 +143,6 @@ async function sendMessage() {
                 // 显示AI回复
                 addMessage(aiResponse, 'ai');
             } else {
-                console.error('【前端】错误: AI回复为空');
                 const errorMsg = '抱歉，AI服务返回了空回复，请检查后端日志。';
                 addMessage(errorMsg, 'ai');
                 conversationHistory.push({
@@ -113,9 +152,12 @@ async function sendMessage() {
             }
         } else {
             // 如果后端失败，显示错误信息
-            console.error('【前端】后端返回失败:', result.message || '未知错误');
-            console.error('【前端】完整响应:', result);
-            const errorMsg = '后端API调用失败: ' + (result.message || '未知错误') + '。请查看控制台日志。';
+            const errorMsg = '后端API调用失败: ' + (result.message || '未知错误');
+            console.error('API调用失败:', {
+                status: response.status,
+                statusText: response.statusText,
+                result: result
+            });
             addMessage(errorMsg, 'ai');
             conversationHistory.push({
                 role: 'assistant',
@@ -135,9 +177,14 @@ async function sendMessage() {
         });
     } finally {
         // 恢复发送按钮和输入框
-        sendBtn.disabled = false;
-        input.disabled = false;
-        input.focus();
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="bi bi-send"></i><span class="send-label">发送</span>';
+        }
+        if (input) {
+            input.disabled = false;
+            input.focus();
+        }
     }
 }
 
@@ -180,11 +227,14 @@ function addMessage(content, sender) {
         minute: '2-digit' 
     });
     
+    // 转义HTML防止XSS攻击
+    const escapedContent = escapeHtml(content);
+    
     if (sender === 'user') {
         messageDiv.innerHTML = `
             <div class="message-content">
                 <div class="message-bubble">
-                    <p>${content}</p>
+                    <p>${escapedContent}</p>
                 </div>
                 <div class="message-time">${time}</div>
             </div>
@@ -195,15 +245,16 @@ function addMessage(content, sender) {
     } else {
         // AI消息添加语音播放按钮
         const messageId = 'msg_' + Date.now();
+        const escapedContentForAttr = content.replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/\n/g, '\\n');
         messageDiv.innerHTML = `
             <div class="message-avatar">
                 <i class="bi bi-robot"></i>
             </div>
             <div class="message-content">
                 <div class="message-bubble">
-                    <div class="message-text">${content}</div>
+                    <div class="message-text">${escapedContent}</div>
                     <div class="message-actions">
-                        <button class="btn btn-outline-primary btn-sm" onclick="speakText('${content.replace(/'/g, "\\'")}')" title="播放语音">
+                        <button class="btn btn-outline-primary btn-sm" onclick="speakText('${escapedContentForAttr}')" title="播放语音">
                             <i class="bi bi-volume-up"></i>
                         </button>
                         <button class="btn btn-outline-secondary btn-sm" onclick="copyMessage('${messageId}')" title="复制内容">
@@ -219,16 +270,23 @@ function addMessage(content, sender) {
     
     messagesContainer.appendChild(messageDiv);
     
-    // 立即滚动
+    // 使用requestAnimationFrame优化滚动性能
+    requestAnimationFrame(() => {
     scrollToBottom();
-    
-    // 延迟滚动，确保DOM更新完成
     setTimeout(() => {
         forceScrollToBottom();
-    }, 100);
+        }, 50);
+    });
     
     // 保存到聊天历史
     addToHistory(content, sender, time);
+}
+
+// HTML转义函数（防止XSS攻击）
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // 复制消息内容
@@ -344,36 +402,55 @@ function scrollToBottom() {
     }
 }
 
-// 强制滚动到底部（用于确保滚动生效）
+// 强制滚动到底部（用于确保滚动生效，优化版）
 function forceScrollToBottom() {
     const scrollContainer = document.querySelector('.chat-messages-container');
-    if (scrollContainer) {
-        // 多次尝试确保滚动到底部
-        const scrollToBottom = () => {
+    if (!scrollContainer) return;
+    
+    // 使用requestAnimationFrame优化性能
+    const scroll = () => {
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
         };
         
-        scrollToBottom();
-        setTimeout(scrollToBottom, 50);
-        setTimeout(scrollToBottom, 100);
-        setTimeout(scrollToBottom, 200);
-        setTimeout(scrollToBottom, 500);
-    }
+    requestAnimationFrame(scroll);
+    setTimeout(scroll, 50);
+    setTimeout(scroll, 150);
 }
 
-// 自动调整输入框高度
+// 自动调整输入框高度（添加防抖优化）
+let resizeTimeout = null;
 function autoResize(textarea) {
+    if (!textarea) return;
+    
+    // 清除之前的定时器
+    if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+    }
+    
+    // 使用防抖优化性能
+    resizeTimeout = setTimeout(() => {
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
     
     // 更新字符计数
     updateCharCount();
+    }, 10);
 }
 
-// 更新字符计数
+// 更新字符计数（添加节流优化）
+let charCountTimeout = null;
 function updateCharCount() {
+    // 清除之前的定时器
+    if (charCountTimeout) {
+        clearTimeout(charCountTimeout);
+    }
+    
+    // 使用节流优化性能
+    charCountTimeout = setTimeout(() => {
     const input = document.getElementById('messageInput');
     const charCount = document.getElementById('charCount');
+        if (!input || !charCount) return;
+        
     const length = input.value.length;
     const maxLength = 1000;
     
@@ -386,6 +463,7 @@ function updateCharCount() {
     } else {
         charCount.style.color = '#6c757d';
     }
+    }, 100);
 }
 
 // 清空输入框
@@ -815,8 +893,142 @@ function exportChat() {
 }
 
 // 附件功能
+let fileInput = null;
+
 function attachFile() {
-    alert('附件功能开发中...');
+    // 创建隐藏的文件输入元素
+    if (!fileInput) {
+        fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*,.pdf,.doc,.docx,.txt,.xlsx,.xls';
+        fileInput.style.display = 'none';
+        fileInput.onchange = handleFileSelect;
+        document.body.appendChild(fileInput);
+    }
+    fileInput.click();
+}
+
+// 处理文件选择
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // 检查文件大小（限制10MB）
+    if (file.size > 10 * 1024 * 1024) {
+        alert('文件大小不能超过10MB');
+        return;
+    }
+    
+    // 显示文件信息
+    const fileInfo = `[文件] ${file.name} (${formatFileSize(file.size)})`;
+    
+    // 如果是图片，显示预览
+    if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageUrl = e.target.result;
+            addFileMessage(fileInfo, imageUrl, file.name);
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // 对于文本文件，尝试读取内容
+        if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const message = `${fileInfo}\n\n文件内容：\n${text}`;
+                document.getElementById('messageInput').value = message;
+                autoResize(document.getElementById('messageInput'));
+            };
+            reader.readAsText(file);
+        } else {
+            // 其他文件类型，只显示文件信息
+            addFileMessage(fileInfo, null, file.name);
+        }
+    }
+}
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// 添加文件消息
+function addFileMessage(fileInfo, imageUrl, fileName) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message user-message file-message';
+    
+    const time = new Date().toLocaleTimeString('zh-CN', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    
+    let content = `
+        <div class="message-content">
+            <div class="message-bubble file-bubble">
+                <div class="file-info">
+                    <i class="bi bi-file-earmark"></i>
+                    <span>${fileInfo}</span>
+                </div>
+    `;
+    
+    if (imageUrl) {
+        content += `
+                <div class="file-preview">
+                    <img src="${imageUrl}" alt="${fileName}" onclick="showImageModal('${imageUrl}')">
+                </div>
+        `;
+    }
+    
+    content += `
+            </div>
+            <div class="message-time">${time}</div>
+        </div>
+        <div class="message-avatar">
+            <i class="bi bi-person-fill"></i>
+        </div>
+    `;
+    
+    messageDiv.innerHTML = content;
+    messagesContainer.appendChild(messageDiv);
+    
+    // 滚动到底部
+    scrollToBottom();
+    
+    // 添加到历史记录
+    addToHistory(fileInfo, 'user', time);
+    
+    // 自动发送文件信息给AI
+    setTimeout(() => {
+        sendMessageWithText(`我上传了一个文件：${fileInfo}`);
+    }, 500);
+}
+
+// 发送带文本的消息
+function sendMessageWithText(text) {
+    const input = document.getElementById('messageInput');
+    input.value = text;
+    sendMessage();
+}
+
+// 显示图片模态框
+function showImageModal(imageUrl) {
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; cursor: pointer;';
+    modal.onclick = () => modal.remove();
+    
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.style.cssText = 'max-width: 90%; max-height: 90%; object-fit: contain;';
+    modal.appendChild(img);
+    
+    document.body.appendChild(modal);
 }
 
 // 语音输入功能
@@ -1204,8 +1416,107 @@ function processVoiceInput(audioBlob) {
     }, 1500 + Math.random() * 1000);
 }
 
-// 显示语音识别结果
+// 显示语音识别结果（带编辑功能）
 function showVoiceRecognitionResult(text) {
+    // 移除之前的识别结果
+    const existingResult = document.getElementById('voiceRecognitionResult');
+    if (existingResult) {
+        existingResult.remove();
+    }
+    
+    const messagesContainer = document.getElementById('chatMessages');
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'message user-message voice-result';
+    resultDiv.id = 'voiceRecognitionResult';
+    
+    const time = new Date().toLocaleTimeString('zh-CN', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    
+    resultDiv.innerHTML = `
+        <div class="message-content">
+            <div class="message-bubble">
+                <div class="voice-recognition-result">
+                    <i class="bi bi-mic-fill text-primary me-2"></i>
+                    <span>语音识别结果：</span>
+                </div>
+                <div class="voice-text-editable" contenteditable="true" style="
+                    margin-top: 8px;
+                    padding: 8px;
+                    background: rgba(13, 110, 253, 0.05);
+                    border: 1px solid rgba(13, 110, 253, 0.2);
+                    border-radius: 6px;
+                    min-height: 40px;
+                    outline: none;
+                ">${text}</div>
+                <div class="voice-result-actions" style="
+                    display: flex;
+                    gap: 8px;
+                    margin-top: 8px;
+                ">
+                    <button class="btn btn-primary btn-sm" onclick="confirmVoiceText()" style="flex: 1;">
+                        <i class="bi bi-check"></i> 确认发送
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="cancelVoiceText()" style="flex: 1;">
+                        <i class="bi bi-x"></i> 取消
+                    </button>
+                </div>
+            </div>
+            <div class="message-time">${time}</div>
+        </div>
+        <div class="message-avatar">
+            <i class="bi bi-person-fill"></i>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(resultDiv);
+    
+    // 聚焦到可编辑区域
+    setTimeout(() => {
+        const editable = resultDiv.querySelector('.voice-text-editable');
+        if (editable) {
+            editable.focus();
+            // 选中所有文本以便编辑
+            const range = document.createRange();
+            range.selectNodeContents(editable);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }, 100);
+    
+    scrollToBottom();
+}
+
+// 确认语音文本
+function confirmVoiceText() {
+    const resultDiv = document.getElementById('voiceRecognitionResult');
+    if (!resultDiv) return;
+    
+    const editable = resultDiv.querySelector('.voice-text-editable');
+    const text = editable ? editable.textContent.trim() : '';
+    
+    if (text) {
+        // 设置到输入框并发送
+        document.getElementById('messageInput').value = text;
+        autoResize(document.getElementById('messageInput'));
+        sendMessage();
+    }
+    
+    resultDiv.remove();
+}
+
+// 取消语音文本
+function cancelVoiceText() {
+    const resultDiv = document.getElementById('voiceRecognitionResult');
+    if (resultDiv) {
+        resultDiv.remove();
+    }
+}
+
+// 显示语音识别结果（旧版本，保留兼容性）
+function showVoiceRecognitionResultOld(text) {
     const messagesContainer = document.getElementById('chatMessages');
     const resultDiv = document.createElement('div');
     resultDiv.className = 'message user-message voice-result';
@@ -1298,8 +1609,116 @@ function hideSpeakingIndicator() {
 }
 
 // 表情功能
+let emojiPickerVisible = false;
+const commonEmojis = [
+    '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
+    '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+    '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
+    '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
+    '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+    '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
+    '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '👏',
+    '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💪', '🤳',
+    '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+    '💯', '✅', '❌', '⭐', '🌟', '💫', '✨', '🔥'
+];
+
 function toggleEmoji() {
-    alert('表情功能开发中...');
+    const emojiPicker = document.getElementById('emojiPicker');
+    
+    if (!emojiPicker) {
+        createEmojiPicker();
+        emojiPickerVisible = true;
+    } else {
+        if (emojiPickerVisible) {
+            emojiPicker.style.display = 'none';
+            emojiPickerVisible = false;
+        } else {
+            emojiPicker.style.display = 'block';
+            emojiPickerVisible = true;
+        }
+    }
+}
+
+// 创建表情选择器
+function createEmojiPicker() {
+    const picker = document.createElement('div');
+    picker.id = 'emojiPicker';
+    picker.className = 'emoji-picker';
+    picker.style.cssText = `
+        position: absolute;
+        bottom: 80px;
+        left: 150px;
+        width: 300px;
+        max-height: 300px;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        padding: 12px;
+        z-index: 1000;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 8px;
+    `;
+    
+    commonEmojis.forEach(emoji => {
+        const emojiBtn = document.createElement('button');
+        emojiBtn.textContent = emoji;
+        emojiBtn.className = 'emoji-btn';
+        emojiBtn.style.cssText = `
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        `;
+        emojiBtn.onmouseover = function() {
+            this.style.background = '#f0f0f0';
+            this.style.transform = 'scale(1.2)';
+        };
+        emojiBtn.onmouseout = function() {
+            this.style.background = 'transparent';
+            this.style.transform = 'scale(1)';
+        };
+        emojiBtn.onclick = function() {
+            insertEmoji(emoji);
+            picker.style.display = 'none';
+            emojiPickerVisible = false;
+        };
+        picker.appendChild(emojiBtn);
+    });
+    
+    // 点击外部关闭
+    document.addEventListener('click', function closeEmojiPicker(e) {
+        if (!picker.contains(e.target) && e.target.closest('.toolbar-btn[onclick="toggleEmoji()"]') === null) {
+            picker.style.display = 'none';
+            emojiPickerVisible = false;
+            document.removeEventListener('click', closeEmojiPicker);
+        }
+    });
+    
+    const inputArea = document.querySelector('.chat-input-area');
+    inputArea.appendChild(picker);
+}
+
+// 插入表情到输入框
+function insertEmoji(emoji) {
+    const input = document.getElementById('messageInput');
+    const cursorPos = input.selectionStart;
+    const textBefore = input.value.substring(0, cursorPos);
+    const textAfter = input.value.substring(cursorPos);
+    
+    input.value = textBefore + emoji + textAfter;
+    input.focus();
+    input.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+    
+    autoResize(input);
+    updateCharCount();
 }
 
 // 测试滚动功能
@@ -1325,11 +1744,14 @@ function toggleQuickActions() {
     const content = document.getElementById('quickActionsContent');
     const toggleIcon = document.getElementById('quickActionsToggle');
     
-    if (content.style.display === 'none') {
-        content.style.display = 'block';
-        toggleIcon.className = 'bi bi-chevron-down toggle-icon';
+    if (!content) return;
+    
+    // 使用 classList 来切换 collapsed 类
+    if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        toggleIcon.className = 'bi bi-chevron-up toggle-icon ms-1';
     } else {
-        content.style.display = 'none';
-        toggleIcon.className = 'bi bi-chevron-right toggle-icon';
+        content.classList.add('collapsed');
+        toggleIcon.className = 'bi bi-chevron-down toggle-icon ms-1';
     }
 }

@@ -33,13 +33,15 @@ public interface CustomerMapper {
      * 分页查询客户
      */
     List<Customer> selectPage(@Param("customer") Customer customer, 
+                             @Param("businessTypeList") List<Integer> businessTypeList,
                              @Param("offset") Integer offset, 
                              @Param("limit") Integer limit);
     
     /**
      * 查询客户总数
      */
-    Long selectCount(@Param("customer") Customer customer);
+    Long selectCount(@Param("customer") Customer customer, 
+                    @Param("businessTypeList") List<Integer> businessTypeList);
     
     /**
      * 插入客户

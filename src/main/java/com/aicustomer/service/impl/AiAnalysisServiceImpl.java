@@ -431,9 +431,9 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
             // 统计重要客户数量
             Customer queryCustomer = new Customer();
             queryCustomer.setCustomerLevel(2); // VIP
-            Long vipCount = customerMapper.selectCount(queryCustomer);
+            Long vipCount = customerMapper.selectCount(queryCustomer, null);
             queryCustomer.setCustomerLevel(3); // 钻石
-            Long diamondCount = customerMapper.selectCount(queryCustomer);
+            Long diamondCount = customerMapper.selectCount(queryCustomer, null);
             reminders.put("importantCustomerCount", (vipCount != null ? vipCount : 0) + (diamondCount != null ? diamondCount : 0));
             
             log.info("客户提醒统计 - 生日提醒: {}, 待跟进客户: {}, 重要客户: {}", 

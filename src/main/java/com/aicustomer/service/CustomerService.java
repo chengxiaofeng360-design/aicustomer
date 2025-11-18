@@ -32,7 +32,7 @@ public interface CustomerService {
     /**
      * 分页查询客户
      */
-    PageResult<Customer> page(Integer pageNum, Integer pageSize, Customer customer);
+    PageResult<Customer> page(Integer pageNum, Integer pageSize, Customer customer, List<Integer> businessTypeList);
     
     /**
      * 保存客户
@@ -125,4 +125,10 @@ public interface CustomerService {
      * 获取客户统计数据
      */
     java.util.Map<String, Object> getCustomerStatistics();
+    
+    /**
+     * 获取客户统计数据（按业务类型筛选）
+     * @param businessTypeList 业务类型列表，如果为null或空则统计所有客户
+     */
+    java.util.Map<String, Object> getCustomerStatistics(List<Integer> businessTypeList);
 }

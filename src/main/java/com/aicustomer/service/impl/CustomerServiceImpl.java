@@ -45,10 +45,10 @@ public class CustomerServiceImpl implements CustomerService {
     }
     
     @Override
-    public PageResult<Customer> page(Integer pageNum, Integer pageSize, Customer customer) {
+    public PageResult<Customer> page(Integer pageNum, Integer pageSize, Customer customer, List<Integer> businessTypeList) {
         int offset = (pageNum - 1) * pageSize;
-        List<Customer> list = customerMapper.selectPage(customer, offset, pageSize);
-        Long total = customerMapper.selectCount(customer);
+        List<Customer> list = customerMapper.selectPage(customer, businessTypeList, offset, pageSize);
+        Long total = customerMapper.selectCount(customer, businessTypeList);
         return new PageResult<>(pageNum, pageSize, total, list);
     }
     
@@ -60,6 +60,11 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setUpdateTime(LocalDateTime.now());
         customer.setDeleted(0);
         customer.setVersion(1);
+        
+        // 设置默认业务类型（第一种类型：品种权申请客户）
+        if (customer.getBusinessType() == null) {
+            customer.setBusinessType(1);
+        }
         
         return customerMapper.insert(customer) > 0;
     }
@@ -117,7 +122,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
         
         // 使用page方法进行真实数据库查询
-        return page(pageNum, pageSize, queryCustomer);
+        return page(pageNum, pageSize, queryCustomer, null);
     }
     
     @Override
@@ -298,49 +303,63 @@ public class CustomerServiceImpl implements CustomerService {
     
     @Override
     public java.util.Map<String, Object> getCustomerStatistics() {
+        return getCustomerStatistics(null);
+    }
+    
+    @Override
+    public java.util.Map<String, Object> getCustomerStatistics(List<Integer> businessTypeList) {
         java.util.Map<String, Object> stats = new java.util.HashMap<>();
         
         // 客户总数
         Customer emptyQuery = new Customer();
-        Long totalCustomers = customerMapper.selectCount(emptyQuery);
+        Long totalCustomers = customerMapper.selectCount(emptyQuery, businessTypeList);
         stats.put("totalCustomers", totalCustomers != null ? totalCustomers : 0L);
         
         // 按客户类型统计
         Customer personalQuery = new Customer();
         personalQuery.setCustomerType(1); // 个人
-        Long personalCount = customerMapper.selectCount(personalQuery);
+        Long personalCount = customerMapper.selectCount(personalQuery, businessTypeList);
         stats.put("personalCount", personalCount != null ? personalCount : 0L);
         
         Customer enterpriseQuery = new Customer();
         enterpriseQuery.setCustomerType(2); // 企业
-        Long enterpriseCount = customerMapper.selectCount(enterpriseQuery);
+        Long enterpriseCount = customerMapper.selectCount(enterpriseQuery, businessTypeList);
         stats.put("enterpriseCount", enterpriseCount != null ? enterpriseCount : 0L);
         
         Customer researchQuery = new Customer();
         researchQuery.setCustomerType(3); // 科研院所
-        Long researchCount = customerMapper.selectCount(researchQuery);
+        Long researchCount = customerMapper.selectCount(researchQuery, businessTypeList);
         stats.put("researchCount", researchCount != null ? researchCount : 0L);
         
         // 按客户等级统计
         Customer normalQuery = new Customer();
         normalQuery.setCustomerLevel(1); // 普通
-        Long normalCount = customerMapper.selectCount(normalQuery);
+        Long normalCount = customerMapper.selectCount(normalQuery, businessTypeList);
         stats.put("normalCount", normalCount != null ? normalCount : 0L);
         
         Customer vipQuery = new Customer();
         vipQuery.setCustomerLevel(2); // VIP
-        Long vipCount = customerMapper.selectCount(vipQuery);
+        Long vipCount = customerMapper.selectCount(vipQuery, businessTypeList);
         stats.put("vipCount", vipCount != null ? vipCount : 0L);
         
         Customer diamondQuery = new Customer();
         diamondQuery.setCustomerLevel(3); // 钻石
-        Long diamondCount = customerMapper.selectCount(diamondQuery);
+        Long diamondCount = customerMapper.selectCount(diamondQuery, businessTypeList);
         stats.put("diamondCount", diamondCount != null ? diamondCount : 0L);
         
         // 本月新增客户数（需要查询本月创建的客户）
         // 由于selectCount不支持日期范围，我们需要使用selectList然后过滤
         // 或者添加新的查询方法，这里先用简单方式：查询所有客户，然后在Service层过滤
         List<Customer> allCustomers = customerMapper.selectList(emptyQuery);
+        // 如果指定了业务类型，需要过滤
+        if (businessTypeList != null && !businessTypeList.isEmpty()) {
+            allCustomers = allCustomers.stream()
+                .filter(c -> {
+                    Integer businessType = c.getBusinessType() != null ? c.getBusinessType() : 1;
+                    return businessTypeList.contains(businessType);
+                })
+                .collect(java.util.stream.Collectors.toList());
+        }
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         long newThisMonth = allCustomers.stream()
@@ -351,7 +370,7 @@ public class CustomerServiceImpl implements CustomerService {
         // 潜在客户数（status=0或特定条件）
         Customer potentialQuery = new Customer();
         potentialQuery.setStatus(0); // 假设0表示潜在客户
-        Long potentialCount = customerMapper.selectCount(potentialQuery);
+        Long potentialCount = customerMapper.selectCount(potentialQuery, businessTypeList);
         stats.put("potentialCount", potentialCount != null ? potentialCount : 0L);
         
         return stats;

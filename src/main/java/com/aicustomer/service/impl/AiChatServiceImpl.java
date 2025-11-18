@@ -3,6 +3,7 @@ package com.aicustomer.service.impl;
 import com.aicustomer.entity.AiChat;
 import com.aicustomer.service.AiChatService;
 import com.aicustomer.service.DeepSeekService;
+import com.aicustomer.service.ArkChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import java.util.Map;
 public class AiChatServiceImpl implements AiChatService {
     
     private final DeepSeekService deepSeekService;
+    private final ArkChatService arkChatService;
     
     // 系统提示词，定义AI助手的角色和行为
     private static final String SYSTEM_PROMPT = "你是一个专业的客户服务AI助手，专门为种业客户管理系统提供服务。" +
@@ -111,7 +113,24 @@ public class AiChatServiceImpl implements AiChatService {
         System.out.println("【AI聊天服务】用户消息: " + userMessage);
         System.out.println("【AI聊天服务】是否有历史: " + (history != null && !history.isEmpty()));
         
-        // 优先使用DeepSeek AI
+        // 优先使用Ark（如果配置了Ark Key）
+        if (arkChatService.isAvailable()) {
+            System.out.println("【AI聊天服务】Ark服务可用，开始调用");
+            try {
+                String aiReply = arkChatService.chatWithHistory(userMessage, history);
+                if (aiReply != null && !aiReply.trim().isEmpty()) {
+                    log.info("【AI聊天服务】Ark生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(), aiReply.length());
+                    System.out.println("【AI聊天服务】Ark生成回复成功，回复长度: " + aiReply.length());
+                    return aiReply;
+                }
+            } catch (Exception e) {
+                log.error("【AI聊天服务】Ark API调用失败，尝试DeepSeek: {}", e.getMessage(), e);
+                System.out.println("【AI聊天服务】错误: Ark API调用失败");
+                System.out.println("【AI聊天服务】错误信息: " + e.getMessage());
+            }
+        }
+        
+        // 其次尝试DeepSeek
         if (deepSeekService.isAvailable()) {
             System.out.println("【AI聊天服务】DeepSeek服务可用，开始调用");
             try {

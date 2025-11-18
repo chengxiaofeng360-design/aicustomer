@@ -177,4 +177,14 @@ public class Customer extends BaseEntity {
      * 备注
      */
     private String remark;
+    
+    /**
+     * 进度 (0:未开始, 1:进行中, 2:暂停中, 3:已成功, 4:放弃)
+     */
+    private Integer progress;
+    
+    /**
+     * 具体业务类型 (1:品种权申请客户, 2:品种权转化推广客户, 3:知识产权互补协作客户, 4:科普教育合作客户, 5:景观设计服务客户, 6:图书出版客户)
+     */
+    private Integer businessType;
 }

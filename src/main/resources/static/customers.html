@@ -16,9 +16,14 @@
             <div class="page-title">
                 <i class="bi bi-people-fill"></i> 客户档案管理
             </div>
-            <a href="/" class="back-home-btn">
-                <i class="bi bi-house-fill"></i> 返回首页
-            </a>
+            <div style="display: flex; gap: 10px;">
+                <a href="/customer-categories.html" class="back-home-btn" style="text-decoration: none;">
+                    <i class="bi bi-folder2-open"></i> 返回分类
+                </a>
+                <a href="/" class="back-home-btn">
+                    <i class="bi bi-house-fill"></i> 返回首页
+                </a>
+            </div>
         </div>
         
         <!-- 统计卡片 -->
@@ -172,10 +177,10 @@
                             <tr>
                                 <th>客户名称</th>
                                 <th>联系人</th>
-                                <th>电话</th>
                                 <th>客户类型</th>
                                 <th>客户等级</th>
-                                <th>职务</th>
+                                <th>进度</th>
+                                <th>业务类型</th>
                                 <th>敏感状态</th>
                                 <th>操作</th>
                             </tr>
@@ -266,6 +271,15 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
+                                    <label class="form-label" for="businessTypeSelect">业务类型 <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="businessTypeSelect" name="businessType" required>
+                                        <option value="">请选择业务类型</option>
+                                        <!-- 选项将通过JavaScript从系统配置动态加载 -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
                                     <label class="form-label" for="regionSelect">地区</label>
                                     <select class="form-select" id="regionSelect" name="region" required>
                                         <option value="">请选择地区</option>
@@ -279,6 +293,20 @@
                                         <option value="四川">四川</option>
                                         <option value="湖北">湖北</option>
                                         <option value="湖南">湖南</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label" for="progressSelect">进度</label>
+                                    <select class="form-select" id="progressSelect" name="progress">
+                                        <option value="0">未开始</option>
+                                        <option value="1">进行中</option>
+                                        <option value="2">暂停中</option>
+                                        <option value="3">已成功</option>
+                                        <option value="4">放弃</option>
                                     </select>
                                 </div>
                             </div>

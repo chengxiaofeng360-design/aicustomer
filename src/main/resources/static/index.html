@@ -327,12 +327,12 @@
 
         <!-- 现代化功能卡片网格 -->
         <div class="modern-grid">
-            <div class="modern-card" onclick="navigateTo('customers')">
+            <div class="modern-card" onclick="navigateTo('customer-categories')">
                 <div class="modern-card-icon">
                     <i class="bi bi-people-fill"></i>
                 </div>
-                <div class="modern-card-title">客户档案管理</div>
-                <div class="modern-card-desc">全面管理客户信息，建立完整的客户档案体系</div>
+                <div class="modern-card-title">客户业务类型管理</div>
+                <div class="modern-card-desc">管理客户业务类型分类和客户档案</div>
             </div>
 
 
@@ -377,6 +377,13 @@
                 <div class="modern-card-desc">24小时智能客服，即时响应</div>
             </div>
 
+            <div class="modern-card" onclick="navigateTo('system-config')">
+                <div class="modern-card-icon">
+                    <i class="bi bi-sliders"></i>
+                </div>
+                <div class="modern-card-title">系统配置管理</div>
+                <div class="modern-card-desc">动态维护系统变量和静态字段配置</div>
+            </div>
 
         </div>
 
@@ -387,12 +394,14 @@
         // 页面导航函数
         function navigateTo(page) {
             const pageMap = {
+                'customer-categories': 'customer-categories.html',
                 'customers': 'customers.html',
                 'messages': 'messages.html',
                 'team': 'team.html',
                 'ai-analysis': 'ai-analysis.html',
                 'ai-recommendations': 'ai-recommendations.html',
-                'ai-chat': 'ai-chat.html'
+                'ai-chat': 'ai-chat.html',
+                'system-config': 'system-config.html'
             };
             
             if (pageMap[page]) {

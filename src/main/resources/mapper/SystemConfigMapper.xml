@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aicustomer.mapper.SystemConfigMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.aicustomer.entity.SystemConfig">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="config_key" property="configKey" jdbcType="VARCHAR"/>
+        <result column="config_value" property="configValue" jdbcType="VARCHAR"/>
+        <result column="config_type" property="configType" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="config_group" property="configGroup" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, config_key, config_value, config_type, description, config_group,
+        create_time, update_time, deleted
+    </sql>
+
+    <!-- 根据ID查询配置 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM system_config
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <!-- 根据配置键查询配置 -->
+    <select id="selectByKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM system_config
+        WHERE config_key = #{configKey} AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <!-- 查询所有配置 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM system_config
+        WHERE deleted = 0
+        ORDER BY config_group, config_key
+    </select>
+
+    <!-- 根据分组查询配置 -->
+    <select id="selectByGroup" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM system_config
+        WHERE config_group = #{configGroup} AND deleted = 0
+        ORDER BY config_key
+    </select>
+
+    <!-- 搜索配置 -->
+    <select id="search" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM system_config
+        WHERE deleted = 0
+        AND (config_key LIKE CONCAT('%', #{keyword}, '%')
+        OR description LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY config_group, config_key
+    </select>
+
+    <!-- 插入配置 -->
+    <insert id="insert" parameterType="com.aicustomer.entity.SystemConfig" useGeneratedKeys="true" keyProperty="config.id">
+        INSERT INTO system_config (
+            config_key, config_value, config_type, description, config_group,
+            create_time, update_time, deleted
+        ) VALUES (
+            #{config.configKey}, #{config.configValue}, #{config.configType},
+            #{config.description}, #{config.configGroup},
+            #{config.createTime}, #{config.updateTime}, #{config.deleted}
+        )
+    </insert>
+
+    <!-- 更新配置 -->
+    <update id="updateById" parameterType="com.aicustomer.entity.SystemConfig">
+        UPDATE system_config
+        <set>
+            <if test="config.configKey != null">config_key = #{config.configKey},</if>
+            <if test="config.configValue != null">config_value = #{config.configValue},</if>
+            <if test="config.configType != null">config_type = #{config.configType},</if>
+            <if test="config.description != null">description = #{config.description},</if>
+            <if test="config.configGroup != null">config_group = #{config.configGroup},</if>
+            <if test="config.updateTime != null">update_time = #{config.updateTime},</if>
+        </set>
+        WHERE id = #{config.id} AND deleted = 0
+    </update>
+
+    <!-- 删除配置（逻辑删除） -->
+    <update id="deleteById" parameterType="java.lang.Long">
+        UPDATE system_config
+        SET deleted = 1, update_time = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+</mapper>
+

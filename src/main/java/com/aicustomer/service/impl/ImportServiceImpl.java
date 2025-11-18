@@ -400,6 +400,10 @@ public class ImportServiceImpl implements ImportService {
                 if (customer.getSource() == null) {
                     customer.setSource(2); // 默认线下
                 }
+                // 设置默认业务类型（第一种类型：品种权申请客户）
+                if (customer.getBusinessType() == null) {
+                    customer.setBusinessType(1);
+                }
                 
                 // 生成客户编号
                 if (customer.getCustomerCode() == null || customer.getCustomerCode().trim().isEmpty()) {

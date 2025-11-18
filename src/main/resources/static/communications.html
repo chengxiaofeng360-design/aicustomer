@@ -128,7 +128,18 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">沟通内容 *</label>
-                            <textarea class="form-control" id="content" name="content" rows="4" required placeholder="请详细描述沟通内容..."></textarea>
+                            <div class="position-relative">
+                                <textarea class="form-control" id="content" name="content" rows="4" required placeholder="请详细描述沟通内容..." style="padding-right: 100px;"></textarea>
+                                <button type="button" class="btn btn-outline-primary position-absolute" id="voiceInputBtn" onclick="startVoiceInputForContent()" title="语音输入" style="top: 8px; right: 8px; z-index: 10;">
+                                    <i class="bi bi-mic" id="voiceInputIcon"></i>
+                                    <span id="voiceInputText">录音</span>
+                                </button>
+                            </div>
+                            <div id="voiceRecognitionStatus" class="mt-2" style="display: none;">
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-mic-fill"></i> <span id="voiceStatusText">正在录音中...</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">后续跟进</label>
@@ -1113,5 +1124,6 @@
             }
         }
     </script>
+    <script src="/js/communications.js"></script>
 </body>
 </html>

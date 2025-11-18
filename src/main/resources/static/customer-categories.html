@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户业务类型管理 - AI客户管理系统</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
+    <style>
+        .category-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 3rem 2rem;
+        }
+        
+        .category-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .category-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .category-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .category-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .category-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+        
+        .category-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: #667eea;
+        }
+        
+        .category-card:nth-child(1) .category-icon {
+            color: #4CAF50;
+        }
+        
+        .category-card:nth-child(2) .category-icon {
+            color: #2196F3;
+        }
+        
+        .category-card:nth-child(3) .category-icon {
+            color: #FF9800;
+        }
+        
+        .category-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .category-desc {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .category-subtypes {
+            text-align: left;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .category-subtypes h6 {
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .subtype-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .subtype-list li {
+            padding: 0.5rem 0;
+            color: #555;
+            font-size: 0.95rem;
+        }
+        
+        .subtype-list li:before {
+            content: "• ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .back-home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .back-home-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="category-container">
+        <a href="/" class="back-home-btn">
+            <i class="bi bi-house-fill"></i> 返回首页
+        </a>
+        
+        <div class="category-header">
+            <h1><i class="bi bi-folder2-open"></i> 客户业务类型管理</h1>
+            <p>请选择要查看的业务类型</p>
+        </div>
+        
+        <div class="category-grid">
+            <!-- 品种权业务：点击后查询业务类型1、2的客户 -->
+            <div class="category-card" onclick="navigateToBusinessTypes([1, 2])">
+                <div class="category-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="category-title">品种权业务</div>
+                <div class="category-desc">
+                    管理品种权申请和转化推广相关的客户信息
+                </div>
+                <div class="category-subtypes">
+                    <h6>包含类型：</h6>
+                    <ul class="subtype-list">
+                        <li>品种权申请客户</li>
+                        <li>品种权转化推广客户</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 知识产权业务：点击后查询业务类型3的客户 -->
+            <div class="category-card" onclick="navigateToBusinessTypes([3])">
+                <div class="category-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+                <div class="category-title">知识产权业务</div>
+                <div class="category-desc">
+                    管理知识产权互补协作相关的客户信息
+                </div>
+                <div class="category-subtypes">
+                    <h6>包含类型：</h6>
+                    <ul class="subtype-list">
+                        <li>知识产权互补协作客户</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 服务业务：点击后查询业务类型4、5、6的客户 -->
+            <div class="category-card" onclick="navigateToBusinessTypes([4, 5, 6])">
+                <div class="category-icon">
+                    <i class="bi bi-handshake"></i>
+                </div>
+                <div class="category-title">服务业务</div>
+                <div class="category-desc">
+                    管理科普教育、景观设计和图书出版服务相关的客户信息
+                </div>
+                <div class="category-subtypes">
+                    <h6>包含类型：</h6>
+                    <ul class="subtype-list">
+                        <li>科普教育合作客户</li>
+                        <li>景观设计服务客户</li>
+                        <li>图书出版客户</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        // 跳转到业务类型客户列表（支持多个业务类型）
+        // businessTypes: 业务类型ID数组，如 [1, 2] 表示查询业务类型1和2的客户
+        function navigateToBusinessTypes(businessTypes) {
+            // 将业务类型数组转换为查询参数
+            // 使用 IN 查询，格式：businessType=1&businessType=2
+            const params = new URLSearchParams();
+            businessTypes.forEach(type => {
+                params.append('businessType', type);
+            });
+            
+            // 跳转到客户列表页面
+            window.location.href = `/customers.html?${params.toString()}`;
+        }
+    </script>
+</body>
+</html>
