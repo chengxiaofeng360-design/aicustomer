@@ -27,6 +27,92 @@ public class ArkChatService {
     }
 
     /**
+     * 单轮对话（类似DeepSeekService的chat方法）
+     * 
+     * @param userMessage 用户消息
+     * @param systemPrompt 系统提示词（可选）
+     * @return AI回复
+     */
+    public String chat(String userMessage, String systemPrompt) {
+        if (!isAvailable()) {
+            return null;
+        }
+
+        ArkService arkService = null;
+        try {
+            String maskedKey = apiKey != null && apiKey.length() > 6
+                    ? apiKey.substring(0, 3) + "***" + apiKey.substring(apiKey.length() - 3)
+                    : "null";
+            log.info("【Ark】单轮对话 | model={}, baseUrl={}, apiKey={}", model, baseUrl, maskedKey);
+            System.out.println("【Ark】单轮对话 | model=" + model + ", baseUrl=" + baseUrl);
+
+            arkService = ArkService.builder()
+                    .apiKey(apiKey)
+                    .baseUrl(baseUrl)
+                    .build();
+
+            List<ChatMessage> chatMessages = new ArrayList<>();
+            
+            // 添加系统提示（如果提供）
+            if (systemPrompt != null && !systemPrompt.trim().isEmpty()) {
+                chatMessages.add(ChatMessage.builder()
+                        .role(ChatMessageRole.SYSTEM)
+                        .content(systemPrompt)
+                        .build());
+            } else {
+                // 默认系统提示
+                chatMessages.add(ChatMessage.builder()
+                        .role(ChatMessageRole.SYSTEM)
+                        .content("You are a helpful assistant.")
+                        .build());
+            }
+
+            // 添加用户消息
+            chatMessages.add(ChatMessage.builder()
+                    .role(ChatMessageRole.USER)
+                    .content(userMessage)
+                    .build());
+
+            ChatCompletionRequest request = ChatCompletionRequest.builder()
+                    .model(model)
+                    .messages(chatMessages)
+                    .build();
+
+            log.info("【Ark】发起单轮对话请求 | model={}, messages={}", model, chatMessages.size());
+
+            StringBuilder replyBuilder = new StringBuilder();
+            arkService.createChatCompletion(request)
+                    .getChoices()
+                    .forEach(choice -> {
+                        if (choice != null && choice.getMessage() != null) {
+                            Object contentObj = choice.getMessage().getContent();
+                            String content = contentObj != null ? String.valueOf(contentObj) : null;
+                            if (content != null && !content.isEmpty()) {
+                                replyBuilder.append(content);
+                            }
+                        }
+                    });
+
+            String reply = replyBuilder.toString();
+            if (reply.trim().isEmpty()) {
+                reply = "抱歉，Ark服务返回了空内容。";
+            }
+            log.info("【Ark】单轮对话生成回复成功，长度: {}", reply.length());
+            return reply;
+        } catch (Exception e) {
+            log.error("【Ark】单轮对话调用失败: {}", e.getMessage(), e);
+            return "⚠️ Ark服务调用异常: " + e.getMessage();
+        } finally {
+            if (arkService != null) {
+                try {
+                    arkService.shutdownExecutor();
+                } catch (Exception ignore) {
+                }
+            }
+        }
+    }
+
+    /**
      * 使用火山方舟 Ark 对话模型，支持带历史消息
      */
     public String chatWithHistory(String userMessage, List<Map<String, String>> history) {

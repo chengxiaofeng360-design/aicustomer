@@ -18,6 +18,113 @@
             overflow: hidden;
         }
         
+        /* 我的工作台模块 */
+        .workbench-section {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .workbench-header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .workbench-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        
+        .workbench-subtitle {
+            color: #718096;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .workbench-grid {
+            display: block;
+        }
+
+        .workbench-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+        }
+
+        .workbench-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .workbench-card p {
+            color: #4a5568;
+            margin-bottom: 1.5rem;
+        }
+
+        .workbench-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .workbench-action {
+            flex: 1 1 calc(50% - 0.75rem);
+            min-width: 260px;
+            background: white;
+            border-radius: 14px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 1.25rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .workbench-action:hover {
+            transform: translateY(-4px);
+        }
+
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(102, 126, 234, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5a67d8;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .action-info h4 {
+            margin: 0 0 0.35rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .action-info p {
+            margin: 0 0 0.75rem 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
         /* 背景装饰 */
         .modern-container::before {
             content: '';
@@ -325,6 +432,44 @@
             </div>
         </div>
 
+        <!-- 我的工作台简介 -->
+        <section class="workbench-section">
+            <div class="workbench-header">
+                <div>
+                    <p class="workbench-subtitle">贴心助理 · 专属你的工作流</p>
+                    <h2 class="workbench-title">我的智慧工作台</h2>
+                    <p style="color:#4a5568; margin:0;">
+                        一次输入背景信息，即可在同一界面选择“纪要 / 报告 / 演讲稿 / 自我介绍”，减少来回跳转，维持连贯的创作状态。
+                    </p>
+                </div>
+            </div>
+            <div class="workbench-card">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-7">
+                        <p style="color:#4a5568;" class="mb-4">
+                            流程简单：一步输入背景 → 当页选择纪要/报告/演讲稿/自我介绍 → AI 立即产出可编辑草稿。
+                        </p>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge rounded-pill bg-light text-dark border">生成会议纪要</span>
+                            <span class="badge rounded-pill bg-light text-dark border">生成报告</span>
+                            <span class="badge rounded-pill bg-light text-dark border">生成演讲稿</span>
+                            <span class="badge rounded-pill bg-light text-dark border">生成自我介绍</span>
+                        </div>
+                        <button class="btn btn-primary" onclick="window.location.href='/my-workbench.html'">
+                            <i class="bi bi-rocket-takeoff"></i> 进入智慧工作台
+                        </button>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="p-4 rounded-4 border shadow-sm" style="background:linear-gradient(135deg,#f8f9ff,#eef2ff);">
+                            <p class="text-muted mb-2 small">工作台速览</p>
+                            <p style="color:#1a202c; margin:0;">
+                                <i class="bi bi-magic text-primary me-2"></i>单入口搞定四类文稿，自动记住上次输出，卡片内直接编辑/复制。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
         <!-- 现代化功能卡片网格 -->
         <div class="modern-grid">
             <div class="modern-card" onclick="navigateTo('customer-categories')">
@@ -413,6 +558,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('AI客户管理系统已加载');
         });
+
+        function quickStartChat(prompt) {
+            try {
+                if (prompt) {
+                    localStorage.setItem('aiChatPreset', prompt);
+                }
+            } catch (error) {
+                console.warn('本地存储不可用', error);
+            }
+            window.location.href = '/ai-chat.html';
+        }
     </script>
 </body>
 </html>

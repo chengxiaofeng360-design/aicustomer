@@ -2157,6 +2157,415 @@ body {
     padding: 1rem;
 }
 
+.template-pro {
+    border-radius: 24px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 25px 80px rgba(15, 23, 42, 0.08);
+    background: #ffffff;
+    padding: 1.75rem;
+    color: #0f172a;
+}
+
+.template-pro__hero {
+    background: linear-gradient(120deg, #4338ca, #6366f1);
+    color: #fff;
+    border-radius: 20px;
+    padding: 1.75rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.template-pro__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 220px;
+    font-size: 0.9rem;
+}
+
+.template-pro__meta-item {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+}
+
+.template-pro__body {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.template-pro__section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: #f8fafc;
+    border-radius: 18px;
+    padding: 1.5rem;
+}
+
+.template-label {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-bottom: 0.35rem;
+}
+
+.template-pro__highlights {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+    display: grid;
+    gap: 1rem;
+}
+
+.template-pro__highlights li {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.template-pro__highlights span {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.template-pro__highlights p {
+    margin-bottom: 0;
+    color: #475569;
+}
+
+.template-pro__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+}
+
+.template-pro__card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.template-pro__card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.card-index {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #6366f1;
+}
+
+.template-pro__card-content {
+    color: #475569;
+    margin-bottom: 0;
+}
+
+.template-pro__card-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.template-pro__card-footer span {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.priority-tag {
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.priority-high {
+    background: rgba(248, 113, 113, 0.15);
+    color: #b91c1c;
+}
+
+.priority-medium {
+    background: rgba(251, 191, 36, 0.15);
+    color: #92400e;
+}
+
+.priority-low {
+    background: rgba(16, 185, 129, 0.15);
+    color: #047857;
+}
+
+.template-pro__cta {
+    background: #0f172a;
+    color: #fff;
+    border-radius: 18px;
+    padding: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.template-pro__cta-note {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    min-width: 220px;
+}
+
+.template-pro__footer {
+    font-size: 0.85rem;
+}
+
+.template-pro--sms {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.business-card-pro {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin: 0 auto 1.5rem;
+    max-width: 960px;
+}
+
+.business-card-pro--stacked {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+
+.business-card-pro__front,
+.business-card-pro__back {
+    border-radius: 28px;
+    padding: clamp(1.5rem, 3vw, 2.6rem);
+    min-height: clamp(280px, 32vh, 360px);
+    aspect-ratio: 5 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.business-card-pro__front {
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    color: #fff;
+    box-shadow: 0 25px 80px rgba(15, 23, 42, 0.55);
+}
+
+.business-card-pro__back {
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+}
+
+.business-card-pro__badge {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.business-card-pro__name {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.business-card-pro__role {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.business-card-pro__company {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+}
+
+.business-card-pro__tagline {
+    margin-top: 0.5rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.business-card-pro__priority {
+    margin-top: auto;
+    text-align: right;
+}
+
+.business-card-pro__priority span {
+    display: inline-flex;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.business-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.business-detail .label {
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.business-detail .value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.business-card-pro__notes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.business-card-pro__notes .note {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.05);
+}
+
+.business-card-pro__notes .note-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: #475569;
+    text-transform: uppercase;
+}
+
+.next-steps {
+    margin-bottom: 0;
+    padding-left: 1rem;
+    color: #1e293b;
+}
+
+.inline-editable {
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.2s;
+}
+
+.inline-editable:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.6);
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.sms-device {
+    border-radius: 28px;
+    background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+    padding: 1.5rem;
+    max-width: 360px;
+}
+
+.sms-status-bar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #475569;
+    margin-bottom: 0.8rem;
+}
+
+.sms-screen {
+    background: #fff;
+    border-radius: 20px;
+    padding: 1.4rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    position: relative;
+}
+
+.sms-bubble {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+    border-radius: 18px 18px 4px 18px;
+    padding: 1rem;
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.35);
+}
+
+.sms-message {
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: 'SF Pro Display', 'PingFang SC', sans-serif;
+}
+
+.sms-tail {
+    position: absolute;
+    bottom: 1.1rem;
+    right: 1.2rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 0 0 100% 0;
+    background: #2563eb;
+    transform: rotate(45deg);
+}
+
+.template-pro__tips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.tip-item {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.tip-label {
+    font-size: 0.8rem;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+@media (max-width: 768px) {
+    .template-pro__hero {
+        flex-direction: column;
+    }
+    
+    .template-pro__cta {
+        flex-direction: column;
+    }
+
+    .business-card-pro {
+        grid-template-columns: 1fr;
+    }
+
+    .business-card-pro__front,
+    .business-card-pro__back {
+        aspect-ratio: auto;
+        min-height: auto;
+    }
+}
+
 .email-template {
     background-color: #ffffff;
     border: 1px solid #dee2e6;
@@ -2219,19 +2628,19 @@ body {
 
 .content-modules-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
 }
 
 .content-module-card {
-    padding: 1.5rem;
-    border-radius: 18px;
+    padding: 1.15rem;
+    border-radius: 16px;
     color: #0f172a;
-    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.07);
     display: flex;
     flex-direction: column;
-    min-height: 260px;
+    min-height: 210px;
     border: 1px solid rgba(15, 23, 42, 0.05);
     background: #fff;
 }
@@ -2249,20 +2658,20 @@ body {
 }
 
 .module-title {
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.35rem;
 }
 
 .module-desc {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     opacity: 0.9;
-    margin-bottom: 1rem;
+    margin-bottom: 0.6rem;
 }
 
 .module-highlights {
     list-style: none;
     padding: 0;
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.6rem 0;
 }
 
 .module-highlights li {
@@ -2277,7 +2686,7 @@ body {
 .module-actions {
     margin-top: auto;
     display: flex;
-    gap: 0.6rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
@@ -2338,6 +2747,26 @@ body {
 .ai-page {
     background: #f8fafc;
     min-height: 100vh;
+}
+
+.ai-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.ai-header-text {
+    max-width: 720px;
+}
+
+.ai-header-actions .btn {
+    border-radius: 999px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
 .page-hero {

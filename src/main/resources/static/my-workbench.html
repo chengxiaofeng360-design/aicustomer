@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的智慧工作台 - AI客户管理系统</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
+    <style>
+        body { background: #f7f9fb; }
+        .workbench-page { min-height: 100vh; padding: 2.5rem 1.5rem 3rem; }
+        .workbench-hero { max-width: 900px; margin: 0 auto 2rem; text-align: center; }
+        .workbench-hero h1 { font-size: 2.4rem; font-weight: 700; color: #1a202c; }
+        .workbench-hero p { color: #4a5568; margin-top: 0.5rem; line-height: 1.6; }
+        .back-link { display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; color: #4a5568; margin-bottom: 1.5rem; font-weight: 500; }
+        .back-link:hover { color: #4c51bf; }
+        .input-panel { max-width: 900px; margin: 0 auto 2rem; background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 15px 35px rgba(15,23,42,0.08); }
+        .input-panel h3 { font-size: 1.25rem; font-weight: 600; color: #1a202c; margin-bottom: 1rem; }
+        .workbench-textarea { width: 100%; min-height: 180px; border-radius: 14px; border: 1px solid #e2e8f0; padding: 1rem 1.25rem; font-size: 1rem; resize: vertical; }
+        .workbench-top-bar { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
+        .workbench-top-bar .back-link { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 500; }
+        .tasks-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.75rem;
+            border-radius: 24px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }
+        .tasks-grid { display: flex; flex-wrap: nowrap; gap: 1.25rem; overflow-x: auto; padding-bottom: 0.5rem; }
+        .tasks-grid::-webkit-scrollbar { height: 6px; }
+        .tasks-grid::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.4); border-radius: 3px; }
+        .task-card { background: white; border-radius: 18px; padding: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(15,23,42,0.05); display: flex; flex-direction: column; gap: 0.75rem; transition: transform 0.3s ease; min-width: 260px; }
+        .task-card:hover { transform: translateY(-4px); border-color: #667eea; }
+        .task-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(102,126,234,0.15); display:flex; align-items:center; justify-content:center; color:#5a67d8; font-size:1.5rem; }
+        .task-card h4 { margin:0; font-size:1.1rem; font-weight:600; color:#1a202c; }
+        .task-card p { margin:0; color:#4a5568; line-height:1.5; min-height:48px; }
+        .result-panel { max-width: 900px; margin: 2rem auto 0; background: #ffffff; border-radius: 24px; padding: 2rem; box-shadow: 0 20px 40px rgba(15,23,42,0.08); border: 1px solid rgba(99,102,241,0.12); }
+        .result-header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+        .result-header h3 { margin: 0; font-size: 1.4rem; color: #1a202c; }
+        .result-meta { color: #718096; margin: 0.25rem 0 0; }
+        .result-actions { display: flex; gap: 0.75rem; align-items: center; }
+        .result-actions button { min-width: 120px; }
+        .result-status { font-size: 0.95rem; margin-top: 1rem; }
+        .result-status.loading { color: #5a67d8; }
+        .result-status.success { color: #2f855a; }
+        .result-status.error { color: #c53030; }
+        .result-content { margin-top: 1.5rem; border: 1px dashed #cbd5ff; border-radius: 18px; padding: 1.5rem; min-height: 220px; background: #f8f9ff; font-size: 1rem; line-height: 1.7; color: #1a202c; white-space: pre-wrap; }
+        .result-placeholder { color: #a0aec0; }
+        .loading-indicator { display: flex; align-items: center; gap: 0.75rem; color: #4a5568; }
+        .loading-indicator .spinner-border { width: 1.5rem; height: 1.5rem; border-width: 0.2rem; }
+        @media(max-width:768px){ .workbench-hero h1{font-size:1.8rem;} .input-panel{padding:1.25rem;} .result-panel{padding:1.5rem;} .tasks-grid{gap:0.75rem;} }
+    </style>
+</head>
+<body>
+    <div class="workbench-page">
+        <div class="workbench-top-bar">
+            <a href="/index.html" class="back-link btn btn-outline-secondary">
+                <i class="bi bi-house"></i> 返回首页
+            </a>
+        </div>
+        <div class="workbench-hero">
+            <h1>我的智慧工作台</h1>
+            <p>先输入您正在准备的内容或背景，再选择下方的任务类型，AI 会基于您的输入生成所需文本。</p>
+        </div>
+
+        <div class="input-panel">
+            <h3>请输入背景信息 / 核心要点</h3>
+            <textarea id="workbenchInput" class="workbench-textarea" placeholder="例如：会议主题、客户诉求、项目进展、演讲场景、自我介绍亮点等"></textarea>
+            <small style="color:#718096;display:block;margin-top:0.5rem;">提示：描述越具体，生成效果越符合期待</small>
+        </div>
+
+        <div class="tasks-wrapper">
+        <div class="tasks-grid">
+            <div class="task-card" data-type="meeting">
+                <div class="task-icon"><i class="bi bi-journal-check"></i></div>
+                <h4>生成会议纪要</h4>
+                <p>梳理重点讨论、结论与待办，会议结束即可交付。</p>
+                <button class="btn btn-primary btn-sm" onclick="submitTask('meeting', this)"><i class="bi bi-pencil"></i> 生成纪要</button>
+            </div>
+            <div class="task-card" data-type="report">
+                <div class="task-icon" style="color:#dd6b20;background:rgba(251,146,60,0.15);"><i class="bi bi-file-earmark-text"></i></div>
+                <h4>生成报告</h4>
+                <p>根据项目进展，输出结构化的分析与行动建议。</p>
+                <button class="btn btn-primary btn-sm" onclick="submitTask('report', this)"><i class="bi bi-diagram-3"></i> 生成报告</button>
+            </div>
+            <div class="task-card" data-type="speech">
+                <div class="task-icon" style="color:#d53f8c;background:rgba(237,100,166,0.15);"><i class="bi bi-megaphone"></i></div>
+                <h4>生成演讲稿</h4>
+                <p>结合场景与听众，打造逻辑清晰、富感染力的发言稿。</p>
+                <button class="btn btn-primary btn-sm" onclick="submitTask('speech', this)"><i class="bi bi-broadcast"></i> 生成演讲稿</button>
+            </div>
+            <div class="task-card" data-type="intro">
+                <div class="task-icon" style="color:#319795;background:rgba(56,178,172,0.15);"><i class="bi bi-person-badge"></i></div>
+                <h4>生成自我介绍</h4>
+                <p>结合个人故事与风格，呈现专业而有温度的开场白。</p>
+                <button class="btn btn-primary btn-sm" onclick="submitTask('intro', this)"><i class="bi bi-person-lines-fill"></i> 生成自我介绍</button>
+            </div>
+        </div>
+        </div>
+
+        <div class="result-panel">
+            <div class="result-header">
+                <div>
+                    <p class="result-meta">当前任务</p>
+                    <h3 id="resultTitle">等待生成</h3>
+                </div>
+                <div class="result-actions">
+                    <button id="copyResultBtn" class="btn btn-outline-secondary btn-sm" onclick="copyResult()" disabled>
+                        <i class="bi bi-clipboard"></i> 复制结果
+                    </button>
+                </div>
+            </div>
+            <div id="resultStatus" class="result-status">请先在上方输入背景信息并选择需要的内容类型。</div>
+            <div id="resultContent" class="result-content">
+                <div class="result-placeholder">
+                    暂无内容，选择一项任务并点击生成，系统会在此展示结果，可直接复制调试。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        const taskTemplates = {
+            meeting: '请根据以下要点整理会议纪要，包含议题、结论、待办：',
+            report: '请根据项目进展撰写正式报告，包含背景、分析、结论和行动建议：',
+            speech: '请根据以下背景撰写一篇结构清晰、有感染力的演讲稿：',
+            intro: '请根据我的背景写一份专业且有温度的自我介绍：'
+        };
+
+        const taskDisplay = {
+            meeting: '会议纪要',
+            report: '项目报告',
+            speech: '演讲稿',
+            intro: '自我介绍'
+        };
+
+        let isGenerating = false;
+        let currentResultText = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setResultState('idle');
+        });
+
+        async function submitTask(type, triggerBtn) {
+            if (isGenerating) {
+                return;
+            }
+
+            const base = taskTemplates[type];
+            if (!base) {
+                return;
+            }
+
+            const detail = document.getElementById('workbenchInput').value.trim();
+            let prompt = base;
+            if (detail) {
+                prompt += '\n\n补充信息：' + detail;
+            }
+
+            const displayName = taskDisplay[type] || 'AI生成';
+            setResultState('loading', { title: displayName });
+            toggleTaskButtons(true, triggerBtn);
+            isGenerating = true;
+
+            try {
+                const response = await fetch('/api/ai-chat/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'workbench-' + type + '-' + Date.now(),
+                        message: prompt,
+                        customerId: null,
+                        history: [{ role: 'user', content: prompt }]
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok && result.code === 200 && result.data) {
+                    const aiResponse = (result.data.replyContent || result.data.content || '').trim();
+                    if (aiResponse) {
+                        currentResultText = aiResponse;
+                        setResultState('success', {
+                            title: displayName,
+                            content: aiResponse
+                        });
+                    } else {
+                        throw new Error('AI 返回了空内容，请稍后再试');
+                    }
+                } else {
+                    throw new Error(result.message || 'AI 服务暂时不可用');
+                }
+            } catch (error) {
+                console.error('生成失败:', error);
+                currentResultText = '';
+                setResultState('error', {
+                    title: taskDisplay[type],
+                    message: error.message || '生成失败，请稍后重试'
+                });
+            } finally {
+                toggleTaskButtons(false, triggerBtn);
+                isGenerating = false;
+            }
+        }
+
+        function setResultState(state, options = {}) {
+            const titleEl = document.getElementById('resultTitle');
+            const statusEl = document.getElementById('resultStatus');
+            const contentEl = document.getElementById('resultContent');
+            const copyBtn = document.getElementById('copyResultBtn');
+
+            const title = options.title || '我的智慧工作台';
+            const message = options.message;
+            const content = options.content;
+
+            if (state === 'idle') {
+                titleEl.textContent = '等待生成';
+                statusEl.textContent = '请先在上方输入背景信息并选择需要的内容类型。';
+                statusEl.className = 'result-status';
+                contentEl.innerHTML = '<div class="result-placeholder">暂无内容，选择一项任务并点击生成，系统会在此展示结果，可直接复制调试。</div>';
+                copyBtn.disabled = true;
+                currentResultText = '';
+                return;
+            }
+
+            if (state === 'loading') {
+                titleEl.textContent = title;
+                statusEl.textContent = 'AI 正在生成内容，请稍候...';
+                statusEl.className = 'result-status loading';
+                contentEl.innerHTML = '<div class="loading-indicator"><div class="spinner-border text-primary" role="status"></div><span>正在根据您的输入生成 ' + title + '...</span></div>';
+                copyBtn.disabled = true;
+                return;
+            }
+
+            if (state === 'success') {
+                titleEl.textContent = title;
+                statusEl.textContent = '生成完成，可继续编辑或复制。';
+                statusEl.className = 'result-status success';
+                contentEl.innerHTML = formatResultText(content);
+                copyBtn.disabled = !content;
+                return;
+            }
+
+            if (state === 'error') {
+                titleEl.textContent = title + ' · 生成失败';
+                statusEl.textContent = message || '生成失败，请稍后重试。';
+                statusEl.className = 'result-status error';
+                contentEl.innerHTML = '<div class="result-placeholder">暂无法生成内容，请检查网络或稍后再试。</div>';
+                copyBtn.disabled = true;
+            }
+        }
+
+        function toggleTaskButtons(disabled, activeBtn) {
+            document.querySelectorAll('.tasks-grid button').forEach(btn => {
+                if (disabled) {
+                    btn.disabled = true;
+                    if (btn === activeBtn) {
+                        btn.dataset.originalText = btn.innerHTML;
+                        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
+                    }
+                } else {
+                    btn.disabled = false;
+                    if (btn.dataset.originalText) {
+                        btn.innerHTML = btn.dataset.originalText;
+                        delete btn.dataset.originalText;
+                    }
+                }
+            });
+        }
+
+        function copyResult() {
+            if (!currentResultText) return;
+            navigator.clipboard.writeText(currentResultText).then(() => {
+                showToast('复制成功', '内容已复制，可直接粘贴使用');
+            }).catch(err => {
+                console.error('复制失败', err);
+                showToast('复制失败', '请检查浏览器权限', true);
+            });
+        }
+
+        function formatResultText(text) {
+            if (!text) {
+                return '<div class="result-placeholder">暂无内容</div>';
+            }
+            const escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            return escaped.replace(/\n/g, '<br>');
+        }
+
+        function showToast(title, message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast show position-fixed';
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 1055;';
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <i class="bi ${isError ? 'bi-x-circle text-danger' : 'bi-check-circle text-success'} me-2"></i>
+                    <strong class="me-auto">${title}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">${message}</div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

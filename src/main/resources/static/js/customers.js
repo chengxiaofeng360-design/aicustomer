@@ -647,7 +647,7 @@ function resetImportFileSelection(silent = false) {
     }
 }
 
-// 解析导入数据
+// 解析导入数据（使用AI智能识别）
 function parseImportData() {
     const data = document.getElementById('batchImportData').value.trim();
     if (!data) {
@@ -655,71 +655,83 @@ function parseImportData() {
         return;
     }
 
-    const lines = data.split('\n').filter(line => line.trim());
-    const parsedData = [];
-    let hasError = false;
+    // 显示加载状态
+    const parseBtn = document.querySelector('button[onclick*="parseImportData"]') || 
+                     document.querySelector('button.btn-outline-primary');
+    const originalText = parseBtn ? parseBtn.innerHTML : '';
+    if (parseBtn) {
+        parseBtn.disabled = true;
+        parseBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> AI解析中...';
+    }
+    
+    // 隐藏之前的预览
+    document.getElementById('importPreview').style.display = 'none';
+    document.getElementById('saveImportBtn').disabled = true;
 
-    lines.forEach((line, index) => {
-        const fields = line.split(/[\t,|]/).map(field => field.trim());
+    // 调用后端AI批量解析API
+    fetch('/api/ai/customer-extract/batch-parse', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: data })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (parseBtn) {
+            parseBtn.disabled = false;
+            parseBtn.innerHTML = originalText;
+        }
         
-        if (fields.length < 5) {
-            hasError = true;
-            parsedData.push({
-                customerName: fields[0] || '',
-                contactPerson: fields[1] || '',
-                phone: fields[2] || '',
-                customerType: fields[3] || '',
-                position: fields[4] || '',
-                qqWeixin: fields[5] || '',
-                cooperationContent: fields[6] || '',
-                region: fields[7] || '',
-                status: 'error',
-                error: '字段不足，至少需要5个字段'
-            });
+        if (result.code !== 200) {
+            alert('解析失败: ' + (result.message || '未知错误'));
             return;
         }
-
-        // 验证必填字段
-        const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[7]];
-        const missingFields = requiredFields.some(field => !field);
         
-        if (missingFields) {
-            hasError = true;
-            parsedData.push({
-                customerName: fields[0] || '',
-                contactPerson: fields[1] || '',
-                phone: fields[2] || '',
-                customerType: fields[3] || '',
-                position: fields[4] || '',
-                qqWeixin: fields[5] || '',
-                cooperationContent: fields[6] || '',
-                region: fields[7] || '',
-                status: 'error',
-                error: '必填字段不能为空'
-            });
-        } else {
-            parsedData.push({
-                customerName: fields[0],
-                contactPerson: fields[1],
-                phone: fields[2],
-                customerType: fields[3],
-                position: fields[4] || '',
-                qqWeixin: fields[5] || '',
-                cooperationContent: fields[6] || '',
-                region: fields[7],
-                address: fields[8] || '',
-                remark: fields[9] || '',
-                status: 'valid'
-            });
+        const parsedList = result.data.parsedList || [];
+        if (parsedList.length === 0) {
+            alert('没有解析到任何数据，请检查输入格式');
+            return;
         }
+        
+        // 转换数据格式以适配预览显示
+        const parsedData = parsedList.map(item => {
+            return {
+                customerName: item.customerName || '',
+                contactPerson: item.contactPerson || '',
+                phone: item.phone || '',
+                customerType: item.customerType || '',
+                position: item.position || '',
+                qqWeixin: item.qqWeixin || '',
+                cooperationContent: item.cooperationContent || '',
+                region: item.region || '',
+                address: item.address || '',
+                remark: item.remark || '',
+                status: item.status || 'valid',
+                error: item.error || ''
+            };
+        });
+        
+        // 显示预览
+        displayImportPreview(parsedData);
+        
+        // 检查是否有错误
+        const hasError = parsedData.some(item => item.status === 'error');
+        if (!hasError) {
+            document.getElementById('saveImportBtn').disabled = false;
+        }
+        
+        // 保存解析后的数据供后续使用
+        processedData = parsedData;
+    })
+    .catch(error => {
+        if (parseBtn) {
+            parseBtn.disabled = false;
+            parseBtn.innerHTML = originalText;
+        }
+        console.error('解析数据失败:', error);
+        alert('解析数据失败，请检查网络连接或稍后重试');
     });
-
-    // 显示预览
-    displayImportPreview(parsedData);
-    
-    if (!hasError) {
-        document.getElementById('saveImportBtn').disabled = false;
-    }
 }
 
 // 显示导入预览
@@ -1682,46 +1694,73 @@ function saveUploadedDataOld() {
 
 // 保存批量导入数据
 function saveBatchImport() {
-    const data = document.getElementById('batchImportData').value.trim();
-    if (!data) {
-        alert('没有要保存的数据！');
-        return;
-    }
-
-    const lines = data.split('\n').filter(line => line.trim());
-    const customersToSave = [];
-
-    lines.forEach((line) => {
-        const fields = line.split(/[\t,|]/).map(field => field.trim());
-        
-        if (fields.length >= 5) {
-            const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[7]];
-            const missingFields = requiredFields.some(field => !field);
-            
-            if (!missingFields) {
-                const customerTypeText = fields[3];
+    // 优先使用AI解析后的数据
+    let customersToSave = [];
+    
+    if (processedData && processedData.length > 0) {
+        // 使用AI解析的数据，只保存状态为valid的记录
+        customersToSave = processedData
+            .filter(item => item.status === 'valid')
+            .map(item => {
+                // 处理客户类型映射
+                const customerTypeText = item.customerType || '';
                 const customerType = customerTypeReverseMap[customerTypeText] || customerTypeText;
                 
-                const newCustomer = {
-                    customerName: fields[0],
-                    contactPerson: fields[1],
-                    phone: fields[2],
+                return {
+                    customerName: item.customerName || '',
+                    contactPerson: item.contactPerson || '',
+                    phone: item.phone || '',
                     customerType: customerType,
-                    position: fields[4] || '',
-                    qqWeixin: fields[5] || '',
-                    cooperationContent: fields[6] || '',
-                    region: fields[7] || '',
-                    email: fields[8] || '',
-                    address: fields[9] || '',
-                    remark: fields[10] || ''
+                    position: item.position || '',
+                    qqWeixin: item.qqWeixin || '',
+                    cooperationContent: item.cooperationContent || '',
+                    region: item.region || '',
+                    email: '', // AI解析中没有email字段，保持为空
+                    address: item.address || '',
+                    remark: item.remark || ''
                 };
-                customersToSave.push(newCustomer);
-            }
+            });
+    } else {
+        // 如果没有AI解析数据，回退到原来的解析方式
+        const data = document.getElementById('batchImportData').value.trim();
+        if (!data) {
+            alert('没有要保存的数据！请先点击"解析数据"按钮');
+            return;
         }
-    });
+
+        const lines = data.split('\n').filter(line => line.trim());
+        lines.forEach((line) => {
+            const fields = line.split(/[\t,|]/).map(field => field.trim());
+            
+            if (fields.length >= 5) {
+                const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[7]];
+                const missingFields = requiredFields.some(field => !field);
+                
+                if (!missingFields) {
+                    const customerTypeText = fields[3];
+                    const customerType = customerTypeReverseMap[customerTypeText] || customerTypeText;
+                    
+                    const newCustomer = {
+                        customerName: fields[0],
+                        contactPerson: fields[1],
+                        phone: fields[2],
+                        customerType: customerType,
+                        position: fields[4] || '',
+                        qqWeixin: fields[5] || '',
+                        cooperationContent: fields[6] || '',
+                        region: fields[7] || '',
+                        email: fields[8] || '',
+                        address: fields[9] || '',
+                        remark: fields[10] || ''
+                    };
+                    customersToSave.push(newCustomer);
+                }
+            }
+        });
+    }
 
     if (customersToSave.length === 0) {
-        alert('没有有效的客户数据可保存！');
+        alert('没有有效的客户数据可保存！请确保数据已正确解析');
         return;
     }
 
