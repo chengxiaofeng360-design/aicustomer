@@ -5,10 +5,16 @@ import com.aicustomer.entity.Customer;
 import com.aicustomer.service.ArkChatService;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.ChatClient;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,6 +33,10 @@ public class AiCustomerExtractController {
     
     @Autowired
     private ArkChatService arkChatService;
+    
+    @Autowired(required = false)
+    @Qualifier("doubaoChatClient")
+    private ChatClient chatClient; // Spring AI ChatClient，如果可用则优先使用
     
     private final Gson gson = new Gson();
     
@@ -91,15 +101,37 @@ public class AiCustomerExtractController {
             
             String systemPrompt = "你是一个专业的信息提取专家，擅长从非结构化文本中提取结构化信息。请严格按照指定的JSON格式返回结果，只返回JSON对象，不要包含任何其他文字说明。";
             
-            // 使用豆包（Ark）AI模型进行信息提取
-            if (!arkChatService.isAvailable()) {
-                log.warn("【客户信息提取】豆包服务不可用，请检查配置");
-                info.put("aiProcessed", false);
-                info.put("aiError", "豆包AI服务未配置或不可用，请检查API密钥配置");
-                return info;
-            }
+            String aiResult;
             
-            String aiResult = arkChatService.chat(prompt, systemPrompt);
+            // 优先使用Spring AI ChatClient（如果已配置）
+            if (chatClient != null) {
+                try {
+                    log.info("【客户信息提取】使用Spring AI ChatClient");
+                    Prompt springAiPrompt = new Prompt(List.of(
+                        new SystemMessage(systemPrompt),
+                        new UserMessage(prompt)
+                    ));
+                    aiResult = chatClient.call(springAiPrompt).getResult().getOutput().getContent();
+                } catch (Exception e) {
+                    log.warn("【客户信息提取】Spring AI调用失败，回退到ArkChatService: {}", e.getMessage());
+                    // 回退到直接调用ArkChatService
+                    if (!arkChatService.isAvailable()) {
+                        info.put("aiProcessed", false);
+                        info.put("aiError", "AI服务不可用");
+                        return info;
+                    }
+                    aiResult = arkChatService.chat(prompt, systemPrompt);
+                }
+            } else {
+                // 使用豆包（Ark）AI模型进行信息提取
+                if (!arkChatService.isAvailable()) {
+                    log.warn("【客户信息提取】豆包服务不可用，请检查配置");
+                    info.put("aiProcessed", false);
+                    info.put("aiError", "豆包AI服务未配置或不可用，请检查API密钥配置");
+                    return info;
+                }
+                aiResult = arkChatService.chat(prompt, systemPrompt);
+            }
             log.info("【客户信息提取】豆包AI返回结果长度: {}", aiResult != null ? aiResult.length() : 0);
             
             if (aiResult == null || aiResult.trim().isEmpty()) {
@@ -267,14 +299,36 @@ public class AiCustomerExtractController {
             
             String systemPrompt = "你是一个专业的数据解析专家，擅长从非结构化文本中提取结构化信息。请严格按照指定的JSON格式返回结果，只返回JSON对象，不要包含任何其他文字说明、markdown标记或解释。";
             
-            // 使用豆包AI解析
-            if (!arkChatService.isAvailable()) {
-                result.put("status", "error");
-                result.put("error", "豆包AI服务未配置");
-                return result;
-            }
+            String aiResult;
             
-            String aiResult = arkChatService.chat(prompt, systemPrompt);
+            // 优先使用Spring AI ChatClient（如果已配置）
+            if (chatClient != null) {
+                try {
+                    log.info("【批量解析】第{}行使用Spring AI ChatClient", lineNumber);
+                    Prompt springAiPrompt = new Prompt(List.of(
+                        new SystemMessage(systemPrompt),
+                        new UserMessage(prompt)
+                    ));
+                    aiResult = chatClient.call(springAiPrompt).getResult().getOutput().getContent();
+                } catch (Exception e) {
+                    log.warn("【批量解析】第{}行Spring AI调用失败，回退到ArkChatService: {}", lineNumber, e.getMessage());
+                    // 回退到直接调用ArkChatService
+                    if (!arkChatService.isAvailable()) {
+                        result.put("status", "error");
+                        result.put("error", "AI服务未配置");
+                        return result;
+                    }
+                    aiResult = arkChatService.chat(prompt, systemPrompt);
+                }
+            } else {
+                // 使用豆包AI解析
+                if (!arkChatService.isAvailable()) {
+                    result.put("status", "error");
+                    result.put("error", "豆包AI服务未配置");
+                    return result;
+                }
+                aiResult = arkChatService.chat(prompt, systemPrompt);
+            }
             
             if (aiResult == null || aiResult.trim().isEmpty()) {
                 result.put("status", "error");
