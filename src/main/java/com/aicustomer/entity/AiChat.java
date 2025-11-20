@@ -20,6 +20,16 @@ public class AiChat extends BaseEntity {
     private String sessionId;
     
     /**
+     * 用户ID
+     */
+    private Long userId;
+    
+    /**
+     * 用户姓名
+     */
+    private String userName;
+    
+    /**
      * 客户ID
      */
     private Long customerId;
@@ -60,6 +70,11 @@ public class AiChat extends BaseEntity {
     private String keywords;
     
     /**
+     * 对话上下文
+     */
+    private String context;
+    
+    /**
      * 意图识别结果
      */
     private String intent;
@@ -83,6 +98,16 @@ public class AiChat extends BaseEntity {
      * 满意度评分 (1-5分)
      */
     private Integer satisfactionScore;
+    
+    /**
+     * 是否满意
+     */
+    private Boolean isSatisfied;
+    
+    /**
+     * 用户反馈
+     */
+    private String feedback;
     
     /**
      * 是否已读

@@ -1,7 +1,12 @@
 let chatHistory = [];
 let isTyping = false;
-let currentChatId = Date.now().toString();
+let currentChatId = null;
 let conversationHistory = []; // 用于保存对话历史，传递给DeepSeek
+let sessionList = [];
+let activeSessionId = null;
+let currentUser = null;
+let isLoadingSessions = false;
+let isLoadingMessages = false;
 
 // 侧边栏折叠/展开功能
 function toggleSidebar() {
@@ -19,14 +24,15 @@ function toggleSidebar() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
-    // 聚焦到输入框
-    document.getElementById('messageInput').focus();
+    const input = document.getElementById('messageInput');
+    if (input) {
+        input.focus();
+    }
     
-    // 初始化聊天界面
+    initCurrentUser();
     initializeChat();
-    
-    // 初始化键盘快捷键
     initKeyboardShortcuts();
+    handlePresetMessage();
 });
 
 // 初始化键盘快捷键
@@ -43,14 +49,6 @@ function initKeyboardShortcuts() {
         
         // Esc: 关闭弹窗和模态框
         if (event.key === 'Escape') {
-            // 关闭表情选择器
-            const emojiPicker = document.getElementById('emojiPicker');
-            if (emojiPicker && emojiPicker.style.display !== 'none') {
-                emojiPicker.style.display = 'none';
-                emojiPickerVisible = false;
-            }
-            
-            // 关闭图片模态框
             const imageModal = document.querySelector('.image-modal');
             if (imageModal) {
                 imageModal.remove();
@@ -65,10 +63,349 @@ function initKeyboardShortcuts() {
     });
 }
 
+function initCurrentUser() {
+    try {
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+            currentUser = JSON.parse(storedUser);
+        }
+    } catch (error) {
+        console.warn('解析当前用户信息失败:', error);
+        currentUser = null;
+    }
+}
+
+function renderWelcomeMessage() {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="message ai-message">
+            <div class="message-avatar">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    <div class="welcome-content">
+                        <h6 class="welcome-title">
+                            <i class="bi bi-sparkles me-2"></i>欢迎使用AI智能助手
+                        </h6>
+                        <p>您好！我是专门为种业客户管理系统设计的AI智能助手。</p>
+                        <div class="capabilities">
+                            <h6>我可以帮助您：</h6>
+                            <div class="capability-grid">
+                                <div class="capability-item">
+                                    <i class="bi bi-graph-up"></i>
+                                    <span>数据分析</span>
+                                </div>
+                                <div class="capability-item">
+                                    <i class="bi bi-bullseye"></i>
+                                    <span>营销策略</span>
+                                </div>
+                                <div class="capability-item">
+                                    <i class="bi bi-box-seam"></i>
+                                    <span>产品推荐</span>
+                                </div>
+                                <div class="capability-item">
+                                    <i class="bi bi-headset"></i>
+                                    <span>客户服务</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="welcome-footer">请随时向我提问，我会为您提供专业的建议和帮助！</p>
+                    </div>
+                </div>
+                <div class="message-time">刚刚</div>
+            </div>
+        </div>
+    `;
+    setCurrentSessionSummary('与AI助手的对话', '准备开始新的对话');
+}
+
+async function loadSessions(autoSelect = false) {
+    if (isLoadingSessions) return;
+    isLoadingSessions = true;
+    renderHistoryState('正在加载会话...', false);
+    try {
+        const response = await fetch('/api/ai-chat/sessions');
+        const result = await response.json();
+        if (response.ok && result.code === 200) {
+            sessionList = Array.isArray(result.data) ? result.data : [];
+            renderSessionList();
+            if (autoSelect && sessionList.length > 0) {
+                selectSession(sessionList[0].sessionId);
+            } else if (!sessionList.length) {
+                setCurrentSessionSummary('新建对话', '还没有历史记录');
+            }
+        } else {
+            renderHistoryState(result.message || '加载会话失败', true);
+        }
+    } catch (error) {
+        renderHistoryState(error.message || '加载会话失败', true);
+    } finally {
+        isLoadingSessions = false;
+    }
+}
+
+function renderHistoryState(message, isError = false) {
+    const historyList = document.getElementById('historyList');
+    if (!historyList) return;
+    const safeMessage = escapeHtml(message || '');
+    historyList.innerHTML = `<div class="history-empty ${isError ? 'text-danger' : 'text-white-50'}">${safeMessage}</div>`;
+}
+
+function renderSessionList(activeId = activeSessionId) {
+    const historyList = document.getElementById('historyList');
+    if (!historyList) return;
+    
+    if (!sessionList || sessionList.length === 0) {
+        renderHistoryState('暂无会话记录', false);
+        return;
+    }
+    
+    const sortedSessions = [...sessionList].sort((a, b) => {
+        const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+        const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+        return timeB - timeA;
+    });
+    
+    historyList.innerHTML = '';
+    sortedSessions.forEach(session => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        if (session.sessionId === activeId) {
+            item.classList.add('active');
+        }
+        item.dataset.sessionId = session.sessionId;
+        
+        const title = session.firstUserMessage || '与AI助手的对话';
+        const meta = formatSessionMeta(session);
+        
+        item.innerHTML = `
+            <i class="bi bi-chat-dots"></i>
+            <div class="history-info">
+                <span class="history-title">${escapeHtml(title)}</span>
+                <span class="history-meta">${escapeHtml(meta)}</span>
+            </div>
+        `;
+        
+        item.addEventListener('click', () => selectSession(session.sessionId));
+        historyList.appendChild(item);
+    });
+}
+
+async function selectSession(sessionId) {
+    if (!sessionId || isLoadingMessages) return;
+    activeSessionId = sessionId;
+    currentChatId = sessionId;
+    renderSessionList(sessionId);
+    await loadMessagesBySessionId(sessionId);
+}
+
+async function loadMessagesBySessionId(sessionId) {
+    isLoadingMessages = true;
+    const container = document.getElementById('chatMessages');
+    if (container) {
+        container.innerHTML = `<div class="history-empty text-muted">正在加载消息...</div>`;
+    }
+    chatHistory = [];
+    conversationHistory = [];
+    try {
+        const response = await fetch(`/api/ai-chat/messages?sessionId=${encodeURIComponent(sessionId)}`);
+        const result = await response.json();
+        if (response.ok && result.code === 200) {
+            const messages = Array.isArray(result.data) ? result.data : [];
+            if (!messages.length) {
+                renderWelcomeMessage();
+                setCurrentSessionSummary('新建对话', '暂无消息');
+                return;
+            }
+            if (container) container.innerHTML = '';
+            messages.forEach((msg, index) => {
+                const sender = msg.messageType === 1 ? 'user' : 'ai';
+                const text = resolveMessageContent(msg);
+                if (!text) return;
+                addMessage(text, sender === 'system' ? 'ai' : sender, {
+                    timestamp: msg.createTime || msg.replyTime,
+                    recordHistory: true,
+                    skipScroll: index !== messages.length - 1
+                });
+                if (sender === 'user') {
+                    conversationHistory.push({ role: 'user', content: text });
+                } else if (sender === 'ai') {
+                    conversationHistory.push({ role: 'assistant', content: text });
+                }
+            });
+            trimConversationHistory();
+            const session = sessionList.find(item => item.sessionId === sessionId);
+            setCurrentSessionSummary(
+                session ? (session.firstUserMessage || '与AI助手的对话') : '与AI助手的对话',
+                formatSessionMeta(session || { messageCount: messages.length, lastMessageTime: messages[messages.length - 1]?.createTime })
+            );
+        } else {
+            renderMessagesError(result.message || '加载消息失败');
+        }
+    } catch (error) {
+        renderMessagesError(error.message || '加载消息失败');
+    } finally {
+        isLoadingMessages = false;
+    }
+}
+
+function renderMessagesError(message) {
+    const container = document.getElementById('chatMessages');
+    if (container) {
+        container.innerHTML = `<div class="history-empty text-danger">${escapeHtml(message || '加载失败')}</div>`;
+    }
+}
+
+function formatSessionMeta(session) {
+    if (!session) return '暂无消息';
+    const countText = session.messageCount ? `消息 ${session.messageCount}` : '暂无消息';
+    const timeText = formatDisplayTime(session.lastMessageTime);
+    return `${countText} · ${timeText}`;
+}
+
+function formatDisplayTime(timestamp) {
+    if (!timestamp) return '刚刚';
+    const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+    if (Number.isNaN(date.getTime())) return '刚刚';
+    const today = new Date();
+    const sameDay = date.toDateString() === today.toDateString();
+    return sameDay
+        ? date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        : date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function setCurrentSessionSummary(title, meta) {
+    const titleEl = document.getElementById('currentChatTitle');
+    const metaEl = document.getElementById('currentChatMeta');
+    if (titleEl) {
+        titleEl.textContent = title || '与AI助手的对话';
+    }
+    if (metaEl) {
+        metaEl.textContent = meta || '等待新的对话';
+    }
+}
+
+function resolveMessageContent(msg) {
+    if (!msg) return '';
+    if (msg.messageType === 1) {
+        return msg.content || msg.userMessage || '';
+    }
+    return msg.replyContent || msg.content || '';
+}
+
+function ensureSessionInList(session) {
+    if (!session || !session.sessionId) return;
+    const exists = sessionList.find(item => item.sessionId === session.sessionId);
+    if (!exists) {
+        sessionList.unshift(session);
+    }
+}
+
+function updateSessionAfterMessage(userMessage, aiMessage) {
+    if (!currentChatId) return;
+    let session = sessionList.find(item => item.sessionId === currentChatId);
+    const isoNow = new Date().toISOString();
+    if (!session) {
+        session = {
+            sessionId: currentChatId,
+            firstUserMessage: userMessage,
+            lastAiReply: aiMessage,
+            messageCount: 0,
+            lastMessageTime: isoNow
+        };
+        sessionList.unshift(session);
+    }
+    session.messageCount = (session.messageCount || 0) + 2;
+    session.lastMessageTime = isoNow;
+    session.firstUserMessage = session.firstUserMessage || userMessage;
+    session.lastAiReply = aiMessage;
+    renderSessionList(currentChatId);
+    setCurrentSessionSummary(session.firstUserMessage || '与AI助手的对话', formatSessionMeta(session));
+}
+
+async function requestNewSession() {
+    const payload = {
+        userId: currentUser?.id || null,
+        customerId: null
+    };
+    const response = await fetch('/api/ai-chat/sessions/new', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (response.ok && result.code === 200 && result.data) {
+        return result.data.sessionId;
+    }
+    throw new Error(result.message || '创建新会话失败');
+}
+
+async function createNewChatSession() {
+    try {
+        const sessionId = await requestNewSession();
+        currentChatId = sessionId;
+        activeSessionId = sessionId;
+        conversationHistory = [];
+        chatHistory = [];
+        renderWelcomeMessage();
+        setCurrentSessionSummary('新建对话', '等待您的第一条消息');
+        ensureSessionInList({
+            sessionId,
+            firstUserMessage: null,
+            lastAiReply: null,
+            messageCount: 0,
+            lastMessageTime: new Date().toISOString()
+        });
+        renderSessionList(sessionId);
+    } catch (error) {
+        alert('创建新会话失败：' + (error.message || '未知错误'));
+        throw error;
+    }
+}
+
+async function ensureActiveSession() {
+    if (currentChatId) {
+        return currentChatId;
+    }
+    await createNewChatSession();
+    return currentChatId;
+}
+
+function trimConversationHistory(limit = 20) {
+    if (conversationHistory.length > limit) {
+        conversationHistory = conversationHistory.slice(conversationHistory.length - limit);
+    }
+}
+
 // 初始化聊天界面
 function initializeChat() {
-    // 添加欢迎消息到历史记录
-    addToHistory('欢迎使用AI智能助手', 'ai', '刚刚');
+    renderWelcomeMessage();
+    loadSessions(true);
+}
+
+// 处理从首页传入的快捷指令
+function handlePresetMessage() {
+    const preset = localStorage.getItem('aiChatPreset');
+    if (!preset) return;
+    
+    const input = document.getElementById('messageInput');
+    if (!input) {
+        setTimeout(handlePresetMessage, 200);
+        return;
+    }
+    
+    input.value = preset;
+    autoResize(input);
+    localStorage.removeItem('aiChatPreset');
+    
+    // 轻微延迟后自动发送，确保界面就绪
+    setTimeout(() => {
+        sendMessage();
+    }, 200);
 }
 
 // 发送消息
@@ -77,6 +414,13 @@ async function sendMessage() {
     const message = input.value.trim();
     
     if (!message) return;
+    
+    try {
+        await ensureActiveSession();
+    } catch (error) {
+        console.error('创建会话失败:', error);
+        return;
+    }
     
     // 禁用发送按钮和输入框
     const sendBtn = document.getElementById('sendBtn');
@@ -94,6 +438,7 @@ async function sendMessage() {
         role: 'user',
         content: message
     });
+    trimConversationHistory();
     
     // 清空输入框并重置高度
     input.value = '';
@@ -139,9 +484,11 @@ async function sendMessage() {
                     role: 'assistant',
                     content: aiResponse
                 });
+                trimConversationHistory();
                 
                 // 显示AI回复
-                addMessage(aiResponse, 'ai');
+        addMessage(aiResponse, 'ai');
+                updateSessionAfterMessage(message, aiResponse);
             } else {
                 const errorMsg = '抱歉，AI服务返回了空回复，请检查后端日志。';
                 addMessage(errorMsg, 'ai');
@@ -149,6 +496,7 @@ async function sendMessage() {
                     role: 'assistant',
                     content: errorMsg
                 });
+                trimConversationHistory();
             }
         } else {
             // 如果后端失败，显示错误信息
@@ -175,6 +523,7 @@ async function sendMessage() {
             role: 'assistant',
             content: errorMessage
         });
+        trimConversationHistory();
     } finally {
         // 恢复发送按钮和输入框
         if (sendBtn) {
@@ -217,15 +566,13 @@ function scrollToChatArea() {
 }
 
 // 添加消息到聊天界面
-function addMessage(content, sender) {
+function addMessage(content, sender, options = {}) {
+    const { timestamp = new Date(), recordHistory = true, skipScroll = false } = options;
     const messagesContainer = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
     
-    const time = new Date().toLocaleTimeString('zh-CN', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
+    const time = formatDisplayTime(timestamp);
     
     // 转义HTML防止XSS攻击
     const escapedContent = escapeHtml(content);
@@ -270,16 +617,19 @@ function addMessage(content, sender) {
     
     messagesContainer.appendChild(messageDiv);
     
-    // 使用requestAnimationFrame优化滚动性能
-    requestAnimationFrame(() => {
+    if (!skipScroll) {
+        // 使用requestAnimationFrame优化滚动性能
+        requestAnimationFrame(() => {
     scrollToBottom();
     setTimeout(() => {
         forceScrollToBottom();
-        }, 50);
-    });
+            }, 50);
+        });
+    }
     
-    // 保存到聊天历史
+    if (recordHistory) {
     addToHistory(content, sender, time);
+    }
 }
 
 // HTML转义函数（防止XSS攻击）
@@ -804,53 +1154,13 @@ function handleKeyPress(event) {
 }
 
 // 开始新对话
-function startNewChat() {
-    if (confirm('确定要开始新对话吗？当前对话记录将被清空。')) {
-        chatHistory = [];
-        conversationHistory = []; // 清空对话历史
-        currentChatId = Date.now().toString();
-        document.getElementById('chatMessages').innerHTML = `
-            <div class="message ai-message">
-                <div class="message-avatar">
-                    <i class="bi bi-robot"></i>
-                </div>
-                <div class="message-content">
-                    <div class="message-bubble">
-                        <div class="welcome-content">
-                            <h6 class="welcome-title">
-                                <i class="bi bi-sparkles me-2"></i>欢迎使用AI智能助手
-                            </h6>
-                            <p>您好！我是专门为种业客户管理系统设计的AI智能助手。</p>
-                            <div class="capabilities">
-                                <h6>我可以帮助您：</h6>
-                                <div class="capability-grid">
-                                    <div class="capability-item">
-                                        <i class="bi bi-graph-up"></i>
-                                        <span>数据分析</span>
-                                    </div>
-                                    <div class="capability-item">
-                                        <i class="bi bi-bullseye"></i>
-                                        <span>营销策略</span>
-                                    </div>
-                                    <div class="capability-item">
-                                        <i class="bi bi-box-seam"></i>
-                                        <span>产品推荐</span>
-                                    </div>
-                                    <div class="capability-item">
-                                        <i class="bi bi-headset"></i>
-                                        <span>客户服务</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <p class="welcome-footer">请随时向我提问，我会为您提供专业的建议和帮助！</p>
-                        </div>
-                    </div>
-                    <div class="message-time">刚刚</div>
-                </div>
-            </div>
-        `;
-        addToHistory('欢迎使用AI智能助手', 'ai', '刚刚');
+async function startNewChat() {
+    if (!confirm('确定要开始新对话吗？当前对话记录将被清空。')) {
+        return;
     }
+        chatHistory = [];
+    conversationHistory = [];
+    await createNewChatSession();
 }
 
 // 清空对话
@@ -862,34 +1172,6 @@ function clearChat() {
         // 重新显示欢迎消息
         initializeChat();
     }
-}
-
-// 导出对话
-function exportChat() {
-    if (chatHistory.length === 0) {
-        alert('没有对话记录可以导出！');
-        return;
-    }
-    
-    let exportText = 'AI智能助手对话记录\n';
-    exportText += '导出时间：' + new Date().toLocaleString() + '\n';
-    exportText += '='.repeat(50) + '\n\n';
-    
-    chatHistory.forEach((msg, index) => {
-        exportText += `[${msg.time}] ${msg.sender === 'user' ? '用户' : 'AI助手'}：\n`;
-        exportText += msg.content + '\n\n';
-    });
-    
-    // 创建下载链接
-    const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `AI对话记录_${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
 }
 
 // 附件功能
@@ -1608,118 +1890,6 @@ function hideSpeakingIndicator() {
     }
 }
 
-// 表情功能
-let emojiPickerVisible = false;
-const commonEmojis = [
-    '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
-    '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
-    '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
-    '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
-    '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
-    '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
-    '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '👏',
-    '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💪', '🤳',
-    '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
-    '💯', '✅', '❌', '⭐', '🌟', '💫', '✨', '🔥'
-];
-
-function toggleEmoji() {
-    const emojiPicker = document.getElementById('emojiPicker');
-    
-    if (!emojiPicker) {
-        createEmojiPicker();
-        emojiPickerVisible = true;
-    } else {
-        if (emojiPickerVisible) {
-            emojiPicker.style.display = 'none';
-            emojiPickerVisible = false;
-        } else {
-            emojiPicker.style.display = 'block';
-            emojiPickerVisible = true;
-        }
-    }
-}
-
-// 创建表情选择器
-function createEmojiPicker() {
-    const picker = document.createElement('div');
-    picker.id = 'emojiPicker';
-    picker.className = 'emoji-picker';
-    picker.style.cssText = `
-        position: absolute;
-        bottom: 80px;
-        left: 150px;
-        width: 300px;
-        max-height: 300px;
-        background: white;
-        border: 1px solid #e9ecef;
-        border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-        padding: 12px;
-        z-index: 1000;
-        overflow-y: auto;
-        display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        gap: 8px;
-    `;
-    
-    commonEmojis.forEach(emoji => {
-        const emojiBtn = document.createElement('button');
-        emojiBtn.textContent = emoji;
-        emojiBtn.className = 'emoji-btn';
-        emojiBtn.style.cssText = `
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: transparent;
-            font-size: 20px;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.2s;
-        `;
-        emojiBtn.onmouseover = function() {
-            this.style.background = '#f0f0f0';
-            this.style.transform = 'scale(1.2)';
-        };
-        emojiBtn.onmouseout = function() {
-            this.style.background = 'transparent';
-            this.style.transform = 'scale(1)';
-        };
-        emojiBtn.onclick = function() {
-            insertEmoji(emoji);
-            picker.style.display = 'none';
-            emojiPickerVisible = false;
-        };
-        picker.appendChild(emojiBtn);
-    });
-    
-    // 点击外部关闭
-    document.addEventListener('click', function closeEmojiPicker(e) {
-        if (!picker.contains(e.target) && e.target.closest('.toolbar-btn[onclick="toggleEmoji()"]') === null) {
-            picker.style.display = 'none';
-            emojiPickerVisible = false;
-            document.removeEventListener('click', closeEmojiPicker);
-        }
-    });
-    
-    const inputArea = document.querySelector('.chat-input-area');
-    inputArea.appendChild(picker);
-}
-
-// 插入表情到输入框
-function insertEmoji(emoji) {
-    const input = document.getElementById('messageInput');
-    const cursorPos = input.selectionStart;
-    const textBefore = input.value.substring(0, cursorPos);
-    const textAfter = input.value.substring(cursorPos);
-    
-    input.value = textBefore + emoji + textAfter;
-    input.focus();
-    input.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
-    
-    autoResize(input);
-    updateCharCount();
-}
 
 // 测试滚动功能
 function testScroll() {
@@ -1739,19 +1909,3 @@ function testScroll() {
     }, 2000);
 }
 
-// 切换快速操作折叠状态
-function toggleQuickActions() {
-    const content = document.getElementById('quickActionsContent');
-    const toggleIcon = document.getElementById('quickActionsToggle');
-    
-    if (!content) return;
-    
-    // 使用 classList 来切换 collapsed 类
-    if (content.classList.contains('collapsed')) {
-        content.classList.remove('collapsed');
-        toggleIcon.className = 'bi bi-chevron-up toggle-icon ms-1';
-    } else {
-        content.classList.add('collapsed');
-        toggleIcon.className = 'bi bi-chevron-down toggle-icon ms-1';
-    }
-}

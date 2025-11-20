@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aicustomer.mapper.MessageMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.aicustomer.entity.Message">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="message_type" property="messageType"/>
+        <result column="importance" property="importance"/>
+        <result column="business_type" property="businessType"/>
+        <result column="business_id" property="businessId"/>
+        <result column="business_name" property="businessName"/>
+        <result column="receiver_id" property="receiverId"/>
+        <result column="receiver_name" property="receiverName"/>
+        <result column="sender_id" property="senderId"/>
+        <result column="sender_name" property="senderName"/>
+        <result column="is_read" property="isRead"/>
+        <result column="read_time" property="readTime"/>
+        <result column="is_processed" property="isProcessed"/>
+        <result column="processed_time" property="processedTime"/>
+        <result column="process_result" property="processResult"/>
+        <result column="link_url" property="linkUrl"/>
+        <result column="link_params" property="linkParams"/>
+        <result column="expire_time" property="expireTime"/>
+        <result column="icon" property="icon"/>
+        <result column="color" property="color"/>
+        <result column="extra_info" property="extraInfo"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="deleted" property="deleted"/>
+        <result column="version" property="version"/>
+    </resultMap>
+
+    <!-- 插入消息 -->
+    <insert id="insert" parameterType="com.aicustomer.entity.Message" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO message (
+            title, content, message_type, importance, business_type, business_id, business_name,
+            receiver_id, receiver_name, sender_id, sender_name, link_url, link_params,
+            expire_time, icon, color, extra_info, create_by, update_by
+        ) VALUES (
+            #{title}, #{content}, #{messageType}, #{importance}, #{businessType}, #{businessId}, #{businessName},
+            #{receiverId}, #{receiverName}, #{senderId}, #{senderName}, #{linkUrl}, #{linkParams},
+            #{expireTime}, #{icon}, #{color}, #{extraInfo}, #{createBy}, #{updateBy}
+        )
+    </insert>
+
+    <!-- 批量插入消息 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO message (
+            title, content, message_type, importance, business_type, business_id, business_name,
+            receiver_id, receiver_name, sender_id, sender_name, link_url, link_params,
+            expire_time, icon, color, extra_info, create_by, update_by
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.title}, #{item.content}, #{item.messageType}, #{item.importance}, #{item.businessType}, 
+                #{item.businessId}, #{item.businessName}, #{item.receiverId}, #{item.receiverName}, 
+                #{item.senderId}, #{item.senderName}, #{item.linkUrl}, #{item.linkParams},
+                #{item.expireTime}, #{item.icon}, #{item.color}, #{item.extraInfo}, #{item.createBy}, #{item.updateBy}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM message
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <!-- 查询用户消息列表 -->
+    <select id="selectUserMessages" resultMap="BaseResultMap">
+        SELECT * FROM message
+        WHERE receiver_id = #{userId} AND deleted = 0
+        <if test="messageType != null">
+            AND message_type = #{messageType}
+        </if>
+        <if test="isRead != null">
+            AND is_read = #{isRead}
+        </if>
+        ORDER BY importance DESC, create_time DESC
+        <if test="limit != null and limit > 0">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!-- 统计用户消息数量 -->
+    <select id="countUserMessages" resultType="int">
+        SELECT COUNT(*) FROM message
+        WHERE receiver_id = #{userId} AND deleted = 0
+        <if test="messageType != null">
+            AND message_type = #{messageType}
+        </if>
+        <if test="isRead != null">
+            AND is_read = #{isRead}
+        </if>
+    </select>
+
+    <!-- 统计未读消息数量 -->
+    <select id="countUnread" parameterType="java.lang.Long" resultType="int">
+        SELECT COUNT(*) FROM message
+        WHERE receiver_id = #{userId} AND is_read = 0 AND deleted = 0
+        AND (expire_time IS NULL OR expire_time > NOW())
+    </select>
+
+    <!-- 更新消息为已读 -->
+    <update id="updateAsRead">
+        UPDATE message
+        SET is_read = 1, read_time = NOW(), update_time = NOW()
+        WHERE id = #{id} AND receiver_id = #{userId} AND deleted = 0
+    </update>
+
+    <!-- 批量更新为已读 -->
+    <update id="batchUpdateAsRead">
+        UPDATE message
+        SET is_read = 1, read_time = NOW(), update_time = NOW()
+        WHERE receiver_id = #{userId} AND deleted = 0
+        AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 更新所有消息为已读 -->
+    <update id="updateAllAsRead">
+        UPDATE message
+        SET is_read = 1, read_time = NOW(), update_time = NOW()
+        WHERE receiver_id = #{userId} AND is_read = 0 AND deleted = 0
+    </update>
+
+    <!-- 更新消息处理状态 -->
+    <update id="updateProcessed">
+        UPDATE message
+        SET is_processed = 1, processed_time = NOW(), process_result = #{processResult}, update_time = NOW()
+        WHERE id = #{id} AND receiver_id = #{userId} AND deleted = 0
+    </update>
+
+    <!-- 删除消息（逻辑删除） -->
+    <update id="deleteById">
+        UPDATE message
+        SET deleted = 1, update_time = NOW()
+        WHERE id = #{id} AND receiver_id = #{userId} AND deleted = 0
+    </update>
+
+    <!-- 批量删除消息 -->
+    <update id="batchDelete">
+        UPDATE message
+        SET deleted = 1, update_time = NOW()
+        WHERE receiver_id = #{userId} AND deleted = 0
+        AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 获取消息统计 -->
+    <select id="getStatistics" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as total,
+            SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) as unread,
+            SUM(CASE WHEN message_type = 1 THEN 1 ELSE 0 END) as system_count,
+            SUM(CASE WHEN message_type = 2 THEN 1 ELSE 0 END) as business_count,
+            SUM(CASE WHEN message_type = 3 THEN 1 ELSE 0 END) as task_count,
+            SUM(CASE WHEN message_type = 4 THEN 1 ELSE 0 END) as customer_count,
+            SUM(CASE WHEN importance = 3 THEN 1 ELSE 0 END) as urgent_count
+        FROM message
+        WHERE receiver_id = #{userId} AND deleted = 0
+        AND (expire_time IS NULL OR expire_time > NOW())
+    </select>
+
+</mapper>
+

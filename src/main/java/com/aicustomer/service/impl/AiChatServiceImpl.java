@@ -1,11 +1,17 @@
 package com.aicustomer.service.impl;
 
 import com.aicustomer.entity.AiChat;
+import com.aicustomer.mapper.AiChatMapper;
 import com.aicustomer.service.AiChatService;
 import com.aicustomer.service.DeepSeekService;
-import com.aicustomer.service.ArkChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,8 +33,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AiChatServiceImpl implements AiChatService {
     
+    private static final Long DEFAULT_USER_ID = 0L;
+    private static final String DEFAULT_USER_NAME = "系统访客";
+    
     private final DeepSeekService deepSeekService;
-    private final ArkChatService arkChatService;
+    private final AiChatMapper aiChatMapper;
+    
+    @Qualifier("doubaoChatModel")
+    private final ChatModel doubaoChatModel;
     
     // 系统提示词，定义AI助手的角色和行为
     private static final String SYSTEM_PROMPT = "你是一个专业的客户服务AI助手，专门为种业客户管理系统提供服务。" +
@@ -46,12 +58,14 @@ public class AiChatServiceImpl implements AiChatService {
         System.out.println("【AiChatService】会话ID: " + sessionId);
         System.out.println("【AiChatService】用户消息: " + userMessage);
         
-        AiChat chat = new AiChat();
-        chat.setId(System.currentTimeMillis());
-        chat.setSessionId(sessionId);
-        chat.setCustomerId(customerId);
-        chat.setMessageType(1); // 1:用户消息
-        chat.setContent(userMessage);
+        String normalizedSessionId = (sessionId == null || sessionId.trim().isEmpty())
+                ? createNewSession(DEFAULT_USER_ID, customerId)
+                : sessionId;
+        LocalDateTime now = LocalDateTime.now();
+        
+        // 首先保存用户消息
+        AiChat userRecord = buildMessageRecord(normalizedSessionId, customerId, 1, userMessage, null, now);
+        aiChatMapper.insert(userRecord);
         
         // 使用DeepSeek生成AI回复（支持多轮对话）
         System.out.println("【AiChatService】开始生成AI回复...");
@@ -63,41 +77,24 @@ public class AiChatServiceImpl implements AiChatService {
             aiReply = "抱歉，AI服务返回了空回复，请检查后端日志。";
         }
         
-        chat.setReplyContent(aiReply);
-        chat.setReplyTime(LocalDateTime.now());
-        chat.setSatisfactionScore(0);
-        chat.setCreateTime(LocalDateTime.now());
+        AiChat aiRecord = buildMessageRecord(normalizedSessionId, customerId, 2, aiReply, aiReply, now);
+        aiChatMapper.insert(aiRecord);
         
-        System.out.println("【AiChatService】返回AiChat对象，replyContent: " + (aiReply != null ? aiReply.substring(0, Math.min(100, aiReply.length())) + "..." : "null"));
-        return chat;
-    }
-    
-    public List<AiChat> getChatHistory(String sessionId, Long customerId) {
-        // 模拟返回聊天历史
-        List<AiChat> history = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            AiChat chat = new AiChat();
-            chat.setId(System.currentTimeMillis() - i * 1000);
-            chat.setSessionId(sessionId);
-            chat.setCustomerId(customerId);
-            chat.setMessageType(1); // 1:用户消息
-            chat.setContent("用户消息 " + (i + 1));
-            chat.setReplyContent("AI回复 " + (i + 1));
-            chat.setReplyTime(LocalDateTime.now().minusMinutes(i * 10));
-            chat.setSatisfactionScore(4 + i % 2);
-            chat.setCreateTime(LocalDateTime.now().minusMinutes(i * 10));
-            history.add(chat);
-        }
-        return history;
+        System.out.println("【AiChatService】返回AiChat对象，replyContent: " + aiReply.substring(0, Math.min(100, aiReply.length())) + "...");
+        return aiRecord;
     }
     
     @Override
     public Map<String, Object> getChatStatistics() {
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("totalMessages", 156);
-        stats.put("satisfactionScore", 4.3);
-        stats.put("avgResponseTime", 2.1);
-        stats.put("activeSessions", 8);
+        Map<String, Object> stats = aiChatMapper.selectStatistics(null, null, null, null);
+        if (stats == null) {
+            stats = new HashMap<>();
+            stats.put("totalChats", 0);
+            stats.put("userMessages", 0);
+            stats.put("aiReplies", 0);
+            stats.put("avgSatisfaction", 0);
+            stats.put("satisfiedCount", 0);
+        }
         return stats;
     }
     
@@ -113,21 +110,49 @@ public class AiChatServiceImpl implements AiChatService {
         System.out.println("【AI聊天服务】用户消息: " + userMessage);
         System.out.println("【AI聊天服务】是否有历史: " + (history != null && !history.isEmpty()));
         
-        // 优先使用Ark（如果配置了Ark Key）
-        if (arkChatService.isAvailable()) {
-            System.out.println("【AI聊天服务】Ark服务可用，开始调用");
-            try {
-                String aiReply = arkChatService.chatWithHistory(userMessage, history);
-                if (aiReply != null && !aiReply.trim().isEmpty()) {
-                    log.info("【AI聊天服务】Ark生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(), aiReply.length());
-                    System.out.println("【AI聊天服务】Ark生成回复成功，回复长度: " + aiReply.length());
-                    return aiReply;
+        // 优先使用Spring AI的豆包模型
+        try {
+            System.out.println("【AI聊天服务】使用Spring AI豆包模型");
+            
+            // 构建Prompt，包含系统提示、历史对话和当前消息
+            List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
+            
+            // 添加系统提示
+            messages.add(new SystemMessage(SYSTEM_PROMPT));
+            
+            // 添加历史对话（如果有）
+            if (history != null && !history.isEmpty()) {
+                System.out.println("【AI聊天服务】添加对话历史，条数: " + history.size());
+                for (Map<String, String> historyItem : history) {
+                    String role = historyItem.get("role");
+                    String content = historyItem.get("content");
+                    if (content != null && !content.trim().isEmpty()) {
+                        if ("user".equals(role)) {
+                            messages.add(new UserMessage(content));
+                        } else if ("assistant".equals(role)) {
+                            messages.add(new org.springframework.ai.chat.messages.AssistantMessage(content));
+                        }
+                    }
                 }
-            } catch (Exception e) {
-                log.error("【AI聊天服务】Ark API调用失败，尝试DeepSeek: {}", e.getMessage(), e);
-                System.out.println("【AI聊天服务】错误: Ark API调用失败");
-                System.out.println("【AI聊天服务】错误信息: " + e.getMessage());
             }
+            
+            // 添加当前用户消息
+            messages.add(new UserMessage(userMessage));
+            
+            // 调用Spring AI
+            Prompt prompt = new Prompt(messages);
+            ChatResponse chatResponse = doubaoChatModel.call(prompt);
+            String aiReply = chatResponse.getResult().getOutput().getContent();
+            
+            if (aiReply != null && !aiReply.trim().isEmpty()) {
+                log.info("【AI聊天服务】Spring AI豆包模型生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(), aiReply.length());
+                System.out.println("【AI聊天服务】Spring AI豆包模型生成回复成功，回复长度: " + aiReply.length());
+                return aiReply;
+            }
+        } catch (Exception e) {
+            log.error("【AI聊天服务】Spring AI豆包模型调用失败，尝试DeepSeek: {}", e.getMessage(), e);
+            System.out.println("【AI聊天服务】错误: Spring AI豆包模型调用失败");
+            System.out.println("【AI聊天服务】错误信息: " + e.getMessage());
         }
         
         // 其次尝试DeepSeek
@@ -210,26 +235,57 @@ public class AiChatServiceImpl implements AiChatService {
     @Override
     public Map<String, Object> getChatHistory(int pageNum, int pageSize) {
         Map<String, Object> result = new HashMap<>();
-        List<AiChat> history = new ArrayList<>();
+        int offset = Math.max(pageNum - 1, 0) * pageSize;
+        AiChat criteria = new AiChat();
         
-        // 模拟聊天历史数据
-        for (int i = 1; i <= pageSize; i++) {
-            AiChat chat = new AiChat();
-            chat.setId((long) i);
-            chat.setSessionId("session-" + i);
-            chat.setUserMessage("用户消息 #" + i);
-            chat.setReplyContent("AI回复 #" + i);
-            chat.setContent("AI回复 #" + i);
-            chat.setCreateTime(LocalDateTime.now().minusHours(i));
-            history.add(chat);
-        }
+        List<AiChat> records = aiChatMapper.selectPage(criteria, offset, pageSize);
+        Long total = aiChatMapper.selectCount(criteria);
+        long safeTotal = total == null ? 0 : total;
+        long pages = pageSize == 0 ? 0 : (long) Math.ceil(safeTotal * 1.0 / pageSize);
         
-        result.put("list", history);
-        result.put("total", 200);
+        result.put("list", records);
+        result.put("total", safeTotal);
         result.put("pageNum", pageNum);
         result.put("pageSize", pageSize);
-        result.put("pages", 20);
+        result.put("pages", pages);
         
         return result;
+    }
+    
+    @Override
+    public List<Map<String, Object>> getSessionList(Long userId, Integer limit) {
+        return aiChatMapper.selectSessionList(userId, limit);
+    }
+    
+    @Override
+    public List<AiChat> getMessagesBySessionId(String sessionId) {
+        return aiChatMapper.selectMessagesBySessionId(sessionId);
+    }
+    
+    @Override
+    public String createNewSession(Long userId, Long customerId) {
+        // 生成新的会话ID
+        String newSessionId = "session_" + System.currentTimeMillis() + "_" + (userId != null ? userId : DEFAULT_USER_ID);
+        log.info("创建新会话: sessionId={}, userId={}, customerId={}", newSessionId, userId, customerId);
+        return newSessionId;
+    }
+    
+    private AiChat buildMessageRecord(String sessionId, Long customerId, Integer messageType, String content, String replyContent, LocalDateTime timestamp) {
+        AiChat record = new AiChat();
+        record.setSessionId(sessionId);
+        record.setCustomerId(customerId);
+        record.setMessageType(messageType);
+        record.setContent(content);
+        record.setReplyContent(replyContent);
+        record.setReplyTime(timestamp);
+        record.setUserId(DEFAULT_USER_ID);
+        record.setUserName(DEFAULT_USER_NAME);
+        record.setCreateTime(timestamp);
+        record.setUpdateTime(timestamp);
+        record.setCreateBy(DEFAULT_USER_NAME);
+        record.setUpdateBy(DEFAULT_USER_NAME);
+        record.setDeleted(0);
+        record.setVersion(1);
+        return record;
     }
 }

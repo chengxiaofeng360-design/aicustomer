@@ -10,7 +10,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author AI Customer Management System
  * @version 1.0.0
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+    org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration.class
+})
 @MapperScan("com.aicustomer.mapper")
 public class AiCustomerApplication {
 

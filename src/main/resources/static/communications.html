@@ -130,7 +130,7 @@
                             <label class="form-label">沟通内容 *</label>
                             <div class="position-relative">
                                 <textarea class="form-control" id="content" name="content" rows="4" required placeholder="请详细描述沟通内容..." style="padding-right: 100px;"></textarea>
-                                <button type="button" class="btn btn-outline-primary position-absolute" id="voiceInputBtn" onclick="startVoiceInputForContent()" title="语音输入" style="top: 8px; right: 8px; z-index: 10;">
+                                <button type="button" class="btn btn-outline-primary position-absolute" id="voiceInputBtn" title="语音输入" style="top: 8px; right: 8px; z-index: 10;">
                                     <i class="bi bi-mic" id="voiceInputIcon"></i>
                                     <span id="voiceInputText">录音</span>
                                 </button>
@@ -183,6 +183,63 @@
         let currentCustomerId = null;
         let currentCustomerName = null;
 
+        // 确保 communications.js 已加载，否则动态加载
+        function ensureVoiceScriptLoaded(callback) {
+            if (typeof window.startVoiceInputForContent === 'function') {
+                callback();
+                return;
+            }
+            
+            // 如果正在加载，排队等待
+            if (window.__voiceScriptLoadingPromise) {
+                window.__voiceScriptLoadingPromise.then(callback);
+                return;
+            }
+            
+            console.warn('未检测到 startVoiceInputForContent，尝试动态加载 /js/communications.js');
+            const script = document.createElement('script');
+            script.src = `/js/communications.js?v=${Date.now()}`;
+            script.async = true;
+            
+            window.__voiceScriptLoadingPromise = new Promise((resolve, reject) => {
+                script.onload = () => {
+                    console.log('语音脚本加载完成');
+                    resolve();
+                };
+                script.onerror = (err) => {
+                    console.error('语音脚本加载失败:', err);
+                    reject(err);
+                };
+            });
+            
+            document.body.appendChild(script);
+            window.__voiceScriptLoadingPromise.then(callback).catch(() => {
+                alert('语音输入功能加载失败，请刷新页面后重试');
+            });
+        }
+        
+        // 绑定语音输入按钮事件（可在模态框显示时调用）
+        function bindVoiceInputButton() {
+            const voiceInputBtn = document.getElementById('voiceInputBtn');
+            if (voiceInputBtn) {
+                // 移除旧的事件监听器（如果存在）
+                const newBtn = voiceInputBtn.cloneNode(true);
+                voiceInputBtn.parentNode.replaceChild(newBtn, voiceInputBtn);
+                
+                // 绑定新的事件监听器
+                document.getElementById('voiceInputBtn').addEventListener('click', function() {
+                    ensureVoiceScriptLoaded(() => {
+                        if (typeof window.startVoiceInputForContent === 'function') {
+                            window.startVoiceInputForContent();
+                        } else {
+                            console.error('startVoiceInputForContent 仍未定义，请检查 communications.js');
+                            alert('语音输入功能未正确初始化，请刷新页面重试');
+                        }
+                    });
+                });
+            }
+        }
+
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 解析URL参数，获取客户ID
@@ -195,6 +252,9 @@
             }
             
             loadCommunications();
+            
+            // 绑定语音输入按钮事件（页面加载时）
+            bindVoiceInputButton();
         });
         
         // 加载客户信息
@@ -527,7 +587,13 @@
             
             // 显示模态框
             if (communicationModal) {
-                new bootstrap.Modal(communicationModal).show();
+                const modal = new bootstrap.Modal(communicationModal);
+                modal.show();
+                
+                // 模态框显示后，绑定语音输入按钮事件
+                communicationModal.addEventListener('shown.bs.modal', function() {
+                    bindVoiceInputButton();
+                }, { once: true });
             }
         }
         

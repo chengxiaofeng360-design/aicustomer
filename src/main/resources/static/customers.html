@@ -20,9 +20,9 @@
                 <a href="/customer-categories.html" class="back-home-btn" style="text-decoration: none;">
                     <i class="bi bi-folder2-open"></i> 返回分类
                 </a>
-                <a href="/" class="back-home-btn">
-                    <i class="bi bi-house-fill"></i> 返回首页
-                </a>
+            <a href="/" class="back-home-btn">
+                <i class="bi bi-house-fill"></i> 返回首页
+            </a>
             </div>
         </div>
         
@@ -64,16 +64,15 @@
 
         <!-- 搜索和筛选区域 -->
         <div class="card mb-3">
-            <div class="card-body">
-                <!-- 切换搜索区域显示/隐藏的按钮（横向窄倒三角） -->
-                <div style="margin: 0; padding: 0;">
-                    <button class="btn p-0" style="min-width: 14px; padding: 0; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border: none; background: none;" onclick="toggleSearchPanel()" id="toggleButton">
-                        <i class="bi bi-chevron-down" style="font-size: 0.65rem; color: #495057;"></i>
-                    </button>
+            <div class="card-body" style="position: relative;">
+                <!-- 可点击的标题区域（点击整个区域可展开/折叠） -->
+                <div onclick="toggleSearchPanel()" style="cursor: pointer; padding: 0.5rem 0; margin-bottom: 0.5rem; user-select: none; display: flex; align-items: center; gap: 0.5rem;" id="searchToggleArea">
+                    <i class="bi bi-chevron-down" id="toggleIcon" style="font-size: 0.8rem; color: #495057; transition: transform 0.3s;"></i>
+                    <span style="font-weight: 500; color: #495057;">搜索和筛选</span>
                 </div>
                 
                 <!-- 搜索和操作按钮区域（初始隐藏） -->
-                <div id="searchPanel" style="display: none;">
+                <div id="searchPanel" style="display: none;" onclick="event.stopPropagation();">
                 <!-- 第一排：搜索条件 -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-3">
@@ -115,9 +114,9 @@
                     <div class="col-12">
                         <div class="d-flex flex-wrap gap-2 justify-content-between">
                             <div class="operation-buttons">
-                            <button class="btn btn-success" onclick="showAddCustomerModal()">
+                                <button class="btn btn-success" onclick="showAddCustomerModal()">
                                 <i class="bi bi-plus-circle"></i> 新增客户
-                            </button>
+                                </button>
                             <button class="btn btn-info" onclick="showAIRecognition()">
                                 <i class="bi bi-robot"></i> AI识别
                             </button>
@@ -148,15 +147,17 @@
                 <script>
                 function toggleSearchPanel() {
                     const panel = document.getElementById('searchPanel');
-                    const toggleIcon = document.querySelector('#toggleButton i');
+                    const toggleIcon = document.getElementById('toggleIcon');
                     if (panel.style.display === 'none' || panel.style.display === '') {
                         panel.style.display = 'block';
                         toggleIcon.classList.remove('bi-chevron-down');
                         toggleIcon.classList.add('bi-chevron-up');
+                        toggleIcon.style.transform = 'rotate(180deg)';
                     } else {
                         panel.style.display = 'none';
                         toggleIcon.classList.remove('bi-chevron-up');
                         toggleIcon.classList.add('bi-chevron-down');
+                        toggleIcon.style.transform = 'rotate(0deg)';
                     }
                 }
                 </script>
@@ -325,14 +326,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                                <div class="row">
                             <div class="col-md-12">
-                                <div class="mb-3">
+                                        <div class="mb-3">
                                     <label class="form-label" for="cooperationContent">合作内容</label>
                                     <textarea class="form-control" id="cooperationContent" name="cooperationContent" rows="3" placeholder="请输入合作内容"></textarea>
-                                </div>
-                            </div>
-                                </div>
+                                        </div>
+                                    </div>
+                                        </div>
                                 <div class="row">
                             <div class="col-md-12">
                                         <div class="mb-3">
@@ -400,91 +401,189 @@
     <div class="modal fade" id="aiRecognitionModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
+                <div class="modal-header py-2">
+                    <h5 class="modal-title" style="font-size: 1.1rem;">
                         <i class="bi bi-robot me-2"></i>AI智能识别客户信息
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="alert alert-info">
-                        <h6><i class="bi bi-info-circle"></i> 使用说明：</h6>
-                        <ul class="mb-0">
-                            <li>支持从Excel、Word等文档中复制数据直接粘贴</li>
-                            <li>每行一个客户，字段用制表符或逗号分隔</li>
-                            <li>必填字段：客户名称、联系人、电话、客户类型、地区</li>
-                            <li>系统会自动识别和整理数据格式</li>
+                <div class="modal-body" style="padding: 1rem;">
+                    <!-- 卡片切换导航 -->
+                    <ul class="nav nav-pills nav-fill mb-3" id="aiRecognitionTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="text-tab" data-bs-toggle="tab" data-bs-target="#textInputCard" type="button" role="tab">
+                                <i class="bi bi-pencil-square me-2"></i>文本数据录入
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#imageRecognitionCard" type="button" role="tab">
+                                <i class="bi bi-image me-2"></i>名片图片识别
+                            </button>
+                        </li>
                         </ul>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">数据格式示例：</label>
-                        <div class="bg-light p-3 rounded">
+
+                    <!-- 卡片内容（只切换上部分） -->
+                    <div class="tab-content" id="aiRecognitionTabContent">
+                        <!-- 文本数据录入卡片 -->
+                        <div class="tab-pane fade show active" id="textInputCard" role="tabpanel">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <!-- 使用说明 - 折叠面板（默认展开） -->
+                                    <div class="accordion mb-3" id="aiHelpAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button py-2" type="button" data-bs-toggle="collapse" data-bs-target="#aiHelpCollapse" style="font-size: 0.9rem;">
+                                                    <i class="bi bi-info-circle me-2"></i> 使用说明和格式示例
+                                                </button>
+                                            </h2>
+                                            <div id="aiHelpCollapse" class="accordion-collapse collapse show" data-bs-parent="#aiHelpAccordion">
+                                                <div class="accordion-body p-2" style="font-size: 0.85rem;">
+                                                    <div class="mb-2">
+                                                        <strong>必填字段：</strong>客户名称 | 联系人 | 电话 | 客户类型 | 地区<br>
+                                                        <strong>可选字段：</strong>职务 | QQ/微信 | 合作内容 | 邮箱 | 地址 | 备注
+                                                    </div>
+                                                    <div class="bg-light p-2 rounded" style="font-size: 0.8rem;">
                             <code>
-                                张三公司 | 李四 | 13800138000 | 企业客户 | 新品种申请 | 北京 | 农业 | 1000万<br>
-                                王五农场 | 赵六 | 13900139000 | 个人客户 | 品种权申请 | 上海 | 种植业 | 500万
+                                                            <strong>示例1（完整信息）：</strong><br>
+                                                            张三公司 | 李四 | 13800138000 | 企业 | 北京 | 经理 | 微信123 | 新品种申请 | zhangsan@example.com | 北京市朝阳区 | 重要客户<br><br>
+                                                            <strong>示例2（仅必填字段）：</strong><br>
+                                                            王五农场 | 赵六 | 13900139000 | 个人 | 上海<br><br>
+                                                            <strong>示例3（部分可选字段）：</strong><br>
+                                                            中科院植物所 | 王教授 | 13700137000 | 科研院所 | 广东 | 研究员 |  | 品种权申请 | wang@cas.cn | 广州市天河区
                             </code>
+                                                    </div>
+                                                </div>
+                                            </div>
                         </div>
                     </div>
 
+                                    <!-- 客户数据录入 -->
                     <div class="mb-3">
-                        <label class="form-label">客户数据录入：</label>
+                                        <label class="form-label mb-2" style="font-size: 0.95rem; font-weight: 500;">
+                                            <i class="bi bi-file-text me-1"></i>客户数据录入
+                                        </label>
                         <div class="input-group">
-                            <textarea class="form-control" id="batchImportData" rows="10" 
-                                      placeholder="请在此处粘贴客户数据，或使用语音录入功能..."></textarea>
+                                            <textarea class="form-control" id="batchImportData" rows="12" 
+                                                      placeholder="请在此处粘贴客户数据，或使用语音录入功能...&#10;每行一个客户，字段用制表符或逗号分隔"></textarea>
                             <div class="input-group-append">
-                                <button class="btn btn-outline-success" type="button" onclick="startVoiceInput()" id="voiceInputBtn">
+                                                <button class="btn btn-outline-success" type="button" onclick="startVoiceInput()" id="voiceInputBtn" title="语音录入">
                                     <i class="bi bi-mic"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="mt-2">
-                            <small class="text-muted">
-                                <i class="bi bi-info-circle"></i> 
-                                支持语音录入，直接说"木木"开始录音，停顿5秒自动结束
+                                            <small class="text-muted" style="font-size: 0.8rem;">
+                                                <i class="bi bi-mic"></i> 语音录入：说"木木"开始录音，停顿5秒自动结束
                             </small>
                         </div>
                     </div>
 
-                    <div class="mb-3">
+                                    <!-- 操作按钮 -->
                         <div class="d-flex gap-2">
-                            <button class="btn btn-outline-primary" onclick="parseImportData()">
+                                        <button class="btn btn-primary btn-sm" onclick="parseImportData()">
                                 <i class="bi bi-gear"></i> 解析数据
                             </button>
-                            <button class="btn btn-outline-secondary" onclick="clearImportData()">
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="clearImportData()">
                                 <i class="bi bi-trash"></i> 清空
                             </button>
-                            <button class="btn btn-outline-info" onclick="showVoiceHelp()">
-                                <i class="bi bi-question-circle"></i> 语音帮助
+                                        <button class="btn btn-outline-info btn-sm" onclick="showVoiceHelp()">
+                                            <i class="bi bi-question-circle"></i> 帮助
                             </button>
-                        </div>
                     </div>
 
                     <!-- 语音录入状态显示 -->
-                    <div id="voiceStatus" class="alert alert-info" style="display: none;">
+                                    <div id="voiceStatus" class="alert alert-info py-2 mt-3" style="display: none; font-size: 0.85rem;">
                         <div class="d-flex align-items-center">
-                            <div class="spinner-border spinner-border-sm me-2" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
+                                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                             <span id="voiceStatusText">正在听取语音...</span>
+                                        </div>
+                                    </div>
+                                </div>
                         </div>
                     </div>
 
-                    <div id="importPreview" style="display: none;">
-                        <h6>数据预览：</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>客户名称</th>
-                                        <th>联系人</th>
-                                        <th>电话</th>
-                                        <th>客户类型</th>
-                                        <th>职务</th>
-                                        <th>QQ/微信</th>
-                                        <th>合作内容</th>
-                                        <th>地区</th>
-                                        <th>状态</th>
+                        <!-- 名片图片识别卡片 -->
+                        <div class="tab-pane fade" id="imageRecognitionCard" role="tabpanel">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <!-- 上传区域（未上传时显示） -->
+                                    <div id="businessCardUploadArea" class="business-card-upload-area">
+                                        <input type="file" id="businessCardImage" accept="image/*" style="display: none;" onchange="handleBusinessCardUpload(event)">
+                                        <div class="upload-zone" id="businessCardUploadZone" 
+                                             ondrop="handleBusinessCardDrop(event)" 
+                                             ondragover="handleBusinessCardDragOver(event)" 
+                                             ondragleave="handleBusinessCardDragLeave(event)"
+                                             onclick="document.getElementById('businessCardImage').click()">
+                                            <div class="upload-content">
+                                                <i class="bi bi-cloud-upload upload-icon"></i>
+                                                <h6 class="upload-title">拖拽名片图片到此处</h6>
+                                                <p class="upload-hint">或点击选择文件</p>
+                                                <div class="upload-info">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-file-image me-1"></i>支持 JPG、PNG 等格式
+                                                        <span class="mx-2">|</span>
+                                                        <i class="bi bi-file-earmark me-1"></i>最大 5MB
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 预览区域（上传后显示） -->
+                                    <div id="businessCardPreview" style="display: none;" class="business-card-preview-area">
+                                        <div class="preview-header d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="mb-0">
+                                                <i class="bi bi-image me-2"></i>名片预览
+                                            </h6>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="clearBusinessCardPreview()">
+                                                <i class="bi bi-x-circle me-1"></i> 重新选择
+                                            </button>
+                                        </div>
+                                        <div class="preview-image-container">
+                                            <img id="businessCardPreviewImg" src="" alt="名片预览" class="preview-image">
+                                        </div>
+                                        <div class="preview-info mt-2">
+                                            <small class="text-muted" id="businessCardFileInfo"></small>
+                                        </div>
+                                    </div>
+
+                                    <!-- 识别状态 -->
+                                    <div id="businessCardRecognizing" style="display: none;" class="alert alert-info py-3 mb-3">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                            <span>正在识别名片信息，请稍候...</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 识别说明 -->
+                                    <div class="alert alert-light py-2 mb-0" style="font-size: 0.85rem;">
+                                        <i class="bi bi-lightbulb me-2"></i>
+                                        <strong>提示：</strong>识别成功后，数据将自动填入"文本数据录入"卡片的数据录入框中
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据预览（固定在底部，两个卡片共用，不随切换变化） -->
+                    <div id="importPreview" style="display: none;" class="mt-3">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white py-2">
+                                <h6 class="mb-0" style="font-size: 0.95rem; font-weight: 500;">
+                                    <i class="bi bi-table me-2"></i>数据预览
+                                </h6>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                    <table class="table table-sm table-bordered mb-0" style="font-size: 0.85rem;">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th style="padding: 0.4rem;">客户名称</th>
+                                                <th style="padding: 0.4rem;">联系人</th>
+                                                <th style="padding: 0.4rem;">电话</th>
+                                                <th style="padding: 0.4rem;">客户类型</th>
+                                                <th style="padding: 0.4rem;">地区</th>
+                                                <th style="padding: 0.4rem;">状态</th>
                                     </tr>
                                 </thead>
                                 <tbody id="importPreviewBody">
@@ -493,9 +592,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveBatchImport()" id="saveImportBtn" disabled>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveBatchImport()" id="saveImportBtn" disabled>
                         <i class="bi bi-save"></i> 保存到数据库
                     </button>
                 </div>

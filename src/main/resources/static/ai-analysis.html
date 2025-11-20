@@ -73,6 +73,25 @@
         .cooperation-score.low {
             color: #dc3545;
         }
+        .insight-card {
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px rgba(15,23,42,0.05);
+            margin-bottom: 2rem;
+        }
+        .insight-list {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+        .insight-item + .insight-item {
+            margin-top: 0.35rem;
+        }
+        .insight-item strong {
+            color: #1a202c;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -112,6 +131,18 @@
                     <div class="stats-number" id="importantCustomerCount">0</div>
                     <div class="stats-label">重要客户</div>
                 </div>
+            </div>
+        </div>
+
+        <div class="card insight-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-journal-text"></i> 实时洞察
+                </h5>
+                <small class="text-muted" id="insightTimestamp">正在加载...</small>
+            </div>
+            <div class="card-body" id="analysisInsights">
+                <div class="text-muted small">正在分析客户沟通、提醒和等级数据...</div>
             </div>
         </div>
 
@@ -225,12 +256,9 @@
                     <h5 class="modal-title">业务机会详情</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="opportunityDetailContent">
-                    <!-- 详情内容将通过JavaScript动态加载 -->
-                </div>
+                <div class="modal-body" id="opportunityDetailContent"></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" onclick="goToCustomer()">查看客户详情</button>
                 </div>
             </div>
         </div>
@@ -238,7 +266,10 @@
 
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script>
-        let currentCustomerId = null;
+        const opportunityStore = {};
+        let latestOpportunities = [];
+        let latestBirthdays = [];
+        let latestNoContacts = [];
 
         // 模拟数据（用于页面展示）
         const mockOpportunities = [
@@ -315,17 +346,17 @@
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 直接使用模拟数据展示
-            displayOpportunities(mockOpportunities);
-            displayBirthdayReminders(mockBirthdays);
-            displayNoContactReminders(mockNoContacts);
-            updateStats(mockOpportunities, mockBirthdays, mockNoContacts, 3);
-            loadCustomerOptions();
-            
-            // 也可以尝试加载真实数据（如果后端可用）
-            // loadOpportunities();
-            // loadReminders();
+            initializeAnalysisPage();
         });
+
+        async function initializeAnalysisPage() {
+            setSectionLoading('opportunitiesList', '正在分析数据库中的沟通记录...');
+            setSectionLoading('birthdayReminders', '正在查询客户生日信息...');
+            setSectionLoading('noContactReminders', '正在分析客户沟通记录...');
+            setInsightsLoading();
+            await Promise.all([loadOpportunities(), loadReminders()]);
+            loadCustomerOptions();
+        }
 
         // 更新统计数据
         function updateStats(opportunities, birthdays, noContacts, importantCount) {
@@ -369,19 +400,22 @@
                 const response = await fetch('/api/ai-analysis/business-opportunities');
                 const result = await response.json();
                 
-                if (result.success) {
-                    displayOpportunities(result.data);
-                    updateStats(result.data, undefined, undefined, undefined);
+                if (response.ok && result.code === 200 && Array.isArray(result.data)) {
+                    latestOpportunities = result.data;
+                    displayOpportunities(latestOpportunities);
+                    updateStats(latestOpportunities, undefined, undefined, undefined);
                 } else {
-                    // 如果后端失败，使用模拟数据
+                    latestOpportunities = mockOpportunities;
                     displayOpportunities(mockOpportunities);
                     updateStats(mockOpportunities, undefined, undefined, undefined);
                 }
             } catch (error) {
                 console.error('加载业务机会失败:', error);
-                // 使用模拟数据
+                latestOpportunities = mockOpportunities;
                 displayOpportunities(mockOpportunities);
                 updateStats(mockOpportunities, undefined, undefined, undefined);
+            } finally {
+                renderInsights();
             }
         }
 
@@ -395,15 +429,18 @@
             }
 
             container.innerHTML = opportunities.map(opp => {
+                if (opp && opp.id !== undefined) {
+                    opportunityStore[opp.id] = opp;
+                }
                 const priorityClass = opp.priority === 'high' ? 'high-priority' : 
-                                     opp.priority === 'medium' ? 'medium-priority' : 'low-priority';
+                                     opp.priority === 'low' ? 'low-priority' : '';
                 const priorityText = opp.priority === 'high' ? '高优先级' : 
-                                    opp.priority === 'medium' ? '中优先级' : '低优先级';
+                                    opp.priority === 'low' ? '低优先级' : '';
                 const priorityBadge = opp.priority === 'high' ? 'danger' : 
-                                     opp.priority === 'medium' ? 'warning' : 'success';
+                                      opp.priority === 'low' ? 'success' : 'warning';
 
                 return `
-                    <div class="card opportunity-card ${priorityClass}" onclick="viewOpportunityDetail(${opp.id}, ${opp.customerId})">
+                    <div class="card opportunity-card ${priorityClass}" onclick="viewOpportunityDetail(${opp.id})">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h6 class="mb-0">
@@ -411,7 +448,7 @@
                                         ${escapeHtml(opp.customerName)}
                                     </a>
                                 </h6>
-                                <span class="badge bg-${priorityBadge} priority-badge">${priorityText}</span>
+                                ${priorityText ? `<span class="badge bg-${priorityBadge} priority-badge">${priorityText}</span>` : ''}
                             </div>
                             <p class="text-muted small mb-2">${escapeHtml(opp.description)}</p>
                             ${opp.keywords && opp.keywords.length > 0 ? `
@@ -437,25 +474,29 @@
                 const response = await fetch('/api/ai-analysis/customer-reminders');
                 const result = await response.json();
                 
-                if (result.success) {
-                    const birthdays = result.data.birthdays || [];
-                    const noContacts = result.data.noContacts || [];
+                if (response.ok && result.code === 200 && result.data) {
+                    latestBirthdays = Array.isArray(result.data.birthdays) ? result.data.birthdays : [];
+                    latestNoContacts = Array.isArray(result.data.noContacts) ? result.data.noContacts : [];
                     const importantCount = result.data.importantCustomerCount || 0;
-                    displayBirthdayReminders(birthdays);
-                    displayNoContactReminders(noContacts);
-                    updateStats(undefined, birthdays, noContacts, importantCount);
+                    displayBirthdayReminders(latestBirthdays);
+                    displayNoContactReminders(latestNoContacts);
+                    updateStats(undefined, latestBirthdays, latestNoContacts, importantCount);
                 } else {
-                    // 如果后端失败，使用模拟数据
+                    latestBirthdays = mockBirthdays;
+                    latestNoContacts = mockNoContacts;
                     displayBirthdayReminders(mockBirthdays);
                     displayNoContactReminders(mockNoContacts);
                     updateStats(undefined, mockBirthdays, mockNoContacts, 3);
                 }
             } catch (error) {
                 console.error('加载提醒失败:', error);
-                // 使用模拟数据
+                latestBirthdays = mockBirthdays;
+                latestNoContacts = mockNoContacts;
                 displayBirthdayReminders(mockBirthdays);
                 displayNoContactReminders(mockNoContacts);
                 updateStats(undefined, mockBirthdays, mockNoContacts, 3);
+            } finally {
+                renderInsights();
             }
         }
 
@@ -546,7 +587,7 @@
                 const response = await fetch('/api/customer/list?page=1&size=1000');
                 const result = await response.json();
                 
-                if (result.success && result.data && result.data.list) {
+                if (response.ok && result.code === 200 && result.data && result.data.list) {
                     const select = document.getElementById('customerSelect');
                     result.data.list.forEach(customer => {
                         const option = document.createElement('option');
@@ -555,12 +596,10 @@
                         select.appendChild(option);
                     });
                 } else {
-                    // 如果后端失败，添加模拟选项
                     addMockCustomerOptions();
                 }
             } catch (error) {
                 console.error('加载客户选项失败:', error);
-                // 添加模拟选项
                 addMockCustomerOptions();
             }
         }
@@ -594,17 +633,15 @@
                 const response = await fetch(`/api/ai-analysis/cooperation-potential/${customerId}`);
                 const result = await response.json();
                 
-                if (result.success) {
+                if (response.ok && result.code === 200 && result.data) {
                     displayCooperationAnalysis(result.data);
                     document.getElementById('cooperationAnalysis').style.display = 'block';
                 } else {
-                    // 如果后端失败，使用模拟数据
                     displayCooperationAnalysis(getMockCooperationAnalysis());
                     document.getElementById('cooperationAnalysis').style.display = 'block';
                 }
             } catch (error) {
                 console.error('分析合作潜力失败:', error);
-                // 使用模拟数据
                 displayCooperationAnalysis(getMockCooperationAnalysis());
                 document.getElementById('cooperationAnalysis').style.display = 'block';
             }
@@ -640,16 +677,152 @@
         }
 
         // 查看业务机会详情
-        function viewOpportunityDetail(opportunityId, customerId) {
-            currentCustomerId = customerId;
-            // 这里可以加载更详细的信息
+        function viewOpportunityDetail(opportunityId) {
             const modal = new bootstrap.Modal(document.getElementById('opportunityDetailModal'));
-            document.getElementById('opportunityDetailContent').innerHTML = `
-                <p>业务机会ID: ${opportunityId}</p>
-                <p>客户ID: ${customerId}</p>
-                <p>详细信息加载中...</p>
-            `;
+            const container = document.getElementById('opportunityDetailContent');
+            const opportunity = opportunityStore[opportunityId];
+
+            if (!opportunity) {
+                container.innerHTML = '<p class="text-muted mb-0">未能加载业务机会详情，请稍后再试。</p>';
+                modal.show();
+                return;
+            }
+
+            container.innerHTML = buildOpportunityDetail(opportunity);
             modal.show();
+        }
+
+        function buildOpportunityDetail(opportunity) {
+            const priorityInfo = getPriorityBadgeInfo(opportunity.priority);
+            const keywords = Array.isArray(opportunity.keywords) ? opportunity.keywords : [];
+            const keywordsHtml = keywords.length ? `
+                <div class="mb-3">
+                    <h6>关联关键词</h6>
+                    <div class="opportunity-keywords">
+                        ${keywords.map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            const insights = generateOpportunityInsights(opportunity);
+            const insightsHtml = insights.length ? `
+                <ul class="list-group list-group-flush">
+                    ${insights.map(item => `<li class="list-group-item"><i class="bi bi-lightning-charge text-warning me-2"></i>${escapeHtml(item)}</li>`).join('')}
+                </ul>
+            ` : '<p class="text-muted mb-0">暂无分析要点。</p>';
+
+            const suggestions = generateOpportunitySuggestions(opportunity);
+            const suggestionsHtml = suggestions.length ? suggestions.map(s => `
+                <div class="alert alert-info mb-2">
+                    <i class="bi bi-check-circle me-2"></i>${escapeHtml(s)}
+                        </div>
+            `).join('') : '<p class="text-muted mb-0">暂无建议。</p>';
+
+            return `
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h5 class="mb-1">${escapeHtml(opportunity.customerName || '未知客户')}</h5>
+                            <small class="text-muted">机会识别时间：${formatDate(opportunity.detectedTime) || '—'}</small>
+                        </div>
+                        ${priorityInfo.badge}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h6>机会描述</h6>
+                    <p class="text-muted mb-0">${escapeHtml(opportunity.description || '暂无描述')}</p>
+                </div>
+                ${keywordsHtml}
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="border rounded-3 p-3 bg-light">
+                            <div class="text-muted small">最近沟通次数</div>
+                            <div class="fw-bold fs-4">${opportunity.communicationCount || 0} 次</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded-3 p-3 bg-light">
+                            <div class="text-muted small">优先级判断</div>
+                            <div class="fw-bold fs-5">${priorityInfo.text}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h6>分析要点</h6>
+                    ${insightsHtml}
+                </div>
+                <div>
+                    <h6>行动建议</h6>
+                    ${suggestionsHtml}
+                    </div>
+                `;
+        }
+
+        function getPriorityBadgeInfo(priority) {
+            switch (priority) {
+                case 'high':
+                    return {
+                        text: '高优先级 · 需立即跟进',
+                        badge: '<span class="badge bg-danger fs-6 px-3">高优先级</span>'
+                    };
+                case 'medium':
+                    return {
+                        text: '中优先级 · 建议保持跟进',
+                        badge: '<span class="badge bg-warning text-dark fs-6 px-3">中优先级</span>'
+                    };
+                case 'low':
+                    return {
+                        text: '低优先级 · 可持续观察',
+                        badge: '<span class="badge bg-success fs-6 px-3">低优先级</span>'
+                    };
+                default:
+                    return {
+                        text: '优先级待评估',
+                        badge: '<span class="badge bg-secondary fs-6 px-3">未分级</span>'
+                    };
+            }
+        }
+
+        function generateOpportunityInsights(opportunity) {
+            const insights = [];
+            const keywords = Array.isArray(opportunity.keywords) ? opportunity.keywords : [];
+            if (keywords.length) {
+                insights.push(`捕捉到 ${keywords.length} 个高频需求关键词：${keywords.slice(0, 5).join('、')}`);
+            }
+            if (opportunity.communicationCount) {
+                insights.push(`客户最近 ${opportunity.communicationCount} 次沟通均提及相关需求，热度持续升温`);
+            }
+            if (opportunity.priority === 'high') {
+                insights.push('涉及“合作/项目/采购”等强信号，存在立即决策窗口');
+            } else if (opportunity.priority === 'low') {
+                insights.push('信号仍在萌芽阶段，可在常规联系中持续验证需求');
+            }
+            return insights;
+        }
+
+        function generateOpportunitySuggestions(opportunity) {
+            const suggestions = [];
+            const priority = opportunity.priority || 'medium';
+            const keywords = Array.isArray(opportunity.keywords) ? opportunity.keywords : [];
+
+            if (priority === 'high') {
+                suggestions.push('尽快与客户约定深度沟通，准备方案或试用资料');
+                suggestions.push('邀请业务/技术同事共同参与，缩短决策链路');
+            } else if (priority === 'medium') {
+                suggestions.push('保持每周跟进频率，进一步确认预算与决策人');
+                suggestions.push('针对关键词整理案例或成功故事，增强说服力');
+            } else {
+                suggestions.push('通过内容触达或活动邀约维持互动，等待需求成熟');
+            }
+
+            if (keywords.includes('定制') || keywords.includes('方案')) {
+                suggestions.push('准备一份定制化方案骨架，突出客户专属价值点');
+            }
+            if ((opportunity.communicationCount || 0) < 3) {
+                suggestions.push('沟通次数较少，可先从轻量化材料或体验引导兴趣');
+            }
+
+            return suggestions;
         }
 
         // 跳转到客户详情
@@ -657,18 +830,15 @@
             window.location.href = `/customers.html?id=${customerId}`;
         }
 
-        function goToCustomer() {
-            if (currentCustomerId) {
-                goToCustomerDetail(currentCustomerId);
-            }
-        }
-
         // 刷新
         function refreshOpportunities() {
+            setSectionLoading('opportunitiesList', '正在重新分析沟通记录...');
             loadOpportunities();
         }
 
         function refreshReminders() {
+            setSectionLoading('birthdayReminders', '正在刷新生日提醒...');
+            setSectionLoading('noContactReminders', '正在刷新待跟进客户...');
             loadReminders();
         }
 
@@ -696,6 +866,75 @@
             if (!dateStr) return '';
             const date = new Date(dateStr);
             return (date.getMonth() + 1) + '月' + date.getDate() + '日';
+        }
+
+        function setSectionLoading(targetId, message) {
+            const container = document.getElementById(targetId);
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-hourglass-split" style="font-size: 1.5rem;"></i>
+                        <p class="mt-2 small">${escapeHtml(message)}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function setInsightsLoading() {
+            const container = document.getElementById('analysisInsights');
+            const timestampEl = document.getElementById('insightTimestamp');
+            if (container) {
+                container.innerHTML = '<div class="text-muted small">正在根据实时数据计算洞察...</div>';
+            }
+            if (timestampEl) {
+                timestampEl.textContent = '计算中...';
+            }
+        }
+
+        function renderInsights() {
+            const container = document.getElementById('analysisInsights');
+            const timestampEl = document.getElementById('insightTimestamp');
+            if (!container) return;
+
+            const insights = [];
+            if (latestOpportunities.length > 0) {
+                const highPriority = latestOpportunities.filter(item => item.priority === 'high').length;
+                const topCustomer = latestOpportunities[0];
+                insights.push(`识别到 <strong>${latestOpportunities.length}</strong> 个业务机会，其中 <strong>${highPriority}</strong> 个高优先级。最新机会来自 <strong>${escapeHtml(topCustomer.customerName || '未知客户')}</strong>。`);
+            } else {
+                insights.push('近期暂未发现新的业务机会，建议继续保持客户沟通。');
+            }
+
+            if (latestBirthdays.length > 0) {
+                const upcoming = latestBirthdays[0];
+                const days = typeof upcoming.daysUntil === 'number' ? upcoming.daysUntil : '-';
+                insights.push(`未来7天内有 <strong>${latestBirthdays.length}</strong> 位客户生日，最近的是 <strong>${escapeHtml(upcoming.customerName || '客户')}</strong>，距离 ${days === 0 ? '今天' : days + '天'}。`);
+            } else {
+                insights.push('未来7天暂无客户生日，可将精力放在深度跟进。');
+            }
+
+            if (latestNoContacts.length > 0) {
+                const longest = latestNoContacts[0];
+                insights.push(`共有 <strong>${latestNoContacts.length}</strong> 位客户超过30天未沟通，最长未联系客户为 <strong>${escapeHtml(longest.customerName || '客户')}</strong>，已 ${longest.daysSinceLastContact || '--'} 天未联络。`);
+            } else {
+                insights.push('暂无超过30天未联系客户，当前维护节奏健康。');
+            }
+
+            container.innerHTML = `
+                <ul class="insight-list">
+                    ${insights.map(item => `<li class="insight-item">${item}</li>`).join('')}
+                </ul>
+            `;
+
+            if (timestampEl) {
+                timestampEl.textContent = new Date().toLocaleString('zh-CN', {
+                    hour12: false,
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
         }
     </script>
 </body>

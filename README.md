@@ -54,6 +54,18 @@ AiCustomer/
 - Maven 3.6+
 - MySQL 8.0+
 
+#### 全局安装 Maven（macOS）
+项目根目录提供 `setup_maven.sh` 用于将 Maven 安装到 `~/opt`，避免在仓库内存放多份。
+
+```bash
+cd ai-customer
+bash setup_maven.sh
+source ~/.zshrc   # 或打开新的终端
+mvn -v            # 验证是否生效
+```
+
+脚本会自动下载 Apache Maven 3.9.6 至 `~/opt/apache-maven-3.9.6` 并在 `~/.zshrc` 中配置 `MAVEN_HOME` 与 `PATH`，其他项目也可直接复用。
+
 ### 1. 克隆项目
 ```bash
 git clone <repository-url>
@@ -63,19 +75,19 @@ cd AiCustomer
 ### 2. 数据库配置
 1. 创建MySQL数据库：
 ```sql
-CREATE DATABASE ai_customer_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE zqgl CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 2. 执行初始化脚本：
 ```bash
-mysql -u root -p ai_customer_db < src/main/resources/sql/init.sql
+mysql -u root -p zqgl < src/main/resources/sql/init.sql
 ```
 
 3. 修改数据库连接配置（`src/main/resources/application.yml`）：
 ```yaml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/ai_customer_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/zqgl?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: your_username
     password: your_password
 ```

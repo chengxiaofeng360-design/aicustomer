@@ -1,6 +1,6 @@
 # AI客户管理系统配置文件
 server:
-  port: 8080
+  port: 8085
   tomcat:
     uri-encoding: UTF-8
 
@@ -11,9 +11,14 @@ spring:
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ai_customer_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
-    username: root
-    password: 12345678
+    # 使用远程腾讯云 CynosDB 数据库
+    url: jdbc:mysql://bj-cynosdbmysql-grp-bbi2ygoo.sql.tencentcdb.com:26713/master_db?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root  # 请修改为腾讯云数据库的实际用户名
+    password: 1q2w3e4R  # 请修改为腾讯云数据库的实际密码
+    # 如果需要使用本地数据库，取消注释下面这行，注释掉上面那行
+    # url: jdbc:mysql://127.0.0.1:3306/zqgl?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true&autoReconnect=true
+    # username: root
+    # password: 12345678
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -28,7 +33,7 @@ spring:
   sql:
     init:
       mode: always
-      schema-locations: classpath:schema.sql
+      schema-locations: classpath:sql/init.sql
       continue-on-error: true
 
   # 文件上传配置

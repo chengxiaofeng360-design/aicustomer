@@ -183,4 +183,35 @@
         </if>
     </select>
 
+    <!-- 获取会话列表（按sessionId分组，返回每个会话的第一条消息和统计信息） -->
+    <select id="selectSessionList" resultType="java.util.Map">
+        SELECT 
+            session_id as sessionId,
+            MIN(id) as firstMessageId,
+            MIN(create_time) as createTime,
+            MAX(create_time) as lastMessageTime,
+            COUNT(*) as messageCount,
+            MAX(CASE WHEN message_type = 1 THEN content END) as firstUserMessage,
+            MAX(CASE WHEN message_type = 2 THEN content END) as lastAiReply
+        FROM ai_chat
+        WHERE deleted = 0
+        <if test="userId != null">
+            AND user_id = #{userId}
+        </if>
+        GROUP BY session_id
+        ORDER BY MAX(create_time) DESC
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 根据会话ID获取消息列表 -->
+    <select id="selectMessagesBySessionId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM ai_chat
+        WHERE session_id = #{sessionId} AND deleted = 0
+        ORDER BY create_time ASC
+    </select>
+
 </mapper>

@@ -96,4 +96,53 @@ public class AiChatController {
             return Result.error("获取聊天统计失败: " + e.getMessage());
         }
     }
+    
+    /**
+     * 获取会话列表
+     */
+    @GetMapping("/sessions")
+    public Result<List<Map<String, Object>>> getSessionList(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(defaultValue = "50") Integer limit) {
+        try {
+            List<Map<String, Object>> sessions = aiChatService.getSessionList(userId, limit);
+            return Result.success(sessions);
+        } catch (Exception e) {
+            return Result.error("获取会话列表失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 根据会话ID获取消息列表
+     */
+    @GetMapping("/messages")
+    public Result<List<AiChat>> getMessagesBySessionId(@RequestParam String sessionId) {
+        try {
+            List<AiChat> messages = aiChatService.getMessagesBySessionId(sessionId);
+            return Result.success(messages);
+        } catch (Exception e) {
+            return Result.error("获取消息列表失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 创建新会话
+     */
+    @PostMapping("/sessions/new")
+    public Result<Map<String, Object>> createNewSession(@RequestBody Map<String, Object> request) {
+        try {
+            Long userId = request.get("userId") != null ? 
+                Long.valueOf(request.get("userId").toString()) : null;
+            Long customerId = request.get("customerId") != null ? 
+                Long.valueOf(request.get("customerId").toString()) : null;
+            
+            String sessionId = aiChatService.createNewSession(userId, customerId);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("sessionId", sessionId);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("创建新会话失败: " + e.getMessage());
+        }
+    }
 }

@@ -2,17 +2,18 @@ package com.aicustomer.controller;
 
 import com.aicustomer.common.Result;
 import com.aicustomer.entity.Customer;
-import com.aicustomer.service.ArkChatService;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.ChatClient;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ import java.util.Map;
  * AI客户信息识别控制器
  * 
  * 提供从非结构化文本中提取客户信息的API接口
- * 使用豆包（Doubao）AI模型进行信息提取
+ * 使用Spring AI框架，集成豆包（Doubao）AI模型进行信息提取
  * 
  * @author AI Customer Management System
  * @version 1.0.0
@@ -32,11 +33,11 @@ import java.util.Map;
 public class AiCustomerExtractController {
     
     @Autowired
-    private ArkChatService arkChatService;
+    @Qualifier("doubaoChatModel")
+    private ChatModel chatModel;
     
-    @Autowired(required = false)
-    @Qualifier("doubaoChatClient")
-    private ChatClient chatClient; // Spring AI ChatClient，如果可用则优先使用
+    @Autowired
+    private com.aicustomer.service.ArkChatService arkChatService;
     
     private final Gson gson = new Gson();
     
@@ -75,94 +76,85 @@ public class AiCustomerExtractController {
         
         try {
             String prompt = String.format(
-                "请从以下文本中提取客户信息，并以JSON格式返回结果：\n\n" +
+                "请从以下文本中提取客户信息，并严格按照JSON格式返回结果。\n\n" +
                 "文本内容：%s\n\n" +
-                "请提取以下信息：\n" +
-                "1. 客户姓名 (customerName)\n" +
-                "2. 客户类型 (customerType) - 个人客户或企业客户\n" +
-                "3. 手机号码 (phoneNumber)\n" +
-                "4. 电子邮箱 (email)\n" +
-                "5. 公司名称 (companyName)\n" +
-                "6. 职位 (position)\n" +
-                "7. 地址 (address)\n\n" +
-                "请严格按照以下JSON格式返回结果，不要包含其他内容：\n" +
+                "请识别并提取以下字段（必填字段请务必识别）：\n" +
+                "1. customerName (客户名称) - 公司名称或个人姓名（必填）\n" +
+                "2. contactPerson (联系人) - 联系人姓名（必填）\n" +
+                "3. phone (电话) - 手机号码或固定电话（必填）\n" +
+                "4. customerType (客户类型) - 必须是：个人、企业、科研院所 中的一个（必填）\n" +
+                "5. region (地区) - 省份或城市（必填）\n" +
+                "6. position (职务) - 职位或职务（可选）\n" +
+                "7. qqWeixin (QQ/微信) - QQ号或微信号（可选）\n" +
+                "8. cooperationContent (合作内容) - 业务类型或合作内容（可选）\n" +
+                "9. email (电子邮箱) - 邮箱地址（可选）\n" +
+                "10. address (地址) - 详细地址（可选）\n" +
+                "11. remark (备注) - 其他备注信息（可选）\n\n" +
+                "请严格按照以下JSON格式返回，只返回JSON对象，不要包含任何其他文字：\n" +
                 "{\n" +
-                "  \"customerName\": \"姓名\",\n" +
-                "  \"customerType\": \"个人客户或企业客户\",\n" +
-                "  \"phoneNumber\": \"手机号码\",\n" +
+                "  \"customerName\": \"客户名称\",\n" +
+                "  \"contactPerson\": \"联系人\",\n" +
+                "  \"phone\": \"电话\",\n" +
+                "  \"customerType\": \"客户类型（个人/企业/科研院所）\",\n" +
+                "  \"region\": \"地区\",\n" +
+                "  \"position\": \"职务\",\n" +
+                "  \"qqWeixin\": \"QQ/微信\",\n" +
+                "  \"cooperationContent\": \"合作内容\",\n" +
                 "  \"email\": \"电子邮箱\",\n" +
-                "  \"companyName\": \"公司名称\",\n" +
-                "  \"position\": \"职位\",\n" +
-                "  \"address\": \"地址\"\n" +
+                "  \"address\": \"地址\",\n" +
+                "  \"remark\": \"备注\"\n" +
                 "}\n\n" +
-                "如果某些信息不存在，请将对应值设为null。",
+                "如果某个字段在文本中不存在，请将对应值设为空字符串\"\"。必填字段（customerName、contactPerson、phone、customerType、region）请尽量识别，如果确实无法识别，可以设为空字符串。",
                 text
             );
             
             String systemPrompt = "你是一个专业的信息提取专家，擅长从非结构化文本中提取结构化信息。请严格按照指定的JSON格式返回结果，只返回JSON对象，不要包含任何其他文字说明。";
             
-            String aiResult;
-            
-            // 优先使用Spring AI ChatClient（如果已配置）
-            if (chatClient != null) {
-                try {
-                    log.info("【客户信息提取】使用Spring AI ChatClient");
-                    Prompt springAiPrompt = new Prompt(List.of(
-                        new SystemMessage(systemPrompt),
-                        new UserMessage(prompt)
-                    ));
-                    aiResult = chatClient.call(springAiPrompt).getResult().getOutput().getContent();
-                } catch (Exception e) {
-                    log.warn("【客户信息提取】Spring AI调用失败，回退到ArkChatService: {}", e.getMessage());
-                    // 回退到直接调用ArkChatService
-                    if (!arkChatService.isAvailable()) {
-                        info.put("aiProcessed", false);
-                        info.put("aiError", "AI服务不可用");
-                        return info;
-                    }
-                    aiResult = arkChatService.chat(prompt, systemPrompt);
-                }
-            } else {
-                // 使用豆包（Ark）AI模型进行信息提取
-                if (!arkChatService.isAvailable()) {
-                    log.warn("【客户信息提取】豆包服务不可用，请检查配置");
+            // 使用Spring AI框架调用豆包模型
+            try {
+                List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
+                messages.add(new SystemMessage(systemPrompt));
+                messages.add(new UserMessage(prompt));
+                Prompt springAiPrompt = new Prompt(messages);
+                
+                ChatResponse chatResponse = chatModel.call(springAiPrompt);
+                String aiResult = chatResponse.getResult().getOutput().getContent();
+                
+                log.info("【客户信息提取】Spring AI调用成功，返回结果长度: {}", aiResult != null ? aiResult.length() : 0);
+                if (aiResult == null || aiResult.trim().isEmpty()) {
+                    log.warn("【客户信息提取】Spring AI返回结果为空");
                     info.put("aiProcessed", false);
-                    info.put("aiError", "豆包AI服务未配置或不可用，请检查API密钥配置");
+                    info.put("aiError", "Spring AI返回结果为空");
                     return info;
                 }
-                aiResult = arkChatService.chat(prompt, systemPrompt);
-            }
-            log.info("【客户信息提取】豆包AI返回结果长度: {}", aiResult != null ? aiResult.length() : 0);
-            
-            if (aiResult == null || aiResult.trim().isEmpty()) {
-                log.warn("【客户信息提取】豆包AI返回结果为空");
-                info.put("aiProcessed", false);
-                info.put("aiError", "豆包AI返回结果为空");
-                return info;
-            }
-            
-            // 清理AI返回的结果，提取JSON部分
-            String cleanedResult = cleanJsonResponse(aiResult);
-            log.info("【客户信息提取】清理后的结果: {}", cleanedResult.substring(0, Math.min(200, cleanedResult.length())));
-            
-            // 尝试解析AI返回的JSON结果
-            try {
-                // 验证AI返回的结果是否为有效的JSON格式
-                @SuppressWarnings("unchecked")
-                Map<String, Object> parsedJson = (Map<String, Object>) gson.fromJson(cleanedResult, Map.class);
-                // 如果解析成功，将解析后的结果放入info中
-                info.put("aiProcessed", true);
-                info.put("aiResult", cleanedResult);
-                info.put("parsedData", parsedJson);
-                log.info("【客户信息提取】JSON解析成功");
+                
+                // 清理AI返回的结果，提取JSON部分
+                String cleanedResult = cleanJsonResponse(aiResult);
+                log.info("【客户信息提取】清理后的结果: {}", cleanedResult.substring(0, Math.min(200, cleanedResult.length())));
+                
+                // 尝试解析AI返回的JSON结果
+                try {
+                    // 验证AI返回的结果是否为有效的JSON格式
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> parsedJson = (Map<String, Object>) gson.fromJson(cleanedResult, Map.class);
+                    // 如果解析成功，将解析后的结果放入info中
+                    info.put("aiProcessed", true);
+                    info.put("aiResult", cleanedResult);
+                    info.put("parsedData", parsedJson);
+                    log.info("【客户信息提取】JSON解析成功");
+                } catch (Exception e) {
+                    // 如果解析失败，将原始结果放入info中
+                    log.warn("【客户信息提取】AI返回的结果不是有效的JSON格式: {}", cleanedResult);
+                    log.warn("【客户信息提取】解析错误: {}", e.getMessage());
+                    info.put("aiProcessed", true);
+                    info.put("aiResult", cleanedResult);
+                    info.put("rawResult", true);
+                    info.put("parseError", e.getMessage());
+                }
             } catch (Exception e) {
-                // 如果解析失败，将原始结果放入info中
-                log.warn("【客户信息提取】AI返回的结果不是有效的JSON格式: {}", cleanedResult);
-                log.warn("【客户信息提取】解析错误: {}", e.getMessage());
-                info.put("aiProcessed", true);
-                info.put("aiResult", cleanedResult);
-                info.put("rawResult", true);
-                info.put("parseError", e.getMessage());
+                log.error("【客户信息提取】Spring AI调用失败: {}", e.getMessage(), e);
+                info.put("aiProcessed", false);
+                info.put("aiError", "Spring AI调用失败: " + e.getMessage());
             }
             
         } catch (Exception e) {
@@ -299,61 +291,45 @@ public class AiCustomerExtractController {
             
             String systemPrompt = "你是一个专业的数据解析专家，擅长从非结构化文本中提取结构化信息。请严格按照指定的JSON格式返回结果，只返回JSON对象，不要包含任何其他文字说明、markdown标记或解释。";
             
-            String aiResult;
-            
-            // 优先使用Spring AI ChatClient（如果已配置）
-            if (chatClient != null) {
-                try {
-                    log.info("【批量解析】第{}行使用Spring AI ChatClient", lineNumber);
-                    Prompt springAiPrompt = new Prompt(List.of(
-                        new SystemMessage(systemPrompt),
-                        new UserMessage(prompt)
-                    ));
-                    aiResult = chatClient.call(springAiPrompt).getResult().getOutput().getContent();
-                } catch (Exception e) {
-                    log.warn("【批量解析】第{}行Spring AI调用失败，回退到ArkChatService: {}", lineNumber, e.getMessage());
-                    // 回退到直接调用ArkChatService
-                    if (!arkChatService.isAvailable()) {
-                        result.put("status", "error");
-                        result.put("error", "AI服务未配置");
-                        return result;
-                    }
-                    aiResult = arkChatService.chat(prompt, systemPrompt);
-                }
-            } else {
-                // 使用豆包AI解析
-                if (!arkChatService.isAvailable()) {
+            // 使用Spring AI框架调用豆包模型
+            try {
+                List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
+                messages.add(new SystemMessage(systemPrompt));
+                messages.add(new UserMessage(prompt));
+                Prompt springAiPrompt = new Prompt(messages);
+                
+                ChatResponse chatResponse = chatModel.call(springAiPrompt);
+                String aiResult = chatResponse.getResult().getOutput().getContent();
+                
+                if (aiResult == null || aiResult.trim().isEmpty()) {
                     result.put("status", "error");
-                    result.put("error", "豆包AI服务未配置");
+                    result.put("error", "AI返回结果为空");
                     return result;
                 }
-                aiResult = arkChatService.chat(prompt, systemPrompt);
-            }
-            
-            if (aiResult == null || aiResult.trim().isEmpty()) {
-                result.put("status", "error");
-                result.put("error", "AI返回结果为空");
-                return result;
-            }
-            
-            // 清理并解析JSON
-            String cleanedResult = cleanJsonResponse(aiResult);
-            
-            try {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> parsedData = (Map<String, Object>) gson.fromJson(cleanedResult, Map.class);
                 
-                // 将解析的数据合并到结果中
-                result.putAll(parsedData);
-                result.put("status", "valid");
-                result.put("aiProcessed", true);
+                // 清理并解析JSON
+                String cleanedResult = cleanJsonResponse(aiResult);
                 
-                log.info("【批量解析】第{}行解析成功", lineNumber);
+                try {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> parsedData = (Map<String, Object>) gson.fromJson(cleanedResult, Map.class);
+                    
+                    // 将解析的数据合并到结果中
+                    result.putAll(parsedData);
+                    result.put("status", "valid");
+                    result.put("aiProcessed", true);
+                    
+                    log.info("【批量解析】第{}行解析成功", lineNumber);
+                } catch (Exception e) {
+                    log.warn("【批量解析】第{}行JSON解析失败: {}", lineNumber, e.getMessage());
+                    result.put("status", "error");
+                    result.put("error", "JSON解析失败: " + e.getMessage());
+                    result.put("rawResult", cleanedResult);
+                }
             } catch (Exception e) {
-                log.warn("【批量解析】第{}行JSON解析失败: {}", lineNumber, e.getMessage());
+                log.error("【批量解析】第{}行Spring AI调用失败: {}", lineNumber, e.getMessage(), e);
                 result.put("status", "error");
-                result.put("error", "JSON解析失败: " + e.getMessage());
-                result.put("rawResult", cleanedResult);
+                result.put("error", "Spring AI调用失败: " + e.getMessage());
             }
             
         } catch (Exception e) {
@@ -382,5 +358,172 @@ public class AiCustomerExtractController {
             log.error("保存客户信息失败: {}", e.getMessage(), e);
             return Result.error("保存客户信息失败: " + e.getMessage());
         }
+    }
+    
+    /**
+     * 识别名片图片中的客户信息
+     * 
+     * @param request 包含图片Base64编码的请求对象
+     * @return 识别的客户信息
+     */
+    @PostMapping("/recognize-business-card")
+    public Result<Map<String, Object>> recognizeBusinessCard(@RequestBody Map<String, String> request) {
+        try {
+            String imageBase64 = request.get("image");
+            String fileName = request.get("fileName");
+            
+            if (imageBase64 == null || imageBase64.trim().isEmpty()) {
+                return Result.error("图片数据不能为空");
+            }
+            
+            log.info("【名片识别】开始识别名片，文件名: {}", fileName);
+            
+            // 使用AI识别名片图片中的文字和信息
+            Map<String, Object> recognizedInfo = recognizeBusinessCardWithAI(imageBase64);
+            
+            log.info("【名片识别】识别完成，结果: {}", recognizedInfo);
+            
+            return Result.success(recognizedInfo);
+        } catch (Exception e) {
+            log.error("识别名片失败: {}", e.getMessage(), e);
+            return Result.error("识别名片失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 使用AI识别名片图片中的客户信息
+     * 
+     * @param imageBase64 图片的Base64编码
+     * @return 识别的客户信息
+     */
+    private Map<String, Object> recognizeBusinessCardWithAI(String imageBase64) {
+        Map<String, Object> info = new HashMap<>();
+        
+        try {
+            // 构建AI提示词，要求从名片图片中提取客户信息
+            String prompt = String.format(
+                "请识别这张名片图片中的客户信息，并严格按照JSON格式返回结果。\n\n" +
+                "请识别并提取以下字段：\n" +
+                "1. customerName (客户名称) - 公司名称或个人姓名（必填）\n" +
+                "2. contactPerson (联系人) - 联系人姓名（必填）\n" +
+                "3. phone (电话) - 手机号码或固定电话（必填）\n" +
+                "4. customerType (客户类型) - 必须是：个人、企业、科研院所 中的一个（必填）\n" +
+                "5. region (地区) - 省份或城市（必填）\n" +
+                "6. position (职务) - 职位或职务（可选）\n" +
+                "7. qqWeixin (QQ/微信) - QQ号或微信号（可选）\n" +
+                "8. cooperationContent (合作内容) - 业务类型或合作内容（可选）\n" +
+                "9. email (电子邮箱) - 邮箱地址（可选）\n" +
+                "10. address (地址) - 详细地址（可选）\n" +
+                "11. remark (备注) - 其他备注信息（可选）\n\n" +
+                "请严格按照以下JSON格式返回，只返回JSON对象，不要包含任何其他文字：\n" +
+                "{\n" +
+                "  \"customerName\": \"客户名称\",\n" +
+                "  \"contactPerson\": \"联系人\",\n" +
+                "  \"phone\": \"电话\",\n" +
+                "  \"customerType\": \"客户类型（个人/企业/科研院所）\",\n" +
+                "  \"region\": \"地区\",\n" +
+                "  \"position\": \"职务\",\n" +
+                "  \"qqWeixin\": \"QQ/微信\",\n" +
+                "  \"cooperationContent\": \"合作内容\",\n" +
+                "  \"email\": \"电子邮箱\",\n" +
+                "  \"address\": \"地址\",\n" +
+                "  \"remark\": \"备注\"\n" +
+                "}\n\n" +
+                "如果某个字段在名片中不存在，请将对应值设为空字符串\"\"。"
+            );
+            
+            String systemPrompt = "你是一个专业的名片识别专家，擅长从名片图片中提取结构化信息。请仔细识别名片上的所有文字信息，包括公司名称、联系人、电话、地址、邮箱等，并严格按照指定的JSON格式返回结果，只返回JSON对象，不要包含任何其他文字说明。";
+            
+            // 尝试使用多模态方式：直接将图片Base64传递给豆包模型
+            // 如果模型支持多模态，可以直接识别图片；如果不支持，会回退到文本描述方式
+            log.info("【名片识别】尝试多模态识别，图片Base64长度: {}", imageBase64.length());
+            
+            // 方案1：尝试直接使用ArkChatService的多模态接口
+            if (arkChatService != null && arkChatService.isAvailable()) {
+                try {
+                    log.info("【名片识别】使用ArkChatService多模态接口");
+                    String aiResult = arkChatService.chatWithImage(prompt, imageBase64, systemPrompt);
+                    
+                    if (aiResult != null && !aiResult.trim().isEmpty()) {
+                        log.info("【名片识别】多模态识别成功，返回结果长度: {}", aiResult.length());
+                        
+                        // 清理AI返回的结果，提取JSON部分
+                        String cleanedResult = cleanJsonResponse(aiResult);
+                        log.info("【名片识别】清理后的结果: {}", cleanedResult.substring(0, Math.min(200, cleanedResult.length())));
+                        
+                        // 尝试解析AI返回的JSON结果
+                        try {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> parsedJson = (Map<String, Object>) gson.fromJson(cleanedResult, Map.class);
+                            info.put("recognized", true);
+                            info.putAll(parsedJson);
+                            log.info("【名片识别】JSON解析成功（多模态方式）");
+                            return info;
+                        } catch (Exception e) {
+                            log.warn("【名片识别】多模态识别结果解析失败: {}", e.getMessage());
+                            // 继续尝试Spring AI方式
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("【名片识别】多模态接口调用失败，尝试Spring AI方式: {}", e.getMessage());
+                }
+            }
+            
+            // 方案2：使用Spring AI框架（如果多模态方式失败或不可用）
+            try {
+                // 构建包含图片信息的提示词
+                // 尝试将图片Base64嵌入到提示中（如果模型支持）
+                String imagePrompt = prompt + "\n\n[图片数据已提供，请识别图片中的名片信息]";
+                
+                List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
+                messages.add(new SystemMessage(systemPrompt));
+                messages.add(new UserMessage(imagePrompt));
+                
+                Prompt springAiPrompt = new Prompt(messages);
+                ChatResponse chatResponse = chatModel.call(springAiPrompt);
+                String aiResult = chatResponse.getResult().getOutput().getContent();
+                
+                log.info("【名片识别】Spring AI调用成功，返回结果长度: {}", aiResult != null ? aiResult.length() : 0);
+                
+                if (aiResult == null || aiResult.trim().isEmpty()) {
+                    log.warn("【名片识别】Spring AI返回结果为空");
+                    info.put("recognized", false);
+                    info.put("error", "AI识别结果为空");
+                    return info;
+                }
+                
+                // 清理AI返回的结果，提取JSON部分
+                String cleanedResult = cleanJsonResponse(aiResult);
+                log.info("【名片识别】清理后的结果: {}", cleanedResult.substring(0, Math.min(200, cleanedResult.length())));
+                
+                // 尝试解析AI返回的JSON结果
+                try {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> parsedJson = (Map<String, Object>) gson.fromJson(cleanedResult, Map.class);
+                    // 如果解析成功，将解析后的结果放入info中
+                    info.put("recognized", true);
+                    info.putAll(parsedJson);
+                    log.info("【名片识别】JSON解析成功");
+                } catch (Exception e) {
+                    // 如果解析失败，将原始结果放入info中
+                    log.warn("【名片识别】AI返回的结果不是有效的JSON格式: {}", cleanedResult);
+                    log.warn("【名片识别】解析错误: {}", e.getMessage());
+                    info.put("recognized", true);
+                    info.put("rawResult", cleanedResult);
+                    info.put("parseError", e.getMessage());
+                }
+            } catch (Exception e) {
+                log.error("【名片识别】Spring AI调用失败: {}", e.getMessage(), e);
+                info.put("recognized", false);
+                info.put("error", "Spring AI调用失败: " + e.getMessage());
+            }
+            
+        } catch (Exception e) {
+            log.error("名片识别失败: {}", e.getMessage(), e);
+            info.put("recognized", false);
+            info.put("error", e.getMessage());
+        }
+        
+        return info;
     }
 }

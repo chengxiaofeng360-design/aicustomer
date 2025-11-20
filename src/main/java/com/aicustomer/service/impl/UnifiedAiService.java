@@ -1,12 +1,18 @@
 package com.aicustomer.service.impl;
 
 import com.aicustomer.service.AiService;
-import com.aicustomer.service.ArkChatService;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,31 +29,66 @@ import java.util.Map;
 public class UnifiedAiService implements AiService {
     
     @Autowired
-    private ArkChatService arkChatService;
+    @Qualifier("doubaoChatModel")
+    private ChatModel doubaoChatModel;
     
     private final Gson gson = new Gson();
     
     @Override
     public boolean isAvailable() {
-        return arkChatService.isAvailable();
+        return doubaoChatModel != null;
     }
     
     @Override
     public String chat(String userMessage, String systemPrompt) {
-        if (!isAvailable()) {
-            log.warn("【统一AI服务】豆包服务不可用");
+        try {
+            List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
+            if (systemPrompt != null && !systemPrompt.trim().isEmpty()) {
+                messages.add(new SystemMessage(systemPrompt));
+            }
+            messages.add(new UserMessage(userMessage));
+            
+            Prompt prompt = new Prompt(messages);
+            ChatResponse chatResponse = doubaoChatModel.call(prompt);
+            return chatResponse.getResult().getOutput().getContent();
+        } catch (Exception e) {
+            log.error("【统一AI服务】Spring AI调用失败: {}", e.getMessage(), e);
             return null;
         }
-        return arkChatService.chat(userMessage, systemPrompt);
     }
     
     @Override
     public String chatWithHistory(String userMessage, List<Map<String, String>> history) {
-        if (!isAvailable()) {
-            log.warn("【统一AI服务】豆包服务不可用");
+        try {
+            List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
+            
+            // 添加历史对话
+            if (history != null && !history.isEmpty()) {
+                for (Map<String, String> historyItem : history) {
+                    String role = historyItem.get("role");
+                    String content = historyItem.get("content");
+                    if (content != null && !content.trim().isEmpty()) {
+                        if ("system".equals(role)) {
+                            messages.add(new SystemMessage(content));
+                        } else if ("user".equals(role)) {
+                            messages.add(new UserMessage(content));
+                        } else if ("assistant".equals(role)) {
+                            messages.add(new org.springframework.ai.chat.messages.AssistantMessage(content));
+                        }
+                    }
+                }
+            }
+            
+            // 添加当前用户消息
+            messages.add(new UserMessage(userMessage));
+            
+            Prompt prompt = new Prompt(messages);
+            ChatResponse chatResponse = doubaoChatModel.call(prompt);
+            return chatResponse.getResult().getOutput().getContent();
+        } catch (Exception e) {
+            log.error("【统一AI服务】Spring AI调用失败: {}", e.getMessage(), e);
             return null;
         }
-        return arkChatService.chatWithHistory(userMessage, history);
     }
     
     @Override

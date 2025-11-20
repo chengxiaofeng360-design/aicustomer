@@ -18,42 +18,6 @@
                 <div class="page-title">
                     <i class="bi bi-chat-dots"></i> AI智能聊天
                 </div>
-                <!-- 快速操作 - 放在标题右侧 -->
-                <div class="quick-actions-inline">
-                    <div class="quick-actions-header-inline" onclick="toggleQuickActions()">
-                        <i class="bi bi-lightning me-1"></i>
-                        <span>快速操作</span>
-                        <i class="bi bi-chevron-down toggle-icon ms-1" id="quickActionsToggle"></i>
-                    </div>
-                    <div class="quick-actions-content-inline collapsed" id="quickActionsContent">
-                        <div class="quick-actions-grid-inline">
-                            <button class="quick-action-btn-inline" onclick="sendQuickMessage('客户满意度分析')">
-                                <i class="bi bi-graph-up"></i>
-                                <span>客户满意度</span>
-                            </button>
-                            <button class="quick-action-btn-inline" onclick="sendQuickMessage('营销策略建议')">
-                                <i class="bi bi-bullseye"></i>
-                                <span>营销策略</span>
-                            </button>
-                            <button class="quick-action-btn-inline" onclick="sendQuickMessage('产品推荐')">
-                                <i class="bi bi-box-seam"></i>
-                                <span>产品推荐</span>
-                            </button>
-                            <button class="quick-action-btn-inline" onclick="sendQuickMessage('市场趋势分析')">
-                                <i class="bi bi-trending-up"></i>
-                                <span>市场趋势</span>
-                            </button>
-                            <button class="quick-action-btn-inline" onclick="sendQuickMessage('客户服务优化')">
-                                <i class="bi bi-headset"></i>
-                                <span>服务优化</span>
-                            </button>
-                            <button class="quick-action-btn-inline" onclick="sendQuickMessage('数据分析报告')">
-                                <i class="bi bi-file-earmark-bar-graph"></i>
-                                <span>数据分析</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
             <a href="/" class="back-home-btn">
                 <i class="bi bi-house-fill"></i> 返回首页
@@ -87,10 +51,13 @@
                     <h6 class="text-white mb-3">
                         <i class="bi bi-chat-dots me-2"></i>当前对话
                     </h6>
-                    <div class="current-chat-info">
-                        <div class="current-chat-item active">
+                    <div class="current-chat-info" id="currentChatInfo">
+                        <div class="current-chat-item active" id="currentChatSummary">
                             <i class="bi bi-chat-square-text"></i>
-                            <span>与AI助手的对话</span>
+                            <div class="current-chat-text">
+                                <span id="currentChatTitle">请选择或新建会话</span>
+                                <small class="text-white-50 d-block" id="currentChatMeta">等待开始新的对话</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -101,18 +68,7 @@
                         <i class="bi bi-clock-history me-2"></i>对话历史
                     </h6>
                     <div class="history-list" id="historyList">
-                        <div class="history-item">
-                            <i class="bi bi-chat-dots"></i>
-                            <span>历史对话 1</span>
-                        </div>
-                        <div class="history-item">
-                            <i class="bi bi-chat-dots"></i>
-                            <span>历史对话 2</span>
-                        </div>
-                        <div class="history-item">
-                            <i class="bi bi-chat-dots"></i>
-                            <span>历史对话 3</span>
-                        </div>
+                        <div class="history-empty text-white-50">正在加载会话...</div>
                     </div>
                 </div>
                 

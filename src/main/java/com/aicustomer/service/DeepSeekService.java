@@ -116,15 +116,16 @@ public class DeepSeekService {
             
         } catch (HttpClientErrorException e) {
             // 处理HTTP错误响应（如402余额不足、401认证失败等）
-            HttpStatus statusCode = e.getStatusCode();
+            org.springframework.http.HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
+            int statusValue = statusCode.value();
             
-            log.error("【DeepSeek】API调用HTTP错误，状态码: {}, 响应: {}", statusCode, responseBody);
-            System.out.println("【DeepSeek】HTTP错误，状态码: " + statusCode);
+            log.error("【DeepSeek】API调用HTTP错误，状态码: {}, 响应: {}", statusValue, responseBody);
+            System.out.println("【DeepSeek】HTTP错误，状态码: " + statusValue);
             System.out.println("【DeepSeek】响应内容: " + responseBody);
             
             // 特别处理402余额不足错误
-            if (statusCode == HttpStatus.PAYMENT_REQUIRED || statusCode.value() == 402) {
+            if (statusValue == 402) {
                 try {
                     // 尝试解析错误响应，提取详细信息
                     JsonObject errorResponse = gson.fromJson(responseBody, JsonObject.class);
@@ -151,13 +152,13 @@ public class DeepSeekService {
             }
             
             // 处理其他HTTP错误
-            if (statusCode == HttpStatus.UNAUTHORIZED || statusCode.value() == 401) {
+            if (statusValue == 401) {
                 return "⚠️ **API认证失败**\n\n" +
                        "DeepSeek API密钥无效或已过期，请联系系统管理员更新API密钥。";
             }
             
             // 通用的HTTP错误提示
-            String errorMsg = "DeepSeek API调用失败（状态码: " + statusCode.value() + "）";
+            String errorMsg = "DeepSeek API调用失败（状态码: " + statusValue + "）";
             try {
                 JsonObject errorResponse = gson.fromJson(responseBody, JsonObject.class);
                 if (errorResponse.has("error")) {

@@ -307,12 +307,12 @@ public class CustomerController {
             if (pageResult.getTotal() == 0) {
                 log.warn("⚠️ 查询结果为空！查询条件: businessTypeList={}, 请检查数据库中是否有匹配的记录", businessTypeList);
             }
-            // 对敏感数据进行脱敏处理
-            List<Customer> maskedList = pageResult.getList().stream()
-                    .map(sensitiveDataService::maskSensitiveData)
-                    .collect(java.util.stream.Collectors.toList());
-            pageResult.setList(maskedList);
-            return Result.success(pageResult);
+        // 对敏感数据进行脱敏处理
+        List<Customer> maskedList = pageResult.getList().stream()
+                .map(sensitiveDataService::maskSensitiveData)
+                .collect(java.util.stream.Collectors.toList());
+        pageResult.setList(maskedList);
+        return Result.success(pageResult);
         } catch (Exception e) {
             // 如果数据库连接失败或其他异常，返回空结果而不是抛出异常
             log.error("操作异常", e);

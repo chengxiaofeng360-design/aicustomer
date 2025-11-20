@@ -687,7 +687,7 @@ function parseImportData() {
             alert('解析失败: ' + (result.message || '未知错误'));
             return;
         }
-        
+
         const parsedList = result.data.parsedList || [];
         if (parsedList.length === 0) {
             alert('没有解析到任何数据，请检查输入格式');
@@ -710,16 +710,16 @@ function parseImportData() {
                 status: item.status || 'valid',
                 error: item.error || ''
             };
-        });
-        
-        // 显示预览
-        displayImportPreview(parsedData);
-        
+    });
+
+    // 显示预览
+    displayImportPreview(parsedData);
+    
         // 检查是否有错误
         const hasError = parsedData.some(item => item.status === 'error');
-        if (!hasError) {
-            document.getElementById('saveImportBtn').disabled = false;
-        }
+    if (!hasError) {
+        document.getElementById('saveImportBtn').disabled = false;
+    }
         
         // 保存解析后的数据供后续使用
         processedData = parsedData;
@@ -741,28 +741,159 @@ function displayImportPreview(data) {
 
     data.forEach((item, index) => {
         const row = document.createElement('tr');
-        row.className = item.status === 'error' ? 'table-danger' : 'table-success';
+        row.className = item.status === 'error' ? 'table-danger' : '';
+        row.style.fontSize = '0.85rem';
+        row.dataset.index = index;
         
-        row.innerHTML = `
-            <td>${item.customerName}</td>
-            <td>${item.contactPerson}</td>
-            <td>${item.phone}</td>
-            <td>${item.customerType}</td>
-            <td>${item.position || ''}</td>
-            <td>${item.qqWeixin || ''}</td>
-            <td>${item.cooperationContent || ''}</td>
-            <td>${item.region}</td>
-            <td>
-                ${item.status === 'error' ? 
-                    `<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> ${item.error}</span>` : 
-                    `<span class="text-success"><i class="bi bi-check-circle"></i> 有效</span>`
-                }
-            </td>
-        `;
+        // 创建可编辑的单元格
+        const createEditableCell = (value, fieldName, isSelect = false, options = []) => {
+            const cell = document.createElement('td');
+            cell.style.padding = '0.4rem';
+            cell.style.cursor = 'pointer';
+            cell.dataset.field = fieldName;
+            cell.dataset.index = index;
+            
+            if (isSelect && options.length > 0) {
+                cell.innerHTML = `<span class="editable-cell">${value || '-'}</span>`;
+            } else {
+                cell.innerHTML = `<span class="editable-cell">${value || '-'}</span>`;
+            }
+            
+            // 双击编辑
+            cell.addEventListener('dblclick', function(e) {
+                e.stopPropagation();
+                editCell(this, fieldName, index, isSelect, options);
+            });
+            
+            // 鼠标悬停提示
+            cell.title = '双击可编辑';
+            
+            return cell;
+        };
+        
+        // 客户类型选项
+        const customerTypeOptions = ['个人', '企业', '科研院所'];
+        
+        // 创建单元格
+        row.appendChild(createEditableCell(item.customerName || '', 'customerName'));
+        row.appendChild(createEditableCell(item.contactPerson || '', 'contactPerson'));
+        row.appendChild(createEditableCell(item.phone || '', 'phone'));
+        row.appendChild(createEditableCell(item.customerType || '', 'customerType', true, customerTypeOptions));
+        row.appendChild(createEditableCell(item.region || '', 'region'));
+        
+        // 状态列（不可编辑）
+        const statusCell = document.createElement('td');
+        statusCell.style.padding = '0.4rem';
+        statusCell.innerHTML = item.status === 'error' ? 
+            `<span class="text-danger" style="font-size: 0.8rem;"><i class="bi bi-exclamation-triangle"></i> ${item.error || '错误'}</span>` : 
+            `<span class="text-success" style="font-size: 0.8rem;"><i class="bi bi-check-circle"></i> 有效</span>`;
+        row.appendChild(statusCell);
+        
         previewBody.appendChild(row);
     });
 
     document.getElementById('importPreview').style.display = 'block';
+}
+
+// 编辑单元格
+function editCell(cell, fieldName, rowIndex, isSelect = false, options = []) {
+    const currentValue = cell.querySelector('.editable-cell').textContent.trim() || '';
+    
+    let input;
+    if (isSelect && options.length > 0) {
+        // 下拉选择框
+        input = document.createElement('select');
+        input.className = 'form-select form-select-sm';
+        input.style.width = '100%';
+        input.style.fontSize = '0.85rem';
+        
+        // 添加选项
+        options.forEach(option => {
+            const opt = document.createElement('option');
+            opt.value = option;
+            opt.textContent = option;
+            if (option === currentValue) {
+                opt.selected = true;
+            }
+            input.appendChild(opt);
+        });
+    } else {
+        // 文本输入框
+        input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-control form-control-sm';
+        input.style.width = '100%';
+        input.style.fontSize = '0.85rem';
+        input.value = currentValue === '-' ? '' : currentValue;
+    }
+    
+    // 保存原始内容
+    const originalContent = cell.innerHTML;
+    
+    // 替换单元格内容
+    cell.innerHTML = '';
+    cell.appendChild(input);
+    input.focus();
+    if (input.select) {
+        input.select();
+    }
+    
+    // 保存编辑
+    const saveEdit = () => {
+        const newValue = isSelect ? input.value : input.value.trim();
+        const displayValue = newValue || '-';
+        
+        // 更新数据
+        if (processedData && processedData[rowIndex]) {
+            processedData[rowIndex][fieldName] = newValue;
+        }
+        
+        // 更新显示
+        cell.innerHTML = `<span class="editable-cell">${displayValue}</span>`;
+        
+        // 重新绑定双击事件
+        cell.addEventListener('dblclick', function(e) {
+            e.stopPropagation();
+            editCell(this, fieldName, rowIndex, isSelect, options);
+        });
+    };
+    
+    // 取消编辑
+    const cancelEdit = () => {
+        cell.innerHTML = originalContent;
+        // 重新绑定双击事件
+        cell.addEventListener('dblclick', function(e) {
+            e.stopPropagation();
+            editCell(this, fieldName, rowIndex, isSelect, options);
+        });
+    };
+    
+    // 回车保存
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit();
+        }
+    });
+    
+    // 失去焦点保存
+    input.addEventListener('blur', function() {
+        saveEdit();
+    });
+    
+    // 点击外部区域保存（通过事件委托）
+    const handleClickOutside = (e) => {
+        if (!cell.contains(e.target)) {
+            saveEdit();
+            document.removeEventListener('click', handleClickOutside);
+        }
+    };
+    setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+    }, 100);
 }
 
 // 清空导入数据
@@ -770,6 +901,245 @@ function clearImportData() {
     document.getElementById('batchImportData').value = '';
     document.getElementById('importPreview').style.display = 'none';
     document.getElementById('saveImportBtn').disabled = true;
+}
+
+// 处理名片图片上传
+function handleBusinessCardUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    processBusinessCardFile(file);
+}
+
+// 处理名片文件（统一处理上传和拖拽）
+function processBusinessCardFile(file) {
+    // 检查文件类型
+    if (!file.type.startsWith('image/')) {
+        alert('请上传图片文件！支持 JPG、PNG 等格式。');
+        return;
+    }
+    
+    // 检查文件大小（限制5MB）
+    if (file.size > 5 * 1024 * 1024) {
+        alert('图片大小不能超过5MB！当前文件大小：' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
+        return;
+    }
+    
+    // 隐藏上传区域，显示预览区域
+    const uploadArea = document.getElementById('businessCardUploadArea');
+    const previewArea = document.getElementById('businessCardPreview');
+    
+    if (uploadArea) {
+        uploadArea.style.display = 'none';
+    }
+    
+    if (previewArea) {
+        previewArea.style.display = 'block';
+    }
+    
+    // 显示文件信息
+    const fileInfo = document.getElementById('businessCardFileInfo');
+    if (fileInfo) {
+        const fileSize = (file.size / 1024).toFixed(2);
+        fileInfo.textContent = `文件名：${file.name} | 大小：${fileSize} KB`;
+    }
+    
+    // 显示预览
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewImg = document.getElementById('businessCardPreviewImg');
+        if (previewImg) {
+            previewImg.src = e.target.result;
+        }
+    };
+    reader.readAsDataURL(file);
+    
+    // 开始识别
+    recognizeBusinessCard(file);
+}
+
+// 处理拖拽放置
+function handleBusinessCardDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const uploadZone = document.getElementById('businessCardUploadZone');
+    if (uploadZone) {
+        uploadZone.classList.remove('drag-over');
+    }
+    
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+        processBusinessCardFile(files[0]);
+    }
+}
+
+// 处理拖拽悬停
+function handleBusinessCardDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const uploadZone = document.getElementById('businessCardUploadZone');
+    if (uploadZone) {
+        uploadZone.classList.add('drag-over');
+    }
+}
+
+// 处理拖拽离开
+function handleBusinessCardDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const uploadZone = document.getElementById('businessCardUploadZone');
+    if (uploadZone) {
+        uploadZone.classList.remove('drag-over');
+    }
+}
+
+// 识别名片信息
+async function recognizeBusinessCard(file) {
+    const recognizingDiv = document.getElementById('businessCardRecognizing');
+    recognizingDiv.style.display = 'block';
+    
+    try {
+        // 将图片转换为Base64
+        const base64 = await fileToBase64(file);
+        
+        // 调用后端API识别名片
+        const response = await fetch('/api/ai/customer-extract/recognize-business-card', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image: base64,
+                fileName: file.name
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.code === 200 && result.data) {
+            const extractedData = result.data;
+            
+            // 检查识别是否成功
+            if (extractedData.recognized === false) {
+                alert('名片识别失败：' + (extractedData.error || '无法识别名片信息'));
+                return;
+            }
+            
+            // 检查必填字段是否完整
+            const requiredFields = ['customerName', 'contactPerson', 'phone', 'customerType', 'region'];
+            const missingFields = requiredFields.filter(field => !extractedData[field] || extractedData[field].trim() === '');
+            
+            if (missingFields.length > 0) {
+                console.warn('名片识别缺少必填字段:', missingFields);
+                // 即使缺少必填字段，也填入已识别的数据，用户可以手动补充
+            }
+            
+            // 将识别结果格式化为文本，填入数据录入框
+            const formattedText = formatBusinessCardData(extractedData);
+            const textarea = document.getElementById('batchImportData');
+            
+            // 如果数据录入框为空，直接填入；否则追加到新行
+            const currentText = textarea.value.trim();
+            if (currentText) {
+                textarea.value = currentText + '\n' + formattedText;
+            } else {
+                textarea.value = formattedText;
+            }
+            
+            // 滚动到文本框底部，让用户看到新填入的内容
+            textarea.scrollTop = textarea.scrollHeight;
+            
+            // 自动解析数据
+            setTimeout(() => {
+                parseImportData();
+            }, 500);
+            
+            // 显示成功提示
+            const successMsg = missingFields.length > 0 
+                ? `名片识别完成！已填入数据录入框，但缺少以下字段：${missingFields.join('、')}，请手动补充后点击"解析数据"。`
+                : '名片识别成功！信息已填入数据录入框，正在自动解析...';
+            alert(successMsg);
+        } else {
+            alert('名片识别失败：' + (result.message || '未知错误，请检查网络连接或稍后重试'));
+        }
+    } catch (error) {
+        console.error('名片识别失败:', error);
+        alert('名片识别失败，请检查网络连接或稍后重试');
+    } finally {
+        recognizingDiv.style.display = 'none';
+    }
+}
+
+// 将文件转换为Base64
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // 移除data:image/...;base64,前缀，只保留base64数据
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// 格式化名片识别结果为文本格式
+function formatBusinessCardData(data) {
+    // 按照数据录入框的格式要求：客户名称 | 联系人 | 电话 | 客户类型 | 职务 | QQ/微信 | 合作内容 | 地区 | 邮箱 | 地址 | 备注
+    const fields = [
+        (data.customerName || '').trim(),
+        (data.contactPerson || '').trim(),
+        (data.phone || '').trim(),
+        (data.customerType || '').trim(),
+        (data.position || '').trim(),
+        (data.qqWeixin || '').trim(),
+        (data.cooperationContent || '').trim(),
+        (data.region || '').trim(),
+        (data.email || '').trim(),
+        (data.address || '').trim(),
+        (data.remark || '').trim()
+    ];
+    
+    // 使用 | 分隔符连接字段，与数据录入格式保持一致
+    return fields.join(' | ');
+}
+
+// 清空名片预览
+function clearBusinessCardPreview() {
+    const uploadArea = document.getElementById('businessCardUploadArea');
+    const previewArea = document.getElementById('businessCardPreview');
+    const previewImg = document.getElementById('businessCardPreviewImg');
+    const fileInput = document.getElementById('businessCardImage');
+    const recognizingDiv = document.getElementById('businessCardRecognizing');
+    
+    if (uploadArea) {
+        uploadArea.style.display = 'block';
+    }
+    
+    if (previewArea) {
+        previewArea.style.display = 'none';
+    }
+    
+    if (previewImg) {
+        previewImg.src = '';
+    }
+    
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    if (recognizingDiv) {
+        recognizingDiv.style.display = 'none';
+    }
+    
+    // 重置上传区域样式
+    const uploadZone = document.getElementById('businessCardUploadZone');
+    if (uploadZone) {
+        uploadZone.classList.remove('drag-over');
+    }
 }
 
 // 语音录入相关变量
@@ -1043,7 +1413,7 @@ function showVoiceHelp() {
 6. 录音结束后自动重新开始监听
 
 📝 录音格式示例：
-"张三公司，联系人李四，电话13800138000，企业客户，新品种申请，北京，农业，年收入1000万，下一个客户，王五农场，联系人赵六，电话13900139000，个人客户，品种权申请，上海，种植业，年收入500万"
+"张三公司，联系人李四，电话13800138000，企业，北京，经理，微信123，新品种申请，邮箱zhangsan@example.com，地址北京市朝阳区，备注重要客户，下一个客户，王五农场，联系人赵六，电话13900139000，个人，上海"
 
 ⚙️ 操作流程：
 1. 页面加载 → 自动开始监听
@@ -1056,11 +1426,10 @@ function showVoiceHelp() {
 💡 语音识别技巧：
 - 关键词：清晰说出"木木"触发录音
 - 数字：13800138000 说成 "一三八零零一三八零零零"
-- 客户类型：说"企业客户"或"个人客户"
-- 职务：联系人职务
-- QQ/微信：QQ号或微信号
-- 合作内容：合作内容描述
-- 地区：说具体的城市名称
+- 必填字段：客户名称、联系人、电话、客户类型（个人/企业/科研院所）、地区
+- 可选字段：职务、QQ/微信、合作内容、邮箱、地址、备注
+- 客户类型：说"个人"、"企业"或"科研院所"
+- 地区：说具体的城市名称（如：北京、上海、广东）
 - 客户分隔：说"下一个客户"来分隔
 
 🔧 自动功能：
@@ -1722,41 +2091,41 @@ function saveBatchImport() {
             });
     } else {
         // 如果没有AI解析数据，回退到原来的解析方式
-        const data = document.getElementById('batchImportData').value.trim();
-        if (!data) {
+    const data = document.getElementById('batchImportData').value.trim();
+    if (!data) {
             alert('没有要保存的数据！请先点击"解析数据"按钮');
-            return;
-        }
+        return;
+    }
 
-        const lines = data.split('\n').filter(line => line.trim());
-        lines.forEach((line) => {
-            const fields = line.split(/[\t,|]/).map(field => field.trim());
-            
+    const lines = data.split('\n').filter(line => line.trim());
+    lines.forEach((line) => {
+        const fields = line.split(/[\t,|]/).map(field => field.trim());
+        
             if (fields.length >= 5) {
                 const requiredFields = [fields[0], fields[1], fields[2], fields[3], fields[7]];
-                const missingFields = requiredFields.some(field => !field);
+            const missingFields = requiredFields.some(field => !field);
+            
+            if (!missingFields) {
+                const customerTypeText = fields[3];
+                const customerType = customerTypeReverseMap[customerTypeText] || customerTypeText;
                 
-                if (!missingFields) {
-                    const customerTypeText = fields[3];
-                    const customerType = customerTypeReverseMap[customerTypeText] || customerTypeText;
-                    
-                    const newCustomer = {
-                        customerName: fields[0],
-                        contactPerson: fields[1],
-                        phone: fields[2],
-                        customerType: customerType,
+                const newCustomer = {
+                    customerName: fields[0],
+                    contactPerson: fields[1],
+                    phone: fields[2],
+                    customerType: customerType,
                         position: fields[4] || '',
                         qqWeixin: fields[5] || '',
                         cooperationContent: fields[6] || '',
                         region: fields[7] || '',
                         email: fields[8] || '',
-                        address: fields[9] || '',
-                        remark: fields[10] || ''
-                    };
-                    customersToSave.push(newCustomer);
-                }
+                    address: fields[9] || '',
+                    remark: fields[10] || ''
+                };
+                customersToSave.push(newCustomer);
             }
-        });
+        }
+    });
     }
 
     if (customersToSave.length === 0) {
@@ -1879,7 +2248,7 @@ function showCustomerDetail(customer) {
                 '<div class="mb-3">' +
                     '<label class="form-label text-muted">联系人</label>' +
                     '<p class="mb-0">' + (customer.contactPerson || '未填写') + '</p>' +
-                '</div>' +
+            '</div>' +
             '</div>' +
         '</div>' +
         '<div class="row g-3">' +

@@ -2461,6 +2461,121 @@ body {
     text-transform: uppercase;
 }
 
+/* 祝福贺卡商业化风格 */
+.greeting-card-pro {
+    border-radius: 26px;
+    padding: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.25), transparent 45%),
+        linear-gradient(135deg, #0f1628 0%, #111a2f 45%, #04070d 100%);
+    color: #f8fafc;
+    box-shadow: 0 30px 80px rgba(6, 9, 20, 0.55);
+    position: relative;
+    overflow: hidden;
+}
+
+.greeting-card-pro::after {
+    content: "";
+    position: absolute;
+    inset: 24px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+}
+
+.greeting-card-pro__glow {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    top: -80px;
+    right: -60px;
+    background: radial-gradient(circle, rgba(88, 190, 255, 0.75), rgba(88, 190, 255, 0));
+    filter: blur(4px);
+}
+
+.greeting-card-pro__container {
+    position: relative;
+    padding: 56px 64px;
+}
+
+.greeting-card-pro__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.greeting-card-pro__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.85rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+}
+
+.greeting-card-pro__title {
+    font-size: 2.3rem;
+    font-weight: 600;
+    margin: 20px 0 10px;
+}
+
+.greeting-card-pro__subtitle {
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.greeting-card-pro__body {
+    margin-top: 32px;
+    padding: 32px;
+    border-radius: 18px;
+    background: rgba(12, 17, 34, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.greeting-card-pro__body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
+    background: linear-gradient(120deg, transparent 0%, rgba(120, 129, 255, 0.8) 45%, transparent 85%);
+}
+
+.greeting-card-pro__body-content {
+    position: relative;
+    line-height: 2;
+    font-size: 1.05rem;
+    color: rgba(248, 250, 252, 0.92);
+    letter-spacing: 0.01em;
+}
+
+.greeting-card-pro__signature {
+    margin-top: 40px;
+    text-align: right;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.7;
+}
+
+.greeting-card-pro__badges {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.greeting-card-pro__badge {
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.88);
+}
+
 .next-steps {
     margin-bottom: 0;
     padding-left: 1rem;
@@ -3020,4 +3135,104 @@ body {
     .email-preview-container {
         max-width: 100%;
     }
+}
+
+/* 名片上传区域样式 */
+.business-card-upload-area {
+    margin-bottom: 1.5rem;
+}
+
+.upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-zone:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.upload-zone.drag-over {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
+}
+
+.upload-content {
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.upload-zone:hover .upload-icon {
+    color: #3b82f6;
+    transform: scale(1.1);
+}
+
+.upload-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0.5rem;
+}
+
+.upload-hint {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.upload-info {
+    margin-top: 1rem;
+}
+
+/* 名片预览区域样式 */
+.business-card-preview-area {
+    margin-bottom: 1.5rem;
+}
+
+.preview-header {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.preview-image-container {
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+}
+
+.preview-info {
+    text-align: center;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
 }

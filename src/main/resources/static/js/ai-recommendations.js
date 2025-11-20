@@ -1347,45 +1347,263 @@ AI智能推荐系统 | 让智能为业务赋能
             generateShareLink();
         }
 
-        // 生成祝福贺卡
+        const greetingSceneMeta = {
+            newyear: { label: '新年', icon: 'bi-fireworks' },
+            spring: { label: '春节', icon: 'bi-brightness-high' },
+            summer: { label: '夏日', icon: 'bi-sunrise' },
+            autumn: { label: '秋日', icon: 'bi-moon-stars' },
+            birthday: { label: '生日', icon: 'bi-gift' },
+            thankyou: { label: '感谢', icon: 'bi-heart-fill' },
+            general: { label: '通用', icon: 'bi-stars' }
+        };
+        
+        // 生成祝福贺卡（支持多场景）
         function generateGreetingCard(selectedRecs) {
             const customer = selectedRecs[0] || {};
+            const customerName = customer.customerName || '尊敬的合作伙伴';
             const date = new Date().toLocaleDateString('zh-CN');
-            const content = `亲爱的 ${customer.customerName || '合作伙伴'}：
-
-🌟 ${date}，谨以此信向您致以最真挚的祝福！
-
-愿您的事业如春日繁花，蓬勃向上；愿您的团队如夏日繁星，闪耀前程；愿您的生活如秋日收获，硕果累累；愿您的每个梦想，都能如冬日暖阳，温暖而绽放。
-
-感谢您一直以来的信任与支持，AI智能推荐团队将以专业与真诚，为您持续护航。
-
-愿我们携手同行，共赴精彩！
-
-顺祝
-商祺 🌸
-
-AI智能推荐团队
-${date}`;
-
-            const html = `
-                <div class="report-header mb-4">
-                    <h3>祝福贺卡</h3>
-                    <p class="text-muted">生成时间：${new Date().toLocaleString('zh-CN')}</p>
-                </div>
-                <div class="report-body">
-                    <div class="p-4 bg-light rounded" style="white-space: pre-wrap; line-height: 2; font-size: 1rem;">
-                        ${escapeHtml(content)}
-                    </div>
-                </div>
-                <div class="report-footer mt-4 pt-3 border-top">
-                    <p class="text-muted small">本祝福内容由AI智能推荐系统自动生成</p>
-                </div>
-            `;
+            const month = new Date().getMonth() + 1;
+            
+            // 智能识别节日场景
+            let scene = 'general'; // 默认通用场景
+            let sceneTitle = '诚挚祝福';
+            
+            // 根据月份智能判断可能的节日
+            if (month === 1) { scene = 'newyear'; sceneTitle = '新年祝福'; }
+            else if (month === 2) { scene = 'spring'; sceneTitle = '春节祝福'; }
+            else if (month === 3) { scene = 'spring'; sceneTitle = '春季问候'; }
+            else if (month === 6) { scene = 'summer'; sceneTitle = '夏季问候'; }
+            else if (month === 9 || month === 10) { scene = 'autumn'; sceneTitle = '秋季问候'; }
+            else if (month === 12) { scene = 'newyear'; sceneTitle = '年终祝福'; }
+            
+            const templates = createGreetingTemplates(customerName, date);
+            
+            const template = templates[scene] || templates.general;
+            const html = buildGreetingCardHtml(template, scene, greetingSceneMeta);
 
             document.getElementById('reportContent').innerHTML = html;
             currentReportData = html;
             editedReportContent = null;
+            // 保存当前场景，用于场景切换
+            window.currentGreetingScene = scene;
+            window.currentGreetingCustomer = customer;
             generateShareLink();
+        }
+        
+        // 切换祝福场景
+        function switchGreetingScene(newScene) {
+            const customer = window.currentGreetingCustomer || {};
+            customer._forceScene = newScene;
+            const oldScene = window.currentGreetingScene;
+            window.currentGreetingScene = newScene;
+            // 临时修改场景生成
+            const originalGenerate = generateGreetingCard;
+            generateGreetingCard = function(recs) {
+                const temp = recs[0] || customer;
+                const month = new Date().getMonth() + 1;
+                const scene = newScene;
+                const customerName = temp.customerName || '尊敬的合作伙伴';
+                const date = new Date().toLocaleDateString('zh-CN');
+                
+                const templates = createGreetingTemplates(customerName, date);
+                
+                const template = templates[scene] || templates.general;
+                const html = buildGreetingCardHtml(template, scene, greetingSceneMeta);
+
+                document.getElementById('reportContent').innerHTML = html;
+                currentReportData = html;
+                editedReportContent = null;
+                window.currentGreetingScene = scene;
+                generateShareLink();
+            };
+            generateGreetingCard([customer]);
+            generateGreetingCard = originalGenerate;
+        }
+        
+        // 确保函数全局可访问
+        window.switchGreetingScene = switchGreetingScene;
+        
+        function buildGreetingCardHtml(template, scene, sceneMeta) {
+            const meta = sceneMeta[scene] || sceneMeta.general || { label: '通用', icon: 'bi-stars' };
+            const buttons = Object.keys(sceneMeta).map(key => {
+                const label = sceneMeta[key].label;
+                const isActive = key === scene;
+                return `<button type="button" class="btn btn-sm ${isActive ? 'btn-primary' : 'btn-outline-primary'}" onclick="switchGreetingScene('${key}')">${label}</button>`;
+            }).join('');
+            const badges = (template.badges || []).map(badge => `<span class="greeting-card-pro__badge">${escapeHtml(badge)}</span>`).join('');
+            const generatedTime = new Date().toLocaleString('zh-CN');
+            
+            return `
+                <div class="report-header mb-4">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                        <div>
+                            <h3>${escapeHtml(template.title)}</h3>
+                            <p class="text-muted mb-1">生成时间：${generatedTime}</p>
+                            <small class="text-muted">AI智能推荐 · 高端客户关怀</small>
+                        </div>
+                        <div class="btn-group" role="group">
+                            ${buttons}
+                        </div>
+                    </div>
+                    <small class="text-muted">💡 提示：点击场景标签即可切换不同风格的贺卡模板</small>
+                </div>
+                <div class="report-body">
+                    <div class="greeting-card-pro">
+                        <div class="greeting-card-pro__glow"></div>
+                        <div class="greeting-card-pro__container">
+                            <div class="greeting-card-pro__header">
+                                <div>
+                                    <div class="greeting-card-pro__tag">
+                                        <i class="bi ${meta.icon}"></i>
+                                        <span>${escapeHtml(template.tagline || 'Premium Greetings')}</span>
+                                    </div>
+                                    <div class="greeting-card-pro__title">${escapeHtml(template.sceneName || meta.label)}</div>
+                                    <div class="greeting-card-pro__subtitle">${escapeHtml(template.subtitle || '客户关怀 · 品牌致意')}</div>
+                                </div>
+                                <div class="text-end text-white-50">
+                                    <div class="small text-uppercase">当前场景</div>
+                                    <div class="fs-5 fw-semibold text-white">${escapeHtml(meta.label)}</div>
+                                </div>
+                            </div>
+                            <div class="greeting-card-pro__body">
+                                <div class="greeting-card-pro__body-content">
+                                    <p class="mb-3">${escapeHtml(template.greeting)}</p>
+                                    <p class="mb-3">${escapeHtml(template.opening)}</p>
+                                    <div class="mb-4" style="white-space: pre-wrap;">${escapeHtml(template.body)}</div>
+                                    <p class="mb-0">${escapeHtml(template.closing)}</p>
+                                </div>
+                            </div>
+                            <div class="greeting-card-pro__signature" style="white-space: pre-wrap;">
+                                ${escapeHtml(template.signature)}
+                            </div>
+                            ${badges ? `<div class="greeting-card-pro__badges">${badges}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="report-footer mt-4 pt-3 border-top">
+                    <p class="text-muted small mb-1">
+                        <i class="bi bi-info-circle"></i> 本贺卡由 AI 智能推荐系统自动生成，可直接编辑文字内容
+                    </p>
+                    <small class="text-muted">场景：${escapeHtml(meta.label)} · 模板：${escapeHtml(template.title)}</small>
+                </div>
+            `;
+        }
+        
+        function createGreetingTemplates(customerName, date) {
+            return {
+                newyear: {
+                    title: '🎊 新年快乐',
+                    sceneName: '新年贺喜',
+                    greeting: `${customerName}，您好！`,
+                    subtitle: 'AI客户关怀 · 年度致谢',
+                    tagline: 'Premium Seasonal Greetings',
+                    badges: ['年度共赢', '战略伙伴'],
+                    opening: `新年伊始，万象更新！值此辞旧迎新之际，谨代表全体团队向您致以最诚挚的祝福与问候。`,
+                    body: `回首过去一年，感谢您一如既往的信任与支持。新的一年里，愿您：
+• 事业蒸蒸日上，业绩再创新高
+• 身体健康，家庭幸福美满
+• 心想事成，万事如意
+• 财源广进，鸿运当头`,
+                    closing: `让我们携手并进，共创辉煌！期待在新的一年里，继续与您保持紧密合作，为彼此创造更大价值！`,
+                    signature: `此致\n敬礼！\n\n种业客户管理团队\n${date}`
+                },
+                spring: {
+                    title: '🌸 春节祝福',
+                    sceneName: '春日团圆',
+                    greeting: `${customerName}，春节快乐！`,
+                    subtitle: '节庆问候 · 聚焦客户体验',
+                    tagline: 'Spring Festival Edition',
+                    badges: ['客户关怀', '节庆营销'],
+                    opening: `爆竹声中辞旧岁，春风得意迎新年。值此新春佳节来临之际，恭祝您及家人春节快乐，阖家幸福！`,
+                    body: `感谢您过去一年的信任与合作。新春新气象，祝愿您在新的一年里：
+• 🧧 福运满满，财源滚滚
+• 🎋 事业有成，步步高升
+• 🏮 家庭和睦，幸福安康
+• 🎊 心想事成，万事顺意`,
+                    closing: `愿我们在新的一年里继续携手前行，共创美好未来！`,
+                    signature: `恭贺新春！\n\n种业客户管理团队\n${date}`
+                },
+                summer: {
+                    title: '☀️ 夏日问候',
+                    sceneName: '夏日焕新',
+                    greeting: `${customerName}，您好！`,
+                    subtitle: '客户陪伴 · 全年关怀',
+                    tagline: 'Seasonal Refresh',
+                    badges: ['体验洞察', '温度服务'],
+                    opening: `盛夏时节，骄阳似火。在这充满活力的季节里，向您致以最诚挚的问候！`,
+                    body: `感谢您持续的信任与支持。愿您在这个充满希望的季节里：
+• 🌻 事业如夏花般绚烂
+• 🍃 身体健康，活力满满
+• 🌈 心情愉悦，收获满满
+• ⭐ 每一天都充满阳光与希望`,
+                    closing: `炎炎夏日，注意防暑降温。让我们一起迎接更加美好的明天！`,
+                    signature: `夏日问候\n\n种业客户管理团队\n${date}`
+                },
+                autumn: {
+                    title: '🍂 秋日问候',
+                    sceneName: '秋收致敬',
+                    greeting: `${customerName}，您好！`,
+                    subtitle: '合作成果 · 阶段复盘',
+                    tagline: 'Harvest Season Message',
+                    badges: ['成果回顾', '合作升级'],
+                    opening: `金秋时节，硕果累累。在这个收获的季节里，向您致以最美好的祝愿！`,
+                    body: `感谢您一路的陪伴与信赖。愿您在这个丰收的季节里：
+• 🌾 收获满满，成果丰硕
+• 🍁 事业稳步发展，再创佳绩
+• 🎃 身心愉悦，万事顺心
+• 🌟 每一份努力都有所回报`,
+                    closing: `秋高气爽，适宜出行。期待我们继续携手，共创辉煌！`,
+                    signature: `秋日祝福\n\n种业客户管理团队\n${date}`
+                },
+                birthday: {
+                    title: '🎂 生日快乐',
+                    sceneName: '尊享生日',
+                    greeting: `尊敬的${customerName}：`,
+                    subtitle: '客户生命周期 · 尊享关怀',
+                    tagline: 'Client Birthday Edition',
+                    badges: ['尊贵客户', '专属关怀'],
+                    opening: `值此您生日之际，谨代表全体团队向您致以最诚挚的祝福！`,
+                    body: `感谢您一直以来的信任与合作。在这个特别的日子里，愿您：
+• 🎉 生日快乐，心想事成
+• 🎁 身体健康，事业顺利
+• 🎈 家庭幸福，万事如意
+• 🌟 每一天都充满欢乐与惊喜`,
+                    closing: `祝您度过一个美好而难忘的生日，未来的日子里一切安好！`,
+                    signature: `生日祝福\n\n种业客户管理团队\n${date}`
+                },
+                thankyou: {
+                    title: '🙏 感谢信',
+                    sceneName: '战略感恩',
+                    greeting: `尊敬的${customerName}：`,
+                    subtitle: '合作感谢 · 里程碑致意',
+                    tagline: 'Appreciation Series',
+                    badges: ['重要客户', '年度伙伴'],
+                    opening: `您好！首先，请允许我代表全体团队向您表示最诚挚的感谢！`,
+                    body: `感谢您一直以来对我们的信任与支持：
+• 💼 您的信任是我们前进的动力
+• 🤝 您的支持是我们成长的基石
+• 💡 您的建议让我们不断改进
+• 🌟 您的认可是我们最大的荣耀`,
+                    closing: `未来，我们将继续秉承专业、诚信的原则，为您提供更优质的服务，携手共创美好未来！`,
+                    signature: `再次感谢！\n\n种业客户管理团队\n${date}`
+                },
+                general: {
+                    title: '💌 诚挚问候',
+                    sceneName: '品牌致意',
+                    greeting: `${customerName}，您好！`,
+                    subtitle: '全场景 · 客户友好触达',
+                    tagline: 'Signature Courtesy Message',
+                    badges: ['品牌温度', 'AI共创'],
+                    opening: `谨以此信向您致以最诚挚的问候与祝福！`,
+                    body: `感谢您一直以来的信任与支持。愿您：
+• 🌟 事业蓬勃发展，蒸蒸日上
+• 💪 身体健康，精力充沛
+• 🎯 目标清晰，步步为赢
+• 🌈 生活美满，幸福安康`,
+                    closing: `让我们携手同行，共赴精彩，共创辉煌！`,
+                    signature: `此致\n敬礼！\n\n种业客户管理团队\n${date}`
+                }
+            };
         }
 
         // 生成名片引荐
@@ -1422,7 +1640,7 @@ ${date}`;
                                 <div class="business-card-pro__name" data-inline-editable="true">${escapeHtml(displayName)}</div>
                                 <div class="business-card-pro__role" data-inline-editable="true">${escapeHtml(displayRole)}</div>
                                 <div class="business-card-pro__company" data-inline-editable="true">${escapeHtml(displayCompany)}</div>
-                            </div>
+                        </div>
                             <div class="business-card-pro__tagline" data-inline-editable="true">
                                 ${escapeHtml(displayTagline)}
                             </div>
@@ -1707,7 +1925,7 @@ ${date}`;
                             <div>
                                 <p class="text-uppercase text-muted mb-1">${getTypeText(rec.type)}</p>
                                 <h6>${escapeHtml(rec.title)}</h6>
-                            </div>
+                        </div>
                             <span class="priority-tag priority-${rec.priority || 'medium'}">${getPriorityText(rec.priority)}优先</span>
                         </div>
                         <p class="template-pro__card-content">${escapeHtml(truncateText(rec.content, 220))}</p>
@@ -2329,20 +2547,20 @@ ${date}`;
             if (typeof QRCode === 'object' && typeof QRCode.toCanvas === 'function') {
                 try {
                     QRCode.toCanvas(text, {
-                        width: 200,
-                        margin: 2,
-                        color: {
-                            dark: '#000000',
-                            light: '#FFFFFF'
-                        }
-                    }, function (error, canvas) {
-                        if (error) {
-                            console.error('生成二维码失败:', error);
+                width: 200,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function (error, canvas) {
+                if (error) {
+                    console.error('生成二维码失败:', error);
                             container.innerHTML = '<p class="text-danger small">生成二维码失败</p>';
-                        } else {
-                            container.appendChild(canvas);
-                        }
-                    });
+                } else {
+                    container.appendChild(canvas);
+                }
+            });
                     return true;
                 } catch (error) {
                     console.error('生成二维码异常:', error);

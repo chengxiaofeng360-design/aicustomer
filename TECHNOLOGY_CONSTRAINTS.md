@@ -80,7 +80,7 @@
 
 #### 后端架构
 - **分层架构**: Controller → Service → Mapper → Database
-- **设计模式**: 
+
   - MVC模式
   - Service层接口+实现模式
   - Repository模式（通过MyBatis Mapper实现）
@@ -131,78 +131,77 @@ com.aicustomer/
 ## 允许的后端技术栈
 
 ### 核心框架
-- **Spring Boot**: 2.4.4（固定版本，不允许升级）
-- **Java**: 8（固定版本）
-- **构建工具**: Apache Maven 3.6+
+- **Spring Boot**: 3.2.x（固定版本，不允许升级或降级）
+- **Spring AI**: 1.0.0-M3
+- **Java**: Temurin JDK 17（固定版本，不允许降级）
+- **构建工具**: Apache Maven 3.9.6（固定版本）
 
 ### 数据库与持久层
 - **数据库**: MySQL 8.0+
-- **ORM框架**: MyBatis 2.2.0
-- **连接池**: HikariCP（Spring Boot内置）
+- **ORM框架**: MyBatis 3.0.3
+- **连接池**: HikariCP
 
 ### 安全框架
-- **Spring Security**: Spring Boot 2.4.4内置版本
+- **Spring Security**: 基于 `SecurityFilterChain` 配置
 
 ### Web框架
-- **Spring MVC**: Spring Boot 2.4.4内置版本
-- **Thymeleaf**: Spring Boot 2.4.4内置版本
+- **Thymeleaf**: 3.1.x
 
 ### 监控与管理
-- **Spring Actuator**: Spring Boot 2.4.4内置版本
+- **Spring Actuator**: 包含 Micrometer 指标
 
 ### 数据验证
-- **Spring Validation**: Spring Boot 2.4.4内置版本（Hibernate Validator）
+- **Spring Validation**: Jakarta Validation 3.x / Hibernate Validator 8.x
 
 ### JSON处理
-- **Jackson**: Spring Boot 2.4.4内置版本
-- **Google Gson**: 2.8.9
-- **Alibaba FastJSON**: 1.2.83
+- **Jackson**: Jakarta JSON 支持
+- **Google Gson**: 2.10.1
+- **Alibaba FastJSON**: 2.0.43
 
 ### 工具库
 - **Lombok**: 1.18.32
-- **Google Guava**: 30.1.1-jre
-- **Apache Commons Lang3**: Spring Boot 2.4.4内置版本
+- **Google Guava**: 32.1.3-jre
 - **Commons IO**: 2.11.0
 - **Commons FileUpload**: 1.4
 
 ### 文档处理
-- **Apache POI**: 5.1.0（Excel处理）
-- **POI-TL**: 1.12.0（Word模板处理）
-- **Apache PDFBox**: 2.0.20（PDF处理）
+- **Apache POI**: 5.2.5
+- **POI-TL**: 1.12.0
+- **Apache PDFBox**: 2.0.29
 
 ### 时间处理
-- **Joda-Time**: 2.10.10
+- **Joda-Time**: 2.12.5
 
 ### 图表生成
 - **JFreeChart**: 1.5.3
 
 ### Web爬虫
-- **Jsoup**: 1.15.4
+- **Jsoup**: 1.17.2
 
 ### 计算机视觉
-- **OpenCV Java**: 4.5.1-2（org.openpnp:opencv）
+- **OpenCV Java**: 4.5.1-2
 
 ### 浏览器自动化
 - **Selenium**: 4.15.0
 
 ### AI服务
-- **阿里云NLS SDK**: 4.6.4（com.aliyun:aliyun-java-sdk-core）
-- **OpenAI Java SDK**: 0.18.0（com.theokanning.openai-gpt3-java:service）- 用于调用DeepSeek API（DeepSeek兼容OpenAI API格式）
+- **阿里云NLS SDK**: 4.6.4
+- **OpenAI Java SDK**: 0.18.0
 - **DeepSeek API**: 通过OpenAI兼容接口调用，模型：deepseek-chat
+- **字节跳动火山引擎·豆包**: 通过自研 `Spring AI` 适配层 `doubaoChatModel` 调用 `doubao-seed-1-6-251015`
 
 ### 测试框架
-- **Spring Boot Test**: Spring Boot 2.4.4内置版本
-- **JUnit**: Spring Boot 2.4.4内置版本
+- **JUnit**: JUnit 5.10.x
 
 ---
 
 ## 允许的前端技术栈
 
 ### UI框架
-- **Bootstrap**: 5.1.3（仅限CSS和JavaScript，不包含其他Bootstrap相关库）
+- **Bootstrap**: 5.1.3
 
 ### 图标库
-- **Bootstrap Icons**: 当前版本（仅限字体图标，不包含SVG或React组件）
+- **Bootstrap Icons**: 字体图标
 
 ### JavaScript
 - **原生JavaScript (ES5/ES6)**: 不允许使用任何JavaScript框架
@@ -279,88 +278,25 @@ com.aicustomer/
 
 ### 数据库迁移规范
 
-#### 迁移脚本位置
-- 迁移脚本存放在：`src/main/resources/sql/`
-- 命名规范：`migration_[功能描述].sql`
+#### 统一脚本策略
+- **唯一入口**：所有建库、建表、迁移、回滚与初始化数据统一维护在 `src/main/resources/sql/init.sql`
+- **分节管理**：每个变更必须以 `-- [模块名称]` 形式标记，便于审查与回滚
+- **幂等执行**：DDL/DML 必须可重复执行（`IF EXISTS / IF NOT EXISTS` 或幂等更新语句）
 
-#### 迁移执行流程
-1. 备份数据库
-2. 在测试环境执行迁移脚本
-3. 验证迁移结果
-4. 在生产环境业务低峰期执行
-5. 记录迁移日志
+#### 执行流程
+1. 在 `init.sql` 中新增/调整对应区块，并在文件顶部追加本次变更说明
+2. 本地或测试库整份执行 `init.sql`，确认无错误
+3. 评审通过后合入主干，生产环境仅执行该文件
 
-#### 回滚准备
-- 每个迁移脚本必须包含对应的回滚SQL
-- 回滚脚本命名：`rollback_[功能描述].sql`
+#### 回滚要求
+- 回滚语句与正向语句成对记录并使用 `-- ROLLBACK` 标注
+- 禁止新增零散 `.sql` 文件，历史脚本已全部并入 `init.sql`
 
-### 植物新品种保护申请字段迁移
-
-#### 迁移内容
-新增以下字段到 `customer` 表：
-
-**基本信息字段**
-- `contact_person` VARCHAR(100) - 联系人
-- `postal_code` VARCHAR(10) - 邮政编码
-- `fax` VARCHAR(20) - 传真
-
-**申请人信息字段**
-- `organization_code` VARCHAR(50) - 机构代码或身份证号码
-- `nationality` VARCHAR(50) - 国籍或所在国（地区）
-- `applicant_nature` TINYINT - 申请人性质（1:个人,2:企业,3:科研院所,4:其他）
-
-**代理机构信息字段**
-- `agency_name` VARCHAR(200) - 代理机构名称
-- `agency_code` VARCHAR(50) - 代理机构组织机构代码
-- `agency_address` VARCHAR(500) - 代理机构地址
-- `agency_postal_code` VARCHAR(10) - 代理机构邮政编码
-
-**代理人信息字段**
-- `agent_name` VARCHAR(100) - 代理人姓名
-- `agent_phone` VARCHAR(20) - 代理人电话
-- `agent_fax` VARCHAR(20) - 代理人传真
-- `agent_mobile` VARCHAR(20) - 代理人手机
-- `agent_email` VARCHAR(100) - 代理人邮箱
-
-#### 迁移SQL示例
-
-```sql
--- 添加联系人字段
-ALTER TABLE customer ADD COLUMN contact_person VARCHAR(100) COMMENT '联系人' AFTER customer_name;
-
--- 添加植物新品种保护申请相关字段
-ALTER TABLE customer ADD COLUMN postal_code VARCHAR(10) COMMENT '邮政编码' AFTER address;
-ALTER TABLE customer ADD COLUMN fax VARCHAR(20) COMMENT '传真' AFTER postal_code;
-ALTER TABLE customer ADD COLUMN organization_code VARCHAR(50) COMMENT '机构代码或身份证号码' AFTER fax;
-ALTER TABLE customer ADD COLUMN nationality VARCHAR(50) COMMENT '国籍或所在国（地区）' AFTER organization_code;
-ALTER TABLE customer ADD COLUMN applicant_nature TINYINT COMMENT '申请人性质(1:个人,2:企业,3:科研院所,4:其他)' AFTER nationality;
-
--- 添加代理机构信息字段
-ALTER TABLE customer ADD COLUMN agency_name VARCHAR(200) COMMENT '代理机构名称' AFTER applicant_nature;
-ALTER TABLE customer ADD COLUMN agency_code VARCHAR(50) COMMENT '代理机构组织机构代码' AFTER agency_name;
-ALTER TABLE customer ADD COLUMN agency_address VARCHAR(500) COMMENT '代理机构地址' AFTER agency_code;
-ALTER TABLE customer ADD COLUMN agency_postal_code VARCHAR(10) COMMENT '代理机构邮政编码' AFTER agency_address;
-
--- 添加代理人信息字段
-ALTER TABLE customer ADD COLUMN agent_name VARCHAR(100) COMMENT '代理人姓名' AFTER agency_postal_code;
-ALTER TABLE customer ADD COLUMN agent_phone VARCHAR(20) COMMENT '代理人电话' AFTER agent_name;
-ALTER TABLE customer ADD COLUMN agent_fax VARCHAR(20) COMMENT '代理人传真' AFTER agent_phone;
-ALTER TABLE customer ADD COLUMN agent_mobile VARCHAR(20) COMMENT '代理人手机' AFTER agent_fax;
-ALTER TABLE customer ADD COLUMN agent_email VARCHAR(100) COMMENT '代理人邮箱' AFTER agent_mobile;
-
--- 添加索引
-ALTER TABLE customer ADD INDEX idx_contact_person (contact_person);
-ALTER TABLE customer ADD INDEX idx_applicant_nature (applicant_nature);
-ALTER TABLE customer ADD INDEX idx_agency_name (agency_name);
-ALTER TABLE customer ADD INDEX idx_agent_name (agent_name);
-```
-
----
 
 ## 构建与部署约束
 
 ### 构建工具
-- **仅允许**: Apache Maven 3.6+
+- **仅允许**: Apache Maven 3.9.6（统一安装于系统级 `~/opt/apache-maven-3.9.6`）
 - **不允许**:
   - Gradle
   - Ant
@@ -380,8 +316,8 @@ ALTER TABLE customer ADD INDEX idx_agent_name (agent_name);
   - 其他容器化技术
 
 ### 环境要求
-- **JDK**: 8+
-- **Maven**: 3.6+
+- **JDK**: Temurin 17（必须）
+- **Maven**: 3.9.6（由 `setup_maven.sh` 安装并配置）
 - **MySQL**: 8.0+
 
 ---
@@ -403,8 +339,8 @@ ALTER TABLE customer ADD INDEX idx_agent_name (agent_name);
 ## 版本约束原则
 
 ### 版本固定规则
-1. **Spring Boot版本**: 固定在2.4.4，不允许升级或降级
-2. **Java版本**: 固定在8，不允许升级
+1. **Spring Boot版本**: 固定在 3.2.x，未经审批不得升级或降级
+2. **Java版本**: 固定在 Temurin JDK 17，不允许降级
 3. **依赖版本**: 遵循以下原则
    - Spring Boot管理的依赖：使用Spring Boot Parent提供的版本
    - 第三方依赖：使用pom.xml中明确指定的版本
@@ -488,30 +424,29 @@ ALTER TABLE customer ADD INDEX idx_agent_name (agent_name);
 
 ### 后端技术（白名单）
 ```
-Spring Boot 2.4.4
-Java 8
-Maven 3.6+
+Spring Boot 3.2.x
+Spring AI 1.0.0-M3
+Temurin JDK 17
+Apache Maven 3.9.6
 MySQL 8.0+
-MyBatis 2.2.0
-Spring Security (内置)
-Spring Actuator (内置)
-Thymeleaf (内置)
-Jackson (内置)
+MyBatis 3.0.3
+Spring Security / Spring MVC / Spring Actuator / Jackson
+Thymeleaf 3.1.x
 Lombok 1.18.32
-Google Gson 2.8.9
-Alibaba FastJSON 1.2.83
-Google Guava 30.1.1-jre
+Google Gson 2.10.1
+Alibaba FastJSON 2.0.43
+Google Guava 32.1.3-jre
 Apache Commons (Lang3, IO, FileUpload)
-Apache POI 5.1.0
+Apache POI 5.2.5
 POI-TL 1.12.0
-Apache PDFBox 2.0.20
-Joda-Time 2.10.10
+Apache PDFBox 2.0.29
+Joda-Time 2.12.5
 JFreeChart 1.5.3
-Jsoup 1.15.4
+Jsoup 1.17.2
 OpenCV Java 4.5.1-2
 Selenium 4.15.0
 阿里云NLS SDK 4.6.4
-OpenAI Java SDK 0.18.0 (用于DeepSeek API)
+OpenAI Java SDK 0.18.0 / Doubao 模型（Spring AI）
 ```
 
 ### 前端技术（白名单）
@@ -524,7 +459,8 @@ Bootstrap Icons (字体图标)
 
 ### 构建与工具（白名单）
 ```
-Apache Maven 3.6+
+Apache Maven 3.9.6
+setup_maven.sh（统一安装脚本）
 ```
 
 ---
@@ -538,7 +474,7 @@ Apache Maven 3.6+
 
 ---
 
-## 重要提醒
+## 重要提醒a
 
 1. **本文档是技术选型的唯一依据**
 2. **任何技术变更必须先更新本文档**

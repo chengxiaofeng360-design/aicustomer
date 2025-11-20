@@ -1,6 +1,6 @@
 // 沟通记录数据
 let customerCommunications = [];
-let selectedCommunications = [];
+// selectedCommunications 已在 communications.html 中声明，这里不再重复声明
 
 // 当前关联的客户ID（用于在客户详情中显示）
 let currentCustomerIdForCommunication = null;
@@ -10,6 +10,106 @@ let isRecordingForContent = false;
 let recognitionForContent = null;
 let mediaRecorderForContent = null;
 let audioChunksForContent = [];
+
+// 智能标点符号添加函数
+function addSmartPunctuation(text, previousText = '') {
+    if (!text || text.trim() === '') return text;
+    
+    let result = text.trim();
+    
+    // 1. 检查文本开头是否需要空格（如果前文存在且没有标点结尾）
+    if (previousText && previousText.trim()) {
+        const lastChar = previousText.trim().slice(-1);
+        if (!isPunctuation(lastChar)) {
+            // 前文没有标点，当前句子可能是承接的，不需要句号
+        } else {
+            // 前文有标点，新句子开头可能需要大写（中文不适用）
+        }
+    }
+    
+    // 2. 识别常见的语气词和连接词，添加逗号
+    const commaKeywords = [
+        '但是', '而且', '然后', '接着', '所以', '因此', '因为', '不过', '并且', '或者',
+        '首先', '其次', '最后', '另外', '此外', '同时', '再者', '况且', '虽然', '尽管',
+        '如果', '假如', '即使', '哪怕', '无论', '不管', '只要', '只有', '除非', '否则'
+    ];
+    
+    commaKeywords.forEach(keyword => {
+        // 在关键词前添加逗号（如果前面不是标点）
+        const regex = new RegExp(`([^，。！？、；：])(${keyword})`, 'g');
+        result = result.replace(regex, '$1，$2');
+    });
+    
+    // 3. 识别疑问句，添加问号
+    const questionKeywords = ['吗', '呢', '啊', '嘛', '吧'];
+    const endsWithQuestion = questionKeywords.some(kw => result.endsWith(kw));
+    const hasQuestionWord = /[谁什么哪怎为何几多少]/g.test(result);
+    
+    if ((endsWithQuestion || hasQuestionWord) && !endsWithPunctuation(result)) {
+        result += '？';
+    }
+    // 4. 识别感叹句，添加感叹号
+    else if ((result.includes('太') || result.includes('真') || result.includes('非常') || 
+              result.endsWith('啊') || result.endsWith('呀')) && !endsWithPunctuation(result)) {
+        result += '！';
+    }
+    // 5. 识别列举和并列，添加顿号
+    else if (/[\u4e00-\u9fa5]+[\u4e00-\u9fa5]+[\u4e00-\u9fa5]+/g.test(result) && 
+             /和|以及|及其|跟/.test(result)) {
+        // 处理 "A和B" 或 "A、B和C" 这样的结构
+        result = result.replace(/([^\u3001\uff0c\u3002\uff01\uff1f])和([^\u3001\uff0c\u3002\uff01\uff1f])/g, '$1、$2');
+    }
+    // 6. 默认添加句号（如果是陈述句且没有标点）
+    else if (!endsWithPunctuation(result)) {
+        // 判断是否是短语（少于5个字）或命令（包含"请"字开头）
+        const isShortPhrase = result.length < 5;
+        const isCommand = result.startsWith('请');
+        
+        if (!isShortPhrase && !isCommand) {
+            result += '。';
+        } else if (isCommand) {
+            result += '。';
+        }
+    }
+    
+    // 7. 处理数字和单位之间的关系
+    result = result.replace(/(\d+)个/g, '$1个');
+    result = result.replace(/(\d+)元/g, '$1元');
+    
+    // 8. 去除多余的空格
+    result = result.replace(/\s+/g, '');
+    
+    return result;
+}
+
+// 检查字符是否是标点符号
+function isPunctuation(char) {
+    const punctuations = [
+        '，', '。', '！', '？', '、', '；', '：', '“', '”', '‘', '’',
+        '（', '）', '《', '》', '【', '】', '…', '—', '·', '~',
+        ',', '.', '!', '?', ';', ':', '"', "'", '(', ')', '[', ']', '{', '}'
+    ];
+    return punctuations.includes(char);
+}
+
+// 检查文本结尾是否有标点符号
+function endsWithPunctuation(text) {
+    if (!text || text.length === 0) return false;
+    const lastChar = text.slice(-1);
+    return isPunctuation(lastChar);
+}
+
+// HTML 转义函数（用于安全显示用户输入）
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
 
 // 沟通类型映射
 const communicationTypeMap = {
@@ -202,33 +302,61 @@ async function startRecordingForContent() {
                 
                 // 只添加新的最终结果，避免重复
                 if (newFinalTranscript) {
+                    // 智能添加标点符号
+                    newFinalTranscript = addSmartPunctuation(newFinalTranscript, finalTranscript);
                     finalTranscript += newFinalTranscript;
                     console.log('【语音输入】最终文本:', finalTranscript);
-                    console.log('【语音输入】新识别文本:', newFinalTranscript);
+                    console.log('【语音输入】新识别文本（已添加标点）:', newFinalTranscript);
                     
-                    // 更新文本区域
+                    // 实时更新文本区域 - 流式显示
                     if (contentTextarea) {
                         const currentText = contentTextarea.value || '';
-                        contentTextarea.value = currentText + newFinalTranscript;
+                        // 如果当前文本不为空且最后没有标点，添加分隔
+                        const lastChar = currentText.trim().slice(-1);
+                        const needsSeparator = currentText.trim() && 
+                                              !isPunctuation(lastChar) && 
+                                              !currentText.endsWith(' ') && 
+                                              !currentText.endsWith('\n');
+                        const separator = needsSeparator ? '' : ''; // 标点会自动添加，不需要额外空格
+                        
+                        contentTextarea.value = currentText + separator + newFinalTranscript;
                         console.log('【语音输入】已更新文本区域，当前内容长度:', contentTextarea.value.length);
                         
                         // 触发input事件以更新字符计数等
-                        contentTextarea.dispatchEvent(new Event('input'));
-                        // 自动滚动到底部
+                        contentTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+                        // 自动滚动到底部，让用户看到新填入的内容
                         contentTextarea.scrollTop = contentTextarea.scrollHeight;
+                        
+                        // 聚焦到文本区域，确保用户能看到新内容
+                        contentTextarea.focus();
                     } else {
                         console.error('【语音输入】找不到content文本区域');
                     }
                 }
                 
-                // 更新状态显示（显示临时结果）
-                const statusTextEl = document.getElementById('voiceStatusText');
-                if (statusTextEl) {
-                    const displayText = (finalTranscript + interimTranscript).trim();
-                    if (displayText) {
-                        statusTextEl.textContent = '正在识别: ' + displayText.substring(0, 50) + (displayText.length > 50 ? '...' : '');
-                    } else {
-                        statusTextEl.textContent = '正在录音中... 请说话';
+                // 实时显示临时识别结果（未确认的文本）
+                if (interimTranscript && contentTextarea) {
+                    const statusTextEl = document.getElementById('voiceStatusText');
+                    if (statusTextEl) {
+                        // 显示正在识别的临时文本（灰色提示）
+                        const displayText = interimTranscript.length > 80 ? 
+                            interimTranscript.substring(0, 80) + '...' : interimTranscript;
+                        statusTextEl.innerHTML = `<span class="text-muted">正在识别:</span> <span class="text-primary">${escapeHtml(displayText)}</span>`;
+                    }
+                }
+                
+                // 更新状态显示（显示最终结果）
+                if (!interimTranscript) {
+                    const statusTextEl = document.getElementById('voiceStatusText');
+                    if (statusTextEl) {
+                        const allText = finalTranscript.trim();
+                        if (allText) {
+                            // 显示识别到的文本（最多显示80个字符）
+                            const displayText = allText.length > 80 ? allText.substring(0, 80) + '...' : allText;
+                            statusTextEl.innerHTML = `<span class="text-success">✓ 已识别</span> <span class="text-muted small">(${allText.length}字)</span>`;
+                        } else {
+                            statusTextEl.innerHTML = '<i class="bi bi-mic-fill"></i> 正在录音中... 请说话';
+                        }
                     }
                 }
             };
@@ -268,14 +396,22 @@ async function startRecordingForContent() {
             recognitionForContent.onend = function() {
                 console.log('【语音输入】语音识别已结束，当前录音状态:', isRecordingForContent);
                 if (isRecordingForContent) {
-                    // 如果还在录音状态，重新启动识别
-                    try {
-                        console.log('【语音输入】重新启动语音识别...');
-                        recognitionForContent.start();
-                    } catch (e) {
-                        console.error('【语音输入】重新启动语音识别失败:', e);
-                        stopRecordingForContent();
-                    }
+                    // 如果还在录音状态，重新启动识别（延迟500ms避免频繁重启）
+                    setTimeout(() => {
+                        if (isRecordingForContent && recognitionForContent) {
+                            try {
+                                console.log('【语音输入】重新启动语音识别...');
+                                recognitionForContent.start();
+                            } catch (e) {
+                                console.error('【语音输入】重新启动语音识别失败:', e);
+                                // 如果重新启动失败，停止录音
+                                stopRecordingForContent();
+                            }
+                        }
+                    }, 500);
+                } else {
+                    // 如果不在录音状态，清理识别对象
+                    recognitionForContent = null;
                 }
             };
             
@@ -378,5 +514,19 @@ function stopRecordingForContent() {
         if (voiceText) voiceText.textContent = '录音';
         console.log('【语音输入】按钮状态已恢复');
     }
+}
+
+// 确保所有语音输入相关函数在全局作用域中可访问
+if (typeof window !== 'undefined') {
+    window.startVoiceInputForContent = startVoiceInputForContent;
+    window.stopRecordingForContent = stopRecordingForContent;
+    window.startRecordingForContent = startRecordingForContent;
+    
+    // 调试：确认函数已绑定
+    console.log('【语音输入】函数已绑定到全局作用域:', {
+        startVoiceInputForContent: typeof window.startVoiceInputForContent,
+        stopRecordingForContent: typeof window.stopRecordingForContent,
+        startRecordingForContent: typeof window.startRecordingForContent
+    });
 }
 
