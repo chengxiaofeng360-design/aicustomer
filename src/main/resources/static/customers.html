@@ -117,7 +117,8 @@
                                 <button class="btn btn-success" onclick="showAddCustomerModal()">
                                 <i class="bi bi-plus-circle"></i> 新增客户
                                 </button>
-                            <button class="btn btn-info" onclick="showAIRecognition()">
+                            <!-- AI识别按钮 - 已隐藏（功能开发中） -->
+                            <button class="btn btn-info" onclick="showAIRecognition()" style="display: none;">
                                 <i class="bi bi-robot"></i> AI识别
                             </button>
                             <button class="btn btn-success" onclick="showFileUpload()">
@@ -397,8 +398,8 @@
         </div>
     </div>
 
-    <!-- AI识别模态框 -->
-    <div class="modal fade" id="aiRecognitionModal" tabindex="-1">
+    <!-- AI识别模态框 - 已隐藏（功能开发中） -->
+    <div class="modal fade" id="aiRecognitionModal" tabindex="-1" style="display: none;">
         <div class="modal-dialog modal-dialog-max-70">
             <div class="modal-content">
                 <div class="modal-header py-2">

@@ -151,7 +151,7 @@ public class CustomerController {
     /**
      * 导入客户数据（支持Excel和CSV）
      */
-    @PostMapping("/import")
+    @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
     public Result<Map<String, Object>> importCustomers(@RequestParam("file") MultipartFile file) {
         String fileName = null;
         try {

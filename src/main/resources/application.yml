@@ -12,7 +12,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # 使用远程腾讯云 CynosDB 数据库
-    url: jdbc:mysql://bj-cynosdbmysql-grp-bbi2ygoo.sql.tencentcdb.com:26713/master_db?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://bj-cynosdbmysql-grp-bbi2ygoo.sql.tencentcdb.com:26713/zqgl?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
     username: root  # 请修改为腾讯云数据库的实际用户名
     password: 1q2w3e4R  # 请修改为腾讯云数据库的实际密码
     # 如果需要使用本地数据库，取消注释下面这行，注释掉上面那行
@@ -48,6 +48,13 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
     default-property-inclusion: non_null
+  
+  # HTTP编码配置
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 # MyBatis配置
 mybatis:
