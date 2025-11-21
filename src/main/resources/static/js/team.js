@@ -1,126 +1,5 @@
-// 模拟团队成员数据
-let teamMembers = [
-    {
-        id: 1,
-        name: '张三',
-        position: '销售经理',
-        email: 'zhangsan@company.com',
-        phone: '13800138001',
-        department: '销售部',
-        role: '管理员',
-        avatar: 'https://via.placeholder.com/40',
-        workMode: 1, // 1:办公室, 2:远程, 3:混合
-        onlineStatus: 1, // 1:在线, 2:忙碌, 3:离开, 4:离线
-        timezone: 'Asia/Shanghai',
-        tools: ['zoom', 'teams'],
-        lastOnlineTime: new Date()
-    },
-    {
-        id: 2,
-        name: '李四',
-        position: '技术总监',
-        email: 'lisi@company.com',
-        phone: '13800138002',
-        department: '技术部',
-        role: '管理员',
-        avatar: 'https://via.placeholder.com/40',
-        workMode: 2, // 远程办公
-        onlineStatus: 1,
-        timezone: 'Asia/Shanghai',
-        tools: ['zoom', 'slack'],
-        lastOnlineTime: new Date()
-    },
-    {
-        id: 3,
-        name: '王五',
-        position: '客服专员',
-        email: 'wangwu@company.com',
-        phone: '13800138003',
-        department: '客服部',
-        role: '普通用户',
-        avatar: 'https://via.placeholder.com/40',
-        workMode: 3, // 混合办公
-        onlineStatus: 2, // 忙碌
-        timezone: 'Asia/Shanghai',
-        tools: ['teams'],
-        lastOnlineTime: new Date()
-    },
-    {
-        id: 4,
-        name: '赵六',
-        position: '数据库工程师',
-        email: 'zhaoliu@company.com',
-        phone: '13800138004',
-        department: '技术部',
-        role: '普通用户',
-        avatar: 'https://via.placeholder.com/40',
-        workMode: 2, // 远程办公
-        onlineStatus: 1,
-        timezone: 'Asia/Shanghai',
-        tools: ['zoom', 'slack'],
-        lastOnlineTime: new Date()
-    },
-    {
-        id: 5,
-        name: '孙七',
-        position: '测试工程师',
-        email: 'sunqi@company.com',
-        phone: '13800138005',
-        department: '技术部',
-        role: '普通用户',
-        avatar: 'https://via.placeholder.com/40',
-        workMode: 1, // 办公室
-        onlineStatus: 3, // 离开
-        timezone: 'Asia/Shanghai',
-        tools: ['teams'],
-        lastOnlineTime: new Date()
-    },
-    {
-        id: 6,
-        name: '周八',
-        position: '产品经理',
-        email: 'zhouba@company.com',
-        phone: '13800138006',
-        department: '产品部',
-        role: '管理员',
-        avatar: 'https://via.placeholder.com/40',
-        workMode: 3, // 混合办公
-        onlineStatus: 1,
-        timezone: 'Asia/Shanghai',
-        tools: ['zoom', 'teams', 'slack'],
-        lastOnlineTime: new Date()
-    },
-    {
-        id: 7,
-        name: '吴九',
-        position: '前端工程师',
-        email: 'wujiu@company.com',
-        phone: '13800138007',
-        department: '技术部',
-        role: '普通用户',
-        avatar: 'https://via.placeholder.com/40',
-        workMode: 2, // 远程办公
-        onlineStatus: 2, // 忙碌
-        timezone: 'Asia/Shanghai',
-        tools: ['zoom', 'slack'],
-        lastOnlineTime: new Date()
-    },
-    {
-        id: 8,
-        name: '郑十',
-        position: 'UI设计师',
-        email: 'zhengshi@company.com',
-        phone: '13800138008',
-        department: '设计部',
-        role: '普通用户',
-        avatar: 'https://via.placeholder.com/40',
-        workMode: 1, // 办公室
-        onlineStatus: 4, // 离线
-        timezone: 'Asia/Shanghai',
-        tools: ['teams'],
-        lastOnlineTime: new Date()
-    }
-];
+// 用户列表（从数据库获取真实数据）
+let teamMembers = [];
 
 // 任务数据（从API加载）
 let tasks = [];
@@ -172,8 +51,18 @@ async function loadTasks() {
 
 // 更新统计数据
 async function updateStats() {
-    // 团队成员数（使用真实数据）
-    const totalMembers = teamMembers.length;
+    // 团队成员数（从数据库获取真实数据）
+    let totalMembers = 0;
+    try {
+        const response = await fetch('/api/user/list');
+        const result = await response.json();
+        if (result.code === 200 && result.data) {
+            totalMembers = result.data.length;
+        }
+    } catch (error) {
+        console.error('获取用户数量失败:', error);
+        totalMembers = teamMembers.length; // 使用缓存的teamMembers作为备用
+    }
     
     // 从API获取真实的任务统计数据
     try {
@@ -395,19 +284,75 @@ function showAddTaskModal() {
     document.getElementById('taskForm').reset();
     document.getElementById('taskId').value = '';
     loadAssigneeOptions();
+    loadCustomerOptions();
     new bootstrap.Modal(document.getElementById('taskModal')).show();
 }
 
-// 加载负责人选项
-function loadAssigneeOptions() {
+// 加载负责人选项（从数据库获取真实用户数据）
+async function loadAssigneeOptions() {
     const select = document.getElementById('taskAssignee');
+    if (!select) return;
+    
     select.innerHTML = '<option value="">请选择负责人</option>';
-    teamMembers.forEach(member => {
-        const option = document.createElement('option');
-        option.value = member.name;
-        option.textContent = member.name;
-        select.appendChild(option);
-    });
+    
+    try {
+        const response = await fetch('/api/user/list');
+        const result = await response.json();
+        
+        if (result.code === 200 && result.data) {
+            // 更新teamMembers数组（用于其他地方使用）
+            teamMembers = result.data.map(user => ({
+                id: user.id,
+                name: user.realName || user.username,
+                username: user.username,
+                realName: user.realName,
+                email: user.email,
+                phone: user.phone,
+                position: user.position,
+                departmentId: user.departmentId,
+                status: user.status
+            }));
+            
+            // 填充下拉选项
+            teamMembers.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.name;
+                option.textContent = member.name;
+                select.appendChild(option);
+            });
+        } else {
+            console.warn('加载用户列表失败:', result.message || '未知错误');
+        }
+    } catch (error) {
+        console.error('加载用户列表失败:', error);
+    }
+}
+
+// 加载客户选项（从数据库获取真实数据）
+async function loadCustomerOptions() {
+    const select = document.getElementById('taskCustomerId');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">请选择客户</option>';
+    
+    try {
+        const response = await fetch('/api/customer/list?page=1&size=1000');
+        const result = await response.json();
+        
+        if (result.code === 200 && result.data && result.data.list) {
+            result.data.list.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.customerName || `客户${customer.id}`;
+                option.setAttribute('data-customer-name', customer.customerName || '');
+                select.appendChild(option);
+            });
+        } else {
+            console.warn('加载客户列表失败:', result.message || '未知错误');
+        }
+    } catch (error) {
+        console.error('加载客户列表失败:', error);
+    }
 }
 
 // 查看任务详情
@@ -423,6 +368,10 @@ async function viewTaskDetail(taskId) {
             document.getElementById('detailTaskName').textContent = task.title || task.name || '未命名任务';
             document.getElementById('detailAssignee').textContent = task.assigneeName || task.assignee || '未分配';
             document.getElementById('detailPriority').innerHTML = `<span class="badge ${getPriorityClass(task.priority)}">${getPriorityText(task.priority)}</span>`;
+            
+            // 显示关联客户
+            const customerText = task.customerName || (task.customerId ? `客户ID: ${task.customerId}` : '未关联');
+            document.getElementById('detailCustomer').textContent = customerText;
             
             // 处理截止日期（与编辑表单一致，只显示日期）
             let deadline = '-';
@@ -510,7 +459,18 @@ async function editTask(taskId) {
             document.getElementById('taskDescription').value = task.description || '';
             document.getElementById('taskProgress').value = task.progress || 0;
             
+            // 设置客户选择
+            if (task.customerId) {
+                document.getElementById('taskCustomerId').value = task.customerId;
+            }
+            
             loadAssigneeOptions();
+            loadCustomerOptions().then(() => {
+                // 等待客户列表加载完成后再设置选中值
+                if (task.customerId) {
+                    document.getElementById('taskCustomerId').value = task.customerId;
+                }
+            });
             new bootstrap.Modal(document.getElementById('taskModal')).show();
         } else {
             alert('获取任务详情失败: ' + (result.message || '未知错误'));
@@ -532,6 +492,11 @@ async function saveTask() {
     const formData = new FormData(form);
     const taskId = document.getElementById('taskId').value;
     
+    // 获取客户ID和客户名称
+    const customerId = formData.get('customerId');
+    const customerSelect = document.getElementById('taskCustomerId');
+    const customerName = customerSelect ? customerSelect.options[customerSelect.selectedIndex]?.getAttribute('data-customer-name') || '' : '';
+    
     // 构建任务数据
     const taskData = {
         title: formData.get('name') || '',
@@ -541,6 +506,12 @@ async function saveTask() {
         description: formData.get('description') || '',
         progress: parseInt(formData.get('progress')) || 0
     };
+    
+    // 如果有选择客户，添加客户信息
+    if (customerId) {
+        taskData.customerId = parseInt(customerId);
+        taskData.customerName = customerName;
+    }
     
     // 如果没有设置状态，使用默认值
     if (!taskId) {
@@ -687,144 +658,6 @@ function renderReportPagination(pageResult) {
 function changeReportPage(page) {
     currentReportPage = page;
     loadReportData();
-}
-
-// 加载假任务进度汇报数据
-function loadMockReportData() {
-    reportData = [
-        {
-            id: 1,
-            taskId: 1,
-            taskName: '客户需求分析',
-            employeeId: 1,
-            employeeName: '张三',
-            reportType: 1,
-            reportTitle: '客户需求分析日报',
-            reportContent: '今日完成了ABC科技公司的需求调研，收集了客户的主要业务需求和技术要求。',
-            progress: 60,
-            workDuration: 480,
-            workResults: '完成需求调研报告初稿',
-            problems: '客户对某些技术细节不够明确',
-            solutions: '已安排技术专家进行详细沟通',
-            nextPlan: '明日完成需求文档的最终版本',
-            supportNeeded: '需要技术团队支持',
-            workLocation: '办公室A区',
-            workMode: 1,
-            reportStatus: 2,
-            qualityScore: 4,
-            efficiencyScore: 4,
-            attitudeScore: 4,
-            overallScore: 4.0,
-            isAbnormal: false,
-            createTime: '2024-01-15 18:00:00'
-        },
-        {
-            id: 2,
-            taskId: 2,
-            taskName: 'UI设计优化',
-            employeeId: 2,
-            employeeName: '李四',
-            reportType: 1,
-            reportTitle: 'UI设计优化日报',
-            reportContent: '今日完成了登录页面的UI设计优化，提升了用户体验。',
-            progress: 80,
-            workDuration: 450,
-            workResults: '完成登录页面设计',
-            problems: '部分交互细节需要调整',
-            solutions: '已与产品经理沟通确认',
-            nextPlan: '明日完成注册页面设计',
-            supportNeeded: '需要产品经理确认交互流程',
-            workLocation: '办公室B区',
-            workMode: 1,
-            reportStatus: 2,
-            qualityScore: 4,
-            efficiencyScore: 4,
-            attitudeScore: 4,
-            overallScore: 4.0,
-            isAbnormal: false,
-            createTime: '2024-01-15 17:30:00'
-        },
-        {
-            id: 3,
-            taskId: 3,
-            taskName: '项目管理会议',
-            employeeId: 3,
-            employeeName: '王五',
-            reportType: 1,
-            reportTitle: '项目管理会议日报',
-            reportContent: '今日组织了项目进度评审会议，协调了各团队的工作安排。',
-            progress: 70,
-            workDuration: 360,
-            workResults: '完成项目进度评审',
-            problems: '部分团队成员时间冲突',
-            solutions: '已重新安排会议时间',
-            nextPlan: '明日进行资源分配优化',
-            supportNeeded: '需要各部门配合',
-            workLocation: '办公室C区',
-            workMode: 1,
-            reportStatus: 1,
-            qualityScore: null,
-            efficiencyScore: null,
-            attitudeScore: null,
-            overallScore: null,
-            isAbnormal: false,
-            createTime: '2024-01-15 16:45:00'
-        },
-        {
-            id: 4,
-            taskId: 4,
-            taskName: '数据库优化',
-            employeeId: 4,
-            employeeName: '赵六',
-            reportType: 1,
-            reportTitle: '数据库优化日报',
-            reportContent: '今日完成了数据库查询优化，提升了系统性能。',
-            progress: 90,
-            workDuration: 480,
-            workResults: '完成查询优化',
-            problems: '部分复杂查询仍需优化',
-            solutions: '已制定进一步优化方案',
-            nextPlan: '明日进行索引优化',
-            supportNeeded: '需要DBA支持',
-            workLocation: '家中',
-            workMode: 2,
-            reportStatus: 2,
-            qualityScore: 5,
-            efficiencyScore: 4,
-            attitudeScore: 4,
-            overallScore: 4.3,
-            isAbnormal: false,
-            createTime: '2024-01-15 18:15:00'
-        },
-        {
-            id: 5,
-            taskId: 1,
-            taskName: '客户需求分析',
-            employeeId: 1,
-            employeeName: '张三',
-            reportType: 5,
-            reportTitle: '紧急汇报：客户需求变更',
-            reportContent: '客户突然提出新的需求变更，需要紧急处理。',
-            progress: 50,
-            workDuration: 120,
-            workResults: '分析新需求影响',
-            problems: '需求变更影响较大',
-            solutions: '已与客户沟通确认',
-            nextPlan: '明日重新制定方案',
-            supportNeeded: '需要技术团队支持',
-            workLocation: '办公室A区',
-            workMode: 1,
-            reportStatus: 1,
-            qualityScore: null,
-            efficiencyScore: null,
-            attitudeScore: null,
-            overallScore: null,
-            isAbnormal: true,
-            abnormalReason: '客户需求变更频繁',
-            createTime: '2024-01-15 19:00:00'
-        }
-    ];
-    renderReportTable();
 }
 
 // 渲染任务进度汇报表格
@@ -1041,25 +874,47 @@ async function loadTaskOptions() {
     }
 }
 
-// 加载员工选项
+// 加载员工选项（从数据库获取真实用户数据）
 async function loadEmployeeOptions() {
     const select = document.getElementById('reportEmployeeName');
     if (!select) return;
     
     select.innerHTML = '<option value="">请选择员工</option>';
     
-    // 使用现有的teamMembers数组
-    if (teamMembers && teamMembers.length > 0) {
-        teamMembers.forEach(member => {
-            const option = document.createElement('option');
-            option.value = member.name;
-            option.textContent = member.name;
-            select.appendChild(option);
-        });
-    } else {
-        // 如果没有teamMembers，可以从API加载
-        // 这里暂时使用空数组，后续可以添加员工API
-        console.warn('teamMembers数组为空，无法加载员工列表');
+    try {
+        // 如果teamMembers为空，从API加载
+        if (!teamMembers || teamMembers.length === 0) {
+            const response = await fetch('/api/user/list');
+            const result = await response.json();
+            
+            if (result.code === 200 && result.data) {
+                teamMembers = result.data.map(user => ({
+                    id: user.id,
+                    name: user.realName || user.username,
+                    username: user.username,
+                    realName: user.realName,
+                    email: user.email,
+                    phone: user.phone,
+                    position: user.position,
+                    departmentId: user.departmentId,
+                    status: user.status
+                }));
+            }
+        }
+        
+        // 填充下拉选项
+        if (teamMembers && teamMembers.length > 0) {
+            teamMembers.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.name;
+                option.textContent = member.name;
+                select.appendChild(option);
+            });
+        } else {
+            console.warn('无法加载员工列表');
+        }
+    } catch (error) {
+        console.error('加载员工列表失败:', error);
     }
 }
 

@@ -20,7 +20,7 @@
         SELECT 
             r.id,
             r.task_id,
-            COALESCE(NULLIF(r.task_name, ''), t.title, t.name, CONCAT('任务', r.task_id)) as task_name,
+            COALESCE(NULLIF(r.task_name, ''), t.title, CONCAT('任务', r.task_id)) as task_name,
             r.report_type,
             r.report_title,
             r.report_content,
@@ -50,7 +50,7 @@
         SELECT 
             r.id,
             r.task_id,
-            COALESCE(NULLIF(r.task_name, ''), t.title, t.name, CONCAT('任务', r.task_id)) as task_name,
+            COALESCE(NULLIF(r.task_name, ''), t.title, CONCAT('任务', r.task_id)) as task_name,
             r.report_type,
             r.report_title,
             r.report_content,

@@ -9,6 +9,8 @@
         <result column="name" property="name"/>
         <result column="description" property="description"/>
         <result column="task_type" property="taskType"/>
+        <result column="customer_id" property="customerId"/>
+        <result column="customer_name" property="customerName"/>
         <result column="assignee_id" property="assigneeId"/>
         <result column="assignee_name" property="assigneeName"/>
         <result column="creator_id" property="creatorId"/>
