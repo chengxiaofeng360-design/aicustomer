@@ -78,8 +78,8 @@ async function updateStats() {
             // 重要任务（priority = 3 高 或 priority = 4 紧急）
             const importantTasks = allTasks.filter(t => t.priority === 3 || t.priority === 4).length;
             
-            document.getElementById('activeTasks').textContent = activeTasks;
-            document.getElementById('completedTasks').textContent = completedTasks;
+    document.getElementById('activeTasks').textContent = activeTasks;
+    document.getElementById('completedTasks').textContent = completedTasks;
             document.getElementById('importantTasks').textContent = importantTasks;
         } else {
             // 如果API失败，使用本地数据
@@ -189,10 +189,10 @@ function formatDate(dateString) {
 function getPriorityClass(priority) {
     if (typeof priority === 'string') {
         // 兼容旧的前端字符串格式
-        switch (priority) {
-            case 'high': return 'bg-danger';
-            case 'medium': return 'bg-warning';
-            case 'low': return 'bg-success';
+    switch (priority) {
+        case 'high': return 'bg-danger';
+        case 'medium': return 'bg-warning';
+        case 'low': return 'bg-success';
             default: return 'bg-secondary';
         }
     }
@@ -210,10 +210,10 @@ function getPriorityClass(priority) {
 function getPriorityText(priority) {
     if (typeof priority === 'string') {
         // 兼容旧的前端字符串格式
-        switch (priority) {
-            case 'high': return '高';
-            case 'medium': return '中';
-            case 'low': return '低';
+    switch (priority) {
+        case 'high': return '高';
+        case 'medium': return '中';
+        case 'low': return '低';
             default: return '未知';
         }
     }
@@ -231,10 +231,10 @@ function getPriorityText(priority) {
 function getStatusClass(status) {
     if (typeof status === 'string') {
         // 兼容旧的前端字符串格式
-        switch (status) {
-            case 'pending': return 'bg-warning';
-            case 'completed': return 'bg-success';
-            case 'cancelled': return 'bg-danger';
+    switch (status) {
+        case 'pending': return 'bg-warning';
+        case 'completed': return 'bg-success';
+        case 'cancelled': return 'bg-danger';
             default: return 'bg-secondary';
         }
     }
@@ -253,10 +253,10 @@ function getStatusClass(status) {
 function getStatusText(status) {
     if (typeof status === 'string') {
         // 兼容旧的前端字符串格式
-        switch (status) {
-            case 'pending': return '进行中';
-            case 'completed': return '已完成';
-            case 'cancelled': return '已取消';
+    switch (status) {
+        case 'pending': return '进行中';
+        case 'completed': return '已完成';
+        case 'cancelled': return '已取消';
             default: return '未知';
         }
     }
@@ -314,12 +314,13 @@ async function loadAssigneeOptions() {
             }));
             
             // 填充下拉选项
-            teamMembers.forEach(member => {
-                const option = document.createElement('option');
-                option.value = member.name;
-                option.textContent = member.name;
-                select.appendChild(option);
-            });
+    teamMembers.forEach(member => {
+        const option = document.createElement('option');
+        option.value = member.name;
+        option.textContent = member.name;
+                option.setAttribute('data-assignee-id', member.id);
+        select.appendChild(option);
+    });
         } else {
             console.warn('加载用户列表失败:', result.message || '未知错误');
         }
@@ -440,10 +441,9 @@ async function editTask(taskId) {
         
         if (result.code === 200 && result.data) {
             const task = result.data;
-            document.getElementById('taskModalTitle').textContent = '编辑任务';
-            document.getElementById('taskId').value = task.id;
+        document.getElementById('taskModalTitle').textContent = '编辑任务';
+        document.getElementById('taskId').value = task.id;
             document.getElementById('taskName').value = task.title || task.name || '';
-            document.getElementById('taskAssignee').value = task.assigneeName || task.assignee || '';
             document.getElementById('taskPriority').value = task.priority || 2;
             
             // 处理截止日期
@@ -459,19 +459,26 @@ async function editTask(taskId) {
             document.getElementById('taskDescription').value = task.description || '';
             document.getElementById('taskProgress').value = task.progress || 0;
             
+            // 保存assignee信息，等待选项加载完成后再设置
+            const assigneeName = task.assigneeName || task.assignee || '';
+            const assigneeId = task.assigneeId;
+            
             // 设置客户选择
-            if (task.customerId) {
-                document.getElementById('taskCustomerId').value = task.customerId;
+            const customerId = task.customerId;
+            
+            // 加载选项
+            await loadAssigneeOptions();
+            await loadCustomerOptions();
+            
+            // 等待选项加载完成后再设置选中值
+            if (assigneeName) {
+                document.getElementById('taskAssignee').value = assigneeName;
             }
             
-            loadAssigneeOptions();
-            loadCustomerOptions().then(() => {
-                // 等待客户列表加载完成后再设置选中值
-                if (task.customerId) {
-                    document.getElementById('taskCustomerId').value = task.customerId;
-                }
-            });
-            new bootstrap.Modal(document.getElementById('taskModal')).show();
+            if (customerId) {
+                document.getElementById('taskCustomerId').value = customerId;
+            }
+        new bootstrap.Modal(document.getElementById('taskModal')).show();
         } else {
             alert('获取任务详情失败: ' + (result.message || '未知错误'));
         }
@@ -497,15 +504,27 @@ async function saveTask() {
     const customerSelect = document.getElementById('taskCustomerId');
     const customerName = customerSelect ? customerSelect.options[customerSelect.selectedIndex]?.getAttribute('data-customer-name') || '' : '';
     
+    // 获取负责人ID和名称
+    const assigneeSelect = document.getElementById('taskAssignee');
+    const assigneeName = formData.get('assignee') || '';
+    const assigneeId = assigneeSelect && assigneeSelect.selectedIndex > 0 
+        ? parseInt(assigneeSelect.options[assigneeSelect.selectedIndex]?.getAttribute('data-assignee-id') || '0')
+        : null;
+    
     // 构建任务数据
     const taskData = {
         title: formData.get('name') || '',
-        assigneeName: formData.get('assignee') || '',
+        assigneeName: assigneeName,
         priority: parseInt(formData.get('priority')) || 2,
         deadline: formData.get('dueDate') ? new Date(formData.get('dueDate')).toISOString() : null,
         description: formData.get('description') || '',
         progress: parseInt(formData.get('progress')) || 0
     };
+    
+    // 如果有选择负责人，添加负责人ID
+    if (assigneeId) {
+        taskData.assigneeId = assigneeId;
+    }
     
     // 如果有选择客户，添加客户信息
     if (customerId) {
@@ -521,9 +540,9 @@ async function saveTask() {
     try {
         let url = '/api/team-task/tasks';
         let method = 'POST';
-        
-        if (taskId) {
-            // 编辑模式
+    
+    if (taskId) {
+        // 编辑模式
             url = `/api/team-task/tasks/${taskId}`;
             method = 'PUT';
             taskData.id = parseInt(taskId);
@@ -540,8 +559,8 @@ async function saveTask() {
         const result = await response.json();
         
         if (result.code === 200) {
-            bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
-            alert('保存成功！');
+    bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
+    alert('保存成功！');
             loadTasks(); // 重新加载任务列表
         } else {
             alert('保存失败: ' + (result.message || '未知错误'));
@@ -566,15 +585,15 @@ async function deleteTask(taskId) {
         const result = await response.json();
         
         if (result.code === 200) {
-            alert('删除成功！');
+        alert('删除成功！');
             loadTasks(); // 重新加载任务列表
         } else {
             alert('删除失败: ' + (result.message || '未知错误'));
-        }
+    }
     } catch (error) {
         console.error('删除任务失败:', error);
         alert('删除任务失败，请重试');
-    }
+}
 }
 
 
@@ -597,7 +616,7 @@ async function loadReportData() {
             if (Array.isArray(result.data)) {
                 // 如果返回的是数组，手动构建PageResult
                 console.warn('API返回格式异常，data是数组而不是PageResult对象');
-                reportData = result.data;
+            reportData = result.data;
                 pageResult = {
                     list: result.data,
                     total: result.data.length,
@@ -863,11 +882,11 @@ async function loadTaskOptions() {
         
         if (result.code === 200 && result.data && result.data.list) {
             result.data.list.forEach(task => {
-                const option = document.createElement('option');
-                option.value = task.id;
+        const option = document.createElement('option');
+        option.value = task.id;
                 option.textContent = task.title || task.name || `任务${task.id}`;
-                select.appendChild(option);
-            });
+        select.appendChild(option);
+    });
         }
     } catch (error) {
         console.error('加载任务列表失败:', error);
@@ -926,8 +945,8 @@ async function editReport(reportId) {
         
         if (result.code === 200 && result.data) {
             const report = result.data;
-            document.getElementById('reportModalTitle').textContent = '编辑任务进度汇报';
-            document.getElementById('reportId').value = report.id;
+        document.getElementById('reportModalTitle').textContent = '编辑任务进度汇报';
+        document.getElementById('reportId').value = report.id;
             document.getElementById('reportType').value = report.reportType || '';
             document.getElementById('reportTitle').value = report.reportTitle || '';
             document.getElementById('reportContent').value = report.reportContent || '';
@@ -942,7 +961,7 @@ async function editReport(reportId) {
                 document.getElementById('reportEmployeeName').value = report.employeeName || '';
             }, 200);
             
-            new bootstrap.Modal(document.getElementById('reportModal')).show();
+        new bootstrap.Modal(document.getElementById('reportModal')).show();
         } else {
             alert('获取汇报信息失败: ' + (result.message || '未知错误'));
         }
@@ -995,8 +1014,8 @@ async function saveReport() {
     
     try {
         let response;
-        if (reportId) {
-            // 编辑模式
+    if (reportId) {
+        // 编辑模式
             response = await fetch(`/api/task-progress-report/reports/${reportId}`, {
                 method: 'PUT',
                 headers: {
@@ -1004,7 +1023,7 @@ async function saveReport() {
                 },
                 body: JSON.stringify(reportData)
             });
-        } else {
+    } else {
             // 新建模式
             response = await fetch('/api/task-progress-report/reports', {
                 method: 'POST',
@@ -1018,8 +1037,8 @@ async function saveReport() {
         const result = await response.json();
         
         if (result.code === 200) {
-            bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
-            alert('保存成功！');
+    bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+    alert('保存成功！');
             // 如果是新建，重置到第一页；如果是编辑，保持当前页
             if (!reportId) {
                 currentReportPage = 1;
@@ -1064,4 +1083,3 @@ async function deleteReport(reportId) {
         alert('删除失败: ' + error.message);
     }
 }
-

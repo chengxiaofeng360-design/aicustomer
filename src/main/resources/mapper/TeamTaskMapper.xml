@@ -72,14 +72,14 @@
     <insert id="insert" parameterType="com.aicustomer.entity.TeamTask" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO team_task (
             title, description, task_type, assignee_id, assignee_name, creator_id, creator_name, priority, status, progress,
-            start_time, deadline, work_mode, work_duration, actual_start_time, actual_end_time,
+            start_time, deadline, customer_id, customer_name, work_mode, work_duration, actual_start_time, actual_end_time,
             work_status, last_active_time, work_location, work_evidence, work_log,
             supervisor_id, supervisor_name, need_supervision, supervision_interval,
             last_supervision_time, quality_score, efficiency_score, attitude_score,
             supervision_note, create_time, update_time, deleted, version
         ) VALUES (
             #{title}, #{description}, #{taskType}, #{assigneeId}, #{assigneeName}, #{creatorId}, #{creatorName}, #{priority}, #{status}, #{progress},
-            #{startTime}, #{deadline}, #{workMode}, #{workDuration}, #{actualStartTime}, #{actualEndTime},
+            #{startTime}, #{deadline}, #{customerId}, #{customerName}, #{workMode}, #{workDuration}, #{actualStartTime}, #{actualEndTime},
             #{workStatus}, #{lastActiveTime}, #{workLocation}, #{workEvidence}, #{workLog},
             #{supervisorId}, #{supervisorName}, #{needSupervision}, #{supervisionInterval},
             #{lastSupervisionTime}, #{qualityScore}, #{efficiencyScore}, #{attitudeScore},
@@ -102,6 +102,8 @@
             progress = #{progress},
             start_time = #{startTime},
             deadline = #{deadline},
+            customer_id = #{customerId},
+            customer_name = #{customerName},
             work_mode = #{workMode},
             work_duration = #{workDuration},
             actual_start_time = #{actualStartTime},
@@ -148,3 +150,4 @@
     </select>
 
 </mapper>
+

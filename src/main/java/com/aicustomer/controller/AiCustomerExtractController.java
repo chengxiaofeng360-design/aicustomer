@@ -131,24 +131,24 @@ public class AiCustomerExtractController {
                 // 清理AI返回的结果，提取JSON部分
                 String cleanedResult = cleanJsonResponse(aiResult);
                 log.info("【客户信息提取】清理后的结果: {}", cleanedResult.substring(0, Math.min(200, cleanedResult.length())));
-                
-                // 尝试解析AI返回的JSON结果
-                try {
-                    // 验证AI返回的结果是否为有效的JSON格式
+            
+            // 尝试解析AI返回的JSON结果
+            try {
+                // 验证AI返回的结果是否为有效的JSON格式
                     @SuppressWarnings("unchecked")
                     Map<String, Object> parsedJson = (Map<String, Object>) gson.fromJson(cleanedResult, Map.class);
                     // 如果解析成功，将解析后的结果放入info中
-                    info.put("aiProcessed", true);
+                info.put("aiProcessed", true);
                     info.put("aiResult", cleanedResult);
                     info.put("parsedData", parsedJson);
                     log.info("【客户信息提取】JSON解析成功");
-                } catch (Exception e) {
-                    // 如果解析失败，将原始结果放入info中
+            } catch (Exception e) {
+                // 如果解析失败，将原始结果放入info中
                     log.warn("【客户信息提取】AI返回的结果不是有效的JSON格式: {}", cleanedResult);
                     log.warn("【客户信息提取】解析错误: {}", e.getMessage());
-                    info.put("aiProcessed", true);
+                info.put("aiProcessed", true);
                     info.put("aiResult", cleanedResult);
-                    info.put("rawResult", true);
+                info.put("rawResult", true);
                     info.put("parseError", e.getMessage());
                 }
             } catch (Exception e) {
