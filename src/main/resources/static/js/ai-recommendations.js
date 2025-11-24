@@ -166,44 +166,82 @@ function utf8ToBase64(str) {
         }
 
         // 加载统计数据
-        function loadStatistics() {
+        async function loadStatistics() {
             const statisticsRow = document.getElementById('statisticsRow');
             if (!statisticsRow) return;
             
-            // 从实际数据计算统计数据
-            const adoptedCount = recommendations.filter(r => r.status === 'adopted').length;
-            const pendingCount = recommendations.filter(r => r.status === 'pending').length;
-            const totalCount = recommendations.length;
-            const adoptionRate = totalCount > 0 ? Math.round((adoptedCount / totalCount) * 100) : 0;
-            const avgConfidence = totalCount > 0 
-                ? Math.round(recommendations.reduce((sum, r) => sum + (r.confidence || 0), 0) / totalCount * 100)
-                : 0;
-            
-            statisticsRow.innerHTML = 
-                '<div class="col-md-3">' +
-                '<div class="stat-card">' +
-                '<div class="stat-number">' + adoptedCount + '</div>' +
-                '<div class="stat-label">已采纳</div>' +
-                '</div>' +
-                '</div>' +
-                '<div class="col-md-3">' +
-                '<div class="stat-card">' +
-                '<div class="stat-number">' + pendingCount + '</div>' +
-                '<div class="stat-label">待处理</div>' +
-                '</div>' +
-                '</div>' +
-                '<div class="col-md-3">' +
-                '<div class="stat-card">' +
-                '<div class="stat-number">' + adoptionRate + '%</div>' +
-                '<div class="stat-label">采纳率</div>' +
-                '</div>' +
-                '</div>' +
-                '<div class="col-md-3">' +
-                '<div class="stat-card">' +
-                '<div class="stat-number">' + avgConfidence + '%</div>' +
-                '<div class="stat-label">平均置信度</div>' +
-                '</div>' +
-                '</div>';
+            try {
+                // 从后端API获取统计数据
+                const response = await fetch('/api/ai-recommendations/statistics');
+                const result = await response.json();
+                
+                if (response.ok && result.code === 200 && result.data) {
+                    const stats = result.data;
+                    statisticsRow.innerHTML = 
+                        '<div class="col-md-3">' +
+                        '<div class="stat-card">' +
+                        '<div class="stat-value">' + (stats.totalRecommendations || 0) + '</div>' +
+                        '<div class="stat-label">总推荐数</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="col-md-3">' +
+                        '<div class="stat-card">' +
+                        '<div class="stat-value">' + (stats.pendingRecommendations || 0) + '</div>' +
+                        '<div class="stat-label">待处理</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="col-md-3">' +
+                        '<div class="stat-card">' +
+                        '<div class="stat-value">' + (stats.avgConfidence || 0) + '%</div>' +
+                        '<div class="stat-label">平均置信度</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="col-md-3">' +
+                        '<div class="stat-card">' +
+                        '<div class="stat-value">' + (stats.productRecommendations || 0) + '</div>' +
+                        '<div class="stat-label">产品推荐</div>' +
+                        '</div>' +
+                        '</div>';
+                } else {
+                    throw new Error(result.message || '获取统计数据失败');
+                }
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+                // 降级到本地数据计算
+                const adoptedCount = recommendations.filter(r => r.status === 'adopted').length;
+                const pendingCount = recommendations.filter(r => r.status === 'pending').length;
+                const totalCount = recommendations.length;
+                const adoptionRate = totalCount > 0 ? Math.round((adoptedCount / totalCount) * 100) : 0;
+                const avgConfidence = totalCount > 0 
+                    ? Math.round(recommendations.reduce((sum, r) => sum + (r.confidence || 0), 0) / totalCount * 100)
+                    : 0;
+                
+                statisticsRow.innerHTML = 
+                    '<div class="col-md-3">' +
+                    '<div class="stat-card">' +
+                    '<div class="stat-value">' + totalCount + '</div>' +
+                    '<div class="stat-label">总推荐数</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="col-md-3">' +
+                    '<div class="stat-card">' +
+                    '<div class="stat-value">' + pendingCount + '</div>' +
+                    '<div class="stat-label">待处理</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="col-md-3">' +
+                    '<div class="stat-card">' +
+                    '<div class="stat-value">' + avgConfidence + '%</div>' +
+                    '<div class="stat-label">平均置信度</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="col-md-3">' +
+                    '<div class="stat-card">' +
+                    '<div class="stat-value">' + adoptionRate + '%</div>' +
+                    '<div class="stat-label">采纳率</div>' +
+                    '</div>' +
+                    '</div>';
+            }
         }
         
         // 渲染模板列表
@@ -466,20 +504,51 @@ function utf8ToBase64(str) {
 
 
         // 加载推荐结果
-        function loadRecommendationResults() {
+        async function loadRecommendationResults() {
+            const container = document.getElementById('recommendationResults');
+            if (!container) return;
+            container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm me-2"></div>加载中...</div>';
+
+            try {
+                // 尝试从后端API获取个性化推荐
+                const response = await fetch('/api/ai-recommendations/personalized/11'); // 默认客户ID为11
+                const result = await response.json();
+                
+                if (response.ok && result.code === 200 && result.data && result.data.length > 0) {
+                    recommendations = result.data; // 更新本地数据
+                    renderRecommendationResults();
+                } else {
+                    // 如果没有数据，显示空状态
+                    showEmptyRecommendationState();
+                }
+            } catch (error) {
+                console.error('加载推荐结果失败:', error);
+                // 降级到空状态
+                showEmptyRecommendationState();
+            }
+        }
+
+        function showEmptyRecommendationState() {
+            const container = document.getElementById('recommendationResults');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-lightbulb display-1 text-muted"></i>
+                    <h5 class="mt-3 text-muted">暂无推荐</h5>
+                    <p class="mb-1">请先选择上方内容模块</p>
+                    <p class="text-muted">勾选推荐后即可生成对应内容</p>
+                </div>
+            `;
+        }
+
+        function renderRecommendationResults() {
             const container = document.getElementById('recommendationResults');
             if (!container) return;
             container.innerHTML = '';
 
             if (recommendations.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-5">
-                        <i class="bi bi-lightbulb display-1 text-muted"></i>
-                        <h5 class="mt-3 text-muted">暂无推荐</h5>
-                        <p class="mb-1">请先选择上方内容模块</p>
-                        <p class="text-muted">勾选推荐后即可生成对应内容</p>
-                    </div>
-                `;
+                showEmptyRecommendationState();
                 return;
             }
 
@@ -544,42 +613,155 @@ function utf8ToBase64(str) {
         }
 
         // 加载历史记录
-        function loadHistoryRecords() {
+        async function loadHistoryRecords() {
             const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="spinner-border spinner-border-sm me-2"></div>加载中...</td></tr>';
 
-            if (recommendations.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center text-muted">暂无历史记录，生成或保存推荐后可在此复盘</td>
-                    </tr>
-                `;
-                return;
+            try {
+                // 从后端API获取推荐历史记录
+                const response = await fetch('/api/ai-recommendations/history?pageNum=1&pageSize=20');
+                const result = await response.json();
+                
+                if (response.ok && result.code === 200 && result.data) {
+                    const historyData = result.data;
+                    
+                    if (historyData.records && historyData.records.length > 0) {
+                        tbody.innerHTML = '';
+                        historyData.records.forEach(rec => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${escapeHtml(rec.customerName || '未知客户')}</td>
+                                <td><span class="badge bg-info">${getTypeText(rec.type)}</span></td>
+                                <td><div class="text-truncate" style="max-width: 200px;" title="${escapeHtml(rec.content || '')}">${escapeHtml(rec.content || '无内容')}</div></td>
+                                <td><span class="badge bg-${getPriorityClass(rec.priority)}">${rec.priority || '中'}</span></td>
+                                <td><span class="badge bg-${getStatusClass(rec.status)}">${getStatusText(rec.status)}</span></td>
+                                <td>${formatDate(rec.createTime)}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewRecommendationDetail(${rec.id})">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    ${rec.status === 'pending' ? `
+                                        <button class="btn btn-sm btn-success" onclick="adoptRecommendation(${rec.id})">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    ` : ''}
+                                </td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无历史记录，生成或保存推荐后可在此复盘</td></tr>';
+                    }
+                } else {
+                    throw new Error(result.message || '获取历史记录失败');
+                }
+            } catch (error) {
+                console.error('加载历史记录失败:', error);
+                // 降级到本地数据
+                tbody.innerHTML = '';
+                if (recommendations.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无历史记录，生成或保存推荐后可在此复盘</td></tr>';
+                    return;
+                }
+
+                recommendations.forEach(rec => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${escapeHtml(rec.customerName || '未知客户')}</td>
+                        <td><span class="badge bg-info">${getTypeText(rec.type)}</span></td>
+                        <td><div class="text-truncate" style="max-width: 200px;" title="${escapeHtml(rec.content || '')}">${escapeHtml(rec.content || '无内容')}</div></td>
+                        <td><span class="badge bg-${getPriorityClass(rec.priority)}">${rec.priority || '中'}</span></td>
+                        <td><span class="badge bg-${getStatusClass(rec.status)}">${getStatusText(rec.status)}</span></td>
+                        <td>${formatDate(rec.createTime)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewRecommendationDetail(${rec.id})">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            ${rec.status === 'pending' ? `
+                                <button class="btn btn-sm btn-success" onclick="adoptRecommendation(${rec.id})">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            ` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
             }
+        }
 
-            recommendations.forEach(rec => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="table-cell-truncate" title="${rec.customerName}">${rec.customerName || '-'}</td>
-                    <td class="table-cell-truncate" title="${getTypeText(rec.type)}">${getTypeText(rec.type)}</td>
-                    <td class="table-cell-truncate" title="${rec.title}">
-                        ${rec.title}
-                        ${rec.isCustom ? '<span class="badge bg-warning text-dark ms-2">自定义</span>' : ''}
-                    </td>
-                    <td><span class="badge ${getPriorityClass(rec.priority)}">${getPriorityText(rec.priority)}</span></td>
-                    <td><span class="badge ${getStatusClass(rec.status)}">${getStatusText(rec.status)}</span></td>
-                    <td class="table-cell-truncate" title="${rec.createTime}">${rec.createTime}</td>
-                    <td>
-                        <button class="btn btn-outline-primary btn-sm" onclick="viewRecommendationDetail(${rec.id})" title="查看详情">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn btn-success btn-sm" onclick="adoptRecommendation(${rec.id})" title="采纳推荐">
-                            <i class="bi bi-check"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+        // 辅助函数：获取类型文本
+        function getTypeText(type) {
+            const typeMap = {
+                'product': '产品推荐',
+                'service': '服务推荐', 
+                'marketing': '营销推荐',
+                'maintenance': '维护推荐',
+                'risk_control': '风控推荐',
+                'marketing-long': '长文营销',
+                'marketing-short': '短促销',
+                'greeting-card': '贺卡祝福',
+                'business-card': '名片引荐',
+                'recommendation': '推荐报告'
+            };
+            return typeMap[type] || type || '未知类型';
+        }
+
+        // 辅助函数：获取优先级样式类
+        function getPriorityClass(priority) {
+            const priorityMap = {
+                'high': 'danger',
+                'medium': 'warning', 
+                'low': 'success',
+                '高': 'danger',
+                '中': 'warning',
+                '低': 'success'
+            };
+            return priorityMap[priority] || 'secondary';
+        }
+
+        // 辅助函数：获取状态样式类
+        function getStatusClass(status) {
+            const statusMap = {
+                'pending': 'warning',
+                'adopted': 'success',
+                'rejected': 'danger',
+                '待处理': 'warning',
+                '已采纳': 'success',
+                '已拒绝': 'danger'
+            };
+            return statusMap[status] || 'secondary';
+        }
+
+        // 辅助函数：获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待处理',
+                'adopted': '已采纳',
+                'rejected': '已拒绝',
+                '待处理': '待处理',
+                '已采纳': '已采纳',
+                '已拒绝': '已拒绝'
+            };
+            return statusMap[status] || status || '未知状态';
+        }
+
+        // 辅助函数：格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'});
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        // 辅助函数：HTML转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // 查看推荐详情
@@ -897,6 +1079,81 @@ function utf8ToBase64(str) {
             generateContentByType();
             document.getElementById('reportContent').scrollIntoView({ behavior: 'smooth' });
             selectedRecommendations = previousSelection;
+        }
+
+        // 生成AI推荐内容
+        async function generateAIRecommendation(type, customerId = 11) {
+            try {
+                let apiUrl;
+                
+                // 根据类型选择对应的API端点
+                switch(type) {
+                    case 'product':
+                        apiUrl = `/api/ai-recommendations/product/${customerId}`;
+                        break;
+                    case 'service':
+                        apiUrl = `/api/ai-recommendations/service/${customerId}`;
+                        break;
+                    case 'marketing':
+                        apiUrl = `/api/ai-recommendations/marketing/${customerId}`;
+                        break;
+                    case 'maintenance':
+                        apiUrl = `/api/ai-recommendations/maintenance/${customerId}`;
+                        break;
+                    case 'risk_control':
+                        apiUrl = `/api/ai-recommendations/risk-control/${customerId}`;
+                        break;
+                    default:
+                        // 对于内容模板类型，使用产品推荐API
+                        apiUrl = `/api/ai-recommendations/product/${customerId}`;
+                }
+                
+                const response = await fetch(apiUrl, { method: 'POST' });
+                const result = await response.json();
+                
+                if (response.ok && result.code === 200 && result.data) {
+                    return result.data;
+                } else {
+                    throw new Error(result.message || '生成推荐失败');
+                }
+            } catch (error) {
+                console.error('生成AI推荐失败:', error);
+                // 返回降级数据
+                return getPlaceholderRecommendation(type);
+            }
+        }
+
+        // 为内容模块生成AI内容
+        async function generateContentForModule(type) {
+            try {
+                // 显示加载状态
+                const container = document.getElementById('recommendationResults');
+                if (container) {
+                    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border me-2"></div>AI正在生成推荐内容...</div>';
+                }
+                
+                // 调用AI API生成推荐
+                const aiRecommendation = await generateAIRecommendation(type);
+                
+                // 更新推荐数据
+                recommendations = [aiRecommendation];
+                selectedRecommendations = [aiRecommendation.id];
+                
+                // 重新渲染推荐结果
+                renderRecommendationResults();
+                
+                // 打开内容生成模态框
+                setTimeout(() => {
+                    _openGenerateContentModal(type);
+                }, 500);
+                
+            } catch (error) {
+                console.error('生成内容失败:', error);
+                alert('生成内容失败，请稍后重试');
+                
+                // 显示空状态
+                showEmptyRecommendationState();
+            }
         }
 
         // 生成推荐报告
