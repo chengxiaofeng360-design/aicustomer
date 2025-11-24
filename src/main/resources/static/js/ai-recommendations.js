@@ -129,44 +129,231 @@ function utf8ToBase64(str) {
         // 获取占位推荐数据（仅用于预览，不包含真实客户信息）
         function getPlaceholderRecommendation(type) {
             const base = {
-                id: 'preview-' + type,
-                customerName: '',
-                customerPhone: '',
-                customerEmail: '',
+                id: 'preview-' + type + '-' + Date.now(),
+                customerName: '张三',
+                customerPhone: '13800138000',
+                customerEmail: 'zhangsan@example.com',
                 type: 'service',
                 title: '',
                 content: '',
                 priority: 'medium',
                 status: 'pending',
-                createTime: new Date().toLocaleDateString('zh-CN'),
+                createTime: new Date().toLocaleString('zh-CN'),
                 confidence: 0.9,
                 reason: ''
             };
+            
             switch (type) {
+                case 'product':
+                    base.type = 'product';
+                    base.title = '智能产品推荐方案';
+                    base.content = `基于客户的历史购买记录和业务需求，我们为您推荐以下产品组合：
+
+## 🎯 核心产品推荐
+1. **智能数据分析平台** - 提升业务洞察力
+   - 实时数据监控和可视化
+   - AI驱动的预测分析
+   - 定制化报表功能
+
+2. **客户关系管理系统** - 优化客户管理
+   - 全渠道客户数据整合
+   - 智能客户画像分析
+   - 自动化营销工具
+
+3. **云服务解决方案** - 降低IT成本
+   - 弹性扩展的云基础设施
+   - 高可用性保障
+   - 专业的技术支持
+
+## 💡 推荐理由
+- 符合您当前业务发展阶段
+- 具有良好的投资回报率
+- 易于集成和部署
+- 提供完善的售后服务
+
+## 📈 预期效果
+- 运营效率提升30%
+- 客户满意度提高25%
+- IT成本降低20%`;
+                    base.reason = '基于客户购买历史、行业趋势和业务需求综合分析得出最优产品组合';
+                    base.confidence = 0.92;
+                    break;
+                    
+                case 'service':
+                    base.type = 'service';
+                    base.title = '定制化服务方案';
+                    base.content = `为您量身打造的专业服务套餐：
+
+## 🔧 专业技术服务
+1. **7x24小时技术支持**
+   - 专属技术顾问
+   - 快速响应机制
+   - 远程+现场服务
+
+2. **定期系统维护**
+   - 每月系统健康检查
+   - 性能优化建议
+   - 安全漏洞修复
+
+3. **培训与咨询服务**
+   - 产品使用培训
+   - 最佳实践指导
+   - 业务流程优化
+
+## 🎯 服务特色
+- 个性化服务方案
+- 专业团队支持
+- 持续改进机制
+- 透明的服务流程
+
+## 📊 服务保障
+- SLA服务等级协议
+- 服务质量监控
+- 客户满意度调查
+- 持续优化改进`;
+                    base.reason = '根据客户业务规模和技术需求，提供全方位的专业服务支持';
+                    base.confidence = 0.88;
+                    break;
+                    
+                case 'marketing':
+                    base.type = 'marketing';
+                    base.title = '精准营销策略方案';
+                    base.content = `基于客户画像的精准营销策略：
+
+## 📱 多渠道营销布局
+1. **数字营销策略**
+   - 社交媒体营销矩阵
+   - 内容营销计划
+   - SEO/SEM优化方案
+
+2. **客户触达策略**
+   - 个性化邮件营销
+   - 短信营销活动
+   - 微信营销推广
+
+3. **品牌传播策略**
+   - 品牌故事打造
+   - KOL合作推广
+   - 线下活动策划
+
+## 🎯 营销亮点
+- 数据驱动的精准投放
+- 个性化内容定制
+- 全渠道整合营销
+- 实时效果监控
+
+## 📈 预期成果
+- 品牌知名度提升40%
+- 潜在客户增长35%
+- 转化率提高25%
+- ROI达到300%以上`;
+                    base.reason = '基于客户目标受众、市场环境和竞争分析制定的精准营销策略';
+                    base.confidence = 0.85;
+                    break;
+                    
+                case 'maintenance':
+                    base.type = 'maintenance';
+                    base.title = '系统维护保养方案';
+                    base.content = `全面的系统维护和保养计划：
+
+## 🔍 预防性维护
+1. **系统健康检查**
+   - 硬件状态检测
+   - 软件版本更新
+   - 性能指标监控
+
+2. **数据备份策略**
+   - 自动化备份机制
+   - 灾难恢复预案
+   - 数据完整性验证
+
+3. **安全维护**
+   - 安全漏洞扫描
+   - 防火墙配置优化
+   - 访问权限管理
+
+## 🛠️ 响应式维护
+- 故障快速响应（2小时内）
+- 远程诊断和修复
+- 备件库存管理
+- 技术升级服务
+
+## 📋 维护计划
+- 每月例行检查
+- 季度深度维护
+- 年度系统评估
+- 紧急故障处理`;
+                    base.reason = '确保系统稳定运行，预防潜在故障，延长设备使用寿命';
+                    base.confidence = 0.90;
+                    break;
+                    
+                case 'risk_control':
+                    base.type = 'risk_control';
+                    base.title = '风险控制与合规方案';
+                    base.content = `全面的风险管理和合规保障：
+
+## ⚠️ 风险识别与评估
+1. **业务风险分析**
+   - 市场风险评估
+   - 信用风险控制
+   - 操作风险管理
+
+2. **技术风险防控**
+   - 数据安全保护
+   - 系统稳定性保障
+   - 网络安全防护
+
+3. **合规性管理**
+   - 法规遵循检查
+   - 内控制度建设
+   - 审计配合支持
+
+## 🛡️ 风险控制措施
+- 实时风险监控系统
+- 预警机制建立
+- 应急响应预案
+- 定期风险评估
+
+## 📊 风险管理效果
+- 风险识别准确率95%
+- 风险响应时间<1小时
+- 合规性问题减少80%
+- 业务连续性保障100%`;
+                    base.reason = '基于行业最佳实践和监管要求，建立全面的风险管理体系';
+                    base.confidence = 0.87;
+                    break;
+                    
                 case 'marketing-long':
+                    base.type = 'marketing';
                     base.title = 'AI赋能业务增长方案';
                     base.content = '通过数据洞察与智能决策，打造差异化核心优势，帮助客户实现业绩增长。';
                     break;
                 case 'greeting-card':
+                    base.type = 'marketing';
                     base.title = '节日温情贺卡';
                     base.content = '在重要节点送上祝福，传递品牌关怀，增进客户情感连接。';
                     break;
                 case 'business-card':
+                    base.type = 'marketing';
                     base.title = '客户名片摘要';
                     base.content = '概括客户背景、需求与推荐主题，便于团队协同。';
                     break;
                 case 'marketing-short':
+                    base.type = 'marketing';
                     base.title = '限时促销短讯';
                     base.content = '一句话点出客户痛点与解决方案，附带明确行动号召。';
                     break;
                 default:
-                    break;
+                    // 默认使用产品推荐
+                    base.type = 'product';
+                    base.title = '智能推荐方案';
+                    base.content = '基于您的需求和历史数据，我们为您推荐最合适的解决方案。';
+                    base.reason = '综合分析客户需求和市场趋势得出推荐结论';
             }
             return base;
         }
 
         // 加载统计数据
-        async function loadStatistics() {
             const statisticsRow = document.getElementById('statisticsRow');
             if (!statisticsRow) return;
             
@@ -1081,63 +1268,38 @@ function utf8ToBase64(str) {
             selectedRecommendations = previousSelection;
         }
 
-        // 生成AI推荐内容
+        // 生成AI推荐内容（使用固定数据，不调用API）
         async function generateAIRecommendation(type, customerId = 11) {
             try {
-                let apiUrl;
+                // 直接返回固定数据，不调用API
+                console.log(`生成${type}类型推荐，客户ID: ${customerId}（使用固定数据）`);
+                return getPlaceholderRecommendation(type);
                 
-                // 根据类型选择对应的API端点
-                switch(type) {
-                    case 'product':
-                        apiUrl = `/api/ai-recommendations/product/${customerId}`;
-                        break;
-                    case 'service':
-                        apiUrl = `/api/ai-recommendations/service/${customerId}`;
-                        break;
-                    case 'marketing':
-                        apiUrl = `/api/ai-recommendations/marketing/${customerId}`;
-                        break;
-                    case 'maintenance':
-                        apiUrl = `/api/ai-recommendations/maintenance/${customerId}`;
-                        break;
-                    case 'risk_control':
-                        apiUrl = `/api/ai-recommendations/risk-control/${customerId}`;
-                        break;
-                    default:
-                        // 对于内容模板类型，使用产品推荐API
-                        apiUrl = `/api/ai-recommendations/product/${customerId}`;
-                }
-                
-                const response = await fetch(apiUrl, { method: 'POST' });
-                const result = await response.json();
-                
-                if (response.ok && result.code === 200 && result.data) {
-                    return result.data;
-                } else {
-                    throw new Error(result.message || '生成推荐失败');
-                }
             } catch (error) {
-                console.error('生成AI推荐失败:', error);
+                console.error('生成推荐失败:', error);
                 // 返回降级数据
                 return getPlaceholderRecommendation(type);
             }
         }
 
-        // 为内容模块生成AI内容
+        // 为内容模块生成AI内容（使用固定数据，不调用API）
         async function generateContentForModule(type) {
             try {
-                // 显示加载状态
+                // 显示加载状态（模拟加载效果）
                 const container = document.getElementById('recommendationResults');
                 if (container) {
-                    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border me-2"></div>AI正在生成推荐内容...</div>';
+                    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border me-2"></div>正在生成推荐内容...</div>';
                 }
                 
-                // 调用AI API生成推荐
-                const aiRecommendation = await generateAIRecommendation(type);
+                // 模拟加载延迟，提升用户体验
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // 直接使用固定数据，不调用API
+                const mockRecommendation = getPlaceholderRecommendation(type);
                 
                 // 更新推荐数据
-                recommendations = [aiRecommendation];
-                selectedRecommendations = [aiRecommendation.id];
+                recommendations = [mockRecommendation];
+                selectedRecommendations = [mockRecommendation.id];
                 
                 // 重新渲染推荐结果
                 renderRecommendationResults();
@@ -1145,11 +1307,11 @@ function utf8ToBase64(str) {
                 // 打开内容生成模态框
                 setTimeout(() => {
                     _openGenerateContentModal(type);
-                }, 500);
+                }, 300);
                 
             } catch (error) {
                 console.error('生成内容失败:', error);
-                alert('生成内容失败，请稍后重试');
+                showToast('生成内容失败，请稍后重试', 'error');
                 
                 // 显示空状态
                 showEmptyRecommendationState();
