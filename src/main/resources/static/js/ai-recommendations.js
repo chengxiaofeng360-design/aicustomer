@@ -362,97 +362,11 @@ function utf8ToBase64(str) {
             }
             return base;
         }
-
-        // 加载统计数据（使用固定数据）
-        async function loadStatistics() {
-            const statisticsRow = document.getElementById('statisticsRow');
-            if (!statisticsRow) return;
-            
-            try {
-                // 模拟加载延迟
-                await new Promise(resolve => setTimeout(resolve, 200));
-                
-                // 使用固定数据计算统计信息
-                const totalCount = 12;
-                const adoptedCount = 8;
-                const pendingCount = 4;
-                const adoptionRate = Math.round((adoptedCount / totalCount) * 100);
-                const avgConfidence = 87;
-                
-                statisticsRow.innerHTML = 
-                    '<div class="col-md-3">' +
-                    '<div class="stat-card">' +
-                    '<div class="stat-value">' + totalCount + '</div>' +
-                    '<div class="stat-label">总推荐数</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="col-md-3">' +
-                    '<div class="stat-card">' +
-                    '<div class="stat-value">' + pendingCount + '</div>' +
-                    '<div class="stat-label">待处理</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="col-md-3">' +
-                    '<div class="stat-card">' +
-                    '<div class="stat-value">' + avgConfidence + '%</div>' +
-                    '<div class="stat-label">平均置信度</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="col-md-3">' +
-                    '<div class="stat-card">' +
-                    '<div class="stat-value">' + adoptionRate + '%</div>' +
-                    '<div class="stat-label">采纳率</div>' +
-                    '</div>' +
-                    '</div>';
-                    
-            } catch (error) {
-                console.error('加载统计数据失败:', error);
-                // 降级到本地数据计算
-                const adoptedCount = recommendations.filter(r => r.status === 'adopted').length;
-                const pendingCount = recommendations.filter(r => r.status === 'pending').length;
-                const totalCount = recommendations.length;
-                const adoptionRate = totalCount > 0 ? Math.round((adoptedCount / totalCount) * 100) : 0;
-                const avgConfidence = totalCount > 0 
-                    ? Math.round(recommendations.reduce((sum, r) => sum + (r.confidence || 0), 0) / totalCount * 100)
-                    : 0;
-                
-                statisticsRow.innerHTML = 
-                    '<div class="col-md-3">' +
-                    '<div class="stat-card">' +
-                    '<div class="stat-value">' + totalCount + '</div>' +
-                    '<div class="stat-label">总推荐数</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="col-md-3">' +
-                    '<div class="stat-card">' +
-                    '<div class="stat-value">' + pendingCount + '</div>' +
-                    '<div class="stat-label">待处理</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="col-md-3">' +
-                    '<div class="stat-card">' +
-                    '<div class="stat-value">' + avgConfidence + '%</div>' +
-                    '<div class="stat-label">平均置信度</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="col-md-3">' +
-                    '<div class="stat-card">' +
-                    '<div class="stat-value">' + adoptionRate + '%</div>' +
-                    '<div class="stat-label">采纳率</div>' +
-                    '</div>' +
-                    '</div>';
-            }
-        }
         
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 立即加载推荐结果（轻量级）
             loadRecommendationResults();
-            // 延迟加载历史记录和统计数据（较重的操作）
-            setTimeout(function() {
-                loadHistoryRecords();
-                loadStatistics();
-            }, 100);
         });
 
         
@@ -664,114 +578,6 @@ function utf8ToBase64(str) {
             });
         }
 
-        // 加载历史记录（使用固定数据）
-        async function loadHistoryRecords() {
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="spinner-border spinner-border-sm me-2"></div>加载中...</td></tr>';
-
-            try {
-                // 模拟加载延迟
-                await new Promise(resolve => setTimeout(resolve, 300));
-                
-                // 使用固定的历史数据
-                const historyData = {
-                    records: [
-                        {
-                            customerName: '张三',
-                            type: 'product',
-                            content: '智能数据分析平台推荐方案',
-                            priority: 'high',
-                            status: 'adopted',
-                            createTime: '2025-11-20',
-                            id: '1'
-                        },
-                        {
-                            customerName: '李四',
-                            type: 'service',
-                            content: '7x24小时技术支持服务',
-                            priority: 'medium',
-                            status: 'pending',
-                            createTime: '2025-11-21',
-                            id: '2'
-                        },
-                        {
-                            customerName: '王五',
-                            type: 'marketing',
-                            content: '精准营销策略方案',
-                            priority: 'high',
-                            status: 'adopted',
-                            createTime: '2025-11-22',
-                            id: '3'
-                        },
-                        {
-                            customerName: '赵六',
-                            type: 'maintenance',
-                            content: '系统维护保养方案',
-                            priority: 'low',
-                            status: 'pending',
-                            createTime: '2025-11-23',
-                            id: '4'
-                        }
-                    ]
-                };
-                
-                if (historyData.records && historyData.records.length > 0) {
-                    tbody.innerHTML = '';
-                    historyData.records.forEach(rec => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${escapeHtml(rec.customerName || '未知客户')}</td>
-                            <td><span class="badge bg-info">${getTypeText(rec.type)}</span></td>
-                            <td><div class="text-truncate" style="max-width: 200px;" title="${escapeHtml(rec.content || '')}">${escapeHtml(rec.content || '无内容')}</div></td>
-                            <td><span class="badge bg-${getPriorityClass(rec.priority)}">${rec.priority || '中'}</span></td>
-                            <td><span class="badge bg-${rec.status === 'adopted' ? 'success' : 'warning'}">${rec.status === 'adopted' ? '已采纳' : '待处理'}</span></td>
-                            <td>${rec.createTime || '未知'}</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary" onclick="viewRecommendationDetail('${rec.id}')">
-                                    <i class="bi bi-eye"></i> 查看
-                                </button>
-                            </td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无历史记录</td></tr>';
-                }
-            } catch (error) {
-                console.error('加载历史记录失败:', error);
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败，请刷新重试</td></tr>';
-                // 降级到本地数据
-                tbody.innerHTML = '';
-                if (recommendations.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无历史记录，生成或保存推荐后可在此复盘</td></tr>';
-                    return;
-                }
-
-                recommendations.forEach(rec => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${escapeHtml(rec.customerName || '未知客户')}</td>
-                        <td><span class="badge bg-info">${getTypeText(rec.type)}</span></td>
-                        <td><div class="text-truncate" style="max-width: 200px;" title="${escapeHtml(rec.content || '')}">${escapeHtml(rec.content || '无内容')}</div></td>
-                        <td><span class="badge bg-${getPriorityClass(rec.priority)}">${rec.priority || '中'}</span></td>
-                        <td><span class="badge bg-${getStatusClass(rec.status)}">${getStatusText(rec.status)}</span></td>
-                        <td>${formatDate(rec.createTime)}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick="viewRecommendationDetail(${rec.id})">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            ${rec.status === 'pending' ? `
-                                <button class="btn btn-sm btn-success" onclick="adoptRecommendation(${rec.id})">
-                                    <i class="bi bi-check"></i>
-                                </button>
-                            ` : ''}
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-        }
-
         // 辅助函数：获取类型文本
         function getTypeText(type) {
             const typeMap = {
@@ -891,7 +697,6 @@ function utf8ToBase64(str) {
                 rec.status = 'adopted';
                 rec.modifyTime = new Date().toISOString().split('T')[0];
                 loadRecommendationResults();
-                loadHistoryRecords();
                 bootstrap.Modal.getInstance(document.getElementById('recommendationDetailModal')).hide();
                 alert('推荐已采纳！');
             }
@@ -908,26 +713,23 @@ function utf8ToBase64(str) {
         }
         
 
-        // 批量采纳
-        function batchAdopt() {
+        // 批量采纳推荐
+        function batchAdoptRecommendations() {
             if (selectedRecommendations.length === 0) {
                 alert('请先选择要采纳的推荐！');
                 return;
             }
             
-            if (confirm(`确定要采纳选中的 ${selectedRecommendations.length} 条推荐吗？`)) {
-                selectedRecommendations.forEach(id => {
-                    const rec = recommendations.find(r => r.id === id);
-                    if (rec) {
-                        rec.status = 'adopted';
-                        rec.modifyTime = new Date().toISOString().split('T')[0];
-                    }
-                });
-                selectedRecommendations = [];
-                loadRecommendationResults();
-                loadHistoryRecords();
-                alert('批量采纳成功！');
-            }
+            selectedRecommendations.forEach(id => {
+                const rec = recommendations.find(r => r.id === id);
+                if (rec) {
+                    rec.status = 'adopted';
+                    rec.modifyTime = new Date().toISOString().split('T')[0];
+                }
+            });
+            selectedRecommendations = [];
+            loadRecommendationResults();
+            alert('批量采纳成功！');
         }
 
         // 导出推荐
