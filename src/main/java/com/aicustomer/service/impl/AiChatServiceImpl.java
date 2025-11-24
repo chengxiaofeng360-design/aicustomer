@@ -155,28 +155,28 @@ public class AiChatServiceImpl implements AiChatService {
             System.out.println("【AI聊天服务】错误信息: " + e.getMessage());
         }
         
-        // 其次尝试DeepSeek
+        // 其次尝试DeepSeek作为备选
         if (deepSeekService.isAvailable()) {
-            System.out.println("【AI聊天服务】DeepSeek服务可用，开始调用");
+            System.out.println("【AI聊天服务】豆包服务不可用，尝试DeepSeek备选");
             try {
                 String aiReply;
                 
                 // 如果有对话历史，使用多轮对话
                 if (history != null && !history.isEmpty()) {
-                    System.out.println("【AI聊天服务】使用多轮对话，历史条数: " + history.size());
-                    // 构建完整的消息列表（系统提示 + 历史对话 + 当前消息）
+                    System.out.println("【AI聊天服务】使用DeepSeek多轮对话");
+                    
+                    // 构建消息列表
                     List<Map<String, String>> messages = new ArrayList<>();
                     
-                    // 添加系统提示
+                    // 添加系统消息
                     Map<String, String> systemMsg = new HashMap<>();
                     systemMsg.put("role", "system");
                     systemMsg.put("content", SYSTEM_PROMPT);
                     messages.add(systemMsg);
                     
-                    // 添加历史对话（最多保留最近10轮）
-                    int historySize = Math.min(history.size(), 20); // 最多10轮（每轮2条消息）
-                    for (int i = Math.max(0, history.size() - historySize); i < history.size(); i++) {
-                        messages.add(history.get(i));
+                    // 添加历史消息
+                    for (Map<String, String> msg : history) {
+                        messages.add(msg);
                     }
                     
                     // 添加当前用户消息
@@ -189,7 +189,7 @@ public class AiChatServiceImpl implements AiChatService {
                     // 调用多轮对话API
                     aiReply = deepSeekService.chatWithHistory(messages);
                 } else {
-                    System.out.println("【AI聊天服务】使用单轮对话");
+                    System.out.println("【AI聊天服务】使用DeepSeek单轮对话");
                     // 单轮对话
                     aiReply = deepSeekService.chat(userMessage, SYSTEM_PROMPT);
                 }
