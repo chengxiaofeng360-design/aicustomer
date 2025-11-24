@@ -945,7 +945,7 @@
 
         function refreshInsights() {
             setInsightsLoading();
-            loadAiInsights();
+            renderInsights();
         }
 
         function renderInsights() {
@@ -1078,138 +1078,6 @@
             }
         }
 
-        function renderInsights() {
-            const container = document.getElementById('analysisInsights');
-            const timestampEl = document.getElementById('insightTimestamp');
-            if (!container) return;
-
-            // 调用AI洞察API
-            loadAiInsights();
-        }
-
-        async function loadAiInsights() {
-            const container = document.getElementById('analysisInsights');
-            const timestampEl = document.getElementById('insightTimestamp');
-            
-            try {
-                const response = await fetch('/api/ai-analysis/ai-insights');
-                const result = await response.json();
-                
-                if (response.ok && result.code === 200 && result.data) {
-                    displayAiInsights(result.data);
-                    if (timestampEl) {
-                        const timestamp = result.data.timestamp;
-                        if (timestamp) {
-                            timestampEl.textContent = new Date(timestamp).toLocaleString('zh-CN', {
-                                hour12: false,
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            });
-                        }
-                    }
-                } else {
-                    displayFallbackInsights();
-                }
-            } catch (error) {
-                console.error('加载AI洞察失败:', error);
-                displayFallbackInsights();
-            }
-        }
-
-        function displayAiInsights(insights) {
-            const container = document.getElementById('analysisInsights');
-            if (!container) return;
-
-            const content = insights.content || '暂无洞察内容';
-            const isAiGenerated = insights.aiGenerated || false;
-            const confidence = insights.confidence || 0;
-
-            // 将AI返回的内容格式化为HTML
-            const formattedContent = content
-                .replace(/\n/g, '<br>')
-                .replace(/(\d+\.\s)/g, '<strong>$1</strong>')
-                .replace(/【([^】]+)】/g, '<h6 class="text-primary mt-3 mb-2">$1</h6>');
-
-            container.innerHTML = `
-                <div class="ai-insights-container">
-                    ${isAiGenerated ? `
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="badge bg-success me-2">
-                                <i class="bi bi-cpu"></i> AI生成
-                            </span>
-                            <small class="text-muted">置信度: ${confidence}%</small>
-                        </div>
-                    ` : `
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="badge bg-secondary me-2">
-                                <i class="bi bi-graph-up"></i> 统计分析
-                            </span>
-                            <small class="text-muted">置信度: ${confidence}%</small>
-                        </div>
-                    `}
-                    <div class="insight-content">
-                        ${formattedContent}
-                    </div>
-                </div>
-            `;
-        }
-
-        function displayFallbackInsights() {
-            const container = document.getElementById('analysisInsights');
-            if (!container) return;
-
-            const insights = [];
-            if (latestOpportunities.length > 0) {
-                const highPriority = latestOpportunities.filter(item => item.priority === 'high').length;
-                const topCustomer = latestOpportunities[0];
-                insights.push(`识别到 <strong>${latestOpportunities.length}</strong> 个业务机会，其中 <strong>${highPriority}</strong> 个高优先级。最新机会来自 <strong>${escapeHtml(topCustomer.customerName || '未知客户')}</strong>。`);
-            } else {
-                insights.push('近期暂未发现新的业务机会，建议继续保持客户沟通。');
-            }
-
-            if (latestBirthdays.length > 0) {
-                const upcoming = latestBirthdays[0];
-                const days = typeof upcoming.daysUntil === 'number' ? upcoming.daysUntil : '-';
-                insights.push(`未来7天内有 <strong>${latestBirthdays.length}</strong> 位客户生日，最近的是 <strong>${escapeHtml(upcoming.customerName || '客户')}</strong>，距离 ${days === 0 ? '今天' : days + '天'}。`);
-            } else {
-                insights.push('未来7天暂无客户生日，可将精力放在深度跟进。');
-            }
-
-            if (latestNoContacts.length > 0) {
-                const longest = latestNoContacts[0];
-                insights.push(`共有 <strong>${latestNoContacts.length}</strong> 位客户超过30天未沟通，最长未联系客户为 <strong>${escapeHtml(longest.customerName || '客户')}</strong>，已 ${longest.daysSinceLastContact || '--'} 天未联络。`);
-            } else {
-                insights.push('暂无超过30天未联系客户，当前维护节奏健康。');
-            }
-
-            container.innerHTML = `
-                <div class="fallback-insights">
-                    <div class="d-flex align-items-center mb-2">
-                        <span class="badge bg-secondary me-2">
-                            <i class="bi bi-graph-up"></i> 统计分析
-                        </span>
-                        <small class="text-muted">置信度: 70%</small>
-                    </div>
-                    <ul class="insight-list">
-                        ${insights.map(item => `<li class="insight-item">${item}</li>`).join('')}
-                    </ul>
-                </div>
-            `;
-
-            // 更新时间戳
-            const timestampEl = document.getElementById('insightTimestamp');
-            if (timestampEl) {
-                timestampEl.textContent = new Date().toLocaleString('zh-CN', {
-                    hour12: false,
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-        }
-    </script>
+        </script>
 </body>
 </html>
