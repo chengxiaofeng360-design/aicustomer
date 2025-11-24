@@ -154,9 +154,20 @@
                         <h5 class="mb-0">
                             <i class="bi bi-lightbulb"></i> 业务机会
                         </h5>
-                        <button class="btn btn-sm btn-primary" onclick="refreshOpportunities()">
-                            <i class="bi bi-arrow-clockwise"></i> 刷新
-                        </button>
+                        <div class="d-flex align-items-center gap-2">
+                            <select class="form-select form-select-sm" id="opportunityTimeRange" onchange="onOpportunityTimeRangeChange(this.value)" style="width: 150px;">
+                                <option value="1">最近1天</option>
+                                <option value="7">最近7天</option>
+                                <option value="15">最近15天</option>
+                                <option value="30" selected>最近1个月</option>
+                                <option value="90">最近3个月</option>
+                                <option value="180">最近半年</option>
+                                <option value="365">最近1年</option>
+                            </select>
+                            <button class="btn btn-sm btn-primary" style="white-space: nowrap;" onclick="refreshOpportunities()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
             </div>
             <div class="card-body">
                         <div id="opportunitiesList">
@@ -178,6 +189,10 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">选择客户</label>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="customerSearchInput" placeholder="输入客户名称关键字进行搜索" oninput="filterCustomerOptions()">
+                            </div>
                             <select class="form-select" id="customerSelect" onchange="analyzeCooperationPotential()">
                                 <option value="">-- 请选择客户 --</option>
                             </select>
@@ -205,6 +220,26 @@
 
             <!-- 右侧：客户维护提醒 -->
             <div class="col-md-4">
+                <!-- 选择日志 -->
+                <div class="card mb-4" style="margin-right: -1rem;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-journal-text"></i> 选择日志
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshLogs()">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="logsSection">
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-hourglass-split"></i>
+                                <p class="mt-2 small">正在加载日志信息...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- 生日提醒 -->
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -270,6 +305,12 @@
         let latestOpportunities = [];
         let latestBirthdays = [];
         let latestNoContacts = [];
+
+        // 合作潜力分析使用的客户缓存（最多1000条），用于搜索过滤
+        let allCustomersForCooperation = [];
+
+        // 当前业务机会分析时间范围（单位：天），默认最近30天
+        let currentOpportunityDays = 30;
 
         // 模拟数据（用于页面展示）
         const mockOpportunities = [
@@ -346,6 +387,14 @@
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 从下拉框初始化时间范围
+            const rangeSelect = document.getElementById('opportunityTimeRange');
+            if (rangeSelect) {
+                const val = parseInt(rangeSelect.value, 10);
+                if (!isNaN(val)) {
+                    currentOpportunityDays = val;
+                }
+            }
             initializeAnalysisPage();
         });
 
@@ -356,6 +405,7 @@
             setInsightsLoading();
             await Promise.all([loadOpportunities(), loadReminders()]);
             loadCustomerOptions();
+            loadLogs();
         }
 
         // 更新统计数据
@@ -394,10 +444,25 @@
             };
         }
 
+        // 时间范围切换
+        function onOpportunityTimeRangeChange(value) {
+            const days = parseInt(value, 10);
+            if (!isNaN(days) && days > 0) {
+                currentOpportunityDays = days;
+                loadOpportunities();
+            }
+        }
+
+        // 手动刷新业务机会
+        function refreshOpportunities() {
+            loadOpportunities();
+        }
+
         // 加载业务机会
         async function loadOpportunities() {
             try {
-                const response = await fetch('/api/ai-analysis/business-opportunities');
+                const url = `/api/ai-analysis/business-opportunities?days=${currentOpportunityDays}`;
+                const response = await fetch(url);
                 const result = await response.json();
                 
                 if (response.ok && result.code === 200 && Array.isArray(result.data)) {
@@ -581,20 +646,15 @@
             }).join('');
         }
 
-        // 加载客户选项
+        // 加载客户选项（一次最多取1000条），并缓存以便搜索过滤
         async function loadCustomerOptions() {
             try {
                 const response = await fetch('/api/customer/list?page=1&size=1000');
                 const result = await response.json();
                 
-                if (response.ok && result.code === 200 && result.data && result.data.list) {
-                    const select = document.getElementById('customerSelect');
-                    result.data.list.forEach(customer => {
-                        const option = document.createElement('option');
-                        option.value = customer.id;
-                        option.textContent = customer.customerName;
-                        select.appendChild(option);
-                    });
+                if (response.ok && result.code === 200 && result.data && Array.isArray(result.data.list)) {
+                    allCustomersForCooperation = result.data.list || [];
+                    renderCustomerOptions(allCustomersForCooperation);
                 } else {
                     addMockCustomerOptions();
                 }
@@ -602,6 +662,42 @@
                 console.error('加载客户选项失败:', error);
                 addMockCustomerOptions();
             }
+        }
+
+        // 根据给定列表渲染客户下拉框
+        function renderCustomerOptions(list) {
+            const select = document.getElementById('customerSelect');
+            if (!select) return;
+
+            // 保留占位项
+            select.innerHTML = '<option value="">-- 请选择客户 --</option>';
+
+            (list || []).forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.customerName;
+                select.appendChild(option);
+            });
+        }
+
+        // 根据搜索框关键字过滤客户下拉选项
+        function filterCustomerOptions() {
+            const input = document.getElementById('customerSearchInput');
+            if (!input) return;
+
+            const keyword = input.value.trim().toLowerCase();
+            if (!keyword) {
+                // 没有关键字时还原全部客户
+                renderCustomerOptions(allCustomersForCooperation);
+                return;
+            }
+
+            const filtered = (allCustomersForCooperation || []).filter(c => {
+                const name = (c.customerName || '').toLowerCase();
+                return name.includes(keyword);
+            });
+
+            renderCustomerOptions(filtered);
         }
 
         // 添加模拟客户选项
@@ -842,6 +938,97 @@
             loadReminders();
         }
 
+        function refreshLogs() {
+            setSectionLoading('logsSection', '正在刷新日志信息...');
+            loadLogs();
+        }
+
+        function refreshInsights() {
+            setInsightsLoading();
+            loadAiInsights();
+        }
+
+        function renderInsights() {
+            const container = document.getElementById('analysisInsights');
+            const timestampEl = document.getElementById('insightTimestamp');
+            if (!container) return;
+
+            const insights = [];
+            if (latestOpportunities.length > 0) {
+                const highPriority = latestOpportunities.filter(item => item.priority === 'high').length;
+                const topCustomer = latestOpportunities[0];
+                insights.push(`识别到 <strong>${latestOpportunities.length}</strong> 个业务机会，其中 <strong>${highPriority}</strong> 个高优先级。最新机会来自 <strong>${escapeHtml(topCustomer.customerName || '未知客户')}</strong>。`);
+            } else {
+                insights.push('近期暂未发现新的业务机会，建议继续保持客户沟通。');
+            }
+
+            if (latestBirthdays.length > 0) {
+                const upcoming = latestBirthdays[0];
+                const days = typeof upcoming.daysUntil === 'number' ? upcoming.daysUntil : '-';
+                insights.push(`未来7天内有 <strong>${latestBirthdays.length}</strong> 位客户生日，最近的是 <strong>${escapeHtml(upcoming.customerName || '客户')}</strong>，距离 ${days === 0 ? '今天' : days + '天'}。`);
+            } else {
+                insights.push('未来7天暂无客户生日，可将精力放在深度跟进。');
+            }
+
+            if (latestNoContacts.length > 0) {
+                const longest = latestNoContacts[0];
+                insights.push(`共有 <strong>${latestNoContacts.length}</strong> 位客户超过30天未沟通，最长未联系客户为 <strong>${escapeHtml(longest.customerName || '客户')}</strong>，已 ${longest.daysSinceLastContact || '--'} 天未联络。`);
+            } else {
+                insights.push('暂无超过30天未联系客户，当前维护节奏健康。');
+            }
+
+            container.innerHTML = `
+                <ul class="insight-list">
+                    ${insights.map(item => `<li class="insight-item">${item}</li>`).join('')}
+                </ul>
+            `;
+
+            if (timestampEl) {
+                timestampEl.textContent = new Date().toLocaleString('zh-CN', {
+                    hour12: false,
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+
+        function loadLogs() {
+            const logsSection = document.getElementById('logsSection');
+            if (!logsSection) return;
+            
+            // 模拟日志数据
+            const mockLogs = [
+                { time: '2025-11-24 15:20:33', action: '查看了业务机会分析', user: '当前用户' },
+                { time: '2025-11-24 15:18:15', action: '刷新了业务机会数据', user: '当前用户' },
+                { time: '2025-11-24 15:15:42', action: '分析了客户合作潜力', user: '当前用户' },
+                { time: '2025-11-24 15:12:28', action: '查看了生日提醒', user: '当前用户' },
+                { time: '2025-11-24 15:10:11', action: '筛选了客户列表', user: '当前用户' }
+            ];
+            
+            let logsHtml = '';
+            mockLogs.forEach(log => {
+                logsHtml += `
+                    <div class="border-bottom pb-2 mb-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="small fw-bold">${escapeHtml(log.action)}</div>
+                                <div class="text-muted small">${escapeHtml(log.user)}</div>
+                            </div>
+                            <div class="text-muted small">${log.time}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (logsHtml) {
+                logsSection.innerHTML = logsHtml;
+            } else {
+                logsSection.innerHTML = '<div class="text-muted text-center py-3">暂无日志记录</div>';
+            }
+        }
+
         // 工具函数
         function escapeHtml(text) {
             if (!text) return '';
@@ -896,6 +1083,83 @@
             const timestampEl = document.getElementById('insightTimestamp');
             if (!container) return;
 
+            // 调用AI洞察API
+            loadAiInsights();
+        }
+
+        async function loadAiInsights() {
+            const container = document.getElementById('analysisInsights');
+            const timestampEl = document.getElementById('insightTimestamp');
+            
+            try {
+                const response = await fetch('/api/ai-analysis/ai-insights');
+                const result = await response.json();
+                
+                if (response.ok && result.code === 200 && result.data) {
+                    displayAiInsights(result.data);
+                    if (timestampEl) {
+                        const timestamp = result.data.timestamp;
+                        if (timestamp) {
+                            timestampEl.textContent = new Date(timestamp).toLocaleString('zh-CN', {
+                                hour12: false,
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        }
+                    }
+                } else {
+                    displayFallbackInsights();
+                }
+            } catch (error) {
+                console.error('加载AI洞察失败:', error);
+                displayFallbackInsights();
+            }
+        }
+
+        function displayAiInsights(insights) {
+            const container = document.getElementById('analysisInsights');
+            if (!container) return;
+
+            const content = insights.content || '暂无洞察内容';
+            const isAiGenerated = insights.aiGenerated || false;
+            const confidence = insights.confidence || 0;
+
+            // 将AI返回的内容格式化为HTML
+            const formattedContent = content
+                .replace(/\n/g, '<br>')
+                .replace(/(\d+\.\s)/g, '<strong>$1</strong>')
+                .replace(/【([^】]+)】/g, '<h6 class="text-primary mt-3 mb-2">$1</h6>');
+
+            container.innerHTML = `
+                <div class="ai-insights-container">
+                    ${isAiGenerated ? `
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2">
+                                <i class="bi bi-cpu"></i> AI生成
+                            </span>
+                            <small class="text-muted">置信度: ${confidence}%</small>
+                        </div>
+                    ` : `
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-secondary me-2">
+                                <i class="bi bi-graph-up"></i> 统计分析
+                            </span>
+                            <small class="text-muted">置信度: ${confidence}%</small>
+                        </div>
+                    `}
+                    <div class="insight-content">
+                        ${formattedContent}
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayFallbackInsights() {
+            const container = document.getElementById('analysisInsights');
+            if (!container) return;
+
             const insights = [];
             if (latestOpportunities.length > 0) {
                 const highPriority = latestOpportunities.filter(item => item.priority === 'high').length;
@@ -921,11 +1185,21 @@
             }
 
             container.innerHTML = `
-                <ul class="insight-list">
-                    ${insights.map(item => `<li class="insight-item">${item}</li>`).join('')}
-                </ul>
+                <div class="fallback-insights">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-secondary me-2">
+                            <i class="bi bi-graph-up"></i> 统计分析
+                        </span>
+                        <small class="text-muted">置信度: 70%</small>
+                    </div>
+                    <ul class="insight-list">
+                        ${insights.map(item => `<li class="insight-item">${item}</li>`).join('')}
+                    </ul>
+                </div>
             `;
 
+            // 更新时间戳
+            const timestampEl = document.getElementById('insightTimestamp');
             if (timestampEl) {
                 timestampEl.textContent = new Date().toLocaleString('zh-CN', {
                     hour12: false,
