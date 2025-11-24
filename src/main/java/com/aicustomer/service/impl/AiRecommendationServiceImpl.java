@@ -2,7 +2,7 @@ package com.aicustomer.service.impl;
 
 import com.aicustomer.entity.AiRecommendation;
 import com.aicustomer.service.AiRecommendationService;
-import com.aicustomer.service.impl.UnifiedAiService;
+import com.aicustomer.service.AiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AiRecommendationServiceImpl implements AiRecommendationService {
     
-    private final UnifiedAiService unifiedAiService;
+    private final AiService aiService;
     
     @Override
     public Map<String, Object> getRecommendationStatistics(Long customerId) {
@@ -72,7 +72,7 @@ public class AiRecommendationServiceImpl implements AiRecommendationService {
         recommendation.setTitle("产品推荐");
         
         // 使用豆包生成产品推荐
-        if (unifiedAiService.isAvailable()) {
+        if (aiService.isAvailable()) {
             String prompt = String.format(
                 "请为客户ID %d生成个性化的产品推荐。\n\n" +
                 "请基于以下维度进行分析：\n" +
@@ -88,7 +88,7 @@ public class AiRecommendationServiceImpl implements AiRecommendationService {
             );
             
             try {
-                String aiResult = unifiedAiService.chat(prompt, "你是一个专业的产品推荐专家，擅长基于客户数据生成个性化的产品推荐。");
+                String aiResult = aiService.chat(prompt, "你是一个专业的产品推荐专家，擅长基于客户数据生成个性化的产品推荐。");
                 recommendation.setContent(aiResult);
                 recommendation.setConfidence(90);
             } catch (Exception e) {
@@ -141,7 +141,7 @@ public class AiRecommendationServiceImpl implements AiRecommendationService {
         recommendation.setTitle("营销策略推荐");
         
         // 使用豆包生成营销推荐
-        if (unifiedAiService.isAvailable()) {
+        if (aiService.isAvailable()) {
             String prompt = String.format(
                 "请为客户ID %d生成个性化的营销策略推荐。\n\n" +
                 "请考虑以下因素：\n" +
@@ -158,7 +158,7 @@ public class AiRecommendationServiceImpl implements AiRecommendationService {
             );
             
             try {
-                String aiResult = unifiedAiService.chat(prompt, "你是一个专业的营销策略专家，擅长制定个性化的客户营销方案。");
+                String aiResult = aiService.chat(prompt, "你是一个专业的营销策略专家，擅长制定个性化的客户营销方案。");
                 recommendation.setContent(aiResult);
                 recommendation.setConfidence(92);
             } catch (Exception e) {

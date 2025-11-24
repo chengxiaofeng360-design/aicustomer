@@ -7,7 +7,7 @@ import com.aicustomer.mapper.CommunicationMapper;
 import com.aicustomer.mapper.CustomerMapper;
 import com.aicustomer.mapper.CustomerProfileMapper;
 import com.aicustomer.service.AiAnalysisService;
-import com.aicustomer.service.impl.UnifiedAiService;
+import com.aicustomer.service.AiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class AiAnalysisServiceImpl implements AiAnalysisService {
     
-    private final UnifiedAiService unifiedAiService;
+    private final AiService aiService;
     private final CommunicationMapper communicationMapper;
     private final CustomerMapper customerMapper;
     private final CustomerProfileMapper customerProfileMapper;
@@ -104,7 +104,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         analysis.setTitle("情感分析报告");
         
         // 使用豆包进行情感分析
-        if (unifiedAiService.isAvailable() && content != null && !content.trim().isEmpty()) {
+        if (aiService.isAvailable() && content != null && !content.trim().isEmpty()) {
             String prompt = String.format(
                 "请对以下客户沟通内容进行情感分析，分析整体情感倾向、关键词提取和建议。\n\n" +
                 "客户沟通内容：%s\n\n" +
@@ -116,7 +116,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
             );
             
             try {
-                String aiResult = unifiedAiService.chat(prompt, "你是一个专业的情感分析专家，擅长分析客户沟通中的情感倾向。");
+                String aiResult = aiService.chat(prompt, "你是一个专业的情感分析专家，擅长分析客户沟通中的情感倾向。");
                 analysis.setContent(aiResult);
                 analysis.setConfidence(90);
             } catch (Exception e) {
@@ -151,7 +151,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         analysis.setTitle("客户需求预测报告");
         
         // 使用豆包进行需求预测
-        if (unifiedAiService.isAvailable()) {
+        if (aiService.isAvailable()) {
             String prompt = String.format(
                 "请基于客户ID %d的历史数据，预测该客户未来的需求。\n\n" +
                 "请分析以下方面：\n" +
@@ -163,7 +163,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
             );
             
             try {
-                String aiResult = unifiedAiService.chat(prompt, "你是一个专业的客户需求分析专家，擅长基于客户历史数据预测未来需求。");
+                String aiResult = aiService.chat(prompt, "你是一个专业的客户需求分析专家，擅长基于客户历史数据预测未来需求。");
                 analysis.setContent(aiResult);
                 analysis.setConfidence(90);
             } catch (Exception e) {
@@ -200,7 +200,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         analysis.setTitle("客户风险评估报告");
         
         // 使用豆包进行风险评估
-        if (unifiedAiService.isAvailable()) {
+        if (aiService.isAvailable()) {
             String prompt = String.format(
                 "请对客户ID %d进行全面的风险评估，包括：\n\n" +
                 "1. 信用风险分析（基于交易历史和支付记录）\n" +
@@ -212,7 +212,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
             );
             
             try {
-                String aiResult = unifiedAiService.chat(prompt, "你是一个专业的风险评估专家，擅长分析客户的各种风险并给出控制建议。");
+                String aiResult = aiService.chat(prompt, "你是一个专业的风险评估专家，擅长分析客户的各种风险并给出控制建议。");
                 analysis.setContent(aiResult);
                 analysis.setConfidence(88);
             } catch (Exception e) {
