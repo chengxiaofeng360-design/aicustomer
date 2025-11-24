@@ -120,7 +120,6 @@ function utf8ToBase64(str) {
         let currentContentType = 'recommendation'; // 当前内容类型
         let templates = JSON.parse(localStorage.getItem('aiRecommendationTemplates') || '[]');
         let tempContentSource = null;
-        let savedTemplates = JSON.parse(localStorage.getItem('aiSavedTemplates') || '[]');
         let sendSelectedCustomers = []; // 发送/分享模态框中选择的客户
         let sendAllCustomers = []; // 发送/分享模态框中的全部客户
         let sendShareLink = ''; // 发送/分享的链接
@@ -445,146 +444,14 @@ function utf8ToBase64(str) {
             }
         }
         
-        // 渲染模板列表
-        function renderTemplateList() {
-            const container = document.getElementById('templateListContainer');
-            if (!container) return;
-
-            // 从localStorage加载保存的模板
-            savedTemplates = JSON.parse(localStorage.getItem('aiSavedTemplates') || '[]');
-            
-            if (savedTemplates.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-4 text-muted">
-                        <i class="bi bi-file-earmark-text display-6"></i>
-                        <p class="mt-2 mb-0">暂无保存的模板</p>
-                        <p class="small">生成内容后可以保存为模板，方便下次使用</p>
-                    </div>
-                `;
-                return;
-            }
-
-            let html = '<div class="row g-3">';
-            savedTemplates.forEach((template, index) => {
-                const typeNames = {
-                    'recommendation': '推荐报告',
-                    'meeting': '会议纪要',
-                    'news': '新闻稿',
-                    'report': '报道',
-                    'reference': '推荐信',
-                    'marketing-long': '长文营销文案',
-                    'greeting-card': '祝福贺卡',
-                    'business-card': '名片引荐',
-                    'marketing-short': '短促销文案'
-                };
-                const typeName = typeNames[template.type] || '模板';
-                const preview = template.content ? (template.content.substring(0, 50) + '...') : '无内容';
-                
-                html += `
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h6 class="card-title">${escapeHtml(template.title || typeName)}</h6>
-                                <p class="card-text text-muted small">${escapeHtml(preview)}</p>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="applyTemplate(${index})">
-                                        <i class="bi bi-play-circle"></i> 使用
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTemplate(${index})">
-                                        <i class="bi bi-trash"></i> 删除
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-footer text-muted small">
-                                <i class="bi bi-clock"></i> ${template.saveTime || '未知时间'}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-            container.innerHTML = html;
-        }
-        
-        // 应用模板
-        function applyTemplate(index) {
-            const template = savedTemplates[index];
-            if (!template) {
-                alert('模板不存在');
-                return;
-            }
-            
-            // 设置内容类型
-            currentContentType = template.type;
-            document.getElementById('contentType').value = template.type;
-            
-            // 打开生成内容模态框
-            openGenerateContentModal(template.type);
-            
-            // 延迟填充内容
-            setTimeout(() => {
-                if (template.title) {
-                    const titleInput = document.getElementById('reportTitle');
-                    if (titleInput) {
-                        titleInput.value = template.title;
-                    }
-                }
-                if (template.content) {
-                    const contentEditor = document.getElementById('reportContentEditor');
-                    if (contentEditor) {
-                        contentEditor.value = template.content;
-                        // 触发保存以更新预览
-                        if (typeof saveReportEdit === 'function') {
-                            saveReportEdit();
-                        }
-                    }
-                }
-            }, 200);
-        }
-        
-        // 删除模板
-        function deleteTemplate(index) {
-            if (confirm('确定要删除这个模板吗？')) {
-                savedTemplates.splice(index, 1);
-                localStorage.setItem('aiSavedTemplates', JSON.stringify(savedTemplates));
-                renderTemplateList();
-                alert('模板已删除');
-            }
-        }
-        
-        // 保存当前模板
-        function saveCurrentTemplate() {
-            const title = document.getElementById('reportTitle')?.value || '';
-            const content = document.getElementById('reportContentEditor')?.value || 
-                          document.getElementById('reportContent')?.innerText || '';
-            
-            if (!content.trim()) {
-                alert('内容不能为空！');
-                return;
-            }
-            
-            const template = {
-                type: currentContentType,
-                title: title || (currentContentType + '模板'),
-                content: content,
-                saveTime: new Date().toLocaleString('zh-CN')
-            };
-            
-            savedTemplates.push(template);
-            localStorage.setItem('aiSavedTemplates', JSON.stringify(savedTemplates));
-            renderTemplateList();
-            alert('模板已保存！');
-        }
-        
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 立即加载推荐结果（轻量级）
             loadRecommendationResults();
-            // 延迟加载历史记录、模板列表和统计数据（较重的操作）
+            // 延迟加载历史记录和统计数据（较重的操作）
             setTimeout(function() {
                 loadHistoryRecords();
                 loadStatistics();
-                renderTemplateList();
             }, 100);
         });
 
@@ -3842,20 +3709,13 @@ ${customer.customerName || '尊贵客户'} 升级提醒！
         if (typeof window !== 'undefined') {
             // 将实际实现赋值给window对象，替换之前的临时函数
             if (typeof _openGenerateContentModal === 'function') {
-                window.openGenerateContentModal = _openGenerateContentModal;
                 window._openGenerateContentModal = _openGenerateContentModal;
                 // 同时更新全局函数
                 openGenerateContentModal = _openGenerateContentModal;
             }
             if (typeof _openSendShareModal === 'function') {
-                window.openSendShareModal = _openSendShareModal;
                 window._openSendShareModal = _openSendShareModal;
                 // 同时更新全局函数
                 openSendShareModal = _openSendShareModal;
             }
-            // 确保模板相关函数全局可访问
-            window.renderTemplateList = renderTemplateList;
-            window.applyTemplate = applyTemplate;
-            window.deleteTemplate = deleteTemplate;
-            window.saveCurrentTemplate = saveCurrentTemplate;
         }
