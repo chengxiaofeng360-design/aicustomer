@@ -354,6 +354,7 @@ function utf8ToBase64(str) {
         }
 
         // 加载统计数据
+        async function loadStatistics() {
             const statisticsRow = document.getElementById('statisticsRow');
             if (!statisticsRow) return;
             
