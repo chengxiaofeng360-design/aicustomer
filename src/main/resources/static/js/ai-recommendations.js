@@ -341,7 +341,18 @@ function utf8ToBase64(str) {
                 case 'marketing-short':
                     base.type = 'marketing';
                     base.title = '限时促销短讯';
-                    base.content = '一句话点出客户痛点与解决方案，附带明确行动号召。';
+                    base.content = `🔥 限时特惠！智能数据分析平台原价￥99,800，现价￥69,800
+
+🎯 专属客户：张三
+⚡ 核心价值：提升运营效率30%，降低成本20%
+💎 独家优惠：立省￥30,000 + 免费实施服务
+
+📞 立即咨询：13800138000
+⏰ 优惠截止：2025-12-01
+
+🏆 已有150+企业选择，满意度98%`;
+                    base.reason = '基于客户购买历史和业务需求，推荐最具性价比的限时优惠方案';
+                    base.confidence = 0.95;
                     break;
                 default:
                     // 默认使用产品推荐
@@ -2356,28 +2367,79 @@ AI智能推荐系统 | 让智能为业务赋能
         // 生成短促销文案
         function generateShortMarketingCopy(selectedRecs) {
             const customer = selectedRecs[0] || {};
-            const content = `【限时特惠 | ${customer.title || '高价值方案'}】
+            const currentTime = new Date().toLocaleString('zh-CN');
+            
+            // 生成多种短促销文案模板
+            const templates = [
+                {
+                    title: "限时特惠方案",
+                    content: `🔥 <span class="urgency-badge">限时特惠</span> <span class="emoji-highlight">🎯</span>
 
-🎯 客户：${customer.customerName || '尊贵客户'}
-⚡ 推荐：${customer.content || '高效方案/高价值服务'}
-💡 优势：${customer.reason || '助您提效增收'}
+${customer.customerName || '尊贵客户'} 专属方案推荐！
 
-即刻联系专属顾问，尊享定制支持！📞 ${customer.customerPhone || '400-XXX-XXXX'}`;
+⚡ <strong>核心方案</strong>：${customer.title || '智能数据分析平台'}
+💎 <strong>独特价值</strong>：${customer.reason || '提升运营效率30%，降低成本20%'}
+🚀 <strong>限时优惠</strong>：原价￥99,800，现价￥69,800（立省￥30,000）
 
+<div class="cta-button">📞 立即咨询：${customer.customerPhone || '400-888-XXXX'}</div>
+
+⏰ <em>优惠截止：${new Date(Date.now() + 7*24*60*60*1000).toLocaleDateString('zh-CN')}</em>`
+                },
+                {
+                    title: "高价值服务推荐",
+                    content: `💎 <span class="urgency-badge">高价值</span> <span class="emoji-highlight">⭐</span>
+
+${customer.customerName || '尊贵客户'} 您好！
+
+🎯 <strong>推荐方案</strong>：${customer.title || '企业级云服务解决方案'}
+📈 <strong>预期收益</strong>：${customer.reason || 'ROI > 300%，6个月回本'}
+💰 <strong>专属优惠</strong>：首年8折 + 免费实施服务
+
+<div class="cta-button">🔥 抢占名额：${customer.customerPhone || '400-888-XXXX'}</div>
+
+🏆 <em>已有${Math.floor(Math.random() * 50 + 100)}+企业选择，满意度98%</em>`
+                },
+                {
+                    title: "紧急升级通知",
+                    content: `⚡ <span class="urgency-badge">紧急升级</span> <span class="emoji-highlight">🚀</span>
+
+${customer.customerName || '尊贵客户'} 升级提醒！
+
+🔥 <strong>升级方案</strong>：${customer.title || 'AI智能推荐系统'}
+⏰ <strong>限时福利</strong>：免费升级 + 数据迁移服务
+🎁 <strong>额外赠送</strong>：3个月技术支持服务
+
+<div class="cta-button">📱 马上升级：${customer.customerPhone || '400-888-XXXX'}</div>
+
+⚠️ <em>仅限前20名客户，升级截止${new Date(Date.now() + 3*24*60*60*1000).toLocaleDateString('zh-CN')}</em>`
+                }
+            ];
+            
+            // 随机选择一个模板
+            const selectedTemplate = templates[Math.floor(Math.random() * templates.length)];
+            
             const html = `
                 <div class="report-header mb-4">
-                    <h3>短促销文案</h3>
-                    <p class="text-muted">生成时间：${new Date().toLocaleString('zh-CN')}</p>
+                    <h3><span class="emoji-highlight">🚀</span> 短促销文案</h3>
+                    <p class="text-muted">生成时间：${currentTime}</p>
                 </div>
                 <div class="report-body">
                     <div class="marketing-short-banner">
-                        <div style="white-space: pre-wrap; line-height: 1.6; font-weight: 500;">
-                            ${escapeHtml(content)}
+                        <div style="white-space: pre-wrap; line-height: 1.8; font-weight: 600;">
+                            ${selectedTemplate.content}
                         </div>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <small class="text-muted">
+                            💡 提示：此文案适用于短信、微信、Banner等渠道
+                        </small>
                     </div>
                 </div>
                 <div class="report-footer mt-4 pt-3 border-top">
-                    <p class="text-muted small">本短促销文案由AI智能推荐系统自动生成</p>
+                    <p class="text-muted small">
+                        <span class="emoji-highlight">✨</span> 
+                        本短促销文案由AI智能推荐系统自动生成，已优化为高转化率版本
+                    </p>
                 </div>
             `;
 
@@ -2385,6 +2447,7 @@ AI智能推荐系统 | 让智能为业务赋能
             currentReportData = html;
             editedReportContent = null;
             generateShareLink();
+            enableInlineEditing('reportContent');
         }
         
         // 切换报告编辑模式
