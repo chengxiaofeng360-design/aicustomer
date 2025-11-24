@@ -1021,72 +1021,88 @@ function utf8ToBase64(str) {
             const selectedRecs = customList || recommendations.filter(r => selectedRecommendations.includes(r.id));
             if (selectedRecs.length === 0) {
                 document.getElementById('reportContent').innerHTML = `
-                    <div class="report-empty">
-                        <i class="bi bi-file-text"></i>
-                        <h5>暂无推荐内容</h5>
-                        <p>请先选择想要生成内容的推荐</p>
+                    <div class="report-header mb-4">
+                        <h3>AI智能推荐报告</h3>
+                        <p class="text-muted">生成时间：${new Date().toLocaleString('zh-CN')}</p>
+                    </div>
+                    <div class="report-body">
+                        <div class="text-center py-5">
+                            <i class="bi bi-file-text display-1 text-muted"></i>
+                            <h5 class="mt-3 text-muted">暂无推荐内容</h5>
+                            <p class="text-muted">请先选择想要生成内容的推荐</p>
+                        </div>
                     </div>
                 `;
                 return;
             }
             
-            let reportHtml = `
-                <div class="report-header">
-                    <h3>AI智能推荐报告</h3>
-                    <p><i class="bi bi-clock"></i> 生成时间：${new Date().toLocaleString('zh-CN')}</p>
-                    <p><i class="bi bi-collection"></i> 推荐数量：${selectedRecs.length} 条</p>
-                </div>
-                <div class="report-body">
-            `;
+            let content = '';
             
             selectedRecs.forEach((rec, index) => {
                 const confidenceColor = rec.confidence >= 90 ? 'success' : rec.confidence >= 80 ? 'warning' : 'info';
                 const priorityText = rec.priority || '中';
                 const typeText = getTypeText(rec.type);
                 
-                reportHtml += `
-                    <div class="report-item" style="animation: fadeInUp 0.5s ease ${index * 0.1}s both;">
-                        <h4><i class="bi bi-lightbulb"></i> ${escapeHtml(rec.title || '推荐内容')}</h4>
-                        <div class="content">${escapeHtml(rec.content || '暂无详细内容')}</div>
-                        <div class="meta-info">
-                            <div class="meta-left">
-                                <span class="type">${typeText}</span>
-                                <span class="priority">${priorityText}</span>
-                                <span class="confidence">置信度 ${rec.confidence || 85}%</span>
-                            </div>
-                            <div class="meta-right">
-                                <span><i class="bi bi-person"></i> ${escapeHtml(rec.customerName || '未知客户')}</span>
-                                <span><i class="bi bi-calendar"></i> ${formatDate(rec.createTime)}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                content += `
+## ${index + 1}. ${escapeHtml(rec.title || '推荐内容')}
+
+### 📊 基本信息
+- **推荐类型**: ${typeText}
+- **优先级**: ${priorityText}
+- **置信度**: ${rec.confidence || 85}%
+- **客户名称**: ${escapeHtml(rec.customerName || '未知客户')}
+- **创建时间**: ${formatDate(rec.createTime)}
+
+### 📝 推荐内容
+${escapeHtml(rec.content || '暂无详细内容')}
+
+### 💡 推荐理由
+${escapeHtml(rec.reason || '基于AI智能分析得出推荐结论')}
+
+---
+
+`;
             });
             
-            reportHtml += '</div>';
+            content += `
+### 📈 总结报告
+本次共生成 **${selectedRecs.length}** 项推荐方案，涵盖产品推荐、服务优化、策略制定等多个维度。
+
+**统计信息:**
+- 平均置信度: ${Math.round(selectedRecs.reduce((sum, r) => sum + (r.confidence || 85), 0) / selectedRecs.length)}%
+- 高优先级推荐: ${selectedRecs.filter(r => r.priority === 'high').length} 项
+- 中优先级推荐: ${selectedRecs.filter(r => r.priority === 'medium').length} 项
+- 低优先级推荐: ${selectedRecs.filter(r => r.priority === 'low').length} 项
+
+**建议:**
+1. 优先实施高置信度、高优先级的推荐方案
+2. 结合实际业务情况，制定详细的实施计划
+3. 定期跟踪推荐效果，持续优化推荐策略
+
+---
+*报告生成时间：${new Date().toLocaleString('zh-CN')}*
+`;
             
-            // 添加动画样式
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                .meta-left, .meta-right {
-                    display: flex;
-                    gap: 0.5rem;
-                    align-items: center;
-                }
+            const html = `
+                <div class="report-header mb-4">
+                    <h3>AI智能推荐报告</h3>
+                    <p class="text-muted">生成时间：${new Date().toLocaleString('zh-CN')} | 推荐数量：${selectedRecs.length} 条</p>
+                </div>
+                <div class="report-body">
+                    <div style="white-space: pre-wrap; line-height: 1.8; font-family: 'Microsoft YaHei', sans-serif;">${escapeHtml(content)}</div>
+                </div>
+                <div class="report-footer mt-4 pt-3 border-top">
+                    <p class="text-muted small">
+                        <i class="bi bi-cpu"></i> 
+                        本AI智能推荐报告由系统自动生成，基于大数据分析和机器学习算法
+                    </p>
+                </div>
             `;
-            document.head.appendChild(style);
             
-            document.getElementById('reportContent').innerHTML = reportHtml;
+            document.getElementById('reportContent').innerHTML = html;
+            currentReportData = html;
+            editedReportContent = null;
+            generateShareLink();
         }
 
         // 生成模板内容
