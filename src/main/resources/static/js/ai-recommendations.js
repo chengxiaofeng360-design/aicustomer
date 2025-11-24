@@ -1160,67 +1160,269 @@ function utf8ToBase64(str) {
         function generateRecommendationReport(customList = null) {
             const selectedRecs = customList || recommendations.filter(r => selectedRecommendations.includes(r.id));
             if (selectedRecs.length === 0) {
-                document.getElementById('reportContent').innerHTML = '<p class="text-muted">请先选择想要生成内容的推荐</p>';
+                document.getElementById('reportContent').innerHTML = `
+                    <div class="report-empty">
+                        <i class="bi bi-file-text"></i>
+                        <h5>暂无推荐内容</h5>
+                        <p>请先选择想要生成内容的推荐</p>
+                    </div>
+                `;
                 return;
             }
             
             let reportHtml = `
-                <div class="report-header mb-4">
+                <div class="report-header">
                     <h3>AI智能推荐报告</h3>
-                    <p class="text-muted">生成时间：${new Date().toLocaleString('zh-CN')}</p>
-                    <p class="text-muted">推荐数量：${selectedRecs.length} 条</p>
+                    <p><i class="bi bi-clock"></i> 生成时间：${new Date().toLocaleString('zh-CN')}</p>
+                    <p><i class="bi bi-collection"></i> 推荐数量：${selectedRecs.length} 条</p>
                 </div>
                 <div class="report-body">
             `;
             
             selectedRecs.forEach((rec, index) => {
+                const confidenceColor = rec.confidence >= 90 ? 'success' : rec.confidence >= 80 ? 'warning' : 'info';
+                const priorityText = rec.priority || '中';
+                const typeText = getTypeText(rec.type);
+                
                 reportHtml += `
-                    <div class="report-item mb-4 p-3 border rounded">
-                        <h5 class="mb-3">推荐 ${index + 1}: ${rec.title}</h5>
-                        <div class="row mb-2">
-                            <div class="col-md-6">
-                                <strong>客户名称：</strong>${rec.customerName || '未指定'}
+                    <div class="report-item" style="animation: fadeInUp 0.5s ease ${index * 0.1}s both;">
+                        <h4><i class="bi bi-lightbulb"></i> ${escapeHtml(rec.title || '推荐内容')}</h4>
+                        <div class="content">${escapeHtml(rec.content || '暂无详细内容')}</div>
+                        <div class="meta-info">
+                            <div class="meta-left">
+                                <span class="type">${typeText}</span>
+                                <span class="priority">${priorityText}</span>
+                                <span class="confidence">置信度 ${rec.confidence || 85}%</span>
                             </div>
-                            <div class="col-md-6">
-                                <strong>推荐类型：</strong><span class="badge ${getTypeClass(rec.type)}">${getTypeText(rec.type)}</span>
+                            <div class="meta-right">
+                                <span><i class="bi bi-person"></i> ${escapeHtml(rec.customerName || '未知客户')}</span>
+                                <span><i class="bi bi-calendar"></i> ${formatDate(rec.createTime)}</span>
                             </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-6">
-                                <strong>优先级：</strong><span class="badge ${getPriorityClass(rec.priority)}">${getPriorityText(rec.priority)}</span>
-                            </div>
-                            <div class="col-md-6">
-                                <strong>置信度：</strong>${Math.round(rec.confidence * 100)}%
-                            </div>
-                        </div>
-                        <div class="mb-2">
-                            <strong>推荐内容：</strong>
-                            <p class="mt-2">${rec.content}</p>
-                        </div>
-                        <div class="mb-2">
-                            <strong>推荐理由：</strong>
-                            <p class="mt-2">${rec.reason || '无'}</p>
-                        </div>
-                        <div class="text-muted small">
-                            <strong>创建时间：</strong>${rec.createTime || '未知'}
                         </div>
                     </div>
                 `;
             });
             
-            reportHtml += `
-                </div>
-                <div class="report-footer mt-4 pt-3 border-top">
-                    <p class="text-muted small">本报告由AI智能推荐系统自动生成</p>
+            reportHtml += '</div>';
+            
+            // 添加动画样式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .meta-left, .meta-right {
+                    display: flex;
+                    gap: 0.5rem;
+                    align-items: center;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.getElementById('reportContent').innerHTML = reportHtml;
+        }
+
+        // 生成模板内容
+        function generateTemplate() {
+            const templateType = document.getElementById('templateType').value;
+            const selectedRecs = recommendations.filter(r => selectedRecommendations.includes(r.id));
+            
+            if (selectedRecs.length === 0) {
+                document.getElementById('templateContent').innerHTML = `
+                    <div class="template-empty">
+                        <i class="bi bi-envelope"></i>
+                        <h5>暂无模板内容</h5>
+                        <p>请先选择想要生成模板的推荐</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const mainRec = selectedRecs[0];
+            const isEmail = templateType === 'email';
+            
+            let templateHtml = `
+                <div class="template-pro">
+                    <div class="template-pro__hero">
+                        <div>
+                            <h4>${isEmail ? '智能邮件模板' : '智能短信模板'}</h4>
+                            <p style="margin: 0.5rem 0; opacity: 0.9;">基于AI推荐内容自动生成</p>
+                        </div>
+                        <div class="badge">
+                            <i class="bi bi-robot"></i> AI生成
+                        </div>
+                    </div>
+                    <div class="template-pro__body">
+                        <h5><i class="bi bi-person"></i> 目标客户</h5>
+                        <p>${escapeHtml(mainRec.customerName || '尊敬的客户')}</p>
+                        
+                        <h5><i class="bi bi-lightbulb"></i> 推荐主题</h5>
+                        <p>${escapeHtml(mainRec.title || '个性化推荐')}</p>
+                        
+                        <h5><i class="bi bi-file-text"></i> ${isEmail ? '邮件内容' : '短信内容'}</h5>
+                        <p>${escapeHtml(mainRec.content || '推荐内容')}</p>
+                        
+                        ${isEmail ? `
+                        <h5><i class="bi bi-gear"></i> 推荐理由</h5>
+                        <p>${escapeHtml(mainRec.reason || '基于您的需求和历史数据，我们为您精心推荐以上内容。')}</p>
+                        ` : ''}
+                    </div>
+                    <div class="template-pro__footer">
+                        <div class="meta">
+                            <div class="meta-item">
+                                <i class="bi bi-clock"></i>
+                                <span>${new Date().toLocaleString('zh-CN')}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="bi bi-cpu"></i>
+                                <span>AI智能生成</span>
+                            </div>
+                        </div>
+                        <div class="template-pro__actions">
+                            <button class="btn btn-primary" onclick="copyTemplateContent()">
+                                <i class="bi bi-clipboard"></i> 复制
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="editTemplate()">
+                                <i class="bi bi-pencil"></i> 编辑
+                            </button>
+                            <button class="btn btn-success" onclick="sendTemplate()">
+                                <i class="bi bi-send"></i> 发送
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
             
-            document.getElementById('reportContent').innerHTML = reportHtml;
-            currentReportData = reportHtml;
-            editedReportContent = null; // 重置编辑内容
+            document.getElementById('templateContent').innerHTML = templateHtml;
+        }
+        
+        // 刷新报告
+        function refreshReport() {
+            // 显示加载状态
+            const container = document.getElementById('reportContent');
+            if (container) {
+                container.innerHTML = `
+                    <div class="report-empty">
+                        <div class="spinner-border text-light" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <h5 class="mt-3">正在刷新内容...</h5>
+                        <p>AI正在重新生成推荐内容</p>
+                    </div>
+                `;
+            }
             
-            // 自动生成分享链接
-            generateShareLink();
+            // 模拟刷新延迟
+            setTimeout(() => {
+                generateRecommendationReport();
+            }, 1500);
+        }
+        
+        // 分享报告
+        function shareReport() {
+            const selectedRecs = recommendations.filter(r => selectedRecommendations.includes(r.id));
+            if (selectedRecs.length === 0) {
+                showToast('请先选择要分享的推荐内容', 'warning');
+                return;
+            }
+            
+            // 创建分享链接
+            const shareData = {
+                title: 'AI智能推荐报告',
+                text: `为您推荐${selectedRecs.length}个个性化方案`,
+                url: window.location.href + '#shared=' + Date.now()
+            };
+            
+            // 检查是否支持Web Share API
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => showToast('分享成功', 'success'))
+                    .catch(() => copyShareLink(shareData.url));
+            } else {
+                copyShareLink(shareData.url);
+            }
+        }
+        
+        // 复制分享链接
+        function copyShareLink(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('分享链接已复制到剪贴板', 'success');
+            }).catch(() => {
+                showToast('复制失败，请手动复制链接', 'error');
+            });
+        }
+        
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            const toastHtml = `
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : type === 'error' ? 'danger' : 'primary'} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            const toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            toastContainer.innerHTML = toastHtml;
+            document.body.appendChild(toastContainer);
+            
+            const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+            toast.show();
+            
+            // 自动移除
+            setTimeout(() => {
+                document.body.removeChild(toastContainer);
+            }, 5000);
+        }
+        
+        // 编辑模板
+        function editTemplate() {
+            const templateContent = document.getElementById('templateContent');
+            const templateEditor = document.getElementById('templateEditor');
+            
+            if (templateContent && templateEditor) {
+                // 获取当前模板内容
+                const currentContent = templateContent.querySelector('.template-pro');
+                if (currentContent) {
+                    // 填充编辑器
+                    const title = currentContent.querySelector('h4')?.textContent || '';
+                    const content = currentContent.querySelector('.template-pro__body')?.innerHTML || '';
+                    
+                    document.getElementById('templateSubject').value = title;
+                    document.getElementById('templateContentEditor').value = content.replace(/<[^>]*>/g, '');
+                    
+                    // 切换显示
+                    templateContent.style.display = 'none';
+                    templateEditor.style.display = 'block';
+                }
+            }
+        }
+        
+        // 发送模板
+        function sendTemplate() {
+            const selectedRecs = recommendations.filter(r => selectedRecommendations.includes(r.id));
+            if (selectedRecs.length === 0) {
+                showToast('请先选择要发送的推荐内容', 'warning');
+                return;
+            }
+            
+            // 切换到客户选择标签
+            const customerTab = document.getElementById('customer-tab');
+            if (customerTab) {
+                customerTab.click();
+                showToast('请选择要发送的客户', 'info');
+            }
         }
         
         // 生成会议纪要

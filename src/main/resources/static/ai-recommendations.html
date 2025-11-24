@@ -321,15 +321,21 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="mb-0" id="contentTypeTitle">推荐报告预览</h6>
-                                <div>
+                                <div class="btn-group" role="group">
                                     <button class="btn btn-sm btn-outline-warning" id="editReportBtn" onclick="toggleReportEdit()">
                                         <i class="bi bi-pencil"></i> 编辑内容
                                     </button>
                                     <button class="btn btn-sm btn-outline-dark" onclick="saveCurrentTemplate()">
-                                        <i class="bi bi-bookmark"></i> 保存为模板
+                                        <i class="bi bi-bookmark"></i> 保存模板
                                     </button>
                                     <button class="btn btn-sm btn-outline-success" onclick="downloadReport()">
                                         <i class="bi bi-download"></i> 下载
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="refreshReport()">
+                                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="shareReport()">
+                                        <i class="bi bi-share"></i> 分享
                                     </button>
                                 </div>
                             </div>
