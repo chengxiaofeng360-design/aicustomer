@@ -2,7 +2,7 @@ package com.aicustomer.service.impl;
 
 import com.aicustomer.entity.AiRecommendation;
 import com.aicustomer.service.AiRecommendationService;
-import com.aicustomer.service.UnifiedAiService;
+import com.aicustomer.service.impl.UnifiedAiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

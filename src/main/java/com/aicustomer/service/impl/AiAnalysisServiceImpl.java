@@ -1,12 +1,13 @@
 package com.aicustomer.service.impl;
 
 import com.aicustomer.entity.AiAnalysis;
+import com.aicustomer.entity.CommunicationRecord;
 import com.aicustomer.entity.Customer;
 import com.aicustomer.mapper.CommunicationMapper;
 import com.aicustomer.mapper.CustomerMapper;
 import com.aicustomer.mapper.CustomerProfileMapper;
 import com.aicustomer.service.AiAnalysisService;
-import com.aicustomer.service.UnifiedAiService;
+import com.aicustomer.service.impl.UnifiedAiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
