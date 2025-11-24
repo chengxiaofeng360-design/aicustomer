@@ -571,31 +571,13 @@ function utf8ToBase64(str) {
         }
 
 
-        // 加载推荐结果（使用固定数据）
+        // 加载推荐结果（简化版本，不显示默认数据）
         async function loadRecommendationResults() {
             const container = document.getElementById('recommendationResults');
             if (!container) return;
-            container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm me-2"></div>加载中...</div>';
-
-            try {
-                // 模拟加载延迟
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                // 使用固定的示例数据，不调用API
-                recommendations = [
-                    getPlaceholderRecommendation('product'),
-                    getPlaceholderRecommendation('service'),
-                    getPlaceholderRecommendation('marketing')
-                ];
-                
-                // 渲染推荐结果
-                renderRecommendationResults();
-                
-            } catch (error) {
-                console.error('加载推荐结果失败:', error);
-                // 降级到空状态
-                showEmptyRecommendationState();
-            }
+            
+            // 直接显示空状态，让用户主动点击生成
+            showEmptyRecommendationState();
         }
 
         function showEmptyRecommendationState() {
@@ -604,10 +586,10 @@ function utf8ToBase64(str) {
             
             container.innerHTML = `
                 <div class="text-center py-5">
-                    <i class="bi bi-lightbulb display-1 text-muted"></i>
-                    <h5 class="mt-3 text-muted">暂无推荐</h5>
-                    <p class="mb-1">请先选择上方内容模块</p>
-                    <p class="text-muted">勾选推荐后即可生成对应内容</p>
+                    <i class="bi bi-magic display-1 text-muted"></i>
+                    <h5 class="mt-3 text-muted">准备生成AI推荐内容</h5>
+                    <p class="mb-1">请选择上方内容模块，点击"AI生成内容"</p>
+                    <p class="text-muted">支持产品推荐、服务方案、营销文案等多种类型</p>
                 </div>
             `;
         }
