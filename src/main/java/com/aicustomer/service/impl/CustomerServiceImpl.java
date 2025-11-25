@@ -46,10 +46,39 @@ public class CustomerServiceImpl implements CustomerService {
     
     @Override
     public PageResult<Customer> page(Integer pageNum, Integer pageSize, Customer customer, List<Integer> businessTypeList) {
-        int offset = (pageNum - 1) * pageSize;
-        List<Customer> list = customerMapper.selectPage(customer, businessTypeList, offset, pageSize);
-        Long total = customerMapper.selectCount(customer, businessTypeList);
-        return new PageResult<>(pageNum, pageSize, total, list);
+        // 为了避免SQL条件或deleted标志导致列表查不到数据，这里统一改为：
+        // 1）先查出满足基本条件的所有客户
+        // 2）在Java层根据businessTypeList进行过滤
+        // 3）在Java层做分页
+
+        // 1）查出所有满足customer条件的客户
+        List<Customer> allList = customerMapper.selectList(customer);
+
+        // 2）按业务类型在内存中过滤（如果有业务类型列表）
+        if (businessTypeList != null && !businessTypeList.isEmpty()) {
+            allList = allList.stream()
+                    .filter(c -> {
+                        Integer bt = c.getBusinessType() != null ? c.getBusinessType() : 1;
+                        return businessTypeList.contains(bt);
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        // 3）在内存中进行分页
+        long total = allList.size();
+        if (total == 0) {
+            return new PageResult<>(pageNum, pageSize, 0L, java.util.Collections.emptyList());
+        }
+
+        int fromIndex = Math.max(0, (pageNum - 1) * pageSize);
+        if (fromIndex >= total) {
+            fromIndex = 0;
+            pageNum = 1;
+        }
+        int toIndex = (int) Math.min(fromIndex + pageSize, total);
+        List<Customer> pageList = allList.subList(fromIndex, toIndex);
+
+        return new PageResult<>(pageNum, pageSize, total, pageList);
     }
     
     @Override

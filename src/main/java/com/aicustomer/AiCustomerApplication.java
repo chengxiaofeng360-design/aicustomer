@@ -9,6 +9,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * 
  * @author AI Customer Management System
  * @version 1.0.0
+ * 
+ * # 1）杀掉占用 8085 端口的进程（一次性搞定）
+lsof -ti:8085 | xargs kill -9
+# 2）在项目目录下启动服务（/Users/zuozuo/Downloads/cxf/aicustomer）
+
+lsof -ti:8085 | xargs kill -9
+mvn spring-boot:run
+ * 
  */
 @SpringBootApplication(exclude = {
     org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration.class

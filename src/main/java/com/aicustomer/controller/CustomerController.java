@@ -236,12 +236,9 @@ public class CustomerController {
      */
     @GetMapping("/list")
     public Result<List<Customer>> list(Customer customer) {
+        // 直接返回原始客户数据，不做任何敏感脱敏处理，确保所有字段（包括variety）原样返回
         List<Customer> list = customerService.list(customer);
-        // 对敏感数据进行脱敏处理
-        List<Customer> maskedList = list.stream()
-                .map(sensitiveDataService::maskSensitiveData)
-                .collect(java.util.stream.Collectors.toList());
-        return Result.success(maskedList);
+        return Result.success(list);
     }
     
     /**
@@ -278,27 +275,11 @@ public class CustomerController {
             if (region != null && !region.trim().isEmpty()) {
                 queryCustomer.setRegion(region);
             }
-            
-            // 处理业务类型参数（支持多个businessType，用于IN查询）
+            // 取消业务类型筛选，始终查询所有业务类型客户
             List<Integer> businessTypeList = null;
-            if (businessType != null && !businessType.isEmpty()) {
-                businessTypeList = new java.util.ArrayList<>();
-                for (String typeStr : businessType) {
-                    try {
-                        businessTypeList.add(Integer.parseInt(typeStr));
-                    } catch (NumberFormatException e) {
-                        log.warn("无效的业务类型值: {}", typeStr);
-                    }
-                }
-                if (businessTypeList.isEmpty()) {
-                    businessTypeList = null;
-                } else {
-                    log.info("设置业务类型筛选条件: businessTypeList={}", businessTypeList);
-                }
-            }
-            
-            log.info("查询客户列表 - 页码: {}, 每页大小: {}, 查询条件: customerName={}, customerType={}, customerLevel={}, region={}, businessTypeList={}", 
-                    pageNum, pageSize, customerName, customerType, customerLevel, region, businessTypeList);
+
+            log.info("查询客户列表 - 页码: {}, 每页大小: {}, 查询条件: customerName={}, customerType={}, customerLevel={}, region={}", 
+                    pageNum, pageSize, customerName, customerType, customerLevel, region);
             
             PageResult<Customer> pageResult = customerService.page(pageNum, pageSize, queryCustomer, businessTypeList);
             log.info("查询结果 - 总数: {}, 当前页数据量: {}", pageResult.getTotal(), pageResult.getList().size());
@@ -307,12 +288,8 @@ public class CustomerController {
             if (pageResult.getTotal() == 0) {
                 log.warn("⚠️ 查询结果为空！查询条件: businessTypeList={}, 请检查数据库中是否有匹配的记录", businessTypeList);
             }
-        // 对敏感数据进行脱敏处理
-        List<Customer> maskedList = pageResult.getList().stream()
-                .map(sensitiveDataService::maskSensitiveData)
-                .collect(java.util.stream.Collectors.toList());
-        pageResult.setList(maskedList);
-        return Result.success(pageResult);
+            // 直接返回原始客户数据，不做任何敏感脱敏处理，确保所有字段（包括variety）原样返回
+            return Result.success(pageResult);
         } catch (Exception e) {
             // 如果数据库连接失败或其他异常，返回空结果而不是抛出异常
             log.error("操作异常", e);
@@ -372,9 +349,8 @@ public class CustomerController {
     public Result<Customer> getById(@PathVariable Long id) {
         Customer customer = customerService.getById(id);
         if (customer != null) {
-            // 对敏感数据进行脱敏处理
-            Customer maskedCustomer = sensitiveDataService.maskSensitiveData(customer);
-            return Result.success(maskedCustomer);
+            // 直接返回原始客户数据，不做任何敏感脱敏处理
+            return Result.success(customer);
         }
         return Result.error("客户不存在");
     }

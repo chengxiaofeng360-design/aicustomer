@@ -198,11 +198,12 @@ public class AiAnalysisController {
 
     /**
      * 获取业务机会列表
+     * @param days 最近N天的沟通窗口，默认30天
      */
     @GetMapping("/business-opportunities")
-    public Result<List<Map<String, Object>>> getBusinessOpportunities() {
+    public Result<List<Map<String, Object>>> getBusinessOpportunities(@RequestParam(defaultValue = "30") int days) {
         try {
-            List<Map<String, Object>> opportunities = aiAnalysisService.getBusinessOpportunities();
+            List<Map<String, Object>> opportunities = aiAnalysisService.getBusinessOpportunities(days);
             return Result.success(opportunities);
         } catch (Exception e) {
             return Result.error("获取业务机会失败: " + e.getMessage());

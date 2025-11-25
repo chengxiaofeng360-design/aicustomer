@@ -287,6 +287,20 @@ public class DatabaseInitializer {
             } else {
                 log.debug("progress字段已存在，跳过");
             }
+
+            // 检查并添加variety字段（品种信息）
+            if (!checkColumnExists("customer", "variety")) {
+                log.info("添加variety字段到customer表...");
+                try {
+                    // 默认在progress之后，方便阅读
+                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN variety VARCHAR(255) COMMENT '品种信息' AFTER progress");
+                    log.info("✅ variety字段添加成功");
+                } catch (Exception e) {
+                    log.error("❌ 添加variety字段失败: {}", e.getMessage());
+                }
+            } else {
+                log.debug("variety字段已存在，跳过");
+            }
             
             // 检查并添加/修改business_type字段（具体业务类型1-6）
             boolean businessTypeExists = checkColumnExists("customer", "business_type");

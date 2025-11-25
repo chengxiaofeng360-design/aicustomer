@@ -73,6 +73,9 @@ const businessCategoryToTypes = {
 // 当前选中的业务类型列表（支持多个）
 let currentBusinessTypeList = null;
 
+// 品种选项（从系统配置动态加载，直接使用字符串值）
+let varietyOptions = [];
+
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
     // 从URL参数获取业务类型列表（支持多个businessType参数）
@@ -90,12 +93,79 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 titleText = '客户管理 - 业务类型客户';
             }
+
+// 从系统配置加载品种列表
+function loadVarietiesFromConfig() {
+    const url = '/api/system-config/group/' + encodeURIComponent('品种');
+    console.log('🔍 加载品种配置，URL:', url);
+    
+    fetch(url)
+        .then(response => {
+            console.log('🔍 品种API响应状态:', response.status, response.statusText);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.warn('⚠️ 品种配置API不存在（404），使用空品种列表');
+                    updateVarietySelectOptions();
+                    return null;
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(result => {
+            if (!result) return; // 404情况已处理
+            
+            console.log('🔍 品种API响应数据:', result);
+            varietyOptions = [];
+            if (result.code === 200 && result.data && result.data.length > 0) {
+                result.data.forEach(config => {
+                    // 约定：configGroup = "品种"，configValue 为品种名称
+                    if (config.configValue) {
+                        varietyOptions.push(config.configValue);
+                    }
+                });
+                console.log('✅ 已从系统配置加载品种列表:', varietyOptions);
+            } else {
+                console.log('⚠️ 系统配置中没有品种数据');
+            }
+            updateVarietySelectOptions();
+        })
+        .catch(error => {
+            console.warn('⚠️ 加载品种配置失败:', error);
+            updateVarietySelectOptions();
+        });
+}
+
+// 更新品种下拉框选项
+function updateVarietySelectOptions() {
+    const select = document.getElementById('varietySelect');
+    if (!select) return;
+    
+    const firstOption = select.options[0];
+    select.innerHTML = '';
+    if (firstOption && firstOption.value === '') {
+        select.appendChild(firstOption);
+    } else {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '请选择品种';
+        select.appendChild(defaultOption);
+    }
+    
+    varietyOptions.forEach(value => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+    });
+}
             pageTitle.innerHTML = '<i class="bi bi-people-fill"></i> ' + titleText;
         }
     }
     
-    // 从系统配置加载业务类型
+    // 从系统配置加载业务类型和品种
     loadBusinessTypesFromConfig();
+    loadVarietiesFromConfig();
     
     loadStatistics();
     loadCustomers();
@@ -267,7 +337,7 @@ function formatNumber(num) {
 function loadCustomers(page = currentPage) {
     currentPage = page;
     const tbody = document.getElementById('customerTableBody');
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">加载中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">加载中...</td></tr>';
 
     // 构建查询参数
     const params = new URLSearchParams();
@@ -333,7 +403,7 @@ function loadCustomers(page = currentPage) {
         .catch(error => {
             console.error('加载客户列表失败:', error);
             const errorMsg = error.message || '网络错误或服务器未响应';
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
         });
 }
 
@@ -343,7 +413,7 @@ function renderCustomerTable(customerList) {
     tbody.innerHTML = '';
     
     if (customerList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">暂无数据</td></tr>';
         return;
     }
 
@@ -369,6 +439,9 @@ function renderCustomerTable(customerList) {
         const businessType = customer.businessType !== null && customer.businessType !== undefined ? customer.businessType : 1;
         const businessTypeText = businessType ? (businessTypeMap[businessType.toString()] || '') : '-';
         
+        // 品种字段
+        const varietyText = customer.variety || '';
+        
         const createTime = customer.createTime ? new Date(customer.createTime).toLocaleString('zh-CN') : '';
         
         row.innerHTML = 
@@ -381,6 +454,7 @@ function renderCustomerTable(customerList) {
             '<td class="table-cell-truncate">' +
                 '<span class="badge ' + progressBadgeClass + '">' + progressText + '</span>' +
             '</td>' +
+            '<td class="table-cell-truncate" title="' + varietyText + '">' + (varietyText || '-') + '</td>' +
             '<td class="table-cell-truncate" title="' + businessTypeText + '">' + businessTypeText + '</td>' +
             '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
             '<td>' +
@@ -2288,6 +2362,14 @@ function showCustomerDetail(customer) {
             '</div>' +
             '<div class="col-md-6">' +
                 '<div class="mb-3">' +
+                    '<label class="form-label text-muted">品种</label>' +
+                    '<p class="mb-0">' + (customer.variety || '未填写') + '</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="row g-3">' +
+            '<div class="col-md-6">' +
+                '<div class="mb-3">' +
                     '<label class="form-label text-muted">地区</label>' +
                     '<p class="mb-0">' + (customer.region || '未填写') + '</p>' +
                 '</div>' +
@@ -2444,6 +2526,10 @@ function showEditModal(customer) {
     document.getElementById('cooperationContent').value = customer.cooperationContent || '';
     document.getElementById('address').value = customer.address || '';
     document.getElementById('remarks').value = customer.remark || '';
+    const varietySelect = document.getElementById('varietySelect');
+    if (varietySelect) {
+        varietySelect.value = customer.variety || '';
+    }
     
     // 延迟显示模态框，确保所有值都已设置
     setTimeout(() => {
@@ -2481,6 +2567,7 @@ function saveCustomer() {
     const progress = parseInt(formData.get('progress')) || 0;
     // 默认设置为第一种类型（品种权申请客户）
     const businessType = formData.get('businessType') ? parseInt(formData.get('businessType')) : 1;
+    const variety = formData.get('variety') || null;
     
     const customerId = document.getElementById('customerId').value;
     
@@ -2493,6 +2580,7 @@ function saveCustomer() {
         customerLevel: customerLevel,
         progress: progress,
         businessType: businessType,
+        variety: variety,
         region: formData.get('region') || null,
         position: formData.get('position') || null,
         qqWeixin: formData.get('qqWeixin') || null,

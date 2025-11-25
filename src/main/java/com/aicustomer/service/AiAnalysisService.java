@@ -60,8 +60,9 @@ public interface AiAnalysisService {
 
     /**
      * 获取业务机会列表
+     * @param days 最近N天的沟通记录窗口，例如1,7,15,30,90,180,365
      */
-    List<Map<String, Object>> getBusinessOpportunities();
+    List<java.util.Map<String, Object>> getBusinessOpportunities(int days);
 
     /**
      * 获取客户维护提醒（生日、长时间未沟通）
