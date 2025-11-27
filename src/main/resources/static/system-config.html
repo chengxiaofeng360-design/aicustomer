@@ -1106,6 +1106,8 @@
 
         // 左侧菜单过滤功能
         function filterByGroup(groupName) {
+            console.log('点击菜单:', groupName);
+            
             // 更新左侧导航状态
             document.querySelectorAll('.config-group-item').forEach(item => {
                 item.classList.remove('active');
@@ -1127,6 +1129,15 @@
             } else {
                 submenu.style.display = 'none'; // 其他情况收缩子菜单
             }
+            
+            // 安全地获取configList元素
+            const configList = document.getElementById('configList');
+            if (!configList) {
+                console.error('configList元素不存在');
+                return;
+            }
+            
+            console.log('开始加载内容:', groupName);
             
             // 根据不同的组显示不同的内容
             switch(groupName) {
