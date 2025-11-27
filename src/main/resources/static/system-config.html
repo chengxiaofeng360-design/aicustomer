@@ -249,10 +249,7 @@
                 <i class="bi bi-sliders"></i> 系统配置管理
             </div>
             <div>
-                <button class="btn btn-primary" onclick="showAddConfigModal()">
-                    <i class="bi bi-plus-circle"></i> 新增配置
-                </button>
-                <a href="/" class="btn btn-outline-secondary ms-2">
+                <a href="/" class="btn btn-outline-secondary">
                     <i class="bi bi-house-fill"></i> 返回首页
                 </a>
             </div>
@@ -404,17 +401,20 @@
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-search"></i></span>
                                 <input type="text" class="form-control" id="searchInput" placeholder="搜索配置键或描述..." onkeypress="handleSearchKeyPress(event)">
                             </div>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <button class="btn btn-outline-primary" onclick="searchConfigs()">
+                        <div class="col-md-6 text-end">
+                            <button class="btn btn-primary" onclick="showAddConfigModal()">
+                                <i class="bi bi-plus-circle"></i> 新增配置
+                            </button>
+                            <button class="btn btn-outline-primary ms-2" onclick="searchConfigs()">
                                 <i class="bi bi-search"></i> 搜索
                             </button>
-                            <button class="btn btn-outline-secondary" onclick="loadConfigs()">
+                            <button class="btn btn-outline-secondary ms-2" onclick="loadConfigs()">
                                 <i class="bi bi-arrow-clockwise"></i> 刷新
                             </button>
                         </div>
