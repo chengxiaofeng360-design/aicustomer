@@ -252,10 +252,15 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">关联客户</label>
-                                    <select class="form-select" id="taskCustomerId" name="customerId">
-                                        <option value="">请选择客户</option>
-                                        <!-- 选项将通过JavaScript动态加载 -->
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-select" id="taskCustomerId" name="customerId">
+                                            <option value="">请选择客户</option>
+                                            <!-- 选项将通过JavaScript动态加载 -->
+                                        </select>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="clearCustomerSelection()" title="清除关联客户">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">

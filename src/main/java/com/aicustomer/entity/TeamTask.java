@@ -182,6 +182,16 @@ public class TeamTask extends BaseEntity {
     private String supervisionNote;
 
     /**
+     * 关联客户ID
+     */
+    private Long customerId;
+
+    /**
+     * 关联客户姓名
+     */
+    private String customerName;
+
+    /**
      * 获取任务名称（兼容方法，返回title）
      */
     public String getName() {

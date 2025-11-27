@@ -1,4 +1,158 @@
-        /* 语音功能样式 */
+        /* AI聊天页面样式 */
+
+/* 基础侧边栏样式 */
+.chat-sidebar {
+    display: flex !important;
+    flex-direction: column;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+}
+
+.chat-sidebar .sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-sidebar .current-chat-section {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-sidebar .chat-history {
+    flex: 1;
+    padding: 15px 20px;
+    overflow-y: auto;
+}
+
+.chat-sidebar .quick-actions {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 侧边栏内容样式 */
+.chat-sidebar h5,
+.chat-sidebar h6 {
+    color: white !important;
+    font-weight: 500;
+}
+
+.chat-sidebar .current-chat-item {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-sidebar .current-chat-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.chat-sidebar .current-chat-item.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 3px solid #fff;
+}
+
+.chat-sidebar .current-chat-item i {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.chat-sidebar .history-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-sidebar .history-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.chat-sidebar .history-item i {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.chat-sidebar .history-empty {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+/* 侧边栏切换按钮 */
+.sidebar-toggle {
+    position: absolute;
+    top: 50%;
+    right: -15px;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-toggle i {
+    color: #667eea;
+    font-size: 14px;
+}
+
+/* AI状态指示器 */
+.ai-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.online {
+    background: #28a745;
+}
+
+.status-text {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 语音功能样式 */
         .recording-indicator {
             animation: pulse 1s infinite;
         }
@@ -809,13 +963,15 @@
                 width: 100% !important;
                 min-width: auto;
                 height: auto;
-                max-height: 200px;
+                max-height: 300px;
+                overflow-y: auto;
                 order: 2;
+                display: flex !important;
             }
             
             .chat-main-area {
                 order: 1;
-                height: calc(100vh - 270px);
+                height: calc(100vh - 370px);
             }
             
             .input-wrapper {
@@ -977,4 +1133,3 @@
                 transform: scale(1);
             }
         }
-    </style>
