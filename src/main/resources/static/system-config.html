@@ -266,6 +266,15 @@
                 <div class="config-group-item" onclick="showKnowledgeManagement()" data-group="knowledge">
                     <i class="bi bi-book"></i> 知识库管理
                 </div>
+                <div class="config-group-item" onclick="filterByGroup('业务管理')" data-group="业务管理">
+                    <i class="bi bi-briefcase"></i> 业务管理
+                </div>
+                <div class="config-group-item" onclick="filterByGroup('用户管理')" data-group="用户管理">
+                    <i class="bi bi-people"></i> 用户管理
+                </div>
+                <div class="config-group-item" onclick="filterByGroup('系统设置')" data-group="系统设置">
+                    <i class="bi bi-gear"></i> 系统设置
+                </div>
                 <div id="groupList">
                     <!-- 动态加载分组列表 -->
                 </div>
@@ -1095,6 +1104,21 @@
                     document.getElementById('knowledgeContent').style.display = 'none';
                     loadConfigs();
                     break;
+                case '业务管理':
+                    document.getElementById('configContent').style.display = 'block';
+                    document.getElementById('knowledgeContent').style.display = 'none';
+                    showBusinessManagement();
+                    break;
+                case '用户管理':
+                    document.getElementById('configContent').style.display = 'block';
+                    document.getElementById('knowledgeContent').style.display = 'none';
+                    showUserManagement();
+                    break;
+                case '系统设置':
+                    document.getElementById('configContent').style.display = 'block';
+                    document.getElementById('knowledgeContent').style.display = 'none';
+                    showSystemSettings();
+                    break;
                 case '知识管理':
                     showKnowledgeManagement();
                     break;
@@ -1232,6 +1256,167 @@
             // 默认加载配置列表
             loadConfigs();
         });
+
+        // 显示业务管理
+        function showBusinessManagement() {
+            const configList = document.getElementById('configList');
+            configList.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-3 text-muted">正在加载业务管理...</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                configList.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-briefcase"></i> 
+                        业务管理功能正在开发中，敬请期待！
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-graph-up display-4 text-primary"></i>
+                                    <h5 class="card-title mt-3">业务统计</h5>
+                                    <p class="card-text">查看业务数据统计和分析</p>
+                                    <button class="btn btn-primary">查看统计</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-people display-4 text-success"></i>
+                                    <h5 class="card-title mt-3">客户管理</h5>
+                                    <p class="card-text">管理客户信息和关系</p>
+                                    <button class="btn btn-success">客户管理</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-file-contract display-4 text-warning"></i>
+                                    <h5 class="card-title mt-3">合同管理</h5>
+                                    <p class="card-text">管理合同和协议</p>
+                                    <button class="btn btn-warning">合同管理</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // 显示用户管理
+        function showUserManagement() {
+            const configList = document.getElementById('configList');
+            configList.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-3 text-muted">正在加载用户管理...</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                configList.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-people"></i> 
+                        用户管理功能正在开发中，敬请期待！
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>邮箱</th>
+                                    <th>角色</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>admin</td>
+                                    <td>admin@example.com</td>
+                                    <td><span class="badge bg-danger">管理员</span></td>
+                                    <td><span class="badge bg-success">在线</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                        <button class="btn btn-sm btn-outline-danger">删除</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>user1</td>
+                                    <td>user1@example.com</td>
+                                    <td><span class="badge bg-primary">用户</span></td>
+                                    <td><span class="badge bg-success">在线</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                        <button class="btn btn-sm btn-outline-danger">删除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // 显示系统设置
+        function showSystemSettings() {
+            const configList = document.getElementById('configList');
+            configList.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-3 text-muted">正在加载系统设置...</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                configList.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-gear"></i> 
+                        系统设置功能正在开发中，敬请期待！
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">系统信息</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>系统版本:</strong> v1.0.0</p>
+                                    <p><strong>Java版本:</strong> 17</p>
+                                    <p><strong>Spring Boot:</strong> 3.2.0</p>
+                                    <p><strong>数据库:</strong> MySQL 8.0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">系统状态</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>服务状态:</strong> <span class="badge bg-success">运行中</span></p>
+                                    <p><strong>内存使用:</strong> 512MB / 2GB</p>
+                                    <p><strong>CPU使用:</strong> 15%</p>
+                                    <p><strong>磁盘空间:</strong> 10GB / 50GB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
     </script>
 </body>
 </html>
