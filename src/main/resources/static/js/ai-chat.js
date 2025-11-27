@@ -29,16 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
         input.focus();
     }
     
-    // 确保侧边栏是展开的
-    const sidebar = document.getElementById('chatSidebar');
-    const toggleIcon = document.getElementById('sidebarToggleIcon');
-    if (sidebar && sidebar.classList.contains('collapsed')) {
-        sidebar.classList.remove('collapsed');
-        if (toggleIcon) {
-            toggleIcon.className = 'bi bi-chevron-left';
-        }
-    }
-    
     initCurrentUser();
     initializeChat();
     initKeyboardShortcuts();
