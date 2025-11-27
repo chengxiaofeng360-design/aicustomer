@@ -44,7 +44,28 @@
             border-color: #667eea;
         }
         .config-group-item.active:hover {
-            background: #5568d3;
+            background-color: #0056b3;
+        }
+        
+        .config-submenu {
+            margin-left: 1rem;
+            border-left: 2px solid #e9ecef;
+            padding-left: 0.5rem;
+        }
+        
+        .config-submenu .config-group-item {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+            margin: 0.25rem 0;
+        }
+        
+        .config-submenu .config-group-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .config-submenu .config-group-item.active {
+            background-color: #007bff;
+            color: white;
         }
         .config-group-title {
             font-weight: 600;
@@ -269,17 +290,22 @@
                 <div class="config-group-item" onclick="filterByGroup('业务管理')" data-group="业务管理">
                     <i class="bi bi-briefcase"></i> 业务管理
                 </div>
-                <div class="config-group-item" onclick="filterByGroup('用户管理')" data-group="用户管理">
-                    <i class="bi bi-people"></i> 用户管理
-                </div>
-                <div class="config-group-item" onclick="filterByGroup('系统设置')" data-group="系统设置">
-                    <i class="bi bi-gear"></i> 系统设置
-                </div>
                 <div id="groupList">
-                    <!-- 动态加载分组列表 -->
-                </div>
-                <div class="config-group-item" onclick="filterByGroup('其他')" data-group="其他">
-                    <i class="bi bi-folder"></i> 其他
+                    <!-- 业务管理子菜单 -->
+                    <div class="config-submenu" id="businessSubmenu" style="display: none;">
+                        <div class="config-group-item" onclick="filterByGroup('客户管理')" data-group="客户管理">
+                            <i class="bi bi-people"></i> 客户管理
+                        </div>
+                        <div class="config-group-item" onclick="filterByGroup('自定义数据')" data-group="自定义数据">
+                            <i class="bi bi-database"></i> 自定义数据
+                        </div>
+                        <div class="config-group-item" onclick="filterByGroup('业务类型配置')" data-group="业务类型配置">
+                            <i class="bi bi-tags"></i> 业务类型配置
+                        </div>
+                        <div class="config-group-item" onclick="filterByGroup('品种配置')" data-group="品种配置">
+                            <i class="bi bi-grid"></i> 品种配置
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1092,6 +1118,17 @@
             });
             document.querySelector(`[data-group="${groupName}"]`).classList.add('active');
             
+            // 处理业务管理子菜单展开/收缩
+            const submenu = document.getElementById('businessSubmenu');
+            if (groupName === '业务管理') {
+                submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+                return; // 不切换内容，只是展开/收缩子菜单
+            } else if (groupName === '客户管理' || groupName === '自定义数据' || groupName === '业务类型配置' || groupName === '品种配置') {
+                submenu.style.display = 'block'; // 确保子菜单展开
+            } else {
+                submenu.style.display = 'none'; // 其他情况收缩子菜单
+            }
+            
             // 根据不同的组显示不同的内容
             switch(groupName) {
                 case '全部':
@@ -1099,33 +1136,28 @@
                     document.getElementById('knowledgeContent').style.display = 'none';
                     loadConfigs();
                     break;
-                case '系统配置':
+                case '客户管理':
                     document.getElementById('configContent').style.display = 'block';
                     document.getElementById('knowledgeContent').style.display = 'none';
-                    loadConfigs();
+                    showCustomerManagement();
                     break;
-                case '业务管理':
+                case '自定义数据':
                     document.getElementById('configContent').style.display = 'block';
                     document.getElementById('knowledgeContent').style.display = 'none';
-                    showBusinessManagement();
+                    showCustomData();
                     break;
-                case '用户管理':
+                case '业务类型配置':
                     document.getElementById('configContent').style.display = 'block';
                     document.getElementById('knowledgeContent').style.display = 'none';
-                    showUserManagement();
+                    showBusinessTypeConfig();
                     break;
-                case '系统设置':
+                case '品种配置':
                     document.getElementById('configContent').style.display = 'block';
                     document.getElementById('knowledgeContent').style.display = 'none';
-                    showSystemSettings();
+                    showVarietyConfig();
                     break;
                 case '知识管理':
                     showKnowledgeManagement();
-                    break;
-                case '其他':
-                    document.getElementById('configContent').style.display = 'block';
-                    document.getElementById('knowledgeContent').style.display = 'none';
-                    loadConfigs();
                     break;
                 default:
                     document.getElementById('configContent').style.display = 'block';
@@ -1257,69 +1289,15 @@
             loadConfigs();
         });
 
-        // 显示业务管理
-        function showBusinessManagement() {
+        // 显示客户管理
+        function showCustomerManagement() {
             const configList = document.getElementById('configList');
             configList.innerHTML = `
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">加载中...</span>
                     </div>
-                    <p class="mt-3 text-muted">正在加载业务管理...</p>
-                </div>
-            `;
-            
-            setTimeout(() => {
-                configList.innerHTML = `
-                    <div class="alert alert-info">
-                        <i class="bi bi-briefcase"></i> 
-                        业务管理功能正在开发中，敬请期待！
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-graph-up display-4 text-primary"></i>
-                                    <h5 class="card-title mt-3">业务统计</h5>
-                                    <p class="card-text">查看业务数据统计和分析</p>
-                                    <button class="btn btn-primary">查看统计</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-people display-4 text-success"></i>
-                                    <h5 class="card-title mt-3">客户管理</h5>
-                                    <p class="card-text">管理客户信息和关系</p>
-                                    <button class="btn btn-success">客户管理</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-file-contract display-4 text-warning"></i>
-                                    <h5 class="card-title mt-3">合同管理</h5>
-                                    <p class="card-text">管理合同和协议</p>
-                                    <button class="btn btn-warning">合同管理</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }, 1000);
-        }
-
-        // 显示用户管理
-        function showUserManagement() {
-            const configList = document.getElementById('configList');
-            configList.innerHTML = `
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">加载中...</span>
-                    </div>
-                    <p class="mt-3 text-muted">正在加载用户管理...</p>
+                    <p class="mt-3 text-muted">正在加载客户管理...</p>
                 </div>
             `;
             
@@ -1327,35 +1305,38 @@
                 configList.innerHTML = `
                     <div class="alert alert-info">
                         <i class="bi bi-people"></i> 
-                        用户管理功能正在开发中，敬请期待！
+                        客户管理功能
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>用户名</th>
-                                    <th>邮箱</th>
-                                    <th>角色</th>
-                                    <th>状态</th>
+                                    <th>客户名称</th>
+                                    <th>联系人</th>
+                                    <th>电话</th>
+                                    <th>业务类型</th>
+                                    <th>品种</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>admin</td>
-                                    <td>admin@example.com</td>
-                                    <td><span class="badge bg-danger">管理员</span></td>
-                                    <td><span class="badge bg-success">在线</span></td>
+                                    <td>ABC公司</td>
+                                    <td>张三</td>
+                                    <td>13800138000</td>
+                                    <td><span class="badge bg-primary">批发</span></td>
+                                    <td><span class="badge bg-success">电子产品</span></td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-primary">编辑</button>
                                         <button class="btn btn-sm btn-outline-danger">删除</button>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>user1</td>
-                                    <td>user1@example.com</td>
-                                    <td><span class="badge bg-primary">用户</span></td>
-                                    <td><span class="badge bg-success">在线</span></td>
+                                    <td>XYZ企业</td>
+                                    <td>李四</td>
+                                    <td>13900139000</td>
+                                    <td><span class="badge bg-warning">零售</span></td>
+                                    <td><span class="badge bg-info">日用品</span></td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-primary">编辑</button>
                                         <button class="btn btn-sm btn-outline-danger">删除</button>
@@ -1368,49 +1349,227 @@
             }, 1000);
         }
 
-        // 显示系统设置
-        function showSystemSettings() {
+        // 显示自定义数据
+        function showCustomData() {
             const configList = document.getElementById('configList');
             configList.innerHTML = `
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">加载中...</span>
                     </div>
-                    <p class="mt-3 text-muted">正在加载系统设置...</p>
+                    <p class="mt-3 text-muted">正在加载自定义数据...</p>
                 </div>
             `;
             
             setTimeout(() => {
                 configList.innerHTML = `
                     <div class="alert alert-info">
-                        <i class="bi bi-gear"></i> 
-                        系统设置功能正在开发中，敬请期待！
+                        <i class="bi bi-database"></i> 
+                        自定义数据管理
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h6 class="mb-0">系统信息</h6>
+                                    <h6 class="mb-0">自定义字段</h6>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>系统版本:</strong> v1.0.0</p>
-                                    <p><strong>Java版本:</strong> 17</p>
-                                    <p><strong>Spring Boot:</strong> 3.2.0</p>
-                                    <p><strong>数据库:</strong> MySQL 8.0</p>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>字段名</th>
+                                                <th>字段类型</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>客户等级</td>
+                                                <td>下拉选择</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>信用额度</td>
+                                                <td>数字</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h6 class="mb-0">系统状态</h6>
+                                    <h6 class="mb-0">数据字典</h6>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>服务状态:</strong> <span class="badge bg-success">运行中</span></p>
-                                    <p><strong>内存使用:</strong> 512MB / 2GB</p>
-                                    <p><strong>CPU使用:</strong> 15%</p>
-                                    <p><strong>磁盘空间:</strong> 10GB / 50GB</p>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>字典类型</th>
+                                                <th>字典值</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>客户等级</td>
+                                                <td>A级,B级,C级</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // 显示业务类型配置
+        function showBusinessTypeConfig() {
+            const configList = document.getElementById('configList');
+            configList.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-3 text-muted">正在加载业务类型配置...</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                configList.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-tags"></i> 
+                        业务类型配置管理
+                    </div>
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">业务类型列表</h6>
+                            <button class="btn btn-sm btn-primary" onclick="showAddBusinessTypeModal()">
+                                <i class="bi bi-plus"></i> 新增业务类型
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>类型编码</th>
+                                            <th>类型名称</th>
+                                            <th>描述</th>
+                                            <th>状态</th>
+                                            <th>创建时间</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>WHOLESALE</td>
+                                            <td>批发</td>
+                                            <td>批量采购业务</td>
+                                            <td><span class="badge bg-success">启用</span></td>
+                                            <td>2024-01-01</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                                <button class="btn btn-sm btn-outline-danger">删除</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>RETAIL</td>
+                                            <td>零售</td>
+                                            <td>零售业务</td>
+                                            <td><span class="badge bg-success">启用</span></td>
+                                            <td>2024-01-01</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                                <button class="btn btn-sm btn-outline-danger">删除</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // 显示品种配置
+        function showVarietyConfig() {
+            const configList = document.getElementById('configList');
+            configList.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-3 text-muted">正在加载品种配置...</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                configList.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-grid"></i> 
+                        品种配置管理
+                    </div>
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">品种列表</h6>
+                            <button class="btn btn-sm btn-primary" onclick="showAddVarietyModal()">
+                                <i class="bi bi-plus"></i> 新增品种
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>品种编码</th>
+                                            <th>品种名称</th>
+                                            <th>分类</th>
+                                            <th>规格</th>
+                                            <th>单位</th>
+                                            <th>状态</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>ELEC001</td>
+                                            <td>手机</td>
+                                            <td>电子产品</td>
+                                            <td>标准版</td>
+                                            <td>台</td>
+                                            <td><span class="badge bg-success">启用</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                                <button class="btn btn-sm btn-outline-danger">删除</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>DAILY001</td>
+                                            <td>洗发水</td>
+                                            <td>日用品</td>
+                                            <td>500ml</td>
+                                            <td>瓶</td>
+                                            <td><span class="badge bg-success">启用</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                                <button class="btn btn-sm btn-outline-danger">删除</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
