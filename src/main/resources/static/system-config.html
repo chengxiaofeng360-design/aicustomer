@@ -103,6 +103,40 @@
             padding: 1rem;
         }
         
+        .upload-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+        }
+        
+        .upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            background: #e3f2fd;
+            border-color: #0056b3;
+        }
+        
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #0056b3;
+            transform: scale(1.02);
+        }
+        
+        .progress-bar-container {
+            margin-top: 1rem;
+            display: none;
+        }
+        
         .category-buttons, .tag-buttons {
             display: flex;
             flex-wrap: wrap;
@@ -243,6 +277,28 @@
                         <h4 class="mb-4">
                             <i class="bi bi-book"></i> 知识库管理
                         </h4>
+                        
+                        <!-- 文件上传区域 -->
+                        <div class="upload-section mb-4">
+                            <h5 class="mb-3">
+                                <i class="bi bi-cloud-upload"></i> 上传文档
+                            </h5>
+                            <div class="upload-area" id="uploadArea">
+                                <i class="bi bi-cloud-upload display-4 text-primary mb-3"></i>
+                                <h4>拖拽文件到此处或点击选择</h4>
+                                <p class="text-muted">支持 PDF、Word、Excel、图片等格式，最大 10MB</p>
+                                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt" style="display: none;">
+                            </div>
+                            
+                            <div class="progress-bar-container">
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <span id="uploadStatus"></span>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- 知识分类管理 -->
                         <div class="category-management mb-4">
@@ -473,6 +529,124 @@
                 item.classList.remove('active');
             });
             document.querySelector('[data-group="knowledge"]').classList.add('active');
+            
+            // 初始化上传功能
+            initializeUpload();
+        }
+
+        // 初始化上传功能
+        function initializeUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            // 点击上传区域
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // 文件选择
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+            
+            // 拖拽功能
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+        }
+
+        // 处理文件上传
+        async function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            const progressBar = document.querySelector('.progress-bar');
+            const progressContainer = document.querySelector('.progress-bar-container');
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            uploadStatus.textContent = '准备上传...';
+            
+            // 获取已选择的分类和标签
+            const selectedData = getSelectedCategoriesAndTags();
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // 验证文件大小
+                if (file.size > 10 * 1024 * 1024) {
+                    uploadStatus.textContent = `文件 ${file.name} 超过10MB限制`;
+                    continue;
+                }
+                
+                // 验证文件类型
+                const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.jpg', '.jpeg', '.png', '.txt'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                if (!allowedTypes.includes(fileExtension)) {
+                    uploadStatus.textContent = `文件 ${file.name} 格式不支持`;
+                    continue;
+                }
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('categories', JSON.stringify(selectedData.categories));
+                    formData.append('tags', JSON.stringify(selectedData.tags));
+                    
+                    const xhr = new XMLHttpRequest();
+                    
+                    // 上传进度
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = (e.loaded / e.total) * 100;
+                            progressBar.style.width = percentComplete + '%';
+                            uploadStatus.textContent = `正在上传 ${file.name}... ${Math.round(percentComplete)}%`;
+                        }
+                    };
+                    
+                    // 上传完成
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            uploadStatus.textContent = `${file.name} 上传成功！`;
+                            progressBar.style.width = '100%';
+                            
+                            // 重置文件输入
+                            document.getElementById('fileInput').value = '';
+                            
+                            // 延迟隐藏进度条
+                            setTimeout(() => {
+                                progressContainer.style.display = 'none';
+                            }, 2000);
+                        } else {
+                            uploadStatus.textContent = `${file.name} 上传失败`;
+                        }
+                    };
+                    
+                    // 上传错误
+                    xhr.onerror = function() {
+                        uploadStatus.textContent = `${file.name} 上传失败`;
+                    };
+                    
+                    // 发送请求
+                    xhr.open('POST', '/api/knowledge/upload');
+                    xhr.send(formData);
+                    
+                } catch (error) {
+                    console.error('上传失败:', error);
+                    uploadStatus.textContent = `${file.name} 上传失败`;
+                }
+            }
         }
 
         // 显示二级分类
@@ -644,6 +818,16 @@
                 document.getElementById('level2CategoriesContainer').style.display = 'none';
                 document.getElementById('tagOptionsContainer').style.display = 'none';
             }
+        }
+
+        // 获取已选择的分类和标签（用于上传）
+        function getSelectedCategoriesAndTags() {
+            return {
+                categories: selectedCategories.map(item => item.value),
+                tags: selectedTags.map(item => item.value),
+                categoryTexts: selectedCategories.map(item => item.text),
+                tagTexts: selectedTags.map(item => item.text)
+            };
         }
     </script>
 </body>
