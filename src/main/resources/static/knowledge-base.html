@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库管理 - AI客户管理系统</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
+    <style>
+        .knowledge-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .upload-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            background: #e3f2fd;
+            border-color: #0056b3;
+        }
+        
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #0056b3;
+            transform: scale(1.02);
+        }
+        
+        .category-tree {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .document-list {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-item {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin: 0.25rem 0;
+        }
+        
+        .category-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .category-item.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .document-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .document-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .file-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #e9ecef;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+        }
+        
+        .category-selector, .tag-selector {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            background: #f8f9fa;
+        }
+        
+        .category-level-1, .category-level-2, .tag-level-1, .tag-level-2 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .category-confirm, .tag-confirm {
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
+        .selected-tags-display {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 60px;
+            background: white;
+        }
+        
+        .selected-tag {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #007bff;
+            color: white;
+            border-radius: 20px;
+            margin: 0.25rem;
+            font-size: 0.875rem;
+            position: relative;
+        }
+        
+        .selected-tag .remove-tag {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .selected-tag .remove-tag:hover {
+            color: #ff6b6b;
+        }
+        
+        .search-section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .progress-bar-container {
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .file-type-pdf { color: #dc3545; }
+        .file-type-word { color: #2b579a; }
+        .file-type-excel { color: #217346; }
+        .file-type-image { color: #28a745; }
+        .file-type-text { color: #6c757d; }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/index.html">
+                <i class="bi bi-cpu"></i> AI客户管理系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/index.html">
+                    <i class="bi bi-house"></i> 首页
+                </a>
+                <a class="nav-link active" href="/knowledge-base.html">
+                    <i class="bi bi-book"></i> 知识库
+                </a>
+                <a class="nav-link" href="/customers.html">
+                    <i class="bi bi-people"></i> 客户管理
+                </a>
+                <a class="nav-link" href="/ai-chat.html">
+                    <i class="bi bi-chat-dots"></i> AI助手
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="knowledge-container">
+        <div class="row">
+            <!-- 左侧分类树 -->
+            <div class="col-md-3">
+                <div class="category-tree">
+                    <h5 class="mb-3">
+                        <i class="bi bi-folder-tree"></i> 知识分类
+                    </h5>
+                    <div id="categoryTree">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">加载中...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧内容区 -->
+            <div class="col-md-9">
+                <!-- 搜索区域 -->
+                <div class="search-section">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchInput" placeholder="搜索文档内容、标题、关键词...">
+                                <button class="btn btn-outline-primary" type="button" onclick="searchDocuments()">
+                                    <i class="bi bi-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">所有分类</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文件上传区域 -->
+                <div class="upload-section">
+                    <h5 class="mb-3">
+                        <i class="bi bi-cloud-upload"></i> 上传文档
+                    </h5>
+                    <div class="upload-area" id="uploadArea">
+                        <i class="bi bi-cloud-upload display-4 text-primary mb-3"></i>
+                        <h4>拖拽文件到此处或点击选择</h4>
+                        <p class="text-muted">支持 PDF、Word、Excel、图片等格式，最大 10MB</p>
+                        <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt" style="display: none;">
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">选择分类</label>
+                            <div class="category-selector">
+                                <div class="category-level-1">
+                                    <select class="form-select mb-2" id="categoryLevel1" onchange="loadCategoryLevel2()">
+                                        <option value="">请选择一级分类</option>
+                                        <option value="technology">技术文档</option>
+                                        <option value="business">业务资料</option>
+                                        <option value="contract">合同文件</option>
+                                        <option value="training">培训材料</option>
+                                    </select>
+                                </div>
+                                <div class="category-level-2" id="categoryLevel2Container" style="display: none;">
+                                    <select class="form-select mb-2" id="categoryLevel2" onchange="confirmCategory()">
+                                        <option value="">请选择二级分类</option>
+                                    </select>
+                                </div>
+                                <div class="category-confirm" id="categoryConfirmContainer" style="display: none;">
+                                    <button class="btn btn-primary btn-sm" onclick="confirmCategorySelection()">
+                                        <i class="bi bi-check-circle"></i> 确定分类
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">选择标签</label>
+                            <div class="tag-selector">
+                                <div class="tag-level-1">
+                                    <select class="form-select mb-2" id="tagLevel1" onchange="loadTagLevel2()">
+                                        <option value="">请选择标签分类</option>
+                                        <option value="priority">优先级</option>
+                                        <option value="type">文档类型</option>
+                                        <option value="department">部门</option>
+                                        <option value="project">项目</option>
+                                    </select>
+                                </div>
+                                <div class="tag-level-2" id="tagLevel2Container" style="display: none;">
+                                    <select class="form-select mb-2" id="tagLevel2" onchange="confirmTag()">
+                                        <option value="">请选择具体标签</option>
+                                    </select>
+                                </div>
+                                <div class="tag-confirm" id="tagConfirmContainer" style="display: none;">
+                                    <button class="btn btn-primary btn-sm" onclick="confirmTagSelection()">
+                                        <i class="bi bi-check-circle"></i> 确定标签
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 已选择的分类和标签显示区域 -->
+                    <div class="row mt-3" id="selectedTagsContainer" style="display: none;">
+                        <div class="col-12">
+                            <label class="form-label">已选择的分类和标签</label>
+                            <div class="selected-tags-display" id="selectedTagsDisplay">
+                                <!-- 动态显示已选择的标签 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar-container">
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <span id="uploadStatus"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文档列表 -->
+                <div class="document-list">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-earmark-text"></i> 文档列表
+                        </h5>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-primary btn-sm" onclick="refreshDocuments()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="getHotDocuments()">
+                                <i class="bi bi-fire"></i> 热门
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="documentList">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">加载中...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentCategoryId = null;
+        let uploadedFiles = [];
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadDocuments();
+            setupUploadArea();
+        });
+
+        // 设置上传区域
+        function setupUploadArea() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+
+        // 处理文件上传
+        function handleFiles(files) {
+            uploadedFiles = Array.from(files);
+            if (uploadedFiles.length > 0) {
+                uploadFiles();
+            }
+        }
+
+        // 上传文件
+        async function uploadFiles() {
+            const categoryId = document.getElementById('uploadCategory').value;
+            const tags = document.getElementById('uploadTags').value;
+            const progressContainer = document.querySelector('.progress-bar-container');
+            const progressBar = document.querySelector('.progress-bar');
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            progressContainer.style.display = 'block';
+            
+            for (let i = 0; i < uploadedFiles.length; i++) {
+                const file = uploadedFiles[i];
+                const formData = new FormData();
+                formData.append('file', file);
+                if (categoryId) formData.append('categoryId', categoryId);
+                if (tags) formData.append('tags', tags);
+                
+                try {
+                    uploadStatus.textContent = `上传中: ${file.name} (${i + 1}/${uploadedFiles.length})`;
+                    progressBar.style.width = `${((i + 1) / uploadedFiles.length) * 100}%`;
+                    
+                    const response = await fetch('/api/knowledge/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('上传成功:', result);
+                    } else {
+                        console.error('上传失败:', await response.text());
+                    }
+                } catch (error) {
+                    console.error('上传错误:', error);
+                }
+            }
+            
+            uploadStatus.textContent = '上传完成！';
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+                uploadStatus.textContent = '';
+                loadDocuments();
+            }, 2000);
+        }
+
+        // 加载分类
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/knowledge/categories');
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    renderCategoryTree(result.data);
+                    populateCategorySelects(result.data);
+                }
+            } catch (error) {
+                console.error('加载分类失败:', error);
+            }
+        }
+
+        // 渲染分类树
+        function renderCategoryTree(categories) {
+            const treeContainer = document.getElementById('categoryTree');
+            const rootCategories = categories.filter(cat => !cat.parentId);
+            
+            let html = '';
+            rootCategories.forEach(category => {
+                html += renderCategoryItem(category, categories);
+            });
+            
+            treeContainer.innerHTML = html;
+        }
+
+        // 渲染分类项
+        function renderCategoryItem(category, allCategories) {
+            const children = allCategories.filter(cat => cat.parentId === category.id);
+            const hasChildren = children.length > 0;
+            
+            let html = `
+                <div class="category-item" data-id="${category.id}" onclick="selectCategory(${category.id})">
+                    <i class="bi ${hasChildren ? 'bi-folder-fill' : 'bi-folder'} me-2"></i>
+                    ${category.name}
+                    ${category.documentCount > 0 ? `<span class="badge bg-secondary ms-auto">${category.documentCount}</span>` : ''}
+                </div>
+            `;
+            
+            if (hasChildren) {
+                html += '<div class="ms-3">';
+                children.forEach(child => {
+                    html += renderCategoryItem(child, allCategories);
+                });
+                html += '</div>';
+            }
+            
+            return html;
+        }
+
+        // 填充分类选择框
+        function populateCategorySelects(categories) {
+            const uploadSelect = document.getElementById('uploadCategory');
+            const filterSelect = document.getElementById('categoryFilter');
+            
+            let options = '<option value="">自动分类/所有分类</option>';
+            categories.forEach(category => {
+                const indent = category.level > 1 ? '　'.repeat(category.level - 1) : '';
+                options += `<option value="${category.id}">${indent}${category.name}</option>`;
+            });
+            
+            uploadSelect.innerHTML = options;
+            filterSelect.innerHTML = options;
+        }
+
+        // 选择分类
+        function selectCategory(categoryId) {
+            // 移除之前的选中状态
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 添加选中状态
+            document.querySelector(`[data-id="${categoryId}"]`).classList.add('active');
+            
+            currentCategoryId = categoryId;
+            loadDocuments();
+        }
+
+        // 加载文档列表
+        async function loadDocuments() {
+            try {
+                let url = '/api/knowledge/documents?pageNum=1&pageSize=20';
+                if (currentCategoryId) {
+                    url += `&categoryId=${currentCategoryId}`;
+                }
+                
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    renderDocumentList(result.data);
+                }
+            } catch (error) {
+                console.error('加载文档失败:', error);
+            }
+        }
+
+        // 渲染文档列表
+        function renderDocumentList(documents) {
+            const listContainer = document.getElementById('documentList');
+            
+            if (documents.length === 0) {
+                listContainer.innerHTML = '<div class="text-center text-muted">暂无文档</div>';
+                return;
+            }
+            
+            let html = '';
+            documents.forEach(doc => {
+                html += renderDocumentCard(doc);
+            });
+            
+            listContainer.innerHTML = html;
+        }
+
+        // 渲染文档卡片
+        function renderDocumentCard(doc) {
+            const fileIcon = getFileIcon(doc.fileType);
+            const tags = doc.tags ? doc.tags.split(',').map(tag => `<span class="tag">${tag}</span>`).join('') : '';
+            
+            return `
+                <div class="document-card">
+                    <div class="d-flex align-items-start">
+                        <div class="file-icon ${fileIcon.class}">
+                            <i class="bi ${fileIcon.icon}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${doc.title}</h6>
+                            <p class="text-muted mb-2">${doc.summary || '暂无摘要'}</p>
+                            <div class="d-flex align-items-center text-muted small mb-2">
+                                <span class="me-3"><i class="bi bi-folder"></i> ${doc.categoryName || '未分类'}</span>
+                                <span class="me-3"><i class="bi bi-eye"></i> ${doc.viewCount}</span>
+                                <span class="me-3"><i class="bi bi-download"></i> ${doc.downloadCount}</span>
+                                <span><i class="bi bi-calendar"></i> ${new Date(doc.createTime).toLocaleDateString()}</span>
+                            </div>
+                            <div class="mb-2">${tags}</div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="viewDocument(${doc.id})">
+                                    <i class="bi bi-eye"></i> 查看
+                                </button>
+                                <button class="btn btn-outline-success" onclick="downloadDocument(${doc.id})">
+                                    <i class="bi bi-download"></i> 下载
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteDocument(${doc.id})">
+                                    <i class="bi bi-trash"></i> 删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 获取文件图标
+        function getFileIcon(fileType) {
+            const icons = {
+                'pdf': { icon: 'bi-file-earmark-pdf', class: 'file-type-pdf' },
+                'word': { icon: 'bi-file-earmark-word', class: 'file-type-word' },
+                'excel': { icon: 'bi-file-earmark-excel', class: 'file-type-excel' },
+                'image': { icon: 'bi-file-earmark-image', class: 'file-type-image' },
+                'text': { icon: 'bi-file-earmark-text', class: 'file-type-text' }
+            };
+            
+            return icons[fileType] || { icon: 'bi-file-earmark', class: 'file-type-text' };
+        }
+
+        // 搜索文档
+        async function searchDocuments() {
+            const query = document.getElementById('searchInput').value;
+            const categoryId = document.getElementById('categoryFilter').value;
+            
+            if (!query.trim()) {
+                loadDocuments();
+                return;
+            }
+            
+            try {
+                let url = `/api/knowledge/search?query=${encodeURIComponent(query)}&limit=20`;
+                if (categoryId) url += `&categoryId=${categoryId}`;
+                
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    renderDocumentList(result.data);
+                }
+            } catch (error) {
+                console.error('搜索失败:', error);
+            }
+        }
+
+        // 获取热门文档
+        async function getHotDocuments() {
+            try {
+                const response = await fetch('/api/knowledge/documents/hot?limit=20');
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    renderDocumentList(result.data);
+                }
+            } catch (error) {
+                console.error('获取热门文档失败:', error);
+            }
+        }
+
+        // 查看文档
+        function viewDocument(docId) {
+            // 实现查看逻辑
+            console.log('查看文档:', docId);
+        }
+
+        // 分类和标签选择功能
+        let selectedCategories = [];
+        let selectedTags = [];
+
+        // 二级分类数据
+        const categoryData = {
+            technology: [
+                { value: 'api', text: 'API文档' },
+                { value: 'database', text: '数据库设计' },
+                { value: 'frontend', text: '前端开发' },
+                { value: 'backend', text: '后端开发' }
+            ],
+            business: [
+                { value: 'requirement', text: '需求文档' },
+                { value: 'proposal', text: '项目提案' },
+                { value: 'report', text: '业务报告' },
+                { value: 'analysis', text: '市场分析' }
+            ],
+            contract: [
+                { value: 'sales', text: '销售合同' },
+                { value: 'service', text: '服务合同' },
+                { value: 'nda', text: '保密协议' },
+                { value: 'procurement', text: '采购合同' }
+            ],
+            training: [
+                { value: 'manual', text: '操作手册' },
+                { value: 'tutorial', text: '教程指南' },
+                { value: 'presentation', text: '培训演示' },
+                { value: 'video', text: '视频教程' }
+            ]
+        };
+
+        // 二级标签数据
+        const tagData = {
+            priority: [
+                { value: 'urgent', text: '紧急' },
+                { value: 'high', text: '高优先级' },
+                { value: 'medium', text: '中优先级' },
+                { value: 'low', text: '低优先级' }
+            ],
+            type: [
+                { value: 'specification', text: '规格说明' },
+                { value: 'design', text: '设计文档' },
+                { value: 'test', text: '测试文档' },
+                { value: 'user-guide', text: '用户指南' }
+            ],
+            department: [
+                { value: 'dev', text: '开发部' },
+                { value: 'product', text: '产品部' },
+                { value: 'marketing', text: '市场部' },
+                { value: 'hr', text: '人力资源' }
+            ],
+            project: [
+                { value: 'project-a', text: '项目A' },
+                { value: 'project-b', text: '项目B' },
+                { value: 'project-c', text: '项目C' },
+                { value: 'internal', text: '内部项目' }
+            ]
+        };
+
+        // 加载二级分类
+        function loadCategoryLevel2() {
+            const level1 = document.getElementById('categoryLevel1').value;
+            const level2Container = document.getElementById('categoryLevel2Container');
+            const level2Select = document.getElementById('categoryLevel2');
+            const confirmContainer = document.getElementById('categoryConfirmContainer');
+            
+            if (!level1) {
+                level2Container.style.display = 'none';
+                confirmContainer.style.display = 'none';
+                return;
+            }
+            
+            // 清空并填充二级分类
+            level2Select.innerHTML = '<option value="">请选择二级分类</option>';
+            if (categoryData[level1]) {
+                categoryData[level1].forEach(item => {
+                    level2Select.innerHTML += `<option value="${item.value}">${item.text}</option>`;
+                });
+            }
+            
+            level2Container.style.display = 'block';
+            confirmContainer.style.display = 'none';
+        }
+
+        // 加载二级标签
+        function loadTagLevel2() {
+            const level1 = document.getElementById('tagLevel1').value;
+            const level2Container = document.getElementById('tagLevel2Container');
+            const level2Select = document.getElementById('tagLevel2');
+            const confirmContainer = document.getElementById('tagConfirmContainer');
+            
+            if (!level1) {
+                level2Container.style.display = 'none';
+                confirmContainer.style.display = 'none';
+                return;
+            }
+            
+            // 清空并填充二级标签
+            level2Select.innerHTML = '<option value="">请选择具体标签</option>';
+            if (tagData[level1]) {
+                tagData[level1].forEach(item => {
+                    level2Select.innerHTML += `<option value="${item.value}">${item.text}</option>`;
+                });
+            }
+            
+            level2Container.style.display = 'block';
+            confirmContainer.style.display = 'none';
+        }
+
+        // 确认分类选择
+        function confirmCategory() {
+            const level1 = document.getElementById('categoryLevel1').value;
+            const level2 = document.getElementById('categoryLevel2').value;
+            const confirmContainer = document.getElementById('categoryConfirmContainer');
+            
+            if (level1 && level2) {
+                confirmContainer.style.display = 'block';
+            } else {
+                confirmContainer.style.display = 'none';
+            }
+        }
+
+        // 确认标签选择
+        function confirmTag() {
+            const level1 = document.getElementById('tagLevel1').value;
+            const level2 = document.getElementById('tagLevel2').value;
+            const confirmContainer = document.getElementById('tagConfirmContainer');
+            
+            if (level1 && level2) {
+                confirmContainer.style.display = 'block';
+            } else {
+                confirmContainer.style.display = 'none';
+            }
+        }
+
+        // 确认分类选择
+        function confirmCategorySelection() {
+            const level1 = document.getElementById('categoryLevel1');
+            const level2 = document.getElementById('categoryLevel2');
+            
+            if (level1.value && level2.value) {
+                const categoryText = `${level1.options[level1.selectedIndex].text} > ${level2.options[level2.selectedIndex].text}`;
+                const categoryValue = `${level1.value}/${level2.value}`;
+                
+                // 添加到已选择列表
+                selectedCategories.push({
+                    value: categoryValue,
+                    text: categoryText,
+                    type: 'category'
+                });
+                
+                // 重置选择器
+                level1.value = '';
+                level2.value = '';
+                document.getElementById('categoryLevel2Container').style.display = 'none';
+                document.getElementById('categoryConfirmContainer').style.display = 'none';
+                
+                // 更新显示
+                updateSelectedTagsDisplay();
+            }
+        }
+
+        // 确认标签选择
+        function confirmTagSelection() {
+            const level1 = document.getElementById('tagLevel1');
+            const level2 = document.getElementById('tagLevel2');
+            
+            if (level1.value && level2.value) {
+                const tagText = `${level1.options[level1.selectedIndex].text} > ${level2.options[level2.selectedIndex].text}`;
+                const tagValue = `${level1.value}/${level2.value}`;
+                
+                // 添加到已选择列表
+                selectedTags.push({
+                    value: tagValue,
+                    text: tagText,
+                    type: 'tag'
+                });
+                
+                // 重置选择器
+                level1.value = '';
+                level2.value = '';
+                document.getElementById('tagLevel2Container').style.display = 'none';
+                document.getElementById('tagConfirmContainer').style.display = 'none';
+                
+                // 更新显示
+                updateSelectedTagsDisplay();
+            }
+        }
+
+        // 更新已选择的标签显示
+        function updateSelectedTagsDisplay() {
+            const container = document.getElementById('selectedTagsContainer');
+            const display = document.getElementById('selectedTagsDisplay');
+            
+            if (selectedCategories.length === 0 && selectedTags.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            display.innerHTML = '';
+            
+            // 显示已选择的分类
+            selectedCategories.forEach((item, index) => {
+                display.innerHTML += `
+                    <span class="selected-tag">
+                        📁 ${item.text}
+                        <span class="remove-tag" onclick="removeCategory(${index})">×</span>
+                    </span>
+                `;
+            });
+            
+            // 显示已选择的标签
+            selectedTags.forEach((item, index) => {
+                display.innerHTML += `
+                    <span class="selected-tag">
+                        🏷️ ${item.text}
+                        <span class="remove-tag" onclick="removeTag(${index})">×</span>
+                    </span>
+                `;
+            });
+        }
+
+        // 移除分类
+        function removeCategory(index) {
+            selectedCategories.splice(index, 1);
+            updateSelectedTagsDisplay();
+        }
+
+        // 移除标签
+        function removeTag(index) {
+            selectedTags.splice(index, 1);
+            updateSelectedTagsDisplay();
+        }
+
+        // 获取已选择的分类和标签（用于上传）
+        function getSelectedCategoriesAndTags() {
+            return {
+                categories: selectedCategories.map(item => item.value),
+                tags: selectedTags.map(item => item.value),
+                categoryTexts: selectedCategories.map(item => item.text),
+                tagTexts: selectedTags.map(item => item.text)
+            };
+        }
+
+        // 下载文档
+        function downloadDocument(docId) {
+            // 实现下载逻辑
+            console.log('下载文档:', docId);
+        }
+
+        // 删除文档
+        async function deleteDocument(docId) {
+            if (!confirm('确定要删除这个文档吗？')) return;
+            
+            try {
+                const response = await fetch(`/api/knowledge/documents/${docId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                if (result.code === 200) {
+                    loadDocuments();
+                } else {
+                    alert('删除失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('删除失败:', error);
+                alert('删除失败');
+            }
+        }
+
+        // 刷新文档列表
+        function refreshDocuments() {
+            loadDocuments();
+        }
+
+        // 搜索框回车事件
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchDocuments();
+            }
+        });
+    </script>
+</body>
+</html>
