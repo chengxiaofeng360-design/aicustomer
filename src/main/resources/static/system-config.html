@@ -909,6 +909,118 @@
                 console.log('系统配置已重置');
             }
         }
+
+        // 左侧菜单过滤功能
+        function filterByGroup(groupName) {
+            // 更新左侧导航状态
+            document.querySelectorAll('.config-group-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-group="${groupName}"]`).classList.add('active');
+            
+            // 根据不同的组显示不同的内容
+            switch(groupName) {
+                case '全部':
+                    document.getElementById('configContent').style.display = 'block';
+                    document.getElementById('knowledgeContent').style.display = 'none';
+                    loadConfigs();
+                    break;
+                case '系统配置':
+                    document.getElementById('configContent').style.display = 'block';
+                    document.getElementById('knowledgeContent').style.display = 'none';
+                    loadConfigs();
+                    break;
+                case '知识管理':
+                    showKnowledgeManagement();
+                    break;
+                case '其他':
+                    document.getElementById('configContent').style.display = 'block';
+                    document.getElementById('knowledgeContent').style.display = 'none';
+                    loadConfigs();
+                    break;
+                default:
+                    document.getElementById('configContent').style.display = 'block';
+                    document.getElementById('knowledgeContent').style.display = 'none';
+                    loadConfigs();
+            }
+        }
+
+        // 加载配置列表
+        function loadConfigs() {
+            const configList = document.getElementById('configList');
+            configList.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-3 text-muted">正在加载配置数据...</p>
+                </div>
+            `;
+            
+            // 模拟加载配置数据
+            setTimeout(() => {
+                configList.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        配置列表功能正在开发中，当前显示的是示例配置模块。
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>配置键</th>
+                                    <th>配置值</th>
+                                    <th>描述</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>system.name</code></td>
+                                    <td>AI客户管理系统</td>
+                                    <td>系统名称配置</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                        <button class="btn btn-sm btn-outline-danger">删除</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><code>system.version</code></td>
+                                    <td>v1.0.0</td>
+                                    <td>系统版本号</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                        <button class="btn btn-sm btn-outline-danger">删除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // 搜索配置
+        function searchConfigs() {
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.trim();
+            
+            if (!searchTerm) {
+                loadConfigs();
+                return;
+            }
+            
+            console.log('搜索配置:', searchTerm);
+            // 这里可以实现实际的搜索逻辑
+            loadConfigs(); // 暂时重新加载所有配置
+        }
+
+        // 处理搜索框回车事件
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchConfigs();
+            }
+        }
     </script>
 </body>
 </html>
