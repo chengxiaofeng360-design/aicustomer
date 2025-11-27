@@ -202,6 +202,43 @@
             padding-top: 1rem;
             border-top: 1px solid #dee2e6;
         }
+        
+        .config-section {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .config-section .card {
+            border: none;
+            box-shadow: none;
+        }
+        
+        .config-section .card-body {
+            padding: 1.5rem;
+        }
+        
+        .config-section h5 {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .config-section .form-label {
+            font-weight: 500;
+            color: #6c757d;
+        }
+        
+        .config-section .form-control:focus,
+        .config-section .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
     </style>
 </head>
 <body>
@@ -244,6 +281,128 @@
             <div class="config-content">
                 <!-- 默认配置管理内容 -->
                 <div id="configContent">
+                    <!-- 系统基础配置 -->
+                    <div class="config-section mb-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-gear"></i> 系统基础配置
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">系统名称</label>
+                                        <input type="text" class="form-control" id="systemName" value="AI客户管理系统">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">系统版本</label>
+                                        <input type="text" class="form-control" id="systemVersion" value="v1.0.0">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">维护模式</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="maintenanceMode">
+                                            <label class="form-check-label" for="maintenanceMode">
+                                                启用维护模式
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">调试模式</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="debugMode">
+                                            <label class="form-check-label" for="debugMode">
+                                                启用调试模式
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据库配置 -->
+                    <div class="config-section mb-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-database"></i> 数据库配置
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">数据库类型</label>
+                                        <select class="form-select" id="dbType">
+                                            <option value="mysql">MySQL</option>
+                                            <option value="postgresql">PostgreSQL</option>
+                                            <option value="oracle">Oracle</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">连接池大小</label>
+                                        <input type="number" class="form-control" id="poolSize" value="10" min="1" max="100">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">查询超时(秒)</label>
+                                        <input type="number" class="form-control" id="queryTimeout" value="30" min="1" max="300">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">连接超时(秒)</label>
+                                        <input type="number" class="form-control" id="connectionTimeout" value="10" min="1" max="60">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 邮件配置 -->
+                    <div class="config-section mb-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-envelope"></i> 邮件配置
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">SMTP服务器</label>
+                                        <input type="text" class="form-control" id="smtpHost" placeholder="smtp.example.com">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">SMTP端口</label>
+                                        <input type="number" class="form-control" id="smtpPort" value="587" min="1" max="65535">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">发件人邮箱</label>
+                                        <input type="email" class="form-control" id="senderEmail" placeholder="noreply@example.com">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">邮件认证</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="smtpAuth" checked>
+                                            <label class="form-check-label" for="smtpAuth">
+                                                启用SMTP认证
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 text-end">
+                                        <button class="btn btn-primary" onclick="saveSystemConfigs()">
+                                            <i class="bi bi-save"></i> 保存配置
+                                        </button>
+                                        <button class="btn btn-outline-secondary ms-2" onclick="resetSystemConfigs()">
+                                            <i class="bi bi-arrow-clockwise"></i> 重置配置
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row mb-3">
                         <div class="col-md-8">
                             <div class="input-group">
@@ -682,6 +841,73 @@
                 categoryTexts: selectedCategories.map(item => item.text),
                 tagTexts: []
             };
+        }
+
+        // 保存系统配置
+        function saveSystemConfigs() {
+            const configs = {
+                // 系统基础配置
+                systemName: document.getElementById('systemName').value,
+                systemVersion: document.getElementById('systemVersion').value,
+                maintenanceMode: document.getElementById('maintenanceMode').checked,
+                debugMode: document.getElementById('debugMode').checked,
+                
+                // 数据库配置
+                dbType: document.getElementById('dbType').value,
+                poolSize: document.getElementById('poolSize').value,
+                queryTimeout: document.getElementById('queryTimeout').value,
+                connectionTimeout: document.getElementById('connectionTimeout').value,
+                
+                // 邮件配置
+                smtpHost: document.getElementById('smtpHost').value,
+                smtpPort: document.getElementById('smtpPort').value,
+                senderEmail: document.getElementById('senderEmail').value,
+                smtpAuth: document.getElementById('smtpAuth').checked
+            };
+            
+            console.log('保存系统配置:', configs);
+            
+            // 模拟保存到服务器
+            fetch('/api/system/configs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(configs)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('系统配置保存成功！');
+                } else {
+                    alert('保存失败: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('保存配置失败:', error);
+                alert('保存失败，请稍后重试');
+            });
+        }
+
+        // 重置系统配置
+        function resetSystemConfigs() {
+            if (confirm('确定要重置所有系统配置吗？')) {
+                // 重置表单到默认值
+                document.getElementById('systemName').value = 'AI客户管理系统';
+                document.getElementById('systemVersion').value = 'v1.0.0';
+                document.getElementById('maintenanceMode').checked = false;
+                document.getElementById('debugMode').checked = false;
+                document.getElementById('dbType').value = 'mysql';
+                document.getElementById('poolSize').value = '10';
+                document.getElementById('queryTimeout').value = '30';
+                document.getElementById('connectionTimeout').value = '10';
+                document.getElementById('smtpHost').value = '';
+                document.getElementById('smtpPort').value = '587';
+                document.getElementById('senderEmail').value = '';
+                document.getElementById('smtpAuth').checked = true;
+                
+                console.log('系统配置已重置');
+            }
         }
     </script>
 </body>
