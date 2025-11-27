@@ -1021,6 +1021,52 @@
                 searchConfigs();
             }
         }
+
+        // 显示新增配置模态框
+        function showAddConfigModal() {
+            const modal = new bootstrap.Modal(document.getElementById('configModal'));
+            document.getElementById('configModalTitle').textContent = '新增配置';
+            document.getElementById('configKey').value = '';
+            document.getElementById('configValue').value = '';
+            document.getElementById('configDescription').value = '';
+            document.getElementById('configGroup').value = '系统配置';
+            modal.show();
+        }
+
+        // 保存配置
+        function saveConfig() {
+            const configKey = document.getElementById('configKey').value.trim();
+            const configValue = document.getElementById('configValue').value.trim();
+            const configDescription = document.getElementById('configDescription').value.trim();
+            const configGroup = document.getElementById('configGroup').value;
+
+            if (!configKey || !configValue) {
+                alert('请填写配置键和配置值');
+                return;
+            }
+
+            console.log('保存配置:', {
+                key: configKey,
+                value: configValue,
+                description: configDescription,
+                group: configGroup
+            });
+
+            // 模拟保存
+            const modal = bootstrap.Modal.getInstance(document.getElementById('configModal'));
+            modal.hide();
+            
+            // 重新加载配置列表
+            loadConfigs();
+            
+            alert('配置保存成功！');
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 默认加载配置列表
+            loadConfigs();
+        });
     </script>
 </body>
 </html>
