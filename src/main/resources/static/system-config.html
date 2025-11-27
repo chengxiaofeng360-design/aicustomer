@@ -499,6 +499,51 @@
                             </div>
                         </div>
 
+                        <!-- 标签管理 -->
+                        <div class="tag-management mb-4">
+                            <h5 class="mb-3">标签管理</h5>
+                            
+                            <!-- 标签分类 -->
+                            <div class="tag-categories mb-3">
+                                <h6>标签分类</h6>
+                                <div class="tag-buttons" id="tagCategories">
+                                    <button class="btn btn-outline-success me-2 mb-2" onclick="showTagOptions('priority')">
+                                        <i class="bi bi-flag"></i> 优先级
+                                    </button>
+                                    <button class="btn btn-outline-success me-2 mb-2" onclick="showTagOptions('type')">
+                                        <i class="bi bi-file-earmark"></i> 文档类型
+                                    </button>
+                                    <button class="btn btn-outline-success me-2 mb-2" onclick="showTagOptions('department')">
+                                        <i class="bi bi-people"></i> 部门
+                                    </button>
+                                    <button class="btn btn-outline-success me-2 mb-2" onclick="showTagOptions('project')">
+                                        <i class="bi bi-diagram-3"></i> 项目
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 具体标签 -->
+                            <div class="tag-options mb-3" id="tagOptionsContainer" style="display: none;">
+                                <h6>具体标签</h6>
+                                <div class="tag-buttons" id="tagOptions">
+                                    <!-- 动态加载具体标签按钮 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 已选择的标签 -->
+                            <div class="selected-tags" id="selectedTagsContainer" style="display: none;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">已选择的标签</h6>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="clearAllTags()">
+                                        <i class="bi bi-trash"></i> 清空标签
+                                    </button>
+                                </div>
+                                <div class="selected-tags-display" id="selectedTagsDisplay">
+                                    <!-- 动态显示已选择的标签 -->
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 操作按钮 -->
                         <div class="action-buttons">
                             <button class="btn btn-primary" onclick="saveKnowledgeSettings()">
@@ -579,6 +624,7 @@
 
         // 知识库管理功能
         let selectedCategories = [];
+        let selectedTags = [];
 
         // 二级分类数据
         const categoryData = {
@@ -605,6 +651,34 @@
                 { value: 'tutorial', text: '教程指南', icon: 'bi-play-circle' },
                 { value: 'presentation', text: '培训演示', icon: 'bi-presentation' },
                 { value: 'video', text: '视频教程', icon: 'bi-camera-video' }
+            ]
+        };
+
+        // 标签数据
+        const tagData = {
+            priority: [
+                { value: 'urgent', text: '紧急', icon: 'bi-exclamation-triangle' },
+                { value: 'high', text: '高优先级', icon: 'bi-arrow-up-circle' },
+                { value: 'medium', text: '中优先级', icon: 'bi-dash-circle' },
+                { value: 'low', text: '低优先级', icon: 'bi-arrow-down-circle' }
+            ],
+            type: [
+                { value: 'specification', text: '规格说明', icon: 'bi-file-earmark-text' },
+                { value: 'design', text: '设计文档', icon: 'bi-palette' },
+                { value: 'test', text: '测试文档', icon: 'bi-bug' },
+                { value: 'user-guide', text: '用户指南', icon: 'bi-person' }
+            ],
+            department: [
+                { value: 'dev', text: '开发部', icon: 'bi-code-slash' },
+                { value: 'product', text: '产品部', icon: 'bi-lightbulb' },
+                { value: 'marketing', text: '市场部', icon: 'bi-megaphone' },
+                { value: 'hr', text: '人力资源', icon: 'bi-people' }
+            ],
+            project: [
+                { value: 'project-a', text: '项目A', icon: 'bi-folder' },
+                { value: 'project-b', text: '项目B', icon: 'bi-folder' },
+                { value: 'project-c', text: '项目C', icon: 'bi-folder' },
+                { value: 'internal', text: '内部项目', icon: 'bi-house' }
             ]
         };
 
@@ -759,6 +833,26 @@
             container.style.display = 'block';
         }
 
+        // 显示标签选项
+        function showTagOptions(tagType) {
+            const container = document.getElementById('tagOptionsContainer');
+            const optionsDiv = document.getElementById('tagOptions');
+            
+            // 清空并填充标签选项
+            optionsDiv.innerHTML = '';
+            if (tagData[tagType]) {
+                tagData[tagType].forEach(item => {
+                    optionsDiv.innerHTML += `
+                        <button class="btn btn-outline-info me-2 mb-2" onclick="selectTag('${tagType}', '${item.value}', '${item.text}')">
+                            <i class="bi ${item.icon}"></i> ${item.text}
+                        </button>
+                    `;
+                });
+            }
+            
+            container.style.display = 'block';
+        }
+
         // 选择分类
         function selectCategory(categoryType, categoryValue, categoryText) {
             // 检查是否已选择
@@ -780,6 +874,29 @@
             
             // 隐藏二级分类
             document.getElementById('level2CategoriesContainer').style.display = 'none';
+        }
+
+        // 选择标签
+        function selectTag(tagType, tagValue, tagText) {
+            // 检查是否已选择
+            const exists = selectedTags.find(item => item.value === `${tagType}/${tagValue}`);
+            if (exists) {
+                alert('该标签已经选择过了！');
+                return;
+            }
+            
+            // 添加到已选择列表
+            selectedTags.push({
+                value: `${tagType}/${tagValue}`,
+                text: tagText,
+                type: 'tag'
+            });
+            
+            // 更新显示
+            updateSelectedTagsDisplay();
+            
+            // 隐藏标签选项
+            document.getElementById('tagOptionsContainer').style.display = 'none';
         }
 
         // 更新已选择分类显示
@@ -805,17 +922,62 @@
             });
         }
 
+        // 更新已选择标签显示
+        function updateSelectedTagsDisplay() {
+            const container = document.getElementById('selectedTagsContainer');
+            const display = document.getElementById('selectedTagsDisplay');
+            
+            if (selectedTags.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            display.innerHTML = '';
+            
+            selectedTags.forEach((item, index) => {
+                display.innerHTML += `
+                    <span class="selected-tag">
+                        🏷️ ${item.text}
+                        <span class="remove-tag" onclick="removeTag(${index})">×</span>
+                    </span>
+                `;
+            });
+        }
+
         // 移除分类
         function removeCategory(index) {
             selectedCategories.splice(index, 1);
             updateSelectedCategoriesDisplay();
         }
 
+        // 移除标签
+        function removeTag(index) {
+            selectedTags.splice(index, 1);
+            updateSelectedTagsDisplay();
+        }
+
+        // 清空所有标签
+        function clearAllTags() {
+            if (selectedTags.length === 0) {
+                alert('没有已选择的标签需要清空');
+                return;
+            }
+            
+            if (confirm(`确定要清空所有 ${selectedTags.length} 个已选择的标签吗？`)) {
+                selectedTags = [];
+                updateSelectedTagsDisplay();
+                console.log('所有标签已清空');
+            }
+        }
+
         // 保存知识库设置
         function saveKnowledgeSettings() {
             const settings = {
                 categories: selectedCategories.map(item => item.value),
-                categoryTexts: selectedCategories.map(item => item.text)
+                tags: selectedTags.map(item => item.value),
+                categoryTexts: selectedCategories.map(item => item.text),
+                tagTexts: selectedTags.map(item => item.text)
             };
             
             console.log('保存知识库设置:', settings);
@@ -824,22 +986,25 @@
 
         // 重置知识库设置
         function resetKnowledgeSettings() {
-            if (confirm('确定要重置所有已选择的分类吗？')) {
+            if (confirm('确定要重置所有已选择的分类和标签吗？')) {
                 selectedCategories = [];
+                selectedTags = [];
                 updateSelectedCategoriesDisplay();
+                updateSelectedTagsDisplay();
                 
                 // 隐藏所有展开的区域
                 document.getElementById('level2CategoriesContainer').style.display = 'none';
+                document.getElementById('tagOptionsContainer').style.display = 'none';
             }
         }
 
-        // 获取已选择的分类（用于上传）
+        // 获取已选择的分类和标签（用于上传）
         function getSelectedCategoriesAndTags() {
             return {
                 categories: selectedCategories.map(item => item.value),
-                tags: [],
+                tags: selectedTags.map(item => item.value),
                 categoryTexts: selectedCategories.map(item => item.text),
-                tagTexts: []
+                tagTexts: selectedTags.map(item => item.text)
             };
         }
 
