@@ -97,6 +97,77 @@
         .type-number { background: #f3e5f5; color: #7b1fa2; }
         .type-boolean { background: #e8f5e9; color: #388e3c; }
         .type-json { background: #fff3e0; color: #f57c00; }
+        
+        /* 知识库管理样式 */
+        .knowledge-management {
+            padding: 1rem;
+        }
+        
+        .category-buttons, .tag-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .category-buttons .btn, .tag-buttons .btn {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .category-buttons .btn:hover, .tag-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .category-buttons .btn.active, .tag-buttons .btn.active {
+            background-color: #007bff !important;
+            border-color: #007bff !important;
+            color: white !important;
+        }
+        
+        .selected-tags-display {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 60px;
+            background: white;
+        }
+        
+        .selected-tag {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #007bff;
+            color: white;
+            border-radius: 20px;
+            margin: 0.25rem;
+            font-size: 0.875rem;
+            position: relative;
+        }
+        
+        .selected-tag .remove-tag {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .selected-tag .remove-tag:hover {
+            color: #ff6b6b;
+        }
+        
+        .level-1-categories, .level-2-categories, .tag-categories, .tag-options {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            background: #f8f9fa;
+        }
+        
+        .action-buttons {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
     </style>
 </head>
 <body>
@@ -124,7 +195,7 @@
                 <div class="config-group-item active" onclick="filterByGroup('全部')" data-group="全部">
                     <i class="bi bi-list-ul"></i> 全部配置
                 </div>
-                <div class="config-group-item" onclick="navigateTo('knowledge-base')" data-group="knowledge">
+                <div class="config-group-item" onclick="showKnowledgeManagement()" data-group="knowledge">
                     <i class="bi bi-book"></i> 知识库管理
                 </div>
                 <div id="groupList">
@@ -137,29 +208,131 @@
 
             <!-- 右侧内容 -->
             <div class="config-content">
-                <div class="row mb-3">
-                    <div class="col-md-8">
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" id="searchInput" placeholder="搜索配置键或描述..." onkeypress="handleSearchKeyPress(event)">
+                <!-- 默认配置管理内容 -->
+                <div id="configContent">
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="搜索配置键或描述..." onkeypress="handleSearchKeyPress(event)">
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-outline-primary" onclick="searchConfigs()">
+                                <i class="bi bi-search"></i> 搜索
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="loadConfigs()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
                         </div>
                     </div>
-                    <div class="col-md-4 text-end">
-                        <button class="btn btn-outline-primary" onclick="searchConfigs()">
-                            <i class="bi bi-search"></i> 搜索
-                        </button>
-                        <button class="btn btn-outline-secondary" onclick="loadConfigs()">
-                            <i class="bi bi-arrow-clockwise"></i> 刷新
-                        </button>
+
+                    <div id="configList">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">加载中...</span>
+                            </div>
+                            <p class="mt-3 text-muted">正在加载配置数据...</p>
+                        </div>
                     </div>
                 </div>
 
-                <div id="configList">
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">加载中...</span>
+                <!-- 知识库管理内容 -->
+                <div id="knowledgeContent" style="display: none;">
+                    <div class="knowledge-management">
+                        <h4 class="mb-4">
+                            <i class="bi bi-book"></i> 知识库管理
+                        </h4>
+                        
+                        <!-- 知识分类管理 -->
+                        <div class="category-management mb-4">
+                            <h5 class="mb-3">知识分类管理</h5>
+                            
+                            <!-- 一级分类 -->
+                            <div class="level-1-categories mb-3">
+                                <h6>一级分类</h6>
+                                <div class="category-buttons" id="level1Categories">
+                                    <button class="btn btn-outline-primary me-2 mb-2" onclick="showLevel2Categories('technology')">
+                                        <i class="bi bi-cpu"></i> 技术文档
+                                    </button>
+                                    <button class="btn btn-outline-primary me-2 mb-2" onclick="showLevel2Categories('business')">
+                                        <i class="bi bi-briefcase"></i> 业务资料
+                                    </button>
+                                    <button class="btn btn-outline-primary me-2 mb-2" onclick="showLevel2Categories('contract')">
+                                        <i class="bi bi-file-text"></i> 合同文件
+                                    </button>
+                                    <button class="btn btn-outline-primary me-2 mb-2" onclick="showLevel2Categories('training')">
+                                        <i class="bi bi-mortarboard"></i> 培训材料
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 二级分类 -->
+                            <div class="level-2-categories mb-3" id="level2CategoriesContainer" style="display: none;">
+                                <h6>二级分类</h6>
+                                <div class="category-buttons" id="level2Categories">
+                                    <!-- 动态加载二级分类按钮 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 已选择的分类 -->
+                            <div class="selected-categories" id="selectedCategoriesContainer" style="display: none;">
+                                <h6>已选择的分类</h6>
+                                <div class="selected-tags-display" id="selectedCategoriesDisplay">
+                                    <!-- 动态显示已选择的分类 -->
+                                </div>
+                            </div>
                         </div>
-                        <p class="mt-3 text-muted">正在加载配置数据...</p>
+
+                        <!-- 标签管理 -->
+                        <div class="tag-management mb-4">
+                            <h5 class="mb-3">标签管理</h5>
+                            
+                            <!-- 标签分类 -->
+                            <div class="tag-categories mb-3">
+                                <h6>标签分类</h6>
+                                <div class="tag-buttons" id="tagCategories">
+                                    <button class="btn btn-outline-success me-2 mb-2" onclick="showTagOptions('priority')">
+                                        <i class="bi bi-flag"></i> 优先级
+                                    </button>
+                                    <button class="btn btn-outline-success me-2 mb-2" onclick="showTagOptions('type')">
+                                        <i class="bi bi-file-earmark"></i> 文档类型
+                                    </button>
+                                    <button class="btn btn-outline-success me-2 mb-2" onclick="showTagOptions('department')">
+                                        <i class="bi bi-people"></i> 部门
+                                    </button>
+                                    <button class="btn btn-outline-success me-2 mb-2" onclick="showTagOptions('project')">
+                                        <i class="bi bi-diagram-3"></i> 项目
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 具体标签 -->
+                            <div class="tag-options mb-3" id="tagOptionsContainer" style="display: none;">
+                                <h6>具体标签</h6>
+                                <div class="tag-buttons" id="tagOptions">
+                                    <!-- 动态加载具体标签按钮 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 已选择的标签 -->
+                            <div class="selected-tags" id="selectedTagsContainer" style="display: none;">
+                                <h6>已选择的标签</h6>
+                                <div class="selected-tags-display" id="selectedTagsDisplay">
+                                    <!-- 动态显示已选择的标签 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="saveKnowledgeSettings()">
+                                <i class="bi bi-save"></i> 保存设置
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="resetKnowledgeSettings()">
+                                <i class="bi bi-arrow-clockwise"></i> 重置
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -226,6 +399,250 @@
             
             if (pageMap[page]) {
                 window.location.href = `/${pageMap[page]}`;
+            }
+        }
+
+        // 知识库管理功能
+        let selectedCategories = [];
+        let selectedTags = [];
+
+        // 二级分类数据
+        const categoryData = {
+            technology: [
+                { value: 'api', text: 'API文档', icon: 'bi-code' },
+                { value: 'database', text: '数据库设计', icon: 'bi-database' },
+                { value: 'frontend', text: '前端开发', icon: 'bi-laptop' },
+                { value: 'backend', text: '后端开发', icon: 'bi-server' }
+            ],
+            business: [
+                { value: 'requirement', text: '需求文档', icon: 'bi-clipboard-check' },
+                { value: 'proposal', text: '项目提案', icon: 'bi-lightbulb' },
+                { value: 'report', text: '业务报告', icon: 'bi-graph-up' },
+                { value: 'analysis', text: '市场分析', icon: 'bi-search' }
+            ],
+            contract: [
+                { value: 'sales', text: '销售合同', icon: 'bi-cash' },
+                { value: 'service', text: '服务合同', icon: 'bi-gear' },
+                { value: 'nda', text: '保密协议', icon: 'bi-shield-check' },
+                { value: 'procurement', text: '采购合同', icon: 'bi-cart' }
+            ],
+            training: [
+                { value: 'manual', text: '操作手册', icon: 'bi-book' },
+                { value: 'tutorial', text: '教程指南', icon: 'bi-play-circle' },
+                { value: 'presentation', text: '培训演示', icon: 'bi-presentation' },
+                { value: 'video', text: '视频教程', icon: 'bi-camera-video' }
+            ]
+        };
+
+        // 标签数据
+        const tagData = {
+            priority: [
+                { value: 'urgent', text: '紧急', icon: 'bi-exclamation-triangle' },
+                { value: 'high', text: '高优先级', icon: 'bi-arrow-up-circle' },
+                { value: 'medium', text: '中优先级', icon: 'bi-dash-circle' },
+                { value: 'low', text: '低优先级', icon: 'bi-arrow-down-circle' }
+            ],
+            type: [
+                { value: 'specification', text: '规格说明', icon: 'bi-file-earmark-text' },
+                { value: 'design', text: '设计文档', icon: 'bi-palette' },
+                { value: 'test', text: '测试文档', icon: 'bi-bug' },
+                { value: 'user-guide', text: '用户指南', icon: 'bi-person' }
+            ],
+            department: [
+                { value: 'dev', text: '开发部', icon: 'bi-code-slash' },
+                { value: 'product', text: '产品部', icon: 'bi-lightbulb' },
+                { value: 'marketing', text: '市场部', icon: 'bi-megaphone' },
+                { value: 'hr', text: '人力资源', icon: 'bi-people' }
+            ],
+            project: [
+                { value: 'project-a', text: '项目A', icon: 'bi-folder' },
+                { value: 'project-b', text: '项目B', icon: 'bi-folder' },
+                { value: 'project-c', text: '项目C', icon: 'bi-folder' },
+                { value: 'internal', text: '内部项目', icon: 'bi-house' }
+            ]
+        };
+
+        // 显示知识库管理
+        function showKnowledgeManagement() {
+            // 隐藏配置内容，显示知识库内容
+            document.getElementById('configContent').style.display = 'none';
+            document.getElementById('knowledgeContent').style.display = 'block';
+            
+            // 更新左侧导航状态
+            document.querySelectorAll('.config-group-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector('[data-group="knowledge"]').classList.add('active');
+        }
+
+        // 显示二级分类
+        function showLevel2Categories(categoryType) {
+            const container = document.getElementById('level2CategoriesContainer');
+            const level2Div = document.getElementById('level2Categories');
+            
+            // 清空并填充二级分类
+            level2Div.innerHTML = '';
+            if (categoryData[categoryType]) {
+                categoryData[categoryType].forEach(item => {
+                    level2Div.innerHTML += `
+                        <button class="btn btn-outline-secondary me-2 mb-2" onclick="selectCategory('${categoryType}', '${item.value}', '${item.text}')">
+                            <i class="bi ${item.icon}"></i> ${item.text}
+                        </button>
+                    `;
+                });
+            }
+            
+            container.style.display = 'block';
+        }
+
+        // 显示标签选项
+        function showTagOptions(tagType) {
+            const container = document.getElementById('tagOptionsContainer');
+            const optionsDiv = document.getElementById('tagOptions');
+            
+            // 清空并填充标签选项
+            optionsDiv.innerHTML = '';
+            if (tagData[tagType]) {
+                tagData[tagType].forEach(item => {
+                    optionsDiv.innerHTML += `
+                        <button class="btn btn-outline-info me-2 mb-2" onclick="selectTag('${tagType}', '${item.value}', '${item.text}')">
+                            <i class="bi ${item.icon}"></i> ${item.text}
+                        </button>
+                    `;
+                });
+            }
+            
+            container.style.display = 'block';
+        }
+
+        // 选择分类
+        function selectCategory(categoryType, categoryValue, categoryText) {
+            // 检查是否已选择
+            const exists = selectedCategories.find(item => item.value === `${categoryType}/${categoryValue}`);
+            if (exists) {
+                alert('该分类已经选择过了！');
+                return;
+            }
+            
+            // 添加到已选择列表
+            selectedCategories.push({
+                value: `${categoryType}/${categoryValue}`,
+                text: categoryText,
+                type: 'category'
+            });
+            
+            // 更新显示
+            updateSelectedCategoriesDisplay();
+            
+            // 隐藏二级分类
+            document.getElementById('level2CategoriesContainer').style.display = 'none';
+        }
+
+        // 选择标签
+        function selectTag(tagType, tagValue, tagText) {
+            // 检查是否已选择
+            const exists = selectedTags.find(item => item.value === `${tagType}/${tagValue}`);
+            if (exists) {
+                alert('该标签已经选择过了！');
+                return;
+            }
+            
+            // 添加到已选择列表
+            selectedTags.push({
+                value: `${tagType}/${tagValue}`,
+                text: tagText,
+                type: 'tag'
+            });
+            
+            // 更新显示
+            updateSelectedTagsDisplay();
+            
+            // 隐藏标签选项
+            document.getElementById('tagOptionsContainer').style.display = 'none';
+        }
+
+        // 更新已选择分类显示
+        function updateSelectedCategoriesDisplay() {
+            const container = document.getElementById('selectedCategoriesContainer');
+            const display = document.getElementById('selectedCategoriesDisplay');
+            
+            if (selectedCategories.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            display.innerHTML = '';
+            
+            selectedCategories.forEach((item, index) => {
+                display.innerHTML += `
+                    <span class="selected-tag">
+                        📁 ${item.text}
+                        <span class="remove-tag" onclick="removeCategory(${index})">×</span>
+                    </span>
+                `;
+            });
+        }
+
+        // 更新已选择标签显示
+        function updateSelectedTagsDisplay() {
+            const container = document.getElementById('selectedTagsContainer');
+            const display = document.getElementById('selectedTagsDisplay');
+            
+            if (selectedTags.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            display.innerHTML = '';
+            
+            selectedTags.forEach((item, index) => {
+                display.innerHTML += `
+                    <span class="selected-tag">
+                        🏷️ ${item.text}
+                        <span class="remove-tag" onclick="removeTag(${index})">×</span>
+                    </span>
+                `;
+            });
+        }
+
+        // 移除分类
+        function removeCategory(index) {
+            selectedCategories.splice(index, 1);
+            updateSelectedCategoriesDisplay();
+        }
+
+        // 移除标签
+        function removeTag(index) {
+            selectedTags.splice(index, 1);
+            updateSelectedTagsDisplay();
+        }
+
+        // 保存知识库设置
+        function saveKnowledgeSettings() {
+            const settings = {
+                categories: selectedCategories.map(item => item.value),
+                tags: selectedTags.map(item => item.value),
+                categoryTexts: selectedCategories.map(item => item.text),
+                tagTexts: selectedTags.map(item => item.text)
+            };
+            
+            console.log('保存知识库设置:', settings);
+            alert('知识库设置已保存！');
+        }
+
+        // 重置知识库设置
+        function resetKnowledgeSettings() {
+            if (confirm('确定要重置所有已选择的分类和标签吗？')) {
+                selectedCategories = [];
+                selectedTags = [];
+                updateSelectedCategoriesDisplay();
+                updateSelectedTagsDisplay();
+                
+                // 隐藏所有展开的区域
+                document.getElementById('level2CategoriesContainer').style.display = 'none';
+                document.getElementById('tagOptionsContainer').style.display = 'none';
             }
         }
     </script>
