@@ -124,6 +124,9 @@
                 <div class="config-group-item active" onclick="filterByGroup('全部')" data-group="全部">
                     <i class="bi bi-list-ul"></i> 全部配置
                 </div>
+                <div class="config-group-item" onclick="navigateTo('knowledge-base')" data-group="knowledge">
+                    <i class="bi bi-book"></i> 知识库管理
+                </div>
                 <div id="groupList">
                     <!-- 动态加载分组列表 -->
                 </div>
@@ -213,5 +216,18 @@
 
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="/js/system-config.js"></script>
+    <script>
+        // 页面导航函数
+        function navigateTo(page) {
+            const pageMap = {
+                'knowledge-base': 'knowledge-base.html',
+                'my-workbench': 'my-workbench.html'
+            };
+            
+            if (pageMap[page]) {
+                window.location.href = `/${pageMap[page]}`;
+            }
+        }
+    </script>
 </body>
 </html>
