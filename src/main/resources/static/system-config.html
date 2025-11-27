@@ -1116,7 +1116,12 @@
             document.querySelectorAll('.config-group-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.querySelector(`[data-group="${groupName}"]`).classList.add('active');
+            
+            // 安全地设置活动状态
+            const targetItem = document.querySelector(`[data-group="${groupName}"]`);
+            if (targetItem) {
+                targetItem.classList.add('active');
+            }
             
             // 处理业务管理子菜单展开/收缩
             const submenu = document.getElementById('businessSubmenu');
