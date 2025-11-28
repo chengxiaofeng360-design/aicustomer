@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统管理 - AI客户管理系统</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
+    <style>
+        .management-layout {
+            display: flex;
+            height: calc(100vh - 120px);
+            gap: 20px;
+        }
+        .management-sidebar {
+            width: 280px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .management-content {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .menu-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+        }
+        .menu-item:hover {
+            background: #e9ecef;
+        }
+        .menu-item.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .menu-item i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        .menu-section {
+            margin-bottom: 20px;
+        }
+        .menu-section-title {
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .iframe-container {
+            width: 100%;
+            height: calc(100vh - 200px);
+            border: none;
+            border-radius: 0;
+            background: transparent;
+        }
+        .welcome-section {
+            text-align: center;
+            padding: 3rem;
+        }
+        .welcome-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-gear"></i> 系统管理
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/index.html">
+                    <i class="bi bi-house"></i> 返回首页
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="management-layout">
+            <!-- 左侧菜单 -->
+            <div class="management-sidebar">
+                <div class="menu-section">
+                    <div class="menu-section-title">内容管理</div>
+                    <div class="menu-item active" onclick="openModule('knowledge-base')" data-module="knowledge-base">
+                        <i class="bi bi-book"></i> 知识库管理
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">系统配置</div>
+                    <div class="menu-item" onclick="openModule('basic-config')" data-module="basic-config">
+                        <i class="bi bi-sliders"></i> 基础配置
+                    </div>
+                    <div class="menu-item" onclick="openModule('ai-config')" data-module="ai-config">
+                        <i class="bi bi-cpu"></i> AI配置
+                    </div>
+                    <div class="menu-item" onclick="openModule('business-config')" data-module="business-config">
+                        <i class="bi bi-briefcase"></i> 业务配置
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">用户管理</div>
+                    <div class="menu-item" onclick="openModule('user-management')" data-module="user-management">
+                        <i class="bi bi-people"></i> 用户管理
+                    </div>
+                    <div class="menu-item" onclick="openModule('role-management')" data-module="role-management">
+                        <i class="bi bi-shield-check"></i> 角色权限
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧内容区 -->
+            <div class="management-content">
+                <div id="contentArea">
+                    <!-- 默认欢迎页面 -->
+                    <div class="welcome-section">
+                        <div class="welcome-icon">
+                            <i class="bi bi-gear-fill"></i>
+                        </div>
+                        <h3>系统管理中心</h3>
+                        <p class="text-muted">请从左侧菜单选择要管理的功能模块</p>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-book display-4 text-primary mb-3"></i>
+                                        <h5>知识库管理</h5>
+                                        <p class="text-muted small">文档上传、分类管理、全文检索</p>
+                                        <button class="btn btn-primary btn-sm" onclick="openModule('knowledge-base')">
+                                            进入管理
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-sliders display-4 text-success mb-3"></i>
+                                        <h5>基础配置</h5>
+                                        <p class="text-muted small">系统基础参数设置</p>
+                                        <button class="btn btn-success btn-sm" onclick="openModule('basic-config')">
+                                            进入管理
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-cpu display-4 text-info mb-3"></i>
+                                        <h5>AI配置</h5>
+                                        <p class="text-muted small">AI服务参数配置</p>
+                                        <button class="btn btn-info btn-sm" onclick="openModule('ai-config')">
+                                            进入管理
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-briefcase display-4 text-warning mb-3"></i>
+                                        <h5>业务配置</h5>
+                                        <p class="text-muted small">客户标签、等级、自动化规则</p>
+                                        <button class="btn btn-warning btn-sm" onclick="openModule('business-config')">
+                                            进入管理
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-people display-4 text-info mb-3"></i>
+                                        <h5>用户管理</h5>
+                                        <p class="text-muted small">用户账户管理</p>
+                                        <button class="btn btn-info btn-sm" onclick="openModule('user-management')">
+                                            进入管理
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-shield-check display-4 text-secondary mb-3"></i>
+                                        <h5>角色权限</h5>
+                                        <p class="text-muted small">权限分配管理</p>
+                                        <button class="btn btn-secondary btn-sm" onclick="openModule('role-management')">
+                                            进入管理
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentModule = null;
+
+        // 打开功能模块
+        function openModule(moduleName) {
+            // 更新菜单状态
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-module="${moduleName}"]`).classList.add('active');
+
+            // 加载对应模块内容
+            const contentArea = document.getElementById('contentArea');
+            
+            switch(moduleName) {
+                case 'knowledge-base':
+                    loadKnowledgeBase();
+                    break;
+                case 'basic-config':
+                    loadBasicConfig();
+                    break;
+                case 'ai-config':
+                    loadAIConfig();
+                    break;
+                case 'business-config':
+                    loadBusinessConfig();
+                    break;
+                case 'user-management':
+                    loadUserManagement();
+                    break;
+                case 'role-management':
+                    loadRoleManagement();
+                    break;
+                default:
+                    showWelcome();
+            }
+            
+            currentModule = moduleName;
+        }
+
+        // 加载知识库管理
+        function loadKnowledgeBase() {
+            const contentArea = document.getElementById('contentArea');
+            const timestamp = new Date().getTime();
+            contentArea.innerHTML = `
+                <iframe src="/knowledge-base-iframe.html?t=${timestamp}" class="iframe-container"></iframe>
+            `;
+        }
+
+        // 加载基础配置
+        function loadBasicConfig() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="config-section">
+                    <h6 class="mb-4">基础系统配置</h6>
+                    
+                    <div class="form-group">
+                        <label class="form-label">系统名称</label>
+                        <input type="text" class="form-control" value="AI客户管理系统">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">系统版本</label>
+                        <input type="text" class="form-control" value="v1.0.0" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">默认语言</label>
+                        <select class="form-select">
+                            <option value="zh-CN" selected>简体中文</option>
+                            <option value="en-US">English</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">时区设置</label>
+                        <select class="form-select">
+                            <option value="Asia/Shanghai" selected>Asia/Shanghai (UTC+8)</option>
+                            <option value="UTC">UTC (UTC+0)</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary">
+                        <i class="bi bi-save"></i> 保存配置
+                    </button>
+                </div>
+            `;
+        }
+
+        // 加载AI配置
+        function loadAIConfig() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="config-section">
+                    <h6 class="mb-4">AI服务配置</h6>
+                    
+                    <div class="form-group">
+                        <label class="form-label">AI模型</label>
+                        <select class="form-select">
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-3.5-turbo" selected>GPT-3.5 Turbo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">API密钥</label>
+                        <input type="password" class="form-control" placeholder="sk-...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">最大令牌数</label>
+                        <input type="number" class="form-control" value="2048">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">温度参数</label>
+                        <input type="range" class="form-range" min="0" max="1" step="0.1" value="0.7">
+                        <small class="text-muted">当前值: 0.7</small>
+                    </div>
+                    
+                    <button class="btn btn-primary">
+                        <i class="bi bi-save"></i> 保存配置
+                    </button>
+                </div>
+            `;
+        }
+
+        // 加载业务配置
+        function loadBusinessConfig() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="config-section">
+                    <h6 class="mb-4">系统配置管理</h6>
+                    
+                    <!-- 配置分组 -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">配置分组</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="list-group list-group-flush">
+                                        <a href="#" class="list-group-item list-group-item-action active" data-group="all">
+                                            全部配置 <span class="badge bg-secondary float-end" id="allCount">0</span>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" data-group="business">
+                                            业务类型 <span class="badge bg-primary float-end" id="businessCount">0</span>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" data-group="variety">
+                                            品种 <span class="badge bg-success float-end" id="varietyCount">0</span>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" data-group="system">
+                                            系统 <span class="badge bg-info float-end" id="systemCount">0</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 配置列表 -->
+                        <div class="col-md-9">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">配置项列表</h6>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="addConfig()">
+                                            <i class="bi bi-plus"></i> 新增配置
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="refreshConfigs()">
+                                            <i class="bi bi-arrow-clockwise"></i> 刷新
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- 配置项表格 -->
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>配置键</th>
+                                                    <th>类型</th>
+                                                    <th>说明</th>
+                                                    <th>分组</th>
+                                                    <th>更新时间</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="configTableBody">
+                                                <!-- 动态加载配置项 -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 加载配置数据
+            loadConfigData();
+            
+            // 绑定分组点击事件
+            setTimeout(() => {
+                document.querySelectorAll('.list-group-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        document.querySelectorAll('.list-group-item').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                        const group = this.dataset.group;
+                        filterConfigs(group);
+                    });
+                });
+            }, 100);
+        }
+
+        // 加载配置数据
+        function loadConfigData() {
+            // 从API获取配置数据
+            fetch('/api/system-config/list')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应失败');
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    if (result.code === 200 && result.data) {
+                        const configs = result.data.map(config => ({
+                            key: config.configKey,
+                            type: config.configType || 'STRING',
+                            description: config.configValue,
+                            group: config.configGroup || '其他',
+                            updateTime: config.updateTime ? new Date(config.updateTime).toLocaleString('zh-CN') : new Date().toLocaleString('zh-CN')
+                        }));
+                        
+                        // 渲染配置表格
+                        renderConfigTable(configs);
+                        
+                        // 更新计数
+                        updateCounts(configs);
+                    } else {
+                        console.warn('API返回数据格式异常:', result);
+                        // 使用示例数据
+                        loadFallbackData();
+                    }
+                })
+                .catch(error => {
+                    console.error('加载配置数据失败:', error);
+                    // 使用示例数据
+                    loadFallbackData();
+                });
+        }
+
+        // 备用数据（API不可用时使用）
+        function loadFallbackData() {
+            const configs = [
+                // 业务类型配置（从客户管理中的业务类型动态获取）
+                { key: 'business.type.1', type: 'STRING', description: '品种权申请客户', group: '业务类型', updateTime: '2025/11/20 08:58' },
+                { key: 'business.type.2', type: 'STRING', description: '品种权转化推广客户', group: '业务类型', updateTime: '2025/11/20 08:58' },
+                
+                // 品种配置（从客户管理中的品种动态获取）
+                { key: 'variety.type.1', type: 'STRING', description: '植物新品种', group: '品种', updateTime: '2025/11/20 09:15' },
+                { key: 'variety.type.2', type: 'STRING', description: '动物新品种', group: '品种', updateTime: '2025/11/20 09:16' },
+                
+                // 系统配置
+                { key: 'system.name', type: 'STRING', description: '系统名称', group: '系统', updateTime: '2025/11/20 07:30' },
+                { key: 'system.version', type: 'STRING', description: '系统版本', group: '系统', updateTime: '2025/11/20 07:30' }
+            ];
+            
+            // 渲染配置表格
+            renderConfigTable(configs);
+            
+            // 更新计数
+            updateCounts(configs);
+        }
+
+        // 渲染配置表格
+        function renderConfigTable(configs) {
+            const tbody = document.getElementById('configTableBody');
+            tbody.innerHTML = configs.map(config => `
+                <tr data-group="${config.group}">
+                    <td><code>${config.key}</code></td>
+                    <td><span class="badge bg-info">${config.type}</span></td>
+                    <td>${config.description}</td>
+                    <td><span class="badge ${getGroupBadgeClass(config.group)}">${config.group}</span></td>
+                    <td>${config.updateTime}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editConfig('${config.key}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteConfig('${config.key}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 更新计数
+        function updateCounts(configs) {
+            const counts = {
+                all: configs.length,
+                business: configs.filter(c => c.group === '业务类型').length,
+                variety: configs.filter(c => c.group === '品种').length,
+                system: configs.filter(c => c.group === '系统').length
+            };
+            
+            document.getElementById('allCount').textContent = counts.all;
+            document.getElementById('businessCount').textContent = counts.business;
+            document.getElementById('varietyCount').textContent = counts.variety;
+            document.getElementById('systemCount').textContent = counts.system;
+        }
+
+        // 获取分组徽章样式
+        function getGroupBadgeClass(group) {
+            const classes = {
+                '业务类型': 'bg-primary',
+                '品种': 'bg-success',
+                '系统': 'bg-info',
+                'AI': 'bg-warning',
+                '通知': 'bg-secondary'
+            };
+            return classes[group] || 'bg-secondary';
+        }
+
+        // 过滤配置项
+        function filterConfigs(group) {
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (group === 'all') {
+                    row.style.display = '';
+                } else {
+                    const groupName = row.dataset.group;
+                    if (groupName === getGroupName(group)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // 获取分组名称
+        function getGroupName(group) {
+            const names = {
+                'all': '全部',
+                'business': '业务类型',
+                'variety': '品种',
+                'system': '系统',
+                'ai': 'AI',
+                'notification': '通知'
+            };
+            return names[group] || group;
+        }
+
+        // 添加配置
+        function addConfig() {
+            // 打开添加配置模态框
+            const modalHtml = `
+                <div class="modal fade" id="addConfigModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">新增配置</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addConfigForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">配置键 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="newConfigKey" required>
+                                        <small class="text-muted">例如：business.type.3 或 variety.type.3</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">配置值 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="newConfigValue" required>
+                                        <small class="text-muted">例如：新品种测试客户 或 水稻新品种</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">配置类型 <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="newConfigType" required>
+                                            <option value="">请选择配置类型</option>
+                                            <option value="STRING">STRING</option>
+                                            <option value="NUMBER">NUMBER</option>
+                                            <option value="BOOLEAN">BOOLEAN</option>
+                                            <option value="JSON">JSON</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">配置分组 <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="newConfigGroup" required>
+                                            <option value="">请选择配置分组</option>
+                                            <option value="业务类型">业务类型</option>
+                                            <option value="品种">品种</option>
+                                            <option value="系统">系统</option>
+                                            <option value="AI">AI</option>
+                                            <option value="通知">通知</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">配置说明</label>
+                                        <textarea class="form-control" id="newConfigDescription" rows="2" placeholder="可选，描述此配置的用途"></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="saveNewConfig()">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除现有模态框
+            const existingModal = document.getElementById('addConfigModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('addConfigModal'));
+            modal.show();
+        }
+
+        // 保存新配置
+        function saveNewConfig() {
+            const form = document.getElementById('addConfigForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const configData = {
+                configKey: document.getElementById('newConfigKey').value,
+                configValue: document.getElementById('newConfigValue').value,
+                configType: document.getElementById('newConfigType').value,
+                configGroup: document.getElementById('newConfigGroup').value,
+                configDescription: document.getElementById('newConfigDescription').value
+            };
+            
+            fetch('/api/system-config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(configData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.code === 200) {
+                    alert('配置添加成功！');
+                    // 关闭模态框
+                    bootstrap.Modal.getInstance(document.getElementById('addConfigModal')).hide();
+                    // 刷新配置列表
+                    loadConfigData();
+                } else {
+                    alert('添加失败：' + (result.message || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('添加配置失败:', error);
+                alert('添加失败：网络错误');
+            });
+        }
+
+        // 编辑配置
+        function editConfig(key) {
+            // 先获取配置详情
+            fetch(`/api/system-config/key/${encodeURIComponent(key)}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.code === 200 && result.data) {
+                        const config = result.data;
+                        openEditModal(config);
+                    } else {
+                        alert('获取配置信息失败：' + (result.message || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('获取配置信息失败:', error);
+                    alert('获取配置信息失败：网络错误');
+                });
+        }
+
+        // 打开编辑模态框
+        function openEditModal(config) {
+            const modalHtml = `
+                <div class="modal fade" id="editConfigModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">编辑配置</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editConfigForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">配置键</label>
+                                        <input type="text" class="form-control" id="editConfigKey" value="${config.configKey}" readonly>
+                                        <small class="text-muted">配置键不可修改</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">配置值 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="editConfigValue" value="${config.configValue}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">配置类型 <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="editConfigType" required>
+                                            <option value="STRING" ${config.configType === 'STRING' ? 'selected' : ''}>STRING</option>
+                                            <option value="NUMBER" ${config.configType === 'NUMBER' ? 'selected' : ''}>NUMBER</option>
+                                            <option value="BOOLEAN" ${config.configType === 'BOOLEAN' ? 'selected' : ''}>BOOLEAN</option>
+                                            <option value="JSON" ${config.configType === 'JSON' ? 'selected' : ''}>JSON</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">配置分组 <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="editConfigGroup" required>
+                                            <option value="业务类型" ${config.configGroup === '业务类型' ? 'selected' : ''}>业务类型</option>
+                                            <option value="品种" ${config.configGroup === '品种' ? 'selected' : ''}>品种</option>
+                                            <option value="系统" ${config.configGroup === '系统' ? 'selected' : ''}>系统</option>
+                                            <option value="AI" ${config.configGroup === 'AI' ? 'selected' : ''}>AI</option>
+                                            <option value="通知" ${config.configGroup === '通知' ? 'selected' : ''}>通知</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">配置说明</label>
+                                        <textarea class="form-control" id="editConfigDescription" rows="2">${config.configDescription || ''}</textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="updateConfig(${config.id})">更新</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除现有模态框
+            const existingModal = document.getElementById('editConfigModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('editConfigModal'));
+            modal.show();
+        }
+
+        // 更新配置
+        function updateConfig(id) {
+            const form = document.getElementById('editConfigForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const configData = {
+                id: id,
+                configKey: document.getElementById('editConfigKey').value,
+                configValue: document.getElementById('editConfigValue').value,
+                configType: document.getElementById('editConfigType').value,
+                configGroup: document.getElementById('editConfigGroup').value,
+                configDescription: document.getElementById('editConfigDescription').value
+            };
+            
+            fetch(`/api/system-config/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(configData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.code === 200) {
+                    alert('配置更新成功！');
+                    // 关闭模态框
+                    bootstrap.Modal.getInstance(document.getElementById('editConfigModal')).hide();
+                    // 刷新配置列表
+                    loadConfigData();
+                } else {
+                    alert('更新失败：' + (result.message || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('更新配置失败:', error);
+                alert('更新失败：网络错误');
+            });
+        }
+
+        // 删除配置
+        function deleteConfig(key) {
+            if (confirm(`确定要删除配置 ${key} 吗？\n注意：这将影响客户管理中的对应数据`)) {
+                // 先获取配置ID
+                fetch(`/api/system-config/key/${encodeURIComponent(key)}`)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.code === 200 && result.data) {
+                            const configId = result.data.id;
+                            // 删除配置
+                            fetch(`/api/system-config/${configId}`, {
+                                method: 'DELETE'
+                            })
+                            .then(response => response.json())
+                            .then(deleteResult => {
+                                if (deleteResult.code === 200) {
+                                    alert('配置删除成功！');
+                                    // 刷新配置列表
+                                    loadConfigData();
+                                } else {
+                                    alert('删除失败：' + (deleteResult.message || '未知错误'));
+                                }
+                            })
+                            .catch(error => {
+                                console.error('删除配置失败:', error);
+                                alert('删除失败：网络错误');
+                            });
+                        } else {
+                            alert('获取配置信息失败：' + (result.message || '未知错误'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取配置信息失败:', error);
+                        alert('获取配置信息失败：网络错误');
+                    });
+            }
+        }
+
+        // 刷新配置
+        function refreshConfigs() {
+            // 重新从后端API获取最新数据
+            loadConfigData();
+        }
+
+        // 加载用户管理（占位）
+        function loadUserManagement() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-people display-1 text-muted mb-3"></i>
+                    <h3>用户管理</h3>
+                    <p class="text-muted">该功能正在开发中...</p>
+                </div>
+            `;
+        }
+
+        // 加载角色管理（占位）
+        function loadRoleManagement() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-shield-check display-1 text-muted mb-3"></i>
+                    <h3>角色权限管理</h3>
+                    <p class="text-muted">该功能正在开发中...</p>
+                </div>
+            `;
+        }
+
+        // 显示欢迎页面
+        function showWelcome() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="welcome-section">
+                    <div class="welcome-icon">
+                        <i class="bi bi-gear-fill"></i>
+                    </div>
+                    <h3>系统管理中心</h3>
+                    <p class="text-muted">请从左侧菜单选择要管理的功能模块</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-book display-4 text-primary mb-3"></i>
+                                    <h5>知识库管理</h5>
+                                    <p class="text-muted small">文档上传、分类管理、全文检索</p>
+                                    <button class="btn btn-primary btn-sm" onclick="openModule('knowledge-base')">
+                                        进入管理
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-sliders display-4 text-success mb-3"></i>
+                                    <h5>系统配置</h5>
+                                    <p class="text-muted small">系统参数配置管理</p>
+                                    <button class="btn btn-success btn-sm" onclick="openModule('system-config')">
+                                        进入管理
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-people display-4 text-info mb-3"></i>
+                                    <h5>用户管理</h5>
+                                    <p class="text-muted small">用户账户管理</p>
+                                    <button class="btn btn-info btn-sm" onclick="openModule('user-management')">
+                                        进入管理
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-shield-check display-4 text-warning mb-3"></i>
+                                    <h5>角色权限</h5>
+                                    <p class="text-muted small">权限分配管理</p>
+                                    <button class="btn btn-warning btn-sm" onclick="openModule('role-management')">
+                                        进入管理
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 页面加载时显示欢迎页面
+        document.addEventListener('DOMContentLoaded', function() {
+            showWelcome();
+        });
+    </script>
+</body>
+</html>
