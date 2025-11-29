@@ -8,6 +8,104 @@
     <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="/css/common.css" rel="stylesheet">
     <style>
+        .upload-area {
+            border: 3px dashed #007bff;
+            border-radius: 10px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            background: #e9ecef;
+            border-color: #0056b3;
+        }
+        
+        .upload-area.dragover {
+            background: #e7f3ff;
+            border-color: #004085;
+        }
+        
+        .file-list {
+            margin-top: 30px;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+        }
+        
+        .file-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            color: #007bff;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .file-size {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .file-progress {
+            margin-top: 10px;
+        }
+        
+        .category-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .category-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .selected-categories {
+            margin-top: 15px;
+        }
+        
+        .selected-tag {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .remove-tag {
+            margin-left: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .progress-bar-container {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+    <style>
         .config-layout {
             display: flex;
             height: calc(100vh - 120px);
@@ -337,14 +435,15 @@
 
                 <!-- 知识库管理内容 -->
                 <div id="knowledgeContent" style="display: none;">
-                    <div class="knowledge-management">
+                    <!-- 文件列表视图 -->
+                    <div id="knowledgeListView" class="knowledge-management">
                         <!-- 页面头部 -->
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="mb-0">
                                 <i class="bi bi-book"></i> 知识库管理
                             </h4>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-primary" onclick="window.location.href='/knowledge-upload.html'">
+                                <button class="btn btn-primary" onclick="showUploadView()">
                                     <i class="bi bi-cloud-upload"></i> 上传文档
                                 </button>
                             </div>
@@ -417,46 +516,6 @@
                                 </ul>
                             </nav>
                         </div>
-                        
-                        <!-- 知识分类管理 -->
-                        <div class="category-management mb-4 mt-4">
-                            <h5 class="mb-3">知识分类管理</h5>
-                            
-                            <!-- 一级分类 -->
-                            <div class="level-1-categories mb-3">
-                                <h6>一级分类</h6>
-                                <div class="category-buttons" id="level1Categories">
-                                    <button class="btn btn-outline-primary me-2 mb-2" onclick="showLevel2Categories('technology')">
-                                        <i class="bi bi-cpu"></i> 技术文档
-                                    </button>
-                                    <button class="btn btn-outline-primary me-2 mb-2" onclick="showLevel2Categories('business')">
-                                        <i class="bi bi-briefcase"></i> 业务资料
-                                    </button>
-                                    <button class="btn btn-outline-primary me-2 mb-2" onclick="showLevel2Categories('contract')">
-                                        <i class="bi bi-file-text"></i> 合同文件
-                                    </button>
-                                    <button class="btn btn-outline-primary me-2 mb-2" onclick="showLevel2Categories('training')">
-                                        <i class="bi bi-mortarboard"></i> 培训材料
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- 二级分类 -->
-                            <div class="level-2-categories mb-3" id="level2CategoriesContainer" style="display: none;">
-                                <h6>二级分类</h6>
-                                <div class="category-buttons" id="level2Categories">
-                                    <!-- 动态加载二级分类按钮 -->
-                                </div>
-                            </div>
-                            
-                            <!-- 已选择的分类 -->
-                            <div class="selected-categories" id="selectedCategoriesContainer" style="display: none;">
-                                <h6>已选择的分类</h6>
-                                <div class="selected-tags-display" id="selectedCategoriesDisplay">
-                                    <!-- 动态显示已选择的分类 -->
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- 操作按钮 -->
                         <div class="action-buttons">
@@ -464,6 +523,100 @@
                                 <i class="bi bi-save"></i> 保存设置
                             </button>
                             <button class="btn btn-outline-secondary" onclick="resetKnowledgeSettings()">
+                                <i class="bi bi-arrow-clockwise"></i> 重置
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 上传视图 -->
+                    <div id="knowledgeUploadView" style="display: none;">
+                        <!-- 页面头部 -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">
+                                <i class="bi bi-cloud-upload"></i> 上传文档
+                            </h4>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-secondary" onclick="showListView()">
+                                    <i class="bi bi-arrow-left"></i> 返回列表
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 文件上传区域 -->
+                        <div class="upload-section mb-4">
+                            <div class="upload-area" id="uploadArea">
+                                <i class="bi bi-cloud-upload display-1 text-primary mb-3"></i>
+                                <h4>拖拽文件到此处或点击选择</h4>
+                                <p class="text-muted">支持 PDF、Word、Excel、图片等格式，最大 10MB</p>
+                                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt" style="display: none;">
+                            </div>
+                            
+                            <!-- 文件列表 -->
+                            <div class="file-list" id="fileList" style="display: none;">
+                                <h5>待上传文件</h5>
+                                <div id="fileItems">
+                                    <!-- 文件项将通过JavaScript动态添加 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 进度条 -->
+                            <div class="progress-bar-container" id="progressContainer">
+                                <h5>上传进度</h5>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar" id="uploadProgressBar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <div class="text-center">
+                                    <span id="uploadStatus">准备上传...</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 知识分类管理 (从知识库管理页面移动过来) -->
+                        <div class="category-section mb-4">
+                            <h5 class="mb-3">选择分类</h5>
+                            
+                            <!-- 一级分类 -->
+                            <div class="mb-3">
+                                <h6>一级分类</h6>
+                                <div class="category-buttons" id="uploadLevel1Categories">
+                                    <button class="btn btn-outline-primary" onclick="showUploadLevel2Categories('technology')">
+                                        <i class="bi bi-cpu"></i> 技术文档
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="showUploadLevel2Categories('business')">
+                                        <i class="bi bi-briefcase"></i> 业务资料
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="showUploadLevel2Categories('contract')">
+                                        <i class="bi bi-file-text"></i> 合同文件
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="showUploadLevel2Categories('training')">
+                                        <i class="bi bi-mortarboard"></i> 培训材料
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 二级分类 -->
+                            <div class="mb-3" id="uploadLevel2CategoriesContainer" style="display: none;">
+                                <h6>二级分类</h6>
+                                <div class="category-buttons" id="uploadLevel2Categories">
+                                    <!-- 动态加载二级分类按钮 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 已选择的分类 -->
+                            <div class="selected-categories" id="uploadSelectedCategoriesContainer" style="display: none;">
+                                <h6>已选择的分类</h6>
+                                <div id="uploadSelectedCategoriesDisplay">
+                                    <!-- 动态显示已选择的分类 -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 操作按钮 -->
+                        <div class="action-buttons">
+                            <button class="btn btn-primary btn-lg" id="uploadBtn" onclick="startUpload()" disabled>
+                                <i class="bi bi-cloud-upload"></i> 开始上传
+                            </button>
+                            <button class="btn btn-outline-secondary btn-lg ms-2" onclick="resetUpload()">
                                 <i class="bi bi-arrow-clockwise"></i> 重置
                             </button>
                         </div>
@@ -579,8 +732,300 @@
             });
             document.querySelector('[data-group="knowledge"]').classList.add('active');
             
+            // 显示文件列表视图
+            showListView();
+            
             // 加载知识库文件列表
             loadKnowledgeFiles();
+        }
+
+        // 显示文件列表视图
+        function showListView() {
+            document.getElementById('knowledgeListView').style.display = 'block';
+            document.getElementById('knowledgeUploadView').style.display = 'none';
+        }
+
+        // 显示上传视图
+        function showUploadView() {
+            document.getElementById('knowledgeListView').style.display = 'none';
+            document.getElementById('knowledgeUploadView').style.display = 'block';
+            
+            // 初始化上传功能
+            initializeUpload();
+        }
+
+        // 全局变量
+        let selectedFiles = [];
+        let selectedCategories = [];
+        
+        // 二级分类数据
+        const categoryData = {
+            technology: [
+                { value: 'api', text: 'API文档', icon: 'bi-code' },
+                { value: 'database', text: '数据库设计', icon: 'bi-database' },
+                { value: 'frontend', text: '前端开发', icon: 'bi-laptop' },
+                { value: 'backend', text: '后端开发', icon: 'bi-server' }
+            ],
+            business: [
+                { value: 'requirement', text: '需求文档', icon: 'bi-clipboard-check' },
+                { value: 'proposal', text: '项目提案', icon: 'bi-lightbulb' },
+                { value: 'report', text: '业务报告', icon: 'bi-graph-up' },
+                { value: 'analysis', text: '市场分析', icon: 'bi-search' }
+            ],
+            contract: [
+                { value: 'sales', text: '销售合同', icon: 'bi-cash' },
+                { value: 'service', text: '服务合同', icon: 'bi-gear' },
+                { value: 'nda', text: '保密协议', icon: 'bi-shield-check' },
+                { value: 'procurement', text: '采购合同', icon: 'bi-cart' }
+            ],
+            training: [
+                { value: 'manual', text: '操作手册', icon: 'bi-book' },
+                { value: 'tutorial', text: '教程指南', icon: 'bi-play-circle' },
+                { value: 'presentation', text: '培训演示', icon: 'bi-presentation' },
+                { value: 'video', text: '视频教程', icon: 'bi-camera-video' }
+            ]
+        };
+
+        // 初始化上传功能
+        function initializeUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            // 点击上传区域
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // 文件选择
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+            
+            // 拖拽功能
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+        }
+
+        // 处理文件选择
+        function handleFiles(files) {
+            selectedFiles = Array.from(files);
+            displayFileList();
+            updateUploadButton();
+        }
+
+        // 显示文件列表
+        function displayFileList() {
+            const fileList = document.getElementById('fileList');
+            const fileItems = document.getElementById('fileItems');
+            
+            if (selectedFiles.length === 0) {
+                fileList.style.display = 'none';
+                return;
+            }
+            
+            fileList.style.display = 'block';
+            fileItems.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const fileIcon = getFileIcon(file.name);
+                const fileSize = formatFileSize(file.size);
+                
+                fileItem.innerHTML = `
+                    <div class="file-icon">
+                        <i class="bi ${fileIcon}"></i>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${fileSize}</div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeFile(${index})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                `;
+                
+                fileItems.appendChild(fileItem);
+            });
+        }
+
+        // 移除文件
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displayFileList();
+            updateUploadButton();
+        }
+
+        // 更新上传按钮状态
+        function updateUploadButton() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+
+        // 显示上传页面的二级分类
+        function showUploadLevel2Categories(categoryType) {
+            const container = document.getElementById('uploadLevel2CategoriesContainer');
+            const categoriesDiv = document.getElementById('uploadLevel2Categories');
+            
+            // 清空并填充二级分类
+            categoriesDiv.innerHTML = '';
+            if (categoryData[categoryType]) {
+                categoryData[categoryType].forEach(item => {
+                    categoriesDiv.innerHTML += `
+                        <button class="btn btn-outline-info" onclick="selectUploadCategory('${categoryType}', '${item.value}', '${item.text}')">
+                            <i class="bi ${item.icon}"></i> ${item.text}
+                        </button>
+                    `;
+                });
+            }
+            
+            container.style.display = 'block';
+        }
+
+        // 选择上传页面的分类
+        function selectUploadCategory(categoryType, categoryValue, categoryText) {
+            // 检查是否已选择
+            const exists = selectedCategories.find(item => item.value === `${categoryType}/${categoryValue}`);
+            if (exists) {
+                alert('该分类已经选择过了！');
+                return;
+            }
+            
+            // 添加到已选择列表
+            selectedCategories.push({
+                value: `${categoryType}/${categoryValue}`,
+                text: categoryText,
+                type: 'category'
+            });
+            
+            // 更新显示
+            updateUploadSelectedCategoriesDisplay();
+            
+            // 隐藏二级分类
+            document.getElementById('uploadLevel2CategoriesContainer').style.display = 'none';
+        }
+
+        // 更新上传页面已选择分类显示
+        function updateUploadSelectedCategoriesDisplay() {
+            const container = document.getElementById('uploadSelectedCategoriesContainer');
+            const display = document.getElementById('uploadSelectedCategoriesDisplay');
+            
+            if (selectedCategories.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            display.innerHTML = '';
+            
+            selectedCategories.forEach((item, index) => {
+                display.innerHTML += `
+                    <span class="selected-tag">
+                        📁 ${item.text}
+                        <span class="remove-tag" onclick="removeUploadCategory(${index})">×</span>
+                    </span>
+                `;
+            });
+        }
+
+        // 移除上传页面的分类
+        function removeUploadCategory(index) {
+            selectedCategories.splice(index, 1);
+            updateUploadSelectedCategoriesDisplay();
+        }
+
+        // 开始上传
+        async function startUpload() {
+            if (selectedFiles.length === 0) {
+                alert('请先选择要上传的文件！');
+                return;
+            }
+            
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            uploadStatus.textContent = '准备上传...';
+            
+            // 获取已选择的分类
+            const selectedData = {
+                categories: selectedCategories.map(item => item.value),
+                categoryTexts: selectedCategories.map(item => item.text)
+            };
+            
+            try {
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    
+                    // 验证文件大小
+                    if (file.size > 10 * 1024 * 1024) {
+                        uploadStatus.textContent = `文件 ${file.name} 超过10MB限制`;
+                        continue;
+                    }
+                    
+                    // 验证文件类型
+                    const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.jpg', '.jpeg', '.png', '.txt'];
+                    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                    if (!allowedTypes.includes(fileExtension)) {
+                        uploadStatus.textContent = `文件 ${file.name} 格式不支持`;
+                        continue;
+                    }
+                    
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('categories', JSON.stringify(selectedData.categories));
+                    formData.append('categoryTexts', JSON.stringify(selectedData.categoryTexts));
+                    
+                    uploadStatus.textContent = `正在上传 ${file.name}...`;
+                    
+                    // 模拟上传进度
+                    const progress = ((i + 1) / selectedFiles.length) * 100;
+                    progressBar.style.width = progress + '%';
+                    
+                    // 模拟延迟
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                uploadStatus.textContent = '所有文件上传完成！';
+                
+                // 3秒后返回文件列表
+                setTimeout(() => {
+                    showListView();
+                    loadKnowledgeFiles();
+                    resetUpload();
+                }, 3000);
+                
+            } catch (error) {
+                console.error('上传失败:', error);
+                uploadStatus.textContent = '上传失败，请重试';
+            }
+        }
+
+        // 重置上传
+        function resetUpload() {
+            selectedFiles = [];
+            selectedCategories = [];
+            document.getElementById('fileInput').value = '';
+            displayFileList();
+            updateUploadSelectedCategoriesDisplay();
+            updateUploadButton();
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('uploadLevel2CategoriesContainer').style.display = 'none';
         }
 
         // 初始化上传功能
