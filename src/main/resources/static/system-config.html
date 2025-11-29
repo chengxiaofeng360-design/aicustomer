@@ -756,35 +756,6 @@
 
         // 全局变量
         let selectedFiles = [];
-        let selectedCategories = [];
-        
-        // 二级分类数据
-        const categoryData = {
-            technology: [
-                { value: 'api', text: 'API文档', icon: 'bi-code' },
-                { value: 'database', text: '数据库设计', icon: 'bi-database' },
-                { value: 'frontend', text: '前端开发', icon: 'bi-laptop' },
-                { value: 'backend', text: '后端开发', icon: 'bi-server' }
-            ],
-            business: [
-                { value: 'requirement', text: '需求文档', icon: 'bi-clipboard-check' },
-                { value: 'proposal', text: '项目提案', icon: 'bi-lightbulb' },
-                { value: 'report', text: '业务报告', icon: 'bi-graph-up' },
-                { value: 'analysis', text: '市场分析', icon: 'bi-search' }
-            ],
-            contract: [
-                { value: 'sales', text: '销售合同', icon: 'bi-cash' },
-                { value: 'service', text: '服务合同', icon: 'bi-gear' },
-                { value: 'nda', text: '保密协议', icon: 'bi-shield-check' },
-                { value: 'procurement', text: '采购合同', icon: 'bi-cart' }
-            ],
-            training: [
-                { value: 'manual', text: '操作手册', icon: 'bi-book' },
-                { value: 'tutorial', text: '教程指南', icon: 'bi-play-circle' },
-                { value: 'presentation', text: '培训演示', icon: 'bi-presentation' },
-                { value: 'video', text: '视频教程', icon: 'bi-camera-video' }
-            ]
-        };
 
         // 初始化上传功能
         function initializeUpload() {
