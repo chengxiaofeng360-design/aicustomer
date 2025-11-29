@@ -516,16 +516,6 @@
                                 </ul>
                             </nav>
                         </div>
-
-                        <!-- 操作按钮 -->
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="saveKnowledgeSettings()">
-                                <i class="bi bi-save"></i> 保存设置
-                            </button>
-                            <button class="btn btn-outline-secondary" onclick="resetKnowledgeSettings()">
-                                <i class="bi bi-arrow-clockwise"></i> 重置
-                            </button>
-                        </div>
                     </div>
                     
                     <!-- 上传视图 -->
@@ -1390,28 +1380,6 @@
         function removeCategory(index) {
             selectedCategories.splice(index, 1);
             updateSelectedCategoriesDisplay();
-        }
-
-        // 保存知识库设置
-        function saveKnowledgeSettings() {
-            const settings = {
-                categories: selectedCategories.map(item => item.value),
-                categoryTexts: selectedCategories.map(item => item.text)
-            };
-            
-            console.log('保存知识库设置:', settings);
-            alert('知识库设置已保存！');
-        }
-
-        // 重置知识库设置
-        function resetKnowledgeSettings() {
-            if (confirm('确定要重置所有已选择的分类吗？')) {
-                selectedCategories = [];
-                updateSelectedCategoriesDisplay();
-                
-                // 隐藏所有展开的区域
-                document.getElementById('level2CategoriesContainer').style.display = 'none';
-            }
         }
 
         // 获取已选择的分类（用于上传）
