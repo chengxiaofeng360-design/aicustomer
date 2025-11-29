@@ -452,16 +452,7 @@
                         <!-- 搜索和筛选区域 -->
                         <div class="search-filter-section mb-4">
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                        <input type="text" class="form-control" id="knowledgeSearchInput" placeholder="搜索文档标题、内容或标签...">
-                                        <button class="btn btn-primary" type="button" onclick="performKnowledgeSearch()">
-                                            <i class="bi bi-search"></i> 搜索
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <select class="form-select" id="categoryFilter">
                                         <option value="">所有分类</option>
                                         <option value="technology">技术文档</option>
@@ -470,13 +461,22 @@
                                         <option value="training">培训材料</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <select class="form-select" id="sortBy">
                                         <option value="updateTime">按更新时间</option>
                                         <option value="createTime">按创建时间</option>
                                         <option value="name">按文件名</option>
                                         <option value="size">按文件大小</option>
                                     </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                        <input type="text" class="form-control" id="knowledgeSearchInput" placeholder="搜索文档标题、内容或标签...">
+                                        <button class="btn btn-primary" type="button" onclick="performKnowledgeSearch()">
+                                            <i class="bi bi-search"></i> 搜索
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
