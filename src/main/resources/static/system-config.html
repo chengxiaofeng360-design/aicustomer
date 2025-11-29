@@ -456,6 +456,9 @@
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-search"></i></span>
                                         <input type="text" class="form-control" id="knowledgeSearchInput" placeholder="搜索文档标题、内容或标签...">
+                                        <button class="btn btn-primary" type="button" onclick="performKnowledgeSearch()">
+                                            <i class="bi bi-search"></i> 搜索
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -1634,6 +1637,11 @@
             loadConfigs();
             
             alert('配置保存成功！');
+        }
+
+        // 执行知识库搜索
+        function performKnowledgeSearch() {
+            loadKnowledgeFiles();
         }
 
         // 初始化页面
