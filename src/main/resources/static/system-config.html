@@ -675,8 +675,11 @@
     </div>
 
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
-    <script src="/js/system-config.js"></script>
     <script>
+        // 全局变量
+        let allConfigs = []; // 存储所有配置数据
+        let currentGroup = '全部'; // 当前选中的分组
+        
         // 页面导航函数
         function navigateTo(page) {
             const pageMap = {
@@ -686,6 +689,209 @@
             
             if (pageMap[page]) {
                 window.location.href = `/${pageMap[page]}`;
+            }
+        }
+
+        // 加载配置列表
+        function loadConfigs() {
+            const configList = document.getElementById('configList');
+            if (!configList) return;
+            
+            configList.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3 text-muted">正在加载配置数据...</p></div>';
+
+            // 模拟加载配置数据
+            setTimeout(() => {
+                allConfigs = [
+                    { id: 1, key: 'system.name', value: 'AI客户管理系统', description: '系统名称', group: '系统配置', type: 'STRING', createTime: '2025-11-28 10:00:00', updateTime: '2025-11-28 10:00:00' },
+                    { id: 2, key: 'system.version', value: '1.0.0', description: '系统版本', group: '系统配置', type: 'STRING', createTime: '2025-11-28 10:00:00', updateTime: '2025-11-28 10:00:00' },
+                    { id: 3, key: 'database.url', value: 'jdbc:mysql://localhost:3306/ai_customer', description: '数据库连接URL', group: '数据库配置', type: 'STRING', createTime: '2025-11-28 10:00:00', updateTime: '2025-11-28 10:00:00' }
+                ];
+                renderConfigList(allConfigs);
+            }, 1000);
+        }
+
+        // 渲染配置列表
+        function renderConfigList(configs) {
+            const configList = document.getElementById('configList');
+            if (!configList) return;
+            
+            if (!configs || configs.length === 0) {
+                configList.innerHTML = '<div class="text-center py-5"><i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i><p class="mt-3 text-muted">暂无配置数据</p></div>';
+                return;
+            }
+
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>配置键</th>
+                                <th>配置值</th>
+                                <th>描述</th>
+                                <th>分组</th>
+                                <th>类型</th>
+                                <th>更新时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            configs.forEach(config => {
+                html += `
+                    <tr>
+                        <td><code>${config.key}</code></td>
+                        <td>
+                            <span style="max-width: 200px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${config.value}">
+                                ${config.value}
+                            </span>
+                        </td>
+                        <td>${config.description || '-'}</td>
+                        <td><span class="badge bg-info">${config.group}</span></td>
+                        <td><span class="badge bg-secondary">${config.type}</span></td>
+                        <td>${config.updateTime}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="editConfig(${config.id})" title="编辑">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteConfig(${config.id})" title="删除">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            configList.innerHTML = html;
+        }
+
+        // 搜索配置
+        function searchConfigs() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) return;
+            
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                renderConfigList(allConfigs);
+                return;
+            }
+
+            const filteredConfigs = allConfigs.filter(config => 
+                config.key.toLowerCase().includes(searchTerm) ||
+                config.value.toLowerCase().includes(searchTerm) ||
+                (config.description && config.description.toLowerCase().includes(searchTerm))
+            );
+
+            renderConfigList(filteredConfigs);
+        }
+
+        // 处理搜索框回车事件
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchConfigs();
+            }
+        }
+
+        // 显示新增配置模态框
+        function showAddConfigModal() {
+            const modal = new bootstrap.Modal(document.getElementById('configModal'));
+            document.getElementById('configModalTitle').textContent = '新增配置';
+            document.getElementById('configKey').value = '';
+            document.getElementById('configValue').value = '';
+            document.getElementById('configDescription').value = '';
+            document.getElementById('configGroup').value = '系统配置';
+            modal.show();
+        }
+
+        // 保存配置
+        function saveConfig() {
+            const configKey = document.getElementById('configKey').value.trim();
+            const configValue = document.getElementById('configValue').value.trim();
+            const configDescription = document.getElementById('configDescription').value.trim();
+            const configGroup = document.getElementById('configGroup').value;
+
+            if (!configKey || !configValue) {
+                alert('请填写配置键和配置值');
+                return;
+            }
+
+            console.log('保存配置:', {
+                key: configKey,
+                value: configValue,
+                description: configDescription,
+                group: configGroup
+            });
+
+            // 模拟保存
+            const modal = bootstrap.Modal.getInstance(document.getElementById('configModal'));
+            modal.hide();
+            
+            // 重新加载配置列表
+            loadConfigs();
+            
+            alert('配置保存成功！');
+        }
+
+        // 编辑配置
+        function editConfig(id) {
+            const config = allConfigs.find(c => c.id === id);
+            if (!config) return;
+
+            const modal = new bootstrap.Modal(document.getElementById('configModal'));
+            document.getElementById('configModalTitle').textContent = '编辑配置';
+            document.getElementById('configKey').value = config.key;
+            document.getElementById('configValue').value = config.value;
+            document.getElementById('configDescription').value = config.description || '';
+            document.getElementById('configGroup').value = config.group;
+            modal.show();
+        }
+
+        // 删除配置
+        function deleteConfig(id) {
+            if (!confirm('确定要删除这个配置吗？')) {
+                return;
+            }
+
+            // 模拟删除
+            allConfigs = allConfigs.filter(c => c.id !== id);
+            renderConfigList(allConfigs);
+            alert('配置删除成功！');
+        }
+
+        // 按组过滤
+        function filterByGroup(groupName) {
+            currentGroup = groupName;
+            
+            // 更新左侧导航状态
+            document.querySelectorAll('.config-group-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-group="${groupName}"]`).classList.add('active');
+
+            switch(groupName) {
+                case '全部':
+                case '系统配置':
+                case '其他':
+                    document.getElementById('configContent').style.display = 'block';
+                    document.getElementById('knowledgeContent').style.display = 'none';
+                    loadConfigs();
+                    break;
+                case '知识管理':
+                    showKnowledgeManagement();
+                    break;
+                default:
+                    document.getElementById('configContent').style.display = 'block';
+                    document.getElementById('knowledgeContent').style.display = 'none';
+                    loadConfigs();
             }
         }
 
