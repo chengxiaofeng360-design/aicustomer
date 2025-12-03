@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>系统配置</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .config-container {
+            padding: 1rem;
+            background: transparent;
+        }
+        
+        .config-layout {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .config-sidebar {
+            width: 250px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .config-content {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .config-menu-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .config-menu-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .config-menu-item.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .config-section {
+            display: none;
+        }
+        
+        .config-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .config-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="config-container">
+        <div class="config-header">
+            <h5 class="mb-0">
+                <i class="bi bi-gear"></i> 系统配置管理
+            </h5>
+        </div>
+        
+        <div class="config-layout">
+            <!-- 左侧菜单 -->
+            <div class="config-sidebar">
+                <div class="config-menu-item active" data-section="basic">
+                    <i class="bi bi-sliders"></i> 基础配置
+                </div>
+                <div class="config-menu-item" data-section="ai">
+                    <i class="bi bi-cpu"></i> AI配置
+                </div>
+                <div class="config-menu-item" data-section="notification">
+                    <i class="bi bi-bell"></i> 通知设置
+                </div>
+                <div class="config-menu-item" data-section="security">
+                    <i class="bi bi-shield-check"></i> 安全设置
+                </div>
+                <div class="config-menu-item" data-section="backup">
+                    <i class="bi bi-cloud-arrow-down"></i> 备份设置
+                </div>
+            </div>
+
+            <!-- 右侧内容 -->
+            <div class="config-content">
+                <!-- 基础配置 -->
+                <div class="config-section active" id="basic">
+                    <h6 class="mb-4">基础系统配置</h6>
+                    
+                    <div class="form-group">
+                        <label class="form-label">系统名称</label>
+                        <input type="text" class="form-control" value="AI客户管理系统">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">系统版本</label>
+                        <input type="text" class="form-control" value="v1.0.0" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">默认语言</label>
+                        <select class="form-select">
+                            <option value="zh-CN" selected>简体中文</option>
+                            <option value="en-US">English</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">时区设置</label>
+                        <select class="form-select">
+                            <option value="Asia/Shanghai" selected>Asia/Shanghai (UTC+8)</option>
+                            <option value="UTC">UTC (UTC+0)</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary">
+                        <i class="bi bi-save"></i> 保存配置
+                    </button>
+                </div>
+
+                <!-- AI配置 -->
+                <div class="config-section" id="ai">
+                    <h6 class="mb-4">AI服务配置</h6>
+                    
+                    <div class="form-group">
+                        <label class="form-label">AI模型</label>
+                        <select class="form-select">
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-3.5-turbo" selected>GPT-3.5 Turbo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">API密钥</label>
+                        <input type="password" class="form-control" placeholder="sk-...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">最大令牌数</label>
+                        <input type="number" class="form-control" value="2048">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">温度参数</label>
+                        <input type="range" class="form-range" min="0" max="1" step="0.1" value="0.7">
+                        <small class="text-muted">当前值: 0.7</small>
+                    </div>
+                    
+                    <button class="btn btn-primary">
+                        <i class="bi bi-save"></i> 保存配置
+                    </button>
+                </div>
+
+                <!-- 通知设置 -->
+                <div class="config-section" id="notification">
+                    <h6 class="mb-4">通知设置</h6>
+                    
+                    <div class="form-group">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailNotif" checked>
+                            <label class="form-check-label" for="emailNotif">
+                                邮件通知
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="smsNotif">
+                            <label class="form-check-label" for="smsNotif">
+                                短信通知
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="pushNotif" checked>
+                            <label class="form-check-label" for="pushNotif">
+                                推送通知
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">通知邮箱</label>
+                        <input type="email" class="form-control" placeholder="admin@example.com">
+                    </div>
+                    
+                    <button class="btn btn-primary">
+                        <i class="bi bi-save"></i> 保存配置
+                    </button>
+                </div>
+
+                <!-- 安全设置 -->
+                <div class="config-section" id="security">
+                    <h6 class="mb-4">安全设置</h6>
+                    
+                    <div class="form-group">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="twoFactor" checked>
+                            <label class="form-check-label" for="twoFactor">
+                                双因素认证
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">密码最小长度</label>
+                        <input type="number" class="form-control" value="8">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">会话超时时间（分钟）</label>
+                        <input type="number" class="form-control" value="30">
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="loginLog" checked>
+                            <label class="form-check-label" for="loginLog">
+                                记录登录日志
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary">
+                        <i class="bi bi-save"></i> 保存配置
+                    </button>
+                </div>
+
+                <!-- 备份设置 -->
+                <div class="config-section" id="backup">
+                    <h6 class="mb-4">备份设置</h6>
+                    
+                    <div class="form-group">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="autoBackup" checked>
+                            <label class="form-check-label" for="autoBackup">
+                                自动备份
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">备份频率</label>
+                        <select class="form-select">
+                            <option value="daily">每日</option>
+                            <option value="weekly" selected>每周</option>
+                            <option value="monthly">每月</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">备份保留天数</label>
+                        <input type="number" class="form-control" value="30">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">备份存储路径</label>
+                        <input type="text" class="form-control" value="/backups/">
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary">
+                            <i class="bi bi-save"></i> 保存配置
+                        </button>
+                        <button class="btn btn-success">
+                            <i class="bi bi-cloud-download"></i> 立即备份
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        // 配置菜单切换
+        document.querySelectorAll('.config-menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 移除所有活动状态
+                document.querySelectorAll('.config-menu-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.config-section').forEach(i => i.classList.remove('active'));
+                
+                // 添加活动状态
+                this.classList.add('active');
+                const sectionId = this.dataset.section;
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+
+        // 温度滑块实时显示
+        const tempSlider = document.querySelector('input[type="range"]');
+        if (tempSlider) {
+            tempSlider.addEventListener('input', function() {
+                const small = this.nextElementSibling;
+                if (small && small.classList.contains('text-muted')) {
+                    small.textContent = `当前值: ${this.value}`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
