@@ -57,11 +57,6 @@ public class SensitiveDataServiceImpl implements SensitiveDataService {
         maskedCustomer.setPosition(customer.getPosition());
         maskedCustomer.setQqWeixin(customer.getQqWeixin());
         maskedCustomer.setCooperationContent(customer.getCooperationContent());
-        // 非敏感的业务辅助字段保持原样，避免在列表和详情中丢失
-        maskedCustomer.setRegion(customer.getRegion());
-        maskedCustomer.setProgress(customer.getProgress());
-        maskedCustomer.setBusinessType(customer.getBusinessType());
-        maskedCustomer.setVariety(customer.getVariety());
         maskedCustomer.setAgencyName(customer.getAgencyName());
         maskedCustomer.setAgencyCode(customer.getAgencyCode());
         maskedCustomer.setAgencyAddress(maskString(customer.getAgencyAddress(), 2, 2));

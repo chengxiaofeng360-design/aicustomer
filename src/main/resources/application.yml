@@ -117,17 +117,29 @@ ai-customer:
       timeout: 30000  # API请求超时时间（毫秒）
       max-tokens: 2000  # 最大生成token数
       temperature: 0.7  # 温度参数，控制随机性（0-2）
+      # OCR配置 (使用OCR.space免费API)
+      ocr:
+        enabled: true
+        api-key: helloworld  # OCR.space免费API Key (可选，不填也能用)
+        base-url: https://api.ocr.space/parse/image  # OCR.space端点
+        language: chs  # 中文简体，支持：eng, chs, cht等
     # 火山方舟 Ark 配置
     ark:
       api-key: 0edd85dd-aa89-4f71-817b-803b10e19e6f
       base-url: https://ark.cn-beijing.volces.com/api/v3
       model: doubao-1-5-pro-32k-250115
       timeout: 30000
+    # 智谱AI GLM配置
+    zhipu:
+      api-key: 975fc88a9db242f9b9044067488f2f98.fdlDhCDHP4MUGIhV
+      base-url: https://open.bigmodel.cn/api/paas/v4
+      model: glm-4-flash  # 免费模型
+      timeout: 30000
+      max-tokens: 2000
   
   # 系统配置
   system:
     name: AI客户管理系统
     version: 1.0.0
     author: AI Customer Management Team
-
 

@@ -340,7 +340,7 @@ async function loadCustomerOptions() {
         const response = await fetch('/api/customer/list?page=1&size=1000');
         const result = await response.json();
         
-        if (result.code === 200 && result.data && result.data.list && result.data.list.length > 0) {
+        if (result.code === 200 && result.data && result.data.list) {
             result.data.list.forEach(customer => {
                 const option = document.createElement('option');
                 option.value = customer.id;
@@ -348,25 +348,11 @@ async function loadCustomerOptions() {
                 option.setAttribute('data-customer-name', customer.customerName || '');
                 select.appendChild(option);
             });
-            console.log(`成功加载 ${result.data.list.length} 个客户选项`);
-        } else if (result.code === 200) {
-            // API成功但没有数据
-            console.log('客户列表为空，暂无客户数据');
         } else {
-            // API返回错误
             console.warn('加载客户列表失败:', result.message || '未知错误');
         }
     } catch (error) {
         console.error('加载客户列表失败:', error);
-    }
-}
-
-// 清除客户选择
-function clearCustomerSelection() {
-    const customerSelect = document.getElementById('taskCustomerId');
-    if (customerSelect) {
-        customerSelect.value = '';
-        customerSelect.selectedIndex = 0;
     }
 }
 

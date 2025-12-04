@@ -25,13 +25,11 @@ public interface UserMapper {
 
     /**
      * 查询用户列表（用于下拉选择等场景）
-     *
-     * 使用单参数User，避免与UserMapper.xml中属性访问不一致导致的参数绑定错误。
-     *
+     * 
      * @param user 查询条件
      * @return 用户列表
      */
-    List<User> selectList(User user);
+    List<User> selectList(@Param("user") User user);
 }
 
 

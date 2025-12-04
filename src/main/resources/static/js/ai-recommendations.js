@@ -120,6 +120,7 @@ function utf8ToBase64(str) {
         let currentContentType = 'recommendation'; // 当前内容类型
         let templates = JSON.parse(localStorage.getItem('aiRecommendationTemplates') || '[]');
         let tempContentSource = null;
+        let savedTemplates = JSON.parse(localStorage.getItem('aiSavedTemplates') || '[]');
         let sendSelectedCustomers = []; // 发送/分享模态框中选择的客户
         let sendAllCustomers = []; // 发送/分享模态框中的全部客户
         let sendShareLink = ''; // 发送/分享的链接
@@ -128,245 +129,224 @@ function utf8ToBase64(str) {
         // 获取占位推荐数据（仅用于预览，不包含真实客户信息）
         function getPlaceholderRecommendation(type) {
             const base = {
-                id: 'preview-' + type + '-' + Date.now(),
-                customerName: '张三',
-                customerPhone: '13800138000',
-                customerEmail: 'zhangsan@example.com',
+                id: 'preview-' + type,
+                customerName: '',
+                customerPhone: '',
+                customerEmail: '',
                 type: 'service',
                 title: '',
                 content: '',
                 priority: 'medium',
                 status: 'pending',
-                createTime: new Date().toLocaleString('zh-CN'),
+                createTime: new Date().toLocaleDateString('zh-CN'),
                 confidence: 0.9,
                 reason: ''
             };
-            
             switch (type) {
-                case 'product':
-                    base.type = 'product';
-                    base.title = '智能产品推荐方案';
-                    base.content = `基于客户的历史购买记录和业务需求，我们为您推荐以下产品组合：
-
-## 🎯 核心产品推荐
-1. **智能数据分析平台** - 提升业务洞察力
-   - 实时数据监控和可视化
-   - AI驱动的预测分析
-   - 定制化报表功能
-
-2. **客户关系管理系统** - 优化客户管理
-   - 全渠道客户数据整合
-   - 智能客户画像分析
-   - 自动化营销工具
-
-3. **云服务解决方案** - 降低IT成本
-   - 弹性扩展的云基础设施
-   - 高可用性保障
-   - 专业的技术支持
-
-## 💡 推荐理由
-- 符合您当前业务发展阶段
-- 具有良好的投资回报率
-- 易于集成和部署
-- 提供完善的售后服务
-
-## 📈 预期效果
-- 运营效率提升30%
-- 客户满意度提高25%
-- IT成本降低20%`;
-                    base.reason = '基于客户购买历史、行业趋势和业务需求综合分析得出最优产品组合';
-                    base.confidence = 0.92;
-                    break;
-                    
-                case 'service':
-                    base.type = 'service';
-                    base.title = '定制化服务方案';
-                    base.content = `为您量身打造的专业服务套餐：
-
-## 🔧 专业技术服务
-1. **7x24小时技术支持**
-   - 专属技术顾问
-   - 快速响应机制
-   - 远程+现场服务
-
-2. **定期系统维护**
-   - 每月系统健康检查
-   - 性能优化建议
-   - 安全漏洞修复
-
-3. **培训与咨询服务**
-   - 产品使用培训
-   - 最佳实践指导
-   - 业务流程优化
-
-## 🎯 服务特色
-- 个性化服务方案
-- 专业团队支持
-- 持续改进机制
-- 透明的服务流程
-
-## 📊 服务保障
-- SLA服务等级协议
-- 服务质量监控
-- 客户满意度调查
-- 持续优化改进`;
-                    base.reason = '根据客户业务规模和技术需求，提供全方位的专业服务支持';
-                    base.confidence = 0.88;
-                    break;
-                    
-                case 'marketing':
-                    base.type = 'marketing';
-                    base.title = '精准营销策略方案';
-                    base.content = `基于客户画像的精准营销策略：
-
-## 📱 多渠道营销布局
-1. **数字营销策略**
-   - 社交媒体营销矩阵
-   - 内容营销计划
-   - SEO/SEM优化方案
-
-2. **客户触达策略**
-   - 个性化邮件营销
-   - 短信营销活动
-   - 微信营销推广
-
-3. **品牌传播策略**
-   - 品牌故事打造
-   - KOL合作推广
-   - 线下活动策划
-
-## 🎯 营销亮点
-- 数据驱动的精准投放
-- 个性化内容定制
-- 全渠道整合营销
-- 实时效果监控
-
-## 📈 预期成果
-- 品牌知名度提升40%
-- 潜在客户增长35%
-- 转化率提高25%
-- ROI达到300%以上`;
-                    base.reason = '基于客户目标受众、市场环境和竞争分析制定的精准营销策略';
-                    base.confidence = 0.85;
-                    break;
-                    
-                case 'maintenance':
-                    base.type = 'maintenance';
-                    base.title = '系统维护保养方案';
-                    base.content = `全面的系统维护和保养计划：
-
-## 🔍 预防性维护
-1. **系统健康检查**
-   - 硬件状态检测
-   - 软件版本更新
-   - 性能指标监控
-
-2. **数据备份策略**
-   - 自动化备份机制
-   - 灾难恢复预案
-   - 数据完整性验证
-
-3. **安全维护**
-   - 安全漏洞扫描
-   - 防火墙配置优化
-   - 访问权限管理
-
-## 🛠️ 响应式维护
-- 故障快速响应（2小时内）
-- 远程诊断和修复
-- 备件库存管理
-- 技术升级服务
-
-## 📋 维护计划
-- 每月例行检查
-- 季度深度维护
-- 年度系统评估
-- 紧急故障处理`;
-                    base.reason = '确保系统稳定运行，预防潜在故障，延长设备使用寿命';
-                    base.confidence = 0.90;
-                    break;
-                    
-                case 'risk_control':
-                    base.type = 'risk_control';
-                    base.title = '风险控制与合规方案';
-                    base.content = `全面的风险管理和合规保障：
-
-## ⚠️ 风险识别与评估
-1. **业务风险分析**
-   - 市场风险评估
-   - 信用风险控制
-   - 操作风险管理
-
-2. **技术风险防控**
-   - 数据安全保护
-   - 系统稳定性保障
-   - 网络安全防护
-
-3. **合规性管理**
-   - 法规遵循检查
-   - 内控制度建设
-   - 审计配合支持
-
-## 🛡️ 风险控制措施
-- 实时风险监控系统
-- 预警机制建立
-- 应急响应预案
-- 定期风险评估
-
-## 📊 风险管理效果
-- 风险识别准确率95%
-- 风险响应时间<1小时
-- 合规性问题减少80%
-- 业务连续性保障100%`;
-                    base.reason = '基于行业最佳实践和监管要求，建立全面的风险管理体系';
-                    base.confidence = 0.87;
-                    break;
-                    
                 case 'marketing-long':
-                    base.type = 'marketing';
                     base.title = 'AI赋能业务增长方案';
                     base.content = '通过数据洞察与智能决策，打造差异化核心优势，帮助客户实现业绩增长。';
                     break;
                 case 'greeting-card':
-                    base.type = 'marketing';
                     base.title = '节日温情贺卡';
                     base.content = '在重要节点送上祝福，传递品牌关怀，增进客户情感连接。';
                     break;
                 case 'business-card':
-                    base.type = 'marketing';
                     base.title = '客户名片摘要';
                     base.content = '概括客户背景、需求与推荐主题，便于团队协同。';
                     break;
                 case 'marketing-short':
-                    base.type = 'marketing';
                     base.title = '限时促销短讯';
-                    base.content = `🔥 限时特惠！智能数据分析平台原价￥99,800，现价￥69,800
-
-🎯 专属客户：张三
-⚡ 核心价值：提升运营效率30%，降低成本20%
-💎 独家优惠：立省￥30,000 + 免费实施服务
-
-📞 立即咨询：13800138000
-⏰ 优惠截止：2025-12-01
-
-🏆 已有150+企业选择，满意度98%`;
-                    base.reason = '基于客户购买历史和业务需求，推荐最具性价比的限时优惠方案';
-                    base.confidence = 0.95;
+                    base.content = '一句话点出客户痛点与解决方案，附带明确行动号召。';
                     break;
                 default:
-                    // 默认使用产品推荐
-                    base.type = 'product';
-                    base.title = '智能推荐方案';
-                    base.content = '基于您的需求和历史数据，我们为您推荐最合适的解决方案。';
-                    base.reason = '综合分析客户需求和市场趋势得出推荐结论';
+                    break;
             }
             return base;
+        }
+
+        // 加载统计数据
+        function loadStatistics() {
+            const statisticsRow = document.getElementById('statisticsRow');
+            if (!statisticsRow) return;
+            
+            // 从实际数据计算统计数据
+            const adoptedCount = recommendations.filter(r => r.status === 'adopted').length;
+            const pendingCount = recommendations.filter(r => r.status === 'pending').length;
+            const totalCount = recommendations.length;
+            const adoptionRate = totalCount > 0 ? Math.round((adoptedCount / totalCount) * 100) : 0;
+            const avgConfidence = totalCount > 0 
+                ? Math.round(recommendations.reduce((sum, r) => sum + (r.confidence || 0), 0) / totalCount * 100)
+                : 0;
+            
+            statisticsRow.innerHTML = 
+                '<div class="col-md-3">' +
+                '<div class="stat-card">' +
+                '<div class="stat-number">' + adoptedCount + '</div>' +
+                '<div class="stat-label">已采纳</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-3">' +
+                '<div class="stat-card">' +
+                '<div class="stat-number">' + pendingCount + '</div>' +
+                '<div class="stat-label">待处理</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-3">' +
+                '<div class="stat-card">' +
+                '<div class="stat-number">' + adoptionRate + '%</div>' +
+                '<div class="stat-label">采纳率</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-3">' +
+                '<div class="stat-card">' +
+                '<div class="stat-number">' + avgConfidence + '%</div>' +
+                '<div class="stat-label">平均置信度</div>' +
+                '</div>' +
+                '</div>';
+        }
+        
+        // 渲染模板列表
+        function renderTemplateList() {
+            const container = document.getElementById('templateListContainer');
+            if (!container) return;
+
+            // 从localStorage加载保存的模板
+            savedTemplates = JSON.parse(localStorage.getItem('aiSavedTemplates') || '[]');
+            
+            if (savedTemplates.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-file-earmark-text display-6"></i>
+                        <p class="mt-2 mb-0">暂无保存的模板</p>
+                        <p class="small">生成内容后可以保存为模板，方便下次使用</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="row g-3">';
+            savedTemplates.forEach((template, index) => {
+                const typeNames = {
+                    'recommendation': '推荐报告',
+                    'meeting': '会议纪要',
+                    'news': '新闻稿',
+                    'report': '报道',
+                    'reference': '推荐信',
+                    'marketing-long': '长文营销文案',
+                    'greeting-card': '祝福贺卡',
+                    'business-card': '名片引荐',
+                    'marketing-short': '短促销文案'
+                };
+                const typeName = typeNames[template.type] || '模板';
+                const preview = template.content ? (template.content.substring(0, 50) + '...') : '无内容';
+                
+                html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">${escapeHtml(template.title || typeName)}</h6>
+                                <p class="card-text text-muted small">${escapeHtml(preview)}</p>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="applyTemplate(${index})">
+                                        <i class="bi bi-play-circle"></i> 使用
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTemplate(${index})">
+                                        <i class="bi bi-trash"></i> 删除
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted small">
+                                <i class="bi bi-clock"></i> ${template.saveTime || '未知时间'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // 应用模板
+        function applyTemplate(index) {
+            const template = savedTemplates[index];
+            if (!template) {
+                alert('模板不存在');
+                return;
+            }
+            
+            // 设置内容类型
+            currentContentType = template.type;
+            document.getElementById('contentType').value = template.type;
+            
+            // 打开生成内容模态框
+            openGenerateContentModal(template.type);
+            
+            // 延迟填充内容
+            setTimeout(() => {
+                if (template.title) {
+                    const titleInput = document.getElementById('reportTitle');
+                    if (titleInput) {
+                        titleInput.value = template.title;
+                    }
+                }
+                if (template.content) {
+                    const contentEditor = document.getElementById('reportContentEditor');
+                    if (contentEditor) {
+                        contentEditor.value = template.content;
+                        // 触发保存以更新预览
+                        if (typeof saveReportEdit === 'function') {
+                            saveReportEdit();
+                        }
+                    }
+                }
+            }, 200);
+        }
+        
+        // 删除模板
+        function deleteTemplate(index) {
+            if (confirm('确定要删除这个模板吗？')) {
+                savedTemplates.splice(index, 1);
+                localStorage.setItem('aiSavedTemplates', JSON.stringify(savedTemplates));
+                renderTemplateList();
+                alert('模板已删除');
+            }
+        }
+        
+        // 保存当前模板
+        function saveCurrentTemplate() {
+            const title = document.getElementById('reportTitle')?.value || '';
+            const content = document.getElementById('reportContentEditor')?.value || 
+                          document.getElementById('reportContent')?.innerText || '';
+            
+            if (!content.trim()) {
+                alert('内容不能为空！');
+                return;
+            }
+            
+            const template = {
+                type: currentContentType,
+                title: title || (currentContentType + '模板'),
+                content: content,
+                saveTime: new Date().toLocaleString('zh-CN')
+            };
+            
+            savedTemplates.push(template);
+            localStorage.setItem('aiSavedTemplates', JSON.stringify(savedTemplates));
+            renderTemplateList();
+            alert('模板已保存！');
         }
         
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 立即加载推荐结果（轻量级）
             loadRecommendationResults();
+            // 延迟加载历史记录、模板列表和统计数据（较重的操作）
+            setTimeout(function() {
+                loadHistoryRecords();
+                loadStatistics();
+                renderTemplateList();
+            }, 100);
         });
 
         
@@ -485,36 +465,21 @@ function utf8ToBase64(str) {
         }
 
 
-        // 加载推荐结果（简化版本，不显示默认数据）
-        async function loadRecommendationResults() {
-            const container = document.getElementById('recommendationResults');
-            if (!container) return;
-            
-            // 直接显示空状态，让用户主动点击生成
-            showEmptyRecommendationState();
-        }
-
-        function showEmptyRecommendationState() {
-            const container = document.getElementById('recommendationResults');
-            if (!container) return;
-            
-            container.innerHTML = `
-                <div class="text-center py-5">
-                    <i class="bi bi-magic display-1 text-muted"></i>
-                    <h5 class="mt-3 text-muted">准备生成AI推荐内容</h5>
-                    <p class="mb-1">请选择上方内容模块，点击"AI生成内容"</p>
-                    <p class="text-muted">支持产品推荐、服务方案、营销文案等多种类型</p>
-                </div>
-            `;
-        }
-
-        function renderRecommendationResults() {
+        // 加载推荐结果
+        function loadRecommendationResults() {
             const container = document.getElementById('recommendationResults');
             if (!container) return;
             container.innerHTML = '';
 
             if (recommendations.length === 0) {
-                showEmptyRecommendationState();
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-lightbulb display-1 text-muted"></i>
+                        <h5 class="mt-3 text-muted">暂无推荐</h5>
+                        <p class="mb-1">请先选择上方内容模块</p>
+                        <p class="text-muted">勾选推荐后即可生成对应内容</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -578,79 +543,43 @@ function utf8ToBase64(str) {
             });
         }
 
-        // 辅助函数：获取类型文本
-        function getTypeText(type) {
-            const typeMap = {
-                'product': '产品推荐',
-                'service': '服务推荐', 
-                'marketing': '营销推荐',
-                'maintenance': '维护推荐',
-                'risk_control': '风控推荐',
-                'marketing-long': '长文营销',
-                'marketing-short': '短促销',
-                'greeting-card': '贺卡祝福',
-                'business-card': '名片引荐',
-                'recommendation': '推荐报告'
-            };
-            return typeMap[type] || type || '未知类型';
-        }
+        // 加载历史记录
+        function loadHistoryRecords() {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
 
-        // 辅助函数：获取优先级样式类
-        function getPriorityClass(priority) {
-            const priorityMap = {
-                'high': 'danger',
-                'medium': 'warning', 
-                'low': 'success',
-                '高': 'danger',
-                '中': 'warning',
-                '低': 'success'
-            };
-            return priorityMap[priority] || 'secondary';
-        }
-
-        // 辅助函数：获取状态样式类
-        function getStatusClass(status) {
-            const statusMap = {
-                'pending': 'warning',
-                'adopted': 'success',
-                'rejected': 'danger',
-                '待处理': 'warning',
-                '已采纳': 'success',
-                '已拒绝': 'danger'
-            };
-            return statusMap[status] || 'secondary';
-        }
-
-        // 辅助函数：获取状态文本
-        function getStatusText(status) {
-            const statusMap = {
-                'pending': '待处理',
-                'adopted': '已采纳',
-                'rejected': '已拒绝',
-                '待处理': '待处理',
-                '已采纳': '已采纳',
-                '已拒绝': '已拒绝'
-            };
-            return statusMap[status] || status || '未知状态';
-        }
-
-        // 辅助函数：格式化日期
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            try {
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'});
-            } catch (e) {
-                return dateStr;
+            if (recommendations.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">暂无历史记录，生成或保存推荐后可在此复盘</td>
+                    </tr>
+                `;
+                return;
             }
-        }
 
-        // 辅助函数：HTML转义
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            recommendations.forEach(rec => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="table-cell-truncate" title="${rec.customerName}">${rec.customerName || '-'}</td>
+                    <td class="table-cell-truncate" title="${getTypeText(rec.type)}">${getTypeText(rec.type)}</td>
+                    <td class="table-cell-truncate" title="${rec.title}">
+                        ${rec.title}
+                        ${rec.isCustom ? '<span class="badge bg-warning text-dark ms-2">自定义</span>' : ''}
+                    </td>
+                    <td><span class="badge ${getPriorityClass(rec.priority)}">${getPriorityText(rec.priority)}</span></td>
+                    <td><span class="badge ${getStatusClass(rec.status)}">${getStatusText(rec.status)}</span></td>
+                    <td class="table-cell-truncate" title="${rec.createTime}">${rec.createTime}</td>
+                    <td>
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewRecommendationDetail(${rec.id})" title="查看详情">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="adoptRecommendation(${rec.id})" title="采纳推荐">
+                            <i class="bi bi-check"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
         }
 
         // 查看推荐详情
@@ -697,6 +626,7 @@ function utf8ToBase64(str) {
                 rec.status = 'adopted';
                 rec.modifyTime = new Date().toISOString().split('T')[0];
                 loadRecommendationResults();
+                loadHistoryRecords();
                 bootstrap.Modal.getInstance(document.getElementById('recommendationDetailModal')).hide();
                 alert('推荐已采纳！');
             }
@@ -713,23 +643,26 @@ function utf8ToBase64(str) {
         }
         
 
-        // 批量采纳推荐
-        function batchAdoptRecommendations() {
+        // 批量采纳
+        function batchAdopt() {
             if (selectedRecommendations.length === 0) {
                 alert('请先选择要采纳的推荐！');
                 return;
             }
             
-            selectedRecommendations.forEach(id => {
-                const rec = recommendations.find(r => r.id === id);
-                if (rec) {
-                    rec.status = 'adopted';
-                    rec.modifyTime = new Date().toISOString().split('T')[0];
-                }
-            });
-            selectedRecommendations = [];
-            loadRecommendationResults();
-            alert('批量采纳成功！');
+            if (confirm(`确定要采纳选中的 ${selectedRecommendations.length} 条推荐吗？`)) {
+                selectedRecommendations.forEach(id => {
+                    const rec = recommendations.find(r => r.id === id);
+                    if (rec) {
+                        rec.status = 'adopted';
+                        rec.modifyTime = new Date().toISOString().split('T')[0];
+                    }
+                });
+                selectedRecommendations = [];
+                loadRecommendationResults();
+                loadHistoryRecords();
+                alert('批量采纳成功！');
+            }
         }
 
         // 导出推荐
@@ -966,339 +899,71 @@ function utf8ToBase64(str) {
             selectedRecommendations = previousSelection;
         }
 
-        // 生成AI推荐内容（使用固定数据，不调用API）
-        async function generateAIRecommendation(type, customerId = 11) {
-            try {
-                // 直接返回固定数据，不调用API
-                console.log(`生成${type}类型推荐，客户ID: ${customerId}（使用固定数据）`);
-                return getPlaceholderRecommendation(type);
-                
-            } catch (error) {
-                console.error('生成推荐失败:', error);
-                // 返回降级数据
-                return getPlaceholderRecommendation(type);
-            }
-        }
-
-        // 为内容模块生成AI内容（使用固定数据，不调用API）
-        async function generateContentForModule(type) {
-            try {
-                // 显示加载状态（模拟加载效果）
-                const container = document.getElementById('recommendationResults');
-                if (container) {
-                    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border me-2"></div>正在生成推荐内容...</div>';
-                }
-                
-                // 模拟加载延迟，提升用户体验
-                await new Promise(resolve => setTimeout(resolve, 800));
-                
-                // 直接使用固定数据，不调用API
-                const mockRecommendation = getPlaceholderRecommendation(type);
-                
-                // 更新推荐数据
-                recommendations = [mockRecommendation];
-                selectedRecommendations = [mockRecommendation.id];
-                
-                // 重新渲染推荐结果
-                renderRecommendationResults();
-                
-                // 打开内容生成模态框
-                setTimeout(() => {
-                    _openGenerateContentModal(type);
-                }, 300);
-                
-            } catch (error) {
-                console.error('生成内容失败:', error);
-                showToast('生成内容失败，请稍后重试', 'error');
-                
-                // 显示空状态
-                showEmptyRecommendationState();
-            }
-        }
-
         // 生成推荐报告
         function generateRecommendationReport(customList = null) {
             const selectedRecs = customList || recommendations.filter(r => selectedRecommendations.includes(r.id));
             if (selectedRecs.length === 0) {
-                document.getElementById('reportContent').innerHTML = `
-                    <div class="report-header mb-4">
-                        <h3>AI智能推荐报告</h3>
-                        <p class="text-muted">生成时间：${new Date().toLocaleString('zh-CN')}</p>
-                    </div>
-                    <div class="report-body">
-                        <div class="text-center py-5">
-                            <i class="bi bi-file-text display-1 text-muted"></i>
-                            <h5 class="mt-3 text-muted">暂无推荐内容</h5>
-                            <p class="text-muted">请先选择想要生成内容的推荐</p>
-                        </div>
-                    </div>
-                `;
+                document.getElementById('reportContent').innerHTML = '<p class="text-muted">请先选择想要生成内容的推荐</p>';
                 return;
             }
             
-            let content = '';
-            
-            selectedRecs.forEach((rec, index) => {
-                const confidenceColor = rec.confidence >= 90 ? 'success' : rec.confidence >= 80 ? 'warning' : 'info';
-                const priorityText = rec.priority || '中';
-                const typeText = getTypeText(rec.type);
-                
-                content += `
-## ${index + 1}. ${escapeHtml(rec.title || '推荐内容')}
-
-### 📊 基本信息
-- **推荐类型**: ${typeText}
-- **优先级**: ${priorityText}
-- **置信度**: ${rec.confidence || 85}%
-- **客户名称**: ${escapeHtml(rec.customerName || '未知客户')}
-- **创建时间**: ${formatDate(rec.createTime)}
-
-### 📝 推荐内容
-${escapeHtml(rec.content || '暂无详细内容')}
-
-### 💡 推荐理由
-${escapeHtml(rec.reason || '基于AI智能分析得出推荐结论')}
-
----
-
-`;
-            });
-            
-            content += `
-### 📈 总结报告
-本次共生成 **${selectedRecs.length}** 项推荐方案，涵盖产品推荐、服务优化、策略制定等多个维度。
-
-**统计信息:**
-- 平均置信度: ${Math.round(selectedRecs.reduce((sum, r) => sum + (r.confidence || 85), 0) / selectedRecs.length)}%
-- 高优先级推荐: ${selectedRecs.filter(r => r.priority === 'high').length} 项
-- 中优先级推荐: ${selectedRecs.filter(r => r.priority === 'medium').length} 项
-- 低优先级推荐: ${selectedRecs.filter(r => r.priority === 'low').length} 项
-
-**建议:**
-1. 优先实施高置信度、高优先级的推荐方案
-2. 结合实际业务情况，制定详细的实施计划
-3. 定期跟踪推荐效果，持续优化推荐策略
-
----
-*报告生成时间：${new Date().toLocaleString('zh-CN')}*
-`;
-            
-            const html = `
+            let reportHtml = `
                 <div class="report-header mb-4">
                     <h3>AI智能推荐报告</h3>
-                    <p class="text-muted">生成时间：${new Date().toLocaleString('zh-CN')} | 推荐数量：${selectedRecs.length} 条</p>
+                    <p class="text-muted">生成时间：${new Date().toLocaleString('zh-CN')}</p>
+                    <p class="text-muted">推荐数量：${selectedRecs.length} 条</p>
                 </div>
                 <div class="report-body">
-                    <div style="white-space: pre-wrap; line-height: 1.8; font-family: 'Microsoft YaHei', sans-serif;">${escapeHtml(content)}</div>
+            `;
+            
+            selectedRecs.forEach((rec, index) => {
+                reportHtml += `
+                    <div class="report-item mb-4 p-3 border rounded">
+                        <h5 class="mb-3">推荐 ${index + 1}: ${rec.title}</h5>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <strong>客户名称：</strong>${rec.customerName || '未指定'}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>推荐类型：</strong><span class="badge ${getTypeClass(rec.type)}">${getTypeText(rec.type)}</span>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <strong>优先级：</strong><span class="badge ${getPriorityClass(rec.priority)}">${getPriorityText(rec.priority)}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>置信度：</strong>${Math.round(rec.confidence * 100)}%
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <strong>推荐内容：</strong>
+                            <p class="mt-2">${rec.content}</p>
+                        </div>
+                        <div class="mb-2">
+                            <strong>推荐理由：</strong>
+                            <p class="mt-2">${rec.reason || '无'}</p>
+                        </div>
+                        <div class="text-muted small">
+                            <strong>创建时间：</strong>${rec.createTime || '未知'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            reportHtml += `
                 </div>
                 <div class="report-footer mt-4 pt-3 border-top">
-                    <p class="text-muted small">
-                        <i class="bi bi-cpu"></i> 
-                        本AI智能推荐报告由系统自动生成，基于大数据分析和机器学习算法
-                    </p>
+                    <p class="text-muted small">本报告由AI智能推荐系统自动生成</p>
                 </div>
             `;
             
-            document.getElementById('reportContent').innerHTML = html;
-            currentReportData = html;
-            editedReportContent = null;
+            document.getElementById('reportContent').innerHTML = reportHtml;
+            currentReportData = reportHtml;
+            editedReportContent = null; // 重置编辑内容
+            
+            // 自动生成分享链接
             generateShareLink();
-        }
-
-        // 生成模板内容
-        function generateTemplate() {
-            const templateType = document.getElementById('templateType').value;
-            const selectedRecs = recommendations.filter(r => selectedRecommendations.includes(r.id));
-            
-            if (selectedRecs.length === 0) {
-                document.getElementById('templateContent').innerHTML = `
-                    <div class="template-empty">
-                        <i class="bi bi-envelope"></i>
-                        <h5>暂无模板内容</h5>
-                        <p>请先选择想要生成模板的推荐</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const mainRec = selectedRecs[0];
-            const isEmail = templateType === 'email';
-            
-            let templateHtml = `
-                <div class="template-pro">
-                    <div class="template-pro__hero">
-                        <div>
-                            <h4>${isEmail ? '智能邮件模板' : '智能短信模板'}</h4>
-                            <p style="margin: 0.5rem 0; opacity: 0.9;">基于AI推荐内容自动生成</p>
-                        </div>
-                        <div class="badge">
-                            <i class="bi bi-robot"></i> AI生成
-                        </div>
-                    </div>
-                    <div class="template-pro__body">
-                        <h5><i class="bi bi-person"></i> 目标客户</h5>
-                        <p>${escapeHtml(mainRec.customerName || '尊敬的客户')}</p>
-                        
-                        <h5><i class="bi bi-lightbulb"></i> 推荐主题</h5>
-                        <p>${escapeHtml(mainRec.title || '个性化推荐')}</p>
-                        
-                        <h5><i class="bi bi-file-text"></i> ${isEmail ? '邮件内容' : '短信内容'}</h5>
-                        <p>${escapeHtml(mainRec.content || '推荐内容')}</p>
-                        
-                        ${isEmail ? `
-                        <h5><i class="bi bi-gear"></i> 推荐理由</h5>
-                        <p>${escapeHtml(mainRec.reason || '基于您的需求和历史数据，我们为您精心推荐以上内容。')}</p>
-                        ` : ''}
-                    </div>
-                    <div class="template-pro__footer">
-                        <div class="meta">
-                            <div class="meta-item">
-                                <i class="bi bi-clock"></i>
-                                <span>${new Date().toLocaleString('zh-CN')}</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class="bi bi-cpu"></i>
-                                <span>AI智能生成</span>
-                            </div>
-                        </div>
-                        <div class="template-pro__actions">
-                            <button class="btn btn-primary" onclick="copyTemplateContent()">
-                                <i class="bi bi-clipboard"></i> 复制
-                            </button>
-                            <button class="btn btn-outline-primary" onclick="editTemplate()">
-                                <i class="bi bi-pencil"></i> 编辑
-                            </button>
-                            <button class="btn btn-success" onclick="sendTemplate()">
-                                <i class="bi bi-send"></i> 发送
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('templateContent').innerHTML = templateHtml;
-        }
-        
-        // 刷新报告
-        function refreshReport() {
-            // 显示加载状态
-            const container = document.getElementById('reportContent');
-            if (container) {
-                container.innerHTML = `
-                    <div class="report-empty">
-                        <div class="spinner-border text-light" role="status">
-                            <span class="visually-hidden">加载中...</span>
-                        </div>
-                        <h5 class="mt-3">正在刷新内容...</h5>
-                        <p>AI正在重新生成推荐内容</p>
-                    </div>
-                `;
-            }
-            
-            // 模拟刷新延迟
-            setTimeout(() => {
-                generateRecommendationReport();
-            }, 1500);
-        }
-        
-        // 分享报告
-        function shareReport() {
-            const selectedRecs = recommendations.filter(r => selectedRecommendations.includes(r.id));
-            if (selectedRecs.length === 0) {
-                showToast('请先选择要分享的推荐内容', 'warning');
-                return;
-            }
-            
-            // 创建分享链接
-            const shareData = {
-                title: 'AI智能推荐报告',
-                text: `为您推荐${selectedRecs.length}个个性化方案`,
-                url: window.location.href + '#shared=' + Date.now()
-            };
-            
-            // 检查是否支持Web Share API
-            if (navigator.share) {
-                navigator.share(shareData)
-                    .then(() => showToast('分享成功', 'success'))
-                    .catch(() => copyShareLink(shareData.url));
-            } else {
-                copyShareLink(shareData.url);
-            }
-        }
-        
-        // 复制分享链接
-        function copyShareLink(url) {
-            navigator.clipboard.writeText(url).then(() => {
-                showToast('分享链接已复制到剪贴板', 'success');
-            }).catch(() => {
-                showToast('复制失败，请手动复制链接', 'error');
-            });
-        }
-        
-        // 显示提示消息
-        function showToast(message, type = 'info') {
-            const toastHtml = `
-                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : type === 'error' ? 'danger' : 'primary'} border-0" role="alert">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            ${message}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                    </div>
-                </div>
-            `;
-            
-            const toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-            toastContainer.innerHTML = toastHtml;
-            document.body.appendChild(toastContainer);
-            
-            const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
-            toast.show();
-            
-            // 自动移除
-            setTimeout(() => {
-                document.body.removeChild(toastContainer);
-            }, 5000);
-        }
-        
-        // 编辑模板
-        function editTemplate() {
-            const templateContent = document.getElementById('templateContent');
-            const templateEditor = document.getElementById('templateEditor');
-            
-            if (templateContent && templateEditor) {
-                // 获取当前模板内容
-                const currentContent = templateContent.querySelector('.template-pro');
-                if (currentContent) {
-                    // 填充编辑器
-                    const title = currentContent.querySelector('h4')?.textContent || '';
-                    const content = currentContent.querySelector('.template-pro__body')?.innerHTML || '';
-                    
-                    document.getElementById('templateSubject').value = title;
-                    document.getElementById('templateContentEditor').value = content.replace(/<[^>]*>/g, '');
-                    
-                    // 切换显示
-                    templateContent.style.display = 'none';
-                    templateEditor.style.display = 'block';
-                }
-            }
-        }
-        
-        // 发送模板
-        function sendTemplate() {
-            const selectedRecs = recommendations.filter(r => selectedRecommendations.includes(r.id));
-            if (selectedRecs.length === 0) {
-                showToast('请先选择要发送的推荐内容', 'warning');
-                return;
-            }
-            
-            // 切换到客户选择标签
-            const customerTab = document.getElementById('customer-tab');
-            if (customerTab) {
-                customerTab.click();
-                showToast('请选择要发送的客户', 'info');
-            }
         }
         
         // 生成会议纪要
@@ -2034,79 +1699,28 @@ AI智能推荐系统 | 让智能为业务赋能
         // 生成短促销文案
         function generateShortMarketingCopy(selectedRecs) {
             const customer = selectedRecs[0] || {};
-            const currentTime = new Date().toLocaleString('zh-CN');
-            
-            // 生成多种短促销文案模板
-            const templates = [
-                {
-                    title: "限时特惠方案",
-                    content: `🔥 <span class="urgency-badge">限时特惠</span> <span class="emoji-highlight">🎯</span>
+            const content = `【限时特惠 | ${customer.title || '高价值方案'}】
 
-${customer.customerName || '尊贵客户'} 专属方案推荐！
+🎯 客户：${customer.customerName || '尊贵客户'}
+⚡ 推荐：${customer.content || '高效方案/高价值服务'}
+💡 优势：${customer.reason || '助您提效增收'}
 
-⚡ <strong>核心方案</strong>：${customer.title || '智能数据分析平台'}
-💎 <strong>独特价值</strong>：${customer.reason || '提升运营效率30%，降低成本20%'}
-🚀 <strong>限时优惠</strong>：原价￥99,800，现价￥69,800（立省￥30,000）
+即刻联系专属顾问，尊享定制支持！📞 ${customer.customerPhone || '400-XXX-XXXX'}`;
 
-<div class="cta-button">📞 立即咨询：${customer.customerPhone || '400-888-XXXX'}</div>
-
-⏰ <em>优惠截止：${new Date(Date.now() + 7*24*60*60*1000).toLocaleDateString('zh-CN')}</em>`
-                },
-                {
-                    title: "高价值服务推荐",
-                    content: `💎 <span class="urgency-badge">高价值</span> <span class="emoji-highlight">⭐</span>
-
-${customer.customerName || '尊贵客户'} 您好！
-
-🎯 <strong>推荐方案</strong>：${customer.title || '企业级云服务解决方案'}
-📈 <strong>预期收益</strong>：${customer.reason || 'ROI > 300%，6个月回本'}
-💰 <strong>专属优惠</strong>：首年8折 + 免费实施服务
-
-<div class="cta-button">🔥 抢占名额：${customer.customerPhone || '400-888-XXXX'}</div>
-
-🏆 <em>已有${Math.floor(Math.random() * 50 + 100)}+企业选择，满意度98%</em>`
-                },
-                {
-                    title: "紧急升级通知",
-                    content: `⚡ <span class="urgency-badge">紧急升级</span> <span class="emoji-highlight">🚀</span>
-
-${customer.customerName || '尊贵客户'} 升级提醒！
-
-🔥 <strong>升级方案</strong>：${customer.title || 'AI智能推荐系统'}
-⏰ <strong>限时福利</strong>：免费升级 + 数据迁移服务
-🎁 <strong>额外赠送</strong>：3个月技术支持服务
-
-<div class="cta-button">📱 马上升级：${customer.customerPhone || '400-888-XXXX'}</div>
-
-⚠️ <em>仅限前20名客户，升级截止${new Date(Date.now() + 3*24*60*60*1000).toLocaleDateString('zh-CN')}</em>`
-                }
-            ];
-            
-            // 随机选择一个模板
-            const selectedTemplate = templates[Math.floor(Math.random() * templates.length)];
-            
             const html = `
                 <div class="report-header mb-4">
-                    <h3><span class="emoji-highlight">🚀</span> 短促销文案</h3>
-                    <p class="text-muted">生成时间：${currentTime}</p>
+                    <h3>短促销文案</h3>
+                    <p class="text-muted">生成时间：${new Date().toLocaleString('zh-CN')}</p>
                 </div>
                 <div class="report-body">
                     <div class="marketing-short-banner">
-                        <div style="white-space: pre-wrap; line-height: 1.8; font-weight: 600;">
-                            ${selectedTemplate.content}
+                        <div style="white-space: pre-wrap; line-height: 1.6; font-weight: 500;">
+                            ${escapeHtml(content)}
                         </div>
-                    </div>
-                    <div class="mt-4 text-center">
-                        <small class="text-muted">
-                            💡 提示：此文案适用于短信、微信、Banner等渠道
-                        </small>
                     </div>
                 </div>
                 <div class="report-footer mt-4 pt-3 border-top">
-                    <p class="text-muted small">
-                        <span class="emoji-highlight">✨</span> 
-                        本短促销文案由AI智能推荐系统自动生成，已优化为高转化率版本
-                    </p>
+                    <p class="text-muted small">本短促销文案由AI智能推荐系统自动生成</p>
                 </div>
             `;
 
@@ -2114,7 +1728,6 @@ ${customer.customerName || '尊贵客户'} 升级提醒！
             currentReportData = html;
             editedReportContent = null;
             generateShareLink();
-            enableInlineEditing('reportContent');
         }
         
         // 切换报告编辑模式
@@ -3509,13 +3122,20 @@ ${customer.customerName || '尊贵客户'} 升级提醒！
         if (typeof window !== 'undefined') {
             // 将实际实现赋值给window对象，替换之前的临时函数
             if (typeof _openGenerateContentModal === 'function') {
+                window.openGenerateContentModal = _openGenerateContentModal;
                 window._openGenerateContentModal = _openGenerateContentModal;
                 // 同时更新全局函数
                 openGenerateContentModal = _openGenerateContentModal;
             }
             if (typeof _openSendShareModal === 'function') {
+                window.openSendShareModal = _openSendShareModal;
                 window._openSendShareModal = _openSendShareModal;
                 // 同时更新全局函数
                 openSendShareModal = _openSendShareModal;
             }
+            // 确保模板相关函数全局可访问
+            window.renderTemplateList = renderTemplateList;
+            window.applyTemplate = applyTemplate;
+            window.deleteTemplate = deleteTemplate;
+            window.saveCurrentTemplate = saveCurrentTemplate;
         }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,24 +12,96 @@
     <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
-            background: transparent;
+            background: #f8f9fa;
             margin: 0;
             padding: 0;
         }
-        
+
         .knowledge-container {
-            padding: 1rem;
-            background: transparent;
+            padding: 1.5rem;
         }
-        
-        .upload-section {
+
+        .header-section {
             background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        
+
+        .category-tree {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .document-list {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .category-item {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .category-item:hover {
+            background: #f8f9fa;
+        }
+
+        .category-item.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .document-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .document-item:last-child {
+            border-bottom: none;
+        }
+
+        .document-info {
+            flex: 1;
+        }
+
+        .document-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .document-meta {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 上传模态框样式 */
         .upload-area {
             border: 2px dashed #007bff;
             border-radius: 12px;
@@ -38,98 +111,28 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .upload-area:hover {
             background: #e3f2fd;
             border-color: #0056b3;
         }
-        
+
         .upload-area.dragover {
             background: #e3f2fd;
             border-color: #0056b3;
             transform: scale(1.02);
         }
-        
-        .category-tree {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .document-list {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .category-item {
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .category-item:hover {
-            background: #f8f9fa;
-        }
-        
-        .category-item.active {
-            background: #007bff;
-            color: white;
-        }
-        
-        .document-item {
-            padding: 1rem;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .document-item:last-child {
-            border-bottom: none;
-        }
-        
-        .document-info {
-            flex: 1;
-        }
-        
-        .document-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-        
-        .document-meta {
-            font-size: 0.875rem;
-            color: #6c757d;
-        }
-        
-        .document-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        /* 文档类型菜单样式 */
-        .document-type-menu {
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            background: #fff;
-        }
-        
+
         .type-level {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
             padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            background: #fff;
         }
-        
+
         .type-item {
             padding: 0.5rem 1rem;
             border: 1px solid #dee2e6;
@@ -142,49 +145,24 @@
             gap: 0.5rem;
             font-size: 0.875rem;
         }
-        
+
         .type-item:hover {
             background: #e9ecef;
             border-color: #adb5bd;
-            transform: translateY(-1px);
         }
-        
+
         .type-item.active {
             background: #0d6efd;
             color: white;
             border-color: #0d6efd;
         }
-        
-        .level-1 .type-item {
-            min-width: 120px;
-            justify-content: center;
-        }
-        
+
         .level-2 {
             border-top: 1px solid #dee2e6;
             margin-top: 0.5rem;
             padding-top: 0.5rem;
         }
-        
-        .level2-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.25rem;
-        }
-        
-        .level2-item {
-            min-width: 100px;
-            font-size: 0.8rem;
-            background: #f8f9fa;
-            border-color: #e9ecef;
-        }
-        
-        .level2-item:hover {
-            background: #0d6efd;
-            color: white;
-            border-color: #0d6efd;
-        }
-        
+
         .selected-type-display {
             margin-top: 0.5rem;
             padding: 0.5rem 1rem;
@@ -195,185 +173,23 @@
             align-items: center;
             justify-content: space-between;
         }
-        
-        .selected-type-text {
-            font-weight: 500;
-            color: #0c5460;
-        }
-        
-        /* 选择达到上限时的样式 */
-        .selection-limit-warning {
-            background: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
-        }
-        
-        .selection-limit-warning .selected-type-text {
-            color: #721c24;
-        }
     </style>
 </head>
+
 <body>
     <div class="knowledge-container">
-        <!-- 上传区域 -->
-        <div class="upload-section">
-            <h5 class="mb-3">
-                <i class="bi bi-cloud-upload"></i> 文档上传
+        <!-- 头部操作栏 -->
+        <div class="header-section">
+            <h5 class="mb-0">
+                <i class="bi bi-book"></i> 知识库管理
             </h5>
-            
-            <!-- 文件类型选择 -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">文档类型 <span class="text-danger">*</span></label>
-                    
-                    <!-- 一级菜单 -->
-                    <div class="document-type-menu">
-                        <div class="type-level level-1">
-                            <div class="type-item" data-level1="product" onclick="showLevel2('product')">
-                                <i class="bi bi-box"></i> 产品相关
-                            </div>
-                            <div class="type-item" data-level1="technical" onclick="showLevel2('technical')">
-                                <i class="bi bi-gear"></i> 技术相关
-                            </div>
-                            <div class="type-item" data-level1="sales" onclick="showLevel2('sales')">
-                                <i class="bi bi-graph-up"></i> 销售相关
-                            </div>
-                            <div class="type-item" data-level1="training" onclick="showLevel2('training')">
-                                <i class="bi bi-mortarboard"></i> 培训相关
-                            </div>
-                            <div class="type-item" data-level1="business" onclick="showLevel2('business')">
-                                <i class="bi bi-briefcase"></i> 业务相关
-                            </div>
-                            <div class="type-item" data-level1="other" onclick="showLevel2('other')">
-                                <i class="bi bi-three-dots"></i> 其他
-                            </div>
-                        </div>
-                        
-                        <!-- 二级菜单 -->
-                        <div class="type-level level-2" id="level2Menu" style="display: none;">
-                            <!-- 产品相关 -->
-                            <div class="level2-group" data-group="product" style="display: none;">
-                                <div class="type-item level2-item" data-type="product-manual" onclick="selectType('product-manual', '产品手册')">
-                                    <i class="bi bi-book"></i> 产品手册
-                                </div>
-                                <div class="type-item level2-item" data-type="product-spec" onclick="selectType('product-spec', '产品规格')">
-                                    <i class="bi bi-clipboard-data"></i> 产品规格
-                                </div>
-                                <div class="type-item level2-item" data-type="product-price" onclick="selectType('product-price', '产品价格')">
-                                    <i class="bi bi-tag"></i> 产品价格
-                                </div>
-                                <div class="type-item level2-item" data-type="product-catalog" onclick="selectType('product-catalog', '产品目录')">
-                                    <i class="bi bi-list"></i> 产品目录
-                                </div>
-                            </div>
-                            
-                            <!-- 技术相关 -->
-                            <div class="level2-group" data-group="technical" style="display: none;">
-                                <div class="type-item level2-item" data-type="technical-guide" onclick="selectType('technical-guide', '技术指南')">
-                                    <i class="bi bi-book"></i> 技术指南
-                                </div>
-                                <div class="type-item level2-item" data-type="api-doc" onclick="selectType('api-doc', 'API文档')">
-                                    <i class="bi bi-code"></i> API文档
-                                </div>
-                                <div class="type-item level2-item" data-type="technical-spec" onclick="selectType('technical-spec', '技术规格')">
-                                    <i class="bi bi-clipboard-data"></i> 技术规格
-                                </div>
-                                <div class="type-item level2-item" data-type="troubleshooting" onclick="selectType('troubleshooting', '故障排除')">
-                                    <i class="bi bi-tools"></i> 故障排除
-                                </div>
-                            </div>
-                            
-                            <!-- 销售相关 -->
-                            <div class="level2-group" data-group="sales" style="display: none;">
-                                <div class="type-item level2-item" data-type="sales-material" onclick="selectType('sales-material', '销售资料')">
-                                    <i class="bi bi-file-earmark-text"></i> 销售资料
-                                </div>
-                                <div class="type-item level2-item" data-type="case-study" onclick="selectType('case-study', '案例研究')">
-                                    <i class="bi bi-journal-text"></i> 案例研究
-                                </div>
-                                <div class="type-item level2-item" data-type="proposal" onclick="selectType('proposal', '项目提案')">
-                                    <i class="bi bi-file-earmark-text"></i> 项目提案
-                                </div>
-                                <div class="type-item level2-item" data-type="contract" onclick="selectType('contract', '合同模板')">
-                                    <i class="bi bi-file-earmark-text"></i> 合同模板
-                                </div>
-                            </div>
-                            
-                            <!-- 培训相关 -->
-                            <div class="level2-group" data-group="training" style="display: none;">
-                                <div class="type-item level2-item" data-type="training-manual" onclick="selectType('training-manual', '培训手册')">
-                                    <i class="bi bi-book"></i> 培训手册
-                                </div>
-                                <div class="type-item level2-item" data-type="tutorial" onclick="selectType('tutorial', '教程文档')">
-                                    <i class="bi bi-journal-text"></i> 教程文档
-                                </div>
-                                <div class="type-item level2-item" data-type="faq" onclick="selectType('faq', '常见问题')">
-                                    <i class="bi bi-question-circle"></i> 常见问题
-                                </div>
-                                <div class="type-item level2-item" data-type="best-practice" onclick="selectType('best-practice', '最佳实践')">
-                                    <i class="bi bi-star"></i> 最佳实践
-                                </div>
-                            </div>
-                            
-                            <!-- 业务相关 -->
-                            <div class="level2-group" data-group="business" style="display: none;">
-                                <div class="type-item level2-item" data-type="business-plan" onclick="selectType('business-plan', '商业计划')">
-                                    <i class="bi bi-briefcase"></i> 商业计划
-                                </div>
-                                <div class="type-item level2-item" data-type="market-report" onclick="selectType('market-report', '市场报告')">
-                                    <i class="bi bi-graph-up"></i> 市场报告
-                                </div>
-                                <div class="type-item level2-item" data-type="financial" onclick="selectType('financial', '财务文档')">
-                                    <i class="bi bi-currency-dollar"></i> 财务文档
-                                </div>
-                                <div class="type-item level2-item" data-type="legal" onclick="selectType('legal', '法律文档')">
-                                    <i class="bi bi-shield-check"></i> 法律文档
-                                </div>
-                            </div>
-                            
-                            <!-- 其他 -->
-                            <div class="level2-group" data-group="other" style="display: none;">
-                                <div class="type-item level2-item" data-type="meeting" onclick="selectType('meeting', '会议记录')">
-                                    <i class="bi bi-people"></i> 会议记录
-                                </div>
-                                <div class="type-item level2-item" data-type="notice" onclick="selectType('notice', '通知公告')">
-                                    <i class="bi bi-megaphone"></i> 通知公告
-                                </div>
-                                <div class="type-item level2-item" data-type="other" onclick="selectType('other', '其他文档')">
-                                    <i class="bi bi-file-earmark"></i> 其他文档
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 选中的类型显示 -->
-                    <div class="selected-type-display" id="selectedTypeDisplay" style="display: none;">
-                        <span class="selected-type-text" id="selectedTypeText"></span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearTypeSelection()">
-                            <i class="bi bi-x"></i> 清除
-                        </button>
-                    </div>
-                    
-                    <!-- 隐藏的输入框 -->
-                    <input type="hidden" id="documentType" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">文档标签</label>
-                    <input type="text" class="form-control" id="documentTags" placeholder="多个标签用逗号分隔，如：重要,2024,客户">
-                    <small class="text-muted">添加标签有助于更好地搜索和分类</small>
-                </div>
-            </div>
-            
-            <div class="upload-area" id="uploadArea">
-                <i class="bi bi-file-earmark-arrow-up display-4 text-primary mb-3"></i>
-                <h6>拖拽文件到此处或点击上传</h6>
-                <p class="text-muted mb-0">支持 PDF、Word、Excel、TXT 等格式</p>
-                <input type="file" id="fileInput" multiple style="display: none;">
-            </div>
+            <button class="btn btn-primary" onclick="showUploadModal()">
+                <i class="bi bi-cloud-upload"></i> 上传文档
+            </button>
         </div>
 
         <div class="row">
-            <!-- 分类树 -->
+            <!-- 文档分类 -->
             <div class="col-md-3">
                 <div class="category-tree">
                     <h6 class="mb-3">
@@ -410,7 +226,8 @@
                             <i class="bi bi-file-text"></i> 文档列表
                         </h6>
                         <div class="d-flex gap-2">
-                            <input type="text" class="form-control form-control-sm" placeholder="搜索文档..." style="width: 200px;">
+                            <input type="text" class="form-control form-control-sm" placeholder="搜索文档..."
+                                style="width: 200px;">
                             <button class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-search"></i>
                             </button>
@@ -482,148 +299,223 @@
         </div>
     </div>
 
+    <!-- 上传模态框 -->
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-cloud-upload"></i> 文档上传
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 文件类型选择 -->
+                    <div class="mb-3">
+                        <label class="form-label">文档类型 <span class="text-danger">*</span></label>
+
+                        <!-- 一级菜单 -->
+                        <div class="type-level">
+                            <div class="type-item" data-level1="product" onclick="showLevel2('product')">
+                                <i class="bi bi-box"></i> 产品相关
+                            </div>
+                            <div class="type-item" data-level1="technical" onclick="showLevel2('technical')">
+                                <i class="bi bi-gear"></i> 技术相关
+                            </div>
+                            <div class="type-item" data-level1="sales" onclick="showLevel2('sales')">
+                                <i class="bi bi-graph-up"></i> 销售相关
+                            </div>
+                            <div class="type-item" data-level1="training" onclick="showLevel2('training')">
+                                <i class="bi bi-mortarboard"></i> 培训相关
+                            </div>
+                            <div class="type-item" data-level1="business" onclick="showLevel2('business')">
+                                <i class="bi bi-briefcase"></i> 业务相关
+                            </div>
+                            <div class="type-item" data-level1="other" onclick="showLevel2('other')">
+                                <i class="bi bi-three-dots"></i> 其他
+                            </div>
+                        </div>
+
+                        <!-- 二级菜单 -->
+                        <div class="type-level level-2" id="level2Menu" style="display: none;">
+                            <!-- 产品相关 -->
+                            <div class="level2-group" data-group="product" style="display: none;">
+                                <div class="type-item" data-type="product-manual"
+                                    onclick="selectType('product-manual', '产品手册')">
+                                    <i class="bi bi-book"></i> 产品手册
+                                </div>
+                                <div class="type-item" data-type="product-spec"
+                                    onclick="selectType('product-spec', '产品规格')">
+                                    <i class="bi bi-clipboard-data"></i> 产品规格
+                                </div>
+                                <div class="type-item" data-type="product-price"
+                                    onclick="selectType('product-price', '产品价格')">
+                                    <i class="bi bi-tag"></i> 产品价格
+                                </div>
+                            </div>
+
+                            <!-- 技术相关 -->
+                            <div class="level2-group" data-group="technical" style="display: none;">
+                                <div class="type-item" data-type="technical-guide"
+                                    onclick="selectType('technical-guide', '技术指南')">
+                                    <i class="bi bi-book"></i> 技术指南
+                                </div>
+                                <div class="type-item" data-type="api-doc" onclick="selectType('api-doc', 'API文档')">
+                                    <i class="bi bi-code"></i> API文档
+                                </div>
+                            </div>
+
+                            <!-- 销售相关 -->
+                            <div class="level2-group" data-group="sales" style="display: none;">
+                                <div class="type-item" data-type="sales-material"
+                                    onclick="selectType('sales-material', '销售资料')">
+                                    <i class="bi bi-file-earmark-text"></i> 销售资料
+                                </div>
+                                <div class="type-item" data-type="case-study"
+                                    onclick="selectType('case-study', '案例研究')">
+                                    <i class="bi bi-journal-text"></i> 案例研究
+                                </div>
+                            </div>
+
+                            <!-- 培训相关 -->
+                            <div class="level2-group" data-group="training" style="display: none;">
+                                <div class="type-item" data-type="training-manual"
+                                    onclick="selectType('training-manual', '培训手册')">
+                                    <i class="bi bi-book"></i> 培训手册
+                                </div>
+                                <div class="type-item" data-type="tutorial" onclick="selectType('tutorial', '教程文档')">
+                                    <i class="bi bi-journal-text"></i> 教程文档
+                                </div>
+                            </div>
+
+                            <!-- 业务相关 -->
+                            <div class="level2-group" data-group="business" style="display: none;">
+                                <div class="type-item" data-type="business-plan"
+                                    onclick="selectType('business-plan', '商业计划')">
+                                    <i class="bi bi-briefcase"></i> 商业计划
+                                </div>
+                                <div class="type-item" data-type="market-report"
+                                    onclick="selectType('market-report', '市场报告')">
+                                    <i class="bi bi-graph-up"></i> 市场报告
+                                </div>
+                            </div>
+
+                            <!-- 其他 -->
+                            <div class="level2-group" data-group="other" style="display: none;">
+                                <div class="type-item" data-type="meeting" onclick="selectType('meeting', '会议记录')">
+                                    <i class="bi bi-people"></i> 会议记录
+                                </div>
+                                <div class="type-item" data-type="notice" onclick="selectType('notice', '通知公告')">
+                                    <i class="bi bi-megaphone"></i> 通知公告
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 选中的类型显示 -->
+                        <div class="selected-type-display" id="selectedTypeDisplay" style="display: none;">
+                            <span id="selectedTypeText"></span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                onclick="clearTypeSelection()">
+                                <i class="bi bi-x"></i> 清除
+                            </button>
+                        </div>
+
+                        <input type="hidden" id="documentType" required>
+                    </div>
+
+                    <!-- 文档标签 -->
+                    <div class="mb-3">
+                        <label class="form-label">文档标签</label>
+                        <input type="text" class="form-control" id="documentTags" placeholder="多个标签用逗号分隔">
+                        <small class="text-muted">添加标签有助于更好地搜索和分类</small>
+                    </div>
+
+                    <!-- 上传区域 -->
+                    <div class="upload-area" id="uploadArea">
+                        <i class="bi bi-file-earmark-arrow-up display-4 text-primary mb-3"></i>
+                        <h6>拖拽文件到此处或点击上传</h6>
+                        <p class="text-muted mb-0">支持 PDF、Word、Excel、TXT 等格式</p>
+                        <input type="file" id="fileInput" multiple style="display: none;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script>
-        // 文档类型选择功能
-        let selectedTypes = []; // 存储多个选中的类型
-        let selectedTypeTexts = []; // 存储多个选中的类型文本
-        
+        let selectedType = '';
+        let selectedTypeText = '';
+        let uploadModalInstance = null;
+
+        // 显示上传模态框
+        function showUploadModal() {
+            const modal = document.getElementById('uploadModal');
+            uploadModalInstance = new bootstrap.Modal(modal);
+            uploadModalInstance.show();
+        }
+
         // 显示二级菜单
         function showLevel2(groupName) {
-            // 隐藏所有二级菜单组
             document.querySelectorAll('.level2-group').forEach(group => {
                 group.style.display = 'none';
             });
-            
-            // 移除所有一级菜单的激活状态
-            document.querySelectorAll('.level-1 .type-item').forEach(item => {
+
+            document.querySelectorAll('[data-level1]').forEach(item => {
                 item.classList.remove('active');
             });
-            
-            // 显示选中的二级菜单组
+
             const selectedGroup = document.querySelector(`.level2-group[data-group="${groupName}"]`);
             if (selectedGroup) {
                 selectedGroup.style.display = 'flex';
             }
-            
-            // 激活选中的一级菜单
-            const selectedItem = document.querySelector(`.type-item[data-level1="${groupName}"]`);
+
+            const selectedItem = document.querySelector(`[data-level1="${groupName}"]`);
             if (selectedItem) {
                 selectedItem.classList.add('active');
             }
-            
-            // 显示二级菜单容器
-            document.getElementById('level2Menu').style.display = 'block';
+
+            document.getElementById('level2Menu').style.display = 'flex';
         }
-        
+
         // 选择类型
         function selectType(typeValue, typeText) {
-            // 检查是否已经选择过这个类型
-            const existingIndex = selectedTypes.indexOf(typeValue);
-            
-            if (existingIndex > -1) {
-                // 如果已经选择过，则移除
-                selectedTypes.splice(existingIndex, 1);
-                selectedTypeTexts.splice(existingIndex, 1);
-                
-                // 移除对应的激活状态
-                document.querySelector(`.type-item[data-type="${typeValue}"]`).classList.remove('active');
-            } else {
-                // 检查是否已经选择了3个类型
-                if (selectedTypes.length >= 3) {
-                    alert('最多只能选择3个文档类型！');
-                    return;
-                }
-                
-                // 如果没有选择过，则添加
-                selectedTypes.push(typeValue);
-                selectedTypeTexts.push(typeText);
-                
-                // 添加激活状态
-                document.querySelector(`.type-item[data-type="${typeValue}"]`).classList.add('active');
-            }
-            
-            // 更新隐藏输入框的值（用逗号分隔多个类型）
-            document.getElementById('documentType').value = selectedTypes.join(',');
-            
-            // 更新选中的类型显示
-            updateSelectedTypeDisplay();
-            
-            // 自动添加到文档标签
-            updateDocumentTags();
-        }
-        
-        // 更新选中的类型显示
-        function updateSelectedTypeDisplay() {
+            selectedType = typeValue;
+            selectedTypeText = typeText;
+
+            document.getElementById('documentType').value = typeValue;
+
+            document.querySelectorAll('[data-type]').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            document.querySelector(`[data-type="${typeValue}"]`).classList.add('active');
+
             const displayDiv = document.getElementById('selectedTypeDisplay');
             const textSpan = document.getElementById('selectedTypeText');
-            
-            if (selectedTypes.length > 0) {
-                const typeList = selectedTypeTexts.map((text, index) => 
-                    `<span class="badge bg-primary me-1">${text}</span>`
-                ).join('');
-                
-                const countText = selectedTypes.length === 1 ? '已选择' : `已选择 ${selectedTypes.length}/3 个`;
-                textSpan.innerHTML = `<i class="bi bi-check-circle"></i> ${countText}：${typeList}`;
-                displayDiv.style.display = 'flex';
-                
-                // 如果达到上限，添加警告样式
-                if (selectedTypes.length >= 3) {
-                    displayDiv.classList.add('selection-limit-warning');
-                } else {
-                    displayDiv.classList.remove('selection-limit-warning');
-                }
-            } else {
-                displayDiv.style.display = 'none';
-                displayDiv.classList.remove('selection-limit-warning');
-            }
+            textSpan.innerHTML = `<i class="bi bi-check-circle"></i> 已选择：<span class="badge bg-primary">${typeText}</span>`;
+            displayDiv.style.display = 'flex';
         }
-        
-        // 更新文档标签
-        function updateDocumentTags() {
-            const tagsInput = document.getElementById('documentTags');
-            const currentTags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-            
-            // 移除之前的文档类型标签（以"类型："开头的）
-            const nonTypeTags = currentTags.filter(tag => !tag.startsWith('类型:'));
-            
-            // 添加新的文档类型标签
-            const typeTags = selectedTypeTexts.map(text => `类型:${text}`);
-            
-            // 合并标签
-            const allTags = [...nonTypeTags, ...typeTags];
-            
-            // 更新标签输入框
-            tagsInput.value = allTags.join(', ');
-        }
-        
+
         // 清除类型选择
         function clearTypeSelection() {
-            selectedTypes = [];
-            selectedTypeTexts = [];
-            
-            // 清空隐藏输入框
+            selectedType = '';
+            selectedTypeText = '';
             document.getElementById('documentType').value = '';
-            
-            // 隐藏选中显示
             document.getElementById('selectedTypeDisplay').style.display = 'none';
-            
-            // 隐藏二级菜单
             document.getElementById('level2Menu').style.display = 'none';
-            
-            // 移除所有激活状态
+
             document.querySelectorAll('.type-item').forEach(item => {
                 item.classList.remove('active');
             });
-            
-            // 更新文档标签（移除类型标签）
-            updateDocumentTags();
         }
 
         // 上传功能
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const documentTags = document.getElementById('documentTags');
 
         uploadArea.addEventListener('click', () => {
             fileInput.click();
@@ -649,182 +541,38 @@
         });
 
         function handleFiles(files) {
-            // 验证是否选择了文档类型
-            const selectedTypesValue = document.getElementById('documentType').value;
-            if (!selectedTypesValue) {
+            if (!selectedType) {
                 alert('请先选择文档类型！');
-                fileInput.value = ''; // 清空文件选择
+                fileInput.value = '';
                 return;
             }
 
-            // 验证文件数量
             if (files.length === 0) {
                 return;
             }
 
-            // 验证文件类型和大小
-            const allowedTypes = [
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'text/plain',
-                'text/csv'
-            ];
-
-            const maxSize = 50 * 1024 * 1024; // 50MB
-
-            for (let file of files) {
-                // 验证文件类型
-                if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|xls|xlsx|txt|csv)$/i)) {
-                    alert(`文件 "${file.name}" 格式不支持！\n支持的格式：PDF、Word、Excel、TXT、CSV`);
-                    return;
-                }
-
-                // 验证文件大小
-                if (file.size > maxSize) {
-                    alert(`文件 "${file.name}" 大小超过50MB限制！`);
-                    return;
-                }
-            }
-
-            // 获取标签
-            const tags = documentTags.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-
-            // 上传文件
-            uploadFiles(files, selectedTypesValue, tags);
-        }
-
-        function uploadFiles(files, documentType, tags) {
             console.log('上传文件:', files);
-            console.log('文档类型:', documentType);
-            console.log('文档标签:', tags);
+            console.log('文档类型:', selectedType);
 
-            // 显示上传进度
-            showUploadProgress(files);
+            alert(`成功上传 ${files.length} 个文件！\n文档类型：${selectedTypeText}`);
 
-            // 模拟上传过程
-            files.forEach((file, index) => {
-                setTimeout(() => {
-                    console.log(`文件 "${file.name}" 上传完成`);
-                    
-                    // 更新进度
-                    updateUploadProgress(index + 1, files.length);
-                    
-                    // 如果是最后一个文件，显示完成提示
-                    if (index === files.length - 1) {
-                        setTimeout(() => {
-                            alert(`成功上传 ${files.length} 个文件！\n文档类型：${getDocumentTypeName(documentType)}\n标签：${tags.join(', ') || '无'}`);
-                            hideUploadProgress();
-                            // 清空表单
-                            fileInput.value = '';
-                            documentType.value = '';
-                            documentTags.value = '';
-                            // 刷新文档列表
-                            refreshDocumentList();
-                        }, 500);
-                    }
-                }, 1000 + (index * 500)); // 模拟不同的上传时间
-            });
-        }
+            // 关闭模态框
+            uploadModalInstance.hide();
 
-        function getDocumentTypeName(type) {
-            const typeNames = {
-                'product-manual': '产品手册',
-                'product-spec': '产品规格',
-                'product-price': '产品价格',
-                'product-catalog': '产品目录',
-                'technical-guide': '技术指南',
-                'api-doc': 'API文档',
-                'technical-spec': '技术规格',
-                'troubleshooting': '故障排除',
-                'sales-material': '销售资料',
-                'case-study': '案例研究',
-                'proposal': '项目提案',
-                'contract': '合同模板',
-                'training-manual': '培训手册',
-                'tutorial': '教程文档',
-                'faq': '常见问题',
-                'best-practice': '最佳实践',
-                'business-plan': '商业计划',
-                'market-report': '市场报告',
-                'financial': '财务文档',
-                'legal': '法律文档',
-                'meeting': '会议记录',
-                'notice': '通知公告',
-                'other': '其他文档'
-            };
-            return typeNames[type] || type;
-        }
-
-        function showUploadProgress(files) {
-            const progressHtml = `
-                <div class="upload-progress-container">
-                    <h6>上传进度</h6>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" style="width: 0%" id="uploadProgressBar">0%</div>
-                    </div>
-                    <small class="text-muted">正在上传 ${files.length} 个文件...</small>
-                </div>
-            `;
-            uploadArea.innerHTML = progressHtml;
-        }
-
-        function updateUploadProgress(completed, total) {
-            const percentage = Math.round((completed / total) * 100);
-            const progressBar = document.getElementById('uploadProgressBar');
-            if (progressBar) {
-                progressBar.style.width = percentage + '%';
-                progressBar.textContent = percentage + '%';
-            }
-        }
-
-        function hideUploadProgress() {
-            // 恢复上传区域
-            uploadArea.innerHTML = `
-                <i class="bi bi-file-earmark-arrow-up display-4 text-primary mb-3"></i>
-                <h6>拖拽文件到此处或点击上传</h6>
-                <p class="text-muted mb-0">支持 PDF、Word、Excel、TXT 等格式</p>
-                <input type="file" id="fileInput" multiple style="display: none;">
-            `;
-            
-            // 重新绑定事件
-            const newFileInput = document.getElementById('fileInput');
-            newFileInput.addEventListener('change', (e) => {
-                handleFiles(e.target.files);
-            });
-            
-            // 清空文档类型选择
+            // 清空表单
+            fileInput.value = '';
             clearTypeSelection();
-            
-            // 清空文档标签（只保留非类型标签）
-            const tagsInput = document.getElementById('documentTags');
-            const currentTags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-            const nonTypeTags = currentTags.filter(tag => !tag.startsWith('类型:'));
-            tagsInput.value = nonTypeTags.join(', ');
-        }
-
-        function refreshDocumentList() {
-            // 这里应该调用API刷新文档列表
-            console.log('刷新文档列表');
+            document.getElementById('documentTags').value = '';
         }
 
         // 分类切换
         document.querySelectorAll('.category-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function () {
                 document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
-                console.log('切换到分类:', this.dataset.category);
-                // 这里应该根据分类筛选文档
-                filterDocuments(this.dataset.category);
             });
         });
-
-        function filterDocuments(category) {
-            console.log('筛选文档分类:', category);
-            // 这里应该调用API根据分类筛选文档
-        }
     </script>
 </body>
+
 </html>

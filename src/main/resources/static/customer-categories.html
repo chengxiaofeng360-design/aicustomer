@@ -156,76 +156,154 @@
             <p>请选择要查看的业务类型</p>
         </div>
         
-        <div class="category-grid">
-            <!-- 品种权业务：点击后查询业务类型1、2的客户 -->
-            <div class="category-card" onclick="navigateToBusinessTypes([1, 2])">
-                <div class="category-icon">
-                    <i class="bi bi-shield-check"></i>
-                </div>
-                <div class="category-title">品种权业务</div>
-                <div class="category-desc">
-                    管理品种权申请和转化推广相关的客户信息
-                </div>
-                <div class="category-subtypes">
-                    <h6>包含类型：</h6>
-                    <ul class="subtype-list">
-                        <li>品种权申请客户</li>
-                        <li>品种权转化推广客户</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- 知识产权业务：点击后查询业务类型3的客户 -->
-            <div class="category-card" onclick="navigateToBusinessTypes([3])">
-                <div class="category-icon">
-                    <i class="bi bi-lightbulb"></i>
-                </div>
-                <div class="category-title">知识产权业务</div>
-                <div class="category-desc">
-                    管理知识产权互补协作相关的客户信息
-                </div>
-                <div class="category-subtypes">
-                    <h6>包含类型：</h6>
-                    <ul class="subtype-list">
-                        <li>知识产权互补协作客户</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- 服务业务：点击后查询业务类型4、5、6的客户 -->
-            <div class="category-card" onclick="navigateToBusinessTypes([4, 5, 6])">
-                <div class="category-icon">
-                    <i class="bi bi-handshake"></i>
-                </div>
-                <div class="category-title">服务业务</div>
-                <div class="category-desc">
-                    管理科普教育、景观设计和图书出版服务相关的客户信息
-                </div>
-                <div class="category-subtypes">
-                    <h6>包含类型：</h6>
-                    <ul class="subtype-list">
-                        <li>科普教育合作客户</li>
-                        <li>景观设计服务客户</li>
-                        <li>图书出版客户</li>
-                    </ul>
-                </div>
-            </div>
+    <div class="category-grid" id="categoryGrid">
+        <div class="text-center w-100 text-white">
+            <div class="spinner-border text-light" role="status"></div>
+            <p class="mt-2">正在加载业务类型...</p>
         </div>
+    </div>
     </div>
     
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBusinessCategories();
+        });
+
+        // 加载业务分类配置
+        function loadBusinessCategories() {
+            // 首先加载具体的业务类型名称映射
+            fetch('/api/system-config/group/' + encodeURIComponent('业务类型'))
+                .then(response => response.json())
+                .then(typeResult => {
+                    const typeMap = {};
+                    if (typeResult.code === 200 && typeResult.data) {
+                        typeResult.data.forEach(config => {
+                            if (config.configKey.startsWith('business.type.')) {
+                                const key = config.configKey.replace('business.type.', '');
+                                typeMap[key] = config.configValue;
+                            }
+                        });
+                    }
+                    
+                    // 然后加载分类配置
+                    fetch('/api/system-config/key/business.categories')
+                        .then(response => response.json())
+                        .then(catResult => {
+                            if (catResult.code === 200 && catResult.data) {
+                                try {
+                                    const categories = JSON.parse(catResult.data.configValue);
+                                    renderCategories(categories, typeMap);
+                                } catch (e) {
+                                    console.error('解析业务分类配置失败:', e);
+                                    renderError('配置数据格式错误');
+                                }
+                            } else {
+                                // 如果没有配置，使用默认值（兼容旧版）
+                                renderDefaultCategories();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('加载业务分类配置失败:', error);
+                            renderDefaultCategories();
+                        });
+                })
+                .catch(error => {
+                    console.error('加载业务类型配置失败:', error);
+                    renderDefaultCategories();
+                });
+        }
+
+        // 渲染分类卡片
+        function renderCategories(categories, typeMap) {
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = '';
+            
+            // 定义图标映射（循环使用）
+            const icons = [
+                { icon: 'bi-shield-check', color: '#4CAF50' },
+                { icon: 'bi-lightbulb', color: '#2196F3' },
+                { icon: 'bi-handshake', color: '#FF9800' },
+                { icon: 'bi-briefcase', color: '#9C27B0' },
+                { icon: 'bi-graph-up', color: '#E91E63' },
+                { icon: 'bi-people', color: '#00BCD4' }
+            ];
+            
+            let index = 0;
+            for (const [categoryName, types] of Object.entries(categories)) {
+                const iconStyle = icons[index % icons.length];
+                const typeListHtml = types.map(typeId => {
+                    const typeName = typeMap[typeId] || `业务类型${typeId}`;
+                    return `<li>${typeName}</li>`;
+                }).join('');
+                
+                // 根据分类名称生成描述（简单逻辑）
+                let desc = '';
+                if (categoryName.includes('品种权')) {
+                    desc = '管理品种权申请和转化推广相关的客户信息';
+                } else if (categoryName.includes('知识产权')) {
+                    desc = '管理知识产权互补协作相关的客户信息';
+                } else if (categoryName.includes('服务')) {
+                    desc = '管理各类服务相关的客户信息';
+                } else {
+                    desc = `管理${categoryName}相关的客户信息`;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.onclick = () => navigateToBusinessTypes(types);
+                card.innerHTML = `
+                    <div class="category-icon" style="color: ${iconStyle.color}">
+                        <i class="bi ${iconStyle.icon}"></i>
+                    </div>
+                    <div class="category-title">${categoryName}</div>
+                    <div class="category-desc">${desc}</div>
+                    <div class="category-subtypes">
+                        <h6>包含类型：</h6>
+                        <ul class="subtype-list">
+                            ${typeListHtml}
+                        </ul>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+                index++;
+            }
+        }
+
+        // 渲染默认分类（当配置加载失败时）
+        function renderDefaultCategories() {
+            const defaultCategories = {
+                '品种权业务': [1, 2],
+                '其他知识产权业务': [3],
+                '其他服务业务': [4, 5, 6]
+            };
+            
+            const defaultTypeMap = {
+                '1': '品种权申请客户',
+                '2': '品种权转化推广客户',
+                '3': '知识产权互补协作客户',
+                '4': '科普教育合作客户',
+                '5': '景观设计服务客户',
+                '6': '图书出版客户'
+            };
+            
+            renderCategories(defaultCategories, defaultTypeMap);
+        }
+
+        // 渲染错误信息
+        function renderError(msg) {
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = `<div class="text-center w-100 text-white"><p class="text-danger bg-white p-3 rounded">加载失败: ${msg}</p></div>`;
+        }
+
         // 跳转到业务类型客户列表（支持多个业务类型）
-        // businessTypes: 业务类型ID数组，如 [1, 2] 表示查询业务类型1和2的客户
         function navigateToBusinessTypes(businessTypes) {
-            // 将业务类型数组转换为查询参数
-            // 使用 IN 查询，格式：businessType=1&businessType=2
             const params = new URLSearchParams();
             businessTypes.forEach(type => {
                 params.append('businessType', type);
             });
-            
-            // 跳转到客户列表页面
             window.location.href = `/customers.html?${params.toString()}`;
         }
     </script>

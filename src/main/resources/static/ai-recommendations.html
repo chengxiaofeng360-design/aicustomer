@@ -105,9 +105,9 @@
                         </ul>
                         <div class="module-actions">
                             <div class="action-block">
-                                <p class="action-label">步骤 1 · AI生成</p>
-                                <button class="btn btn-dark btn-sm w-100" onclick="generateContentForModule('marketing-long')">
-                                    <i class="bi bi-magic"></i> AI生成内容
+                                <p class="action-label">步骤 1 · 建立模板</p>
+                                <button class="btn btn-dark btn-sm w-100" onclick="openGenerateContentModal('marketing-long')">
+                                    <i class="bi bi-tools"></i> 编辑模板
                                 </button>
                         </div>
                             <div class="action-block">
@@ -127,8 +127,8 @@
                             <li><i class="bi bi-check2-circle"></i> 支持节日 / 通用两类模板</li>
                         </ul>
                         <div class="module-actions">
-                            <button class="btn btn-dark btn-sm" onclick="generateContentForModule('greeting-card')">
-                                <i class="bi bi-magic"></i> AI生成内容
+                            <button class="btn btn-dark btn-sm" onclick="openGenerateContentModal('greeting-card')">
+                                <i class="bi bi-magic"></i> 建立模板
                             </button>
                             <button class="btn btn-light btn-sm" onclick="openSendShareModal()">
                                 <i class="bi bi-people"></i> 发送给客户
@@ -144,8 +144,8 @@
                             <li><i class="bi bi-check2-circle"></i> 内含行动建议，方便引荐</li>
                         </ul>
                         <div class="module-actions">
-                            <button class="btn btn-dark btn-sm" onclick="generateContentForModule('business-card')">
-                                <i class="bi bi-magic"></i> AI生成内容
+                            <button class="btn btn-dark btn-sm" onclick="openGenerateContentModal('business-card')">
+                                <i class="bi bi-magic"></i> 建立模板
                             </button>
                             <button class="btn btn-light btn-sm" onclick="openSendShareModal()">
                                 <i class="bi bi-people"></i> 发送给客户
@@ -161,8 +161,8 @@
                             <li><i class="bi bi-check2-circle"></i> 一键下载或分享 PDF</li>
                         </ul>
                         <div class="module-actions">
-                            <button class="btn btn-dark btn-sm" onclick="generateContentForModule('recommendation')">
-                                <i class="bi bi-magic"></i> AI生成内容
+                            <button class="btn btn-dark btn-sm" onclick="openGenerateContentModal('recommendation')">
+                                <i class="bi bi-magic"></i> 建立模板
                             </button>
                             <button class="btn btn-light btn-sm" onclick="openSendShareModal()">
                                 <i class="bi bi-people"></i> 发送给客户
@@ -178,8 +178,8 @@
                             <li><i class="bi bi-check2-circle"></i> 一句痛点 + 一句行动号召</li>
                         </ul>
                         <div class="module-actions">
-                            <button class="btn btn-dark btn-sm" onclick="generateContentForModule('marketing-short')">
-                                <i class="bi bi-magic"></i> AI生成内容
+                            <button class="btn btn-dark btn-sm" onclick="openGenerateContentModal('marketing-short')">
+                                <i class="bi bi-magic"></i> 建立模板
                             </button>
                             <button class="btn btn-light btn-sm" onclick="openSendShareModal()">
                                 <i class="bi bi-people"></i> 发送给客户
@@ -187,10 +187,56 @@
                                 </div>
                             </div>
                                 </div>
+                <div class="card template-card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                            <h5 class="mb-0">我的模板</h5>
+                            <small class="text-muted">保存常用内容结构，随时复用或再次编辑</small>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="openGenerateContentModal('marketing-long')">
+                            <i class="bi bi-plus-circle"></i> 新建模板
+                    </button>
+                </div>
+                    <div class="card-body" id="templateListContainer">
+                        <!-- 模板列表 -->
+            </div>
+                </div>
                 <div id="recommendationResults">
                     <!-- 推荐结果列表 -->
                 </div>
             </div>
+        </div>
+
+        <!-- 历史推荐记录 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">历史推荐记录</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3" id="statisticsRow">
+                    <!-- 统计数据将通过JavaScript动态加载 -->
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>客户名称</th>
+                                <th>推荐类型</th>
+                                <th>推荐内容</th>
+                                <th>优先级</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- 历史记录将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 推荐详情模态框 -->
@@ -275,21 +321,15 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="mb-0" id="contentTypeTitle">推荐报告预览</h6>
-                                <div class="btn-group" role="group">
+                                <div>
                                     <button class="btn btn-sm btn-outline-warning" id="editReportBtn" onclick="toggleReportEdit()">
                                         <i class="bi bi-pencil"></i> 编辑内容
                                     </button>
                                     <button class="btn btn-sm btn-outline-dark" onclick="saveCurrentTemplate()">
-                                        <i class="bi bi-bookmark"></i> 保存模板
+                                        <i class="bi bi-bookmark"></i> 保存为模板
                                     </button>
                                     <button class="btn btn-sm btn-outline-success" onclick="downloadReport()">
                                         <i class="bi bi-download"></i> 下载
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-info" onclick="refreshReport()">
-                                        <i class="bi bi-arrow-clockwise"></i> 刷新
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="shareReport()">
-                                        <i class="bi bi-share"></i> 分享
                                     </button>
                                 </div>
                             </div>

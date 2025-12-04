@@ -45,7 +45,6 @@
         <result column="protection_password" property="protectionPassword" jdbcType="VARCHAR"/>
         <result column="progress" property="progress" jdbcType="INTEGER"/>
         <result column="business_type" property="businessType" jdbcType="INTEGER"/>
-        <result column="variety" property="variety" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 基础列 -->
@@ -57,7 +56,7 @@
         position, qq_weixin, cooperation_content, region,
         agency_name, agency_code, agency_address, agency_postal_code,
         agent_name, agent_phone, agent_fax, agent_mobile, agent_email,
-        is_sensitive, protection_password, progress, variety
+        is_sensitive, protection_password, progress
         <if test="true">
             <!-- 如果字段存在则查询，如果不存在则忽略（通过COALESCE处理） -->
             , COALESCE(business_type, 1) as business_type
@@ -80,12 +79,12 @@
         WHERE customer_code = #{customerCode} AND deleted = 0
     </select>
 
-    <!-- 查询客户列表（不再根据deleted标志过滤，避免历史数据无法显示） -->
+    <!-- 查询客户列表 -->
     <select id="selectList" parameterType="com.aicustomer.entity.Customer" resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM customer
-        WHERE 1 = 1
+        WHERE deleted = 0
         <if test="customer.customerName != null and customer.customerName != ''">
             AND customer_name LIKE CONCAT('%', #{customer.customerName}, '%')
         </if>
@@ -107,7 +106,7 @@
         ORDER BY create_time DESC
     </select>
 
-    <!-- 分页查询客户（不再根据deleted标志过滤，避免历史数据无法显示） -->
+    <!-- 分页查询客户 -->
     <select id="selectPage" resultMap="BaseResultMap">
         SELECT
         id, customer_code, customer_name, customer_type, phone, email, address,
@@ -117,10 +116,10 @@
         position, qq_weixin, cooperation_content, region,
         agency_name, agency_code, agency_address, agency_postal_code,
         agent_name, agent_phone, agent_fax, agent_mobile, agent_email,
-        is_sensitive, protection_password, progress, variety,
+        is_sensitive, protection_password, progress,
         COALESCE(business_type, 1) as business_type
         FROM customer
-        WHERE 1 = 1
+        WHERE deleted = 0
         <if test="customer.customerName != null and customer.customerName != ''">
             AND customer_name LIKE CONCAT('%', #{customer.customerName}, '%')
         </if>
@@ -154,11 +153,11 @@
         LIMIT #{offset}, #{limit}
     </select>
 
-    <!-- 查询客户总数（不再根据deleted标志过滤，避免历史数据无法显示） -->
+    <!-- 查询客户总数 -->
     <select id="selectCount" parameterType="com.aicustomer.entity.Customer" resultType="java.lang.Long">
         SELECT COUNT(1)
         FROM customer
-        WHERE 1 = 1
+        WHERE deleted = 0
         <if test="customer.customerName != null and customer.customerName != ''">
             AND customer_name LIKE CONCAT('%', #{customer.customerName}, '%')
         </if>
@@ -205,7 +204,7 @@
             position, qq_weixin, cooperation_content, region,
             agency_name, agency_code, agency_address, agency_postal_code,
             agent_name, agent_phone, agent_fax, agent_mobile, agent_email,
-            progress, business_type, variety
+            progress, business_type
         ) VALUES (
             #{customer.customerCode}, #{customer.customerName}, #{customer.customerType},
             #{customer.phone}, #{customer.email}, #{customer.address},
@@ -221,7 +220,7 @@
             #{customer.agencyAddress}, #{customer.agencyPostalCode},
             #{customer.agentName}, #{customer.agentPhone}, #{customer.agentFax},
             #{customer.agentMobile}, #{customer.agentEmail},
-            #{customer.progress}, #{customer.businessType}, #{customer.variety}
+            #{customer.progress}, #{customer.businessType}
         )
     </insert>
 
@@ -319,9 +318,6 @@
             </if>
             <if test="customer.businessType != null">
                 business_type = #{customer.businessType},
-            </if>
-            <if test="customer.variety != null and customer.variety != ''">
-                variety = #{customer.variety},
             </if>
             <if test="customer.updateTime != null">
                 update_time = #{customer.updateTime},

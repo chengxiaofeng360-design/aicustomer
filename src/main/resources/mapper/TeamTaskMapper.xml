@@ -72,16 +72,24 @@
     <insert id="insert" parameterType="com.aicustomer.entity.TeamTask" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO team_task (
             title, description, task_type, assignee_id, assignee_name, creator_id, creator_name, priority, status, progress,
-            start_time, deadline, customer_id, customer_name, create_time, update_time, deleted, version
+            start_time, deadline, customer_id, customer_name, work_mode, work_duration, actual_start_time, actual_end_time,
+            work_status, last_active_time, work_location, work_evidence, work_log,
+            supervisor_id, supervisor_name, need_supervision, supervision_interval,
+            last_supervision_time, quality_score, efficiency_score, attitude_score,
+            supervision_note, create_time, update_time, deleted, version
         ) VALUES (
             #{title}, #{description}, #{taskType}, #{assigneeId}, #{assigneeName}, #{creatorId}, #{creatorName}, #{priority}, #{status}, #{progress},
-            #{startTime}, #{deadline}, #{customerId}, #{customerName}, #{createTime}, #{updateTime}, 0, 1
+            #{startTime}, #{deadline}, #{customerId}, #{customerName}, #{workMode}, #{workDuration}, #{actualStartTime}, #{actualEndTime},
+            #{workStatus}, #{lastActiveTime}, #{workLocation}, #{workEvidence}, #{workLog},
+            #{supervisorId}, #{supervisorName}, #{needSupervision}, #{supervisionInterval},
+            #{lastSupervisionTime}, #{qualityScore}, #{efficiencyScore}, #{attitudeScore},
+            #{supervisionNote}, #{createTime}, #{updateTime}, 0, 1
         )
     </insert>
 
     <!-- 更新团队任务 -->
     <update id="update" parameterType="com.aicustomer.entity.TeamTask">
-        UPDATE team_task SET 
+        UPDATE team_task SET
             title = #{title},
             description = #{description},
             task_type = #{taskType},
@@ -96,6 +104,24 @@
             deadline = #{deadline},
             customer_id = #{customerId},
             customer_name = #{customerName},
+            work_mode = #{workMode},
+            work_duration = #{workDuration},
+            actual_start_time = #{actualStartTime},
+            actual_end_time = #{actualEndTime},
+            work_status = #{workStatus},
+            last_active_time = #{lastActiveTime},
+            work_location = #{workLocation},
+            work_evidence = #{workEvidence},
+            work_log = #{workLog},
+            supervisor_id = #{supervisorId},
+            supervisor_name = #{supervisorName},
+            need_supervision = #{needSupervision},
+            supervision_interval = #{supervisionInterval},
+            last_supervision_time = #{lastSupervisionTime},
+            quality_score = #{qualityScore},
+            efficiency_score = #{efficiencyScore},
+            attitude_score = #{attitudeScore},
+            supervision_note = #{supervisionNote},
             update_time = #{updateTime},
             version = version + 1
         WHERE id = #{id} AND deleted = 0

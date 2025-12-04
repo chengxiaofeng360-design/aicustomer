@@ -7,7 +7,7 @@ import com.aicustomer.mapper.CommunicationMapper;
 import com.aicustomer.mapper.CustomerMapper;
 import com.aicustomer.mapper.CustomerProfileMapper;
 import com.aicustomer.service.AiAnalysisService;
-import com.aicustomer.service.AiService;
+import com.aicustomer.service.DeepSeekService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * AI分析服务实现类
@@ -30,7 +29,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class AiAnalysisServiceImpl implements AiAnalysisService {
     
-    private final AiService aiService;
+    private final DeepSeekService deepSeekService;
     private final CommunicationMapper communicationMapper;
     private final CustomerMapper customerMapper;
     private final CustomerProfileMapper customerProfileMapper;
@@ -103,24 +102,24 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         analysis.setAnalysisType(2); // 2:情感分析
         analysis.setTitle("情感分析报告");
         
-        // 使用豆包进行情感分析
-        if (aiService.isAvailable() && content != null && !content.trim().isEmpty()) {
+        // 使用DeepSeek进行情感分析
+        if (deepSeekService.isAvailable() && content != null && !content.trim().isEmpty()) {
             String prompt = String.format(
                 "请对以下客户沟通内容进行情感分析，分析整体情感倾向、关键词提取和建议。\n\n" +
                 "客户沟通内容：%s\n\n" +
                 "请以结构化格式输出分析结果，包括：\n" +
                 "1. 整体情感倾向（积极/中性/消极）及百分比\n" +
-                "2. 关键词提取（3-5个重要词汇）\n" +
+                "2. 关键情感词汇\n" +
                 "3. 建议措施",
                 content
             );
             
             try {
-                String aiResult = aiService.chat(prompt, "你是一个专业的情感分析专家，擅长分析客户沟通中的情感倾向。");
+                String aiResult = deepSeekService.chat(prompt, "你是一个专业的情感分析专家，擅长分析客户沟通中的情感倾向。");
                 analysis.setContent(aiResult);
                 analysis.setConfidence(90);
             } catch (Exception e) {
-                log.error("豆包情感分析失败: {}", e.getMessage());
+                log.error("DeepSeek情感分析失败: {}", e.getMessage());
                 analysis.setContent("对内容的情感分析结果：\n" +
                         "1. 整体情感：积极 (75%)\n" +
                         "2. 关键词：满意、推荐、优质\n" +
@@ -150,24 +149,25 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         analysis.setAnalysisType(3); // 3:需求预测
         analysis.setTitle("客户需求预测报告");
         
-        // 使用豆包进行需求预测
-        if (aiService.isAvailable()) {
+        // 使用DeepSeek进行需求预测
+        if (deepSeekService.isAvailable()) {
             String prompt = String.format(
                 "请基于客户ID %d的历史数据，预测该客户未来的需求。\n\n" +
                 "请分析以下方面：\n" +
                 "1. 产品需求预测（基于历史购买记录和行业趋势）\n" +
                 "2. 服务需求预测（基于客户沟通记录）\n" +
-                "3. 业务发展预测（基于客户规模和发展阶段）\n" +
+                "3. 需求时间节点预测\n" +
+                "4. 推荐策略建议\n\n" +
                 "请以结构化格式输出分析结果。",
                 customerId
             );
             
             try {
-                String aiResult = aiService.chat(prompt, "你是一个专业的客户需求分析专家，擅长基于客户历史数据预测未来需求。");
+                String aiResult = deepSeekService.chat(prompt, "你是一个专业的客户需求分析专家，擅长基于客户历史数据预测未来需求。");
                 analysis.setContent(aiResult);
                 analysis.setConfidence(90);
             } catch (Exception e) {
-                log.error("豆包需求预测失败: {}", e.getMessage());
+                log.error("DeepSeek需求预测失败: {}", e.getMessage());
                 analysis.setContent("基于客户历史数据和市场趋势，预测客户未来需求：\n" +
                         "1. 产品需求：高端智能设备\n" +
                         "2. 服务需求：定制化解决方案\n" +
@@ -199,24 +199,24 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         analysis.setAnalysisType(4); // 4:风险预警
         analysis.setTitle("客户风险评估报告");
         
-        // 使用豆包进行风险评估
-        if (aiService.isAvailable()) {
+        // 使用DeepSeek进行风险评估
+        if (deepSeekService.isAvailable()) {
             String prompt = String.format(
                 "请对客户ID %d进行全面的风险评估，包括：\n\n" +
                 "1. 信用风险分析（基于交易历史和支付记录）\n" +
                 "2. 流失风险分析（基于互动频率和满意度）\n" +
                 "3. 支付风险分析（基于付款历史和信用状况）\n" +
-                "4. 业务风险分析（基于行业环境和竞争状况）\n" +
+                "4. 建议的风险控制措施\n\n" +
                 "请以结构化格式输出分析结果，对每个风险项给出等级（低/中/高）和具体建议。",
                 customerId
             );
             
             try {
-                String aiResult = aiService.chat(prompt, "你是一个专业的风险评估专家，擅长分析客户的各种风险并给出控制建议。");
+                String aiResult = deepSeekService.chat(prompt, "你是一个专业的风险评估专家，擅长分析客户的各种风险并给出控制建议。");
                 analysis.setContent(aiResult);
                 analysis.setConfidence(88);
             } catch (Exception e) {
-                log.error("豆包风险评估失败: {}", e.getMessage());
+                log.error("DeepSeek风险评估失败: {}", e.getMessage());
                 analysis.setContent("客户风险评估结果：\n" +
                         "1. 信用风险：低\n" +
                         "2. 流失风险：中\n" +
@@ -299,12 +299,12 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
     }
 
     @Override
-    public List<Map<String, Object>> getBusinessOpportunities(int days) {
+    public List<Map<String, Object>> getBusinessOpportunities() {
         List<Map<String, Object>> opportunities = new ArrayList<>();
         
         try {
-            // 查询最近N天的沟通记录
-            List<CommunicationRecord> recentCommunications = communicationMapper.selectRecentCommunications(days);
+            // 查询最近30天的沟通记录
+            List<CommunicationRecord> recentCommunications = communicationMapper.selectRecentCommunications(30);
             
             // 按客户分组
             Map<Long, List<CommunicationRecord>> customerCommunications = recentCommunications.stream()
@@ -347,9 +347,8 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
                     }
                 }
                 
-                // 放宽条件：只要最近30天内有沟通记录就生成业务机会
-                // 如果有关键词则使用关键词和沟通次数计算优先级；如果没有关键词，则作为低优先级机会
-                if (records.size() > 0) {
+                // 如果发现业务关键词，创建业务机会
+                if (!keywords.isEmpty() && records.size() > 0) {
                     CommunicationRecord latestRecord = records.get(0);
                     Customer customer = customerMapper.selectById(customerId);
                     
@@ -360,52 +359,21 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
                         opportunity.put("customerName", customer.getCustomerName());
                         opportunity.put("description", generateOpportunityDescription(keywords, records.size()));
                         opportunity.put("keywords", new ArrayList<>(keywords));
-
-                        // 有关键词时按原逻辑确定优先级；无关键词但有沟通记录时标记为低优先级
-                        String priority;
-                        if (!keywords.isEmpty()) {
-                            priority = determinePriority(keywords, records.size());
-                        } else {
-                            priority = "low";
-                        }
-                        opportunity.put("priority", priority);
-
+                        opportunity.put("priority", determinePriority(keywords, records.size()));
                         opportunity.put("detectedTime", latestRecord.getCommunicationTime());
                         opportunity.put("communicationCount", records.size());
-
-                        // 公司内部关联度评分：行业适配度 + 沟通次数 + 客户等级权重
-                        int relationScore = 0;
-                        relationScore += calculateIndustryScore(customer);
-
-                        // 沟通活跃度，最多加20分
-                        relationScore += Math.min(records.size() * 2, 20);
-
-                        // 客户等级加权
-                        if (customer.getCustomerLevel() != null) {
-                            relationScore += customer.getCustomerLevel() * 5;
-                        }
-                        opportunity.put("relationScore", relationScore);
                         
                         opportunities.add(opportunity);
                     }
                 }
             }
             
-            // 按优先级、行业/关联度和检测时间排序
+            // 按优先级和检测时间排序
             opportunities.sort((a, b) -> {
                 String priorityA = (String) a.get("priority");
                 String priorityB = (String) b.get("priority");
                 int priorityCompare = getPriorityValue(priorityB).compareTo(getPriorityValue(priorityA));
                 if (priorityCompare != 0) return priorityCompare;
-
-                // 优先级相同，则按关联度分数从高到低
-                Integer relationA = (Integer) a.get("relationScore");
-                Integer relationB = (Integer) b.get("relationScore");
-                int relationCompare = Integer.compare(
-                        relationB != null ? relationB : 0,
-                        relationA != null ? relationA : 0
-                );
-                if (relationCompare != 0) return relationCompare;
                 
                 LocalDateTime timeA = (LocalDateTime) a.get("detectedTime");
                 LocalDateTime timeB = (LocalDateTime) b.get("detectedTime");
@@ -632,89 +600,5 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         }
         
         return suggestions;
-    }
-
-    /**
-     * 计算行业相关性得分
-     * 根据客户所属行业和关键词，判断与植物新品种、品种权、花卉/园林/科研/种业等相关度
-     */
-    private int calculateIndustryScore(Customer customer) {
-        if (customer == null) {
-            return 0;
-        }
-        
-        int score = 0;
-        String customerName = customer.getCustomerName();
-        String cooperationContent = customer.getCooperationContent();
-        Integer customerType = customer.getCustomerType();
-        String businessType = getBusinessTypeDescription(customer.getBusinessType());
-        
-        // 定义强相关关键词
-        String[] strongKeywords = {
-            "植物新品种", "新品种权", "品种权申请", "花卉", "园林", "绿化", 
-            "景观", "科研", "研究所", "农科院", "种业", "种子",
-            "园艺种苗", "农林科院", "林大", "农大", "种业公司", "园艺苗圃", 
-            "种苗企业", "花卉产业化企业", "果树产业化企业", "林木产业化企业", 
-            "UPOV国际代理机构", "UPOV测试机构", "DUS测试机构", 
-            "农业品种权审查办公室", "林草品种权审查办公室"
-        };
-        
-        // 定义中等相关关键词
-        String[] mediumKeywords = {
-            "农业", "林业", "园艺", "植物", "生物", "科技", "技术", "开发"
-        };
-        
-        // 检查所有字段的组合文本
-        String combinedText = Stream.of(customerName, cooperationContent, businessType)
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining(" "))
-                .toLowerCase();
-        
-        // 强关键词匹配，每个加10分
-        for (String keyword : strongKeywords) {
-            if (combinedText.contains(keyword.toLowerCase())) {
-                score += 10;
-            }
-        }
-        
-        // 中等关键词匹配，每个加5分
-        for (String keyword : mediumKeywords) {
-            if (combinedText.contains(keyword.toLowerCase())) {
-                score += 5;
-            }
-        }
-        
-        // 客户名称中包含研究所、科学院等，额外加分
-        if (customerName != null && (customerName.contains("研究所") || customerName.contains("科学院") || customerName.contains("研究院"))) {
-            score += 15;
-        }
-        
-        // 客户类型为企业客户(2)，额外加分
-        if (customerType != null && customerType == 2) {
-            score += 8;
-        }
-        
-        // 业务类型为品种权申请客户(1)，额外加分
-        if (customer.getBusinessType() != null && customer.getBusinessType() == 1) {
-            score += 12;
-        }
-        
-        return Math.min(score, 50); // 最高50分
-    }
-    
-    /**
-     * 获取业务类型描述
-     */
-    private String getBusinessTypeDescription(Integer businessType) {
-        if (businessType == null) return "";
-        switch (businessType) {
-            case 1: return "品种权申请客户";
-            case 2: return "品种权转化推广客户";
-            case 3: return "知识产权互补协作客户";
-            case 4: return "科普教育合作客户";
-            case 5: return "景观设计服务客户";
-            case 6: return "图书出版客户";
-            default: return "";
-        }
     }
 }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +18,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         /* 我的工作台模块 */
         .workbench-section {
             background: white;
@@ -29,7 +30,7 @@
             position: relative;
             z-index: 1;
         }
-        
+
         .workbench-header {
             display: flex;
             justify-content: space-between;
@@ -37,20 +38,20 @@
             gap: 1rem;
             margin-bottom: 2rem;
         }
-        
+
         .workbench-title {
             font-size: 2rem;
             font-weight: 600;
             color: #2d3748;
             margin: 0;
         }
-        
+
         .workbench-subtitle {
             color: #718096;
             margin-bottom: 0.5rem;
             font-size: 0.95rem;
         }
-        
+
         .workbench-grid {
             display: block;
         }
@@ -124,7 +125,7 @@
             font-size: 0.9rem;
             line-height: 1.4;
         }
-        
+
         /* 背景装饰 */
         .modern-container::before {
             content: '';
@@ -137,7 +138,7 @@
             border-radius: 50%;
             animation: float 20s ease-in-out infinite;
         }
-        
+
         .modern-container::after {
             content: '';
             position: absolute;
@@ -149,12 +150,19 @@
             border-radius: 50%;
             animation: float 15s ease-in-out infinite reverse;
         }
-        
+
         @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(10deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-30px) rotate(10deg);
+            }
         }
-        
+
         /* 现代化头部 */
         .modern-header {
             text-align: center;
@@ -164,7 +172,7 @@
             z-index: 1;
             animation: fadeInDown 0.8s ease-out;
         }
-        
+
         /* 右上角导图按钮 */
         .top-buttons {
             position: absolute;
@@ -174,8 +182,9 @@
             gap: 12px;
             z-index: 10;
         }
-        
-        .nav-btn, .mindmap-btn {
+
+        .nav-btn,
+        .mindmap-btn {
             background: rgba(255, 255, 255, 0.15);
             color: white;
             padding: 8px 16px;
@@ -187,54 +196,63 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
         }
-        
-        .nav-btn:hover, .mindmap-btn:hover {
+
+        .nav-btn:hover,
+        .mindmap-btn:hover {
             background: rgba(255, 255, 255, 0.25);
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             color: white;
             text-decoration: none;
         }
-        
-        .nav-btn i, .mindmap-btn i {
+
+        .nav-btn i,
+        .mindmap-btn i {
             margin-right: 6px;
             font-size: 0.8rem;
         }
-        
+
         .modern-header h1 {
             font-size: 3.5rem;
             font-weight: 700;
             margin-bottom: 1rem;
-            text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 1rem;
         }
-        
+
         .modern-header h1 i {
             font-size: 3.5rem;
             animation: pulse 2s ease-in-out infinite;
         }
-        
+
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
         }
-        
+
         .modern-header p {
             font-size: 1.3rem;
             opacity: 0.95;
             font-weight: 300;
             letter-spacing: 0.5px;
         }
-        
+
         .modern-header .subtitle {
             margin-top: 0.5rem;
             font-size: 1rem;
             opacity: 0.85;
         }
-        
+
         /* 现代化卡片网格 */
         .modern-grid {
             display: grid;
@@ -245,7 +263,7 @@
             position: relative;
             z-index: 1;
         }
-        
+
         /* 现代化卡片 */
         .modern-card {
             background: rgba(255, 255, 255, 0.95);
@@ -259,37 +277,59 @@
             overflow: hidden;
             animation: fadeInUp 0.6s ease-out backwards;
         }
-        
-        .modern-card:nth-child(1) { animation-delay: 0.1s; }
-        .modern-card:nth-child(2) { animation-delay: 0.2s; }
-        .modern-card:nth-child(3) { animation-delay: 0.3s; }
-        .modern-card:nth-child(4) { animation-delay: 0.4s; }
-        .modern-card:nth-child(5) { animation-delay: 0.5s; }
-        .modern-card:nth-child(6) { animation-delay: 0.6s; }
-        .modern-card:nth-child(7) { animation-delay: 0.7s; }
-        
+
+        .modern-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .modern-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .modern-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .modern-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .modern-card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .modern-card:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+
+        .modern-card:nth-child(7) {
+            animation-delay: 0.7s;
+        }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         @keyframes fadeInDown {
             from {
                 opacity: 0;
                 transform: translateY(-30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .modern-card::before {
             content: '';
             position: absolute;
@@ -301,17 +341,17 @@
             transform: scaleX(0);
             transition: transform 0.4s ease;
         }
-        
+
         .modern-card:hover::before {
             transform: scaleX(1);
         }
-        
+
         .modern-card:hover {
             transform: translateY(-12px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             border-color: #667eea;
         }
-        
+
         .modern-card-icon {
             width: 80px;
             height: 80px;
@@ -325,24 +365,24 @@
             color: white;
             transition: all 0.4s ease;
         }
-        
+
         .modern-card:hover .modern-card-icon {
             transform: rotate(360deg) scale(1.1);
         }
-        
+
         .modern-card-title {
             font-size: 1.5rem;
             font-weight: 600;
             color: #2d3748;
             margin-bottom: 0.8rem;
         }
-        
+
         .modern-card-desc {
             color: #718096;
             line-height: 1.6;
             font-size: 0.95rem;
         }
-        
+
         /* 统计数据区域 */
         .stats-section {
             display: grid;
@@ -353,7 +393,7 @@
             position: relative;
             z-index: 1;
         }
-        
+
         .stat-card {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
@@ -364,35 +404,36 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             animation: fadeInUp 0.6s ease-out backwards;
         }
-        
+
         .stat-number {
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
         }
-        
+
         .stat-label {
             font-size: 0.9rem;
             opacity: 0.9;
         }
-        
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .modern-header h1 {
                 font-size: 2.5rem;
             }
-            
+
             .modern-grid {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
             }
-            
+
             .modern-container {
                 padding: 1rem;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="modern-container">
         <!-- 右上角导图按钮 -->
@@ -404,7 +445,7 @@
                 <i class="bi bi-diagram-3"></i>导图
             </a>
         </div>
-        
+
         <!-- 现代化头部 -->
         <div class="modern-header">
             <h1><i class="bi bi-robot"></i> AI客户管理系统</h1>
@@ -460,7 +501,8 @@
                         </button>
                     </div>
                     <div class="col-lg-5">
-                        <div class="p-4 rounded-4 border shadow-sm" style="background:linear-gradient(135deg,#f8f9ff,#eef2ff);">
+                        <div class="p-4 rounded-4 border shadow-sm"
+                            style="background:linear-gradient(135deg,#f8f9ff,#eef2ff);">
                             <p class="text-muted mb-2 small">工作台速览</p>
                             <p style="color:#1a202c; margin:0;">
                                 <i class="bi bi-magic text-primary me-2"></i>单入口搞定四类文稿，自动记住上次输出，卡片内直接编辑/复制。
@@ -516,6 +558,15 @@
                 <div class="modern-card-desc">个性化推荐，精准识别商机</div>
             </div>
 
+            <!-- 知识库管理 -->
+            <div class="modern-card" onclick="navigateTo('system-management')">
+                <div class="modern-card-icon">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div class="modern-card-title">知识库管理</div>
+                <div class="modern-card-desc">文档上传、分类管理、智能搜索</div>
+            </div>
+
             <!-- AI智能聊天 -->
             <div class="modern-card" onclick="navigateTo('ai-chat')">
                 <div class="modern-card-icon">
@@ -548,19 +599,18 @@
                 'team': 'team.html',
                 'ai-analysis': 'ai-analysis.html',
                 'ai-recommendations': 'ai-recommendations.html',
+                'system-management': 'system-management.html',
                 'ai-chat': 'ai-chat.html',
-                'knowledge-base': 'knowledge-base.html',
-                'my-workbench': 'my-workbench.html',
                 'system-config': 'system-config.html'
             };
-            
+
             if (pageMap[page]) {
                 window.location.href = `/${pageMap[page]}`;
             }
         }
 
         // 页面加载完成后的初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             console.log('AI客户管理系统已加载');
         });
 
@@ -576,10 +626,13 @@
         }
     </script>
 </body>
+
 </html>
-    </script>
+</script>
 </body>
+
 </html>
-    </script>
+</script>
 </body>
+
 </html>

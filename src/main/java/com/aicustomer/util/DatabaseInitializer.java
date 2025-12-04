@@ -22,17 +22,17 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class DatabaseInitializer {
-    
+
     @Autowired(required = false)
     private JdbcTemplate jdbcTemplate;
-    
+
     @PostConstruct
     public void init() {
         if (jdbcTemplate == null) {
             log.warn("JdbcTemplate未配置，跳过数据库初始化");
             return;
         }
-        
+
         try {
             // 检查主要表是否存在
             boolean customerTableExists = checkTableExists("customer");
@@ -40,7 +40,7 @@ public class DatabaseInitializer {
             boolean teamTaskTableExists = checkTableExists("team_task");
             boolean taskProgressReportTableExists = checkTableExists("task_progress_report");
             boolean systemConfigTableExists = checkTableExists("system_config");
-            
+
             if (!customerTableExists) {
                 log.info("检测到customer表不存在，开始初始化数据库表结构...");
                 initializeDatabase();
@@ -48,7 +48,7 @@ public class DatabaseInitializer {
                 log.info("数据库表已存在，检查并更新表结构...");
                 updateTableStructure();
             }
-            
+
             // 检查并创建system_config表
             if (!systemConfigTableExists) {
                 log.info("检测到system_config表不存在，开始创建...");
@@ -56,10 +56,10 @@ public class DatabaseInitializer {
             } else {
                 log.debug("system_config表已存在，跳过创建");
             }
-            
+
             // 初始化系统配置数据（业务类型等）
             initSystemConfigData();
-            
+
             // 检查并创建communication_record表（如果不存在）
             if (!communicationTableExists) {
                 log.info("检测到communication_record表不存在，开始创建...");
@@ -67,7 +67,7 @@ public class DatabaseInitializer {
             } else {
                 log.debug("communication_record表已存在，跳过创建");
             }
-            
+
             // 检查并创建team_task表（如果不存在）
             if (!teamTaskTableExists) {
                 log.info("检测到team_task表不存在，开始创建...");
@@ -75,7 +75,7 @@ public class DatabaseInitializer {
             } else {
                 log.debug("team_task表已存在，跳过创建");
             }
-            
+
             // 检查并创建task_progress_report表（如果不存在）
             if (!taskProgressReportTableExists) {
                 log.info("检测到task_progress_report表不存在，开始创建...");
@@ -87,7 +87,7 @@ public class DatabaseInitializer {
             log.error("数据库初始化失败: {}", e.getMessage(), e);
         }
     }
-    
+
     /**
      * 检查表是否存在
      */
@@ -101,7 +101,7 @@ public class DatabaseInitializer {
             return false;
         }
     }
-    
+
     /**
      * 初始化数据库
      */
@@ -110,20 +110,21 @@ public class DatabaseInitializer {
             // 读取schema.sql文件
             ClassPathResource resource = new ClassPathResource("schema.sql");
             String sqlScript = new BufferedReader(
-                new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)
-            ).lines().collect(Collectors.joining("\n"));
-            
+                    new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)).lines()
+                    .collect(Collectors.joining("\n"));
+
             // 移除注释和空行
             sqlScript = removeComments(sqlScript);
-            
+
             // 按分号分割SQL语句，但要注意字符串中的分号
             java.util.List<String> statements = new java.util.ArrayList<>();
             StringBuilder currentStatement = new StringBuilder();
             boolean inString = false;
             char stringChar = 0;
-            
+
             for (char c : sqlScript.toCharArray()) {
-                if ((c == '\'' || c == '"') && (currentStatement.length() == 0 || currentStatement.charAt(currentStatement.length() - 1) != '\\')) {
+                if ((c == '\'' || c == '"') && (currentStatement.length() == 0
+                        || currentStatement.charAt(currentStatement.length() - 1) != '\\')) {
                     if (!inString) {
                         inString = true;
                         stringChar = c;
@@ -131,9 +132,9 @@ public class DatabaseInitializer {
                         inString = false;
                     }
                 }
-                
+
                 currentStatement.append(c);
-                
+
                 if (!inString && c == ';') {
                     String stmt = currentStatement.toString().trim();
                     if (!stmt.isEmpty() && stmt.length() > 5) { // 忽略太短的语句
@@ -142,7 +143,7 @@ public class DatabaseInitializer {
                     currentStatement = new StringBuilder();
                 }
             }
-            
+
             // 执行SQL语句
             int successCount = 0;
             int skipCount = 0;
@@ -151,7 +152,7 @@ public class DatabaseInitializer {
                 if (trimmed.isEmpty() || trimmed.length() < 10) {
                     continue;
                 }
-                
+
                 try {
                     // 执行SQL
                     jdbcTemplate.execute(trimmed);
@@ -161,10 +162,9 @@ public class DatabaseInitializer {
                 } catch (Exception e) {
                     String errorMsg = e.getMessage();
                     // 忽略已存在的表/索引错误
-                    if (errorMsg != null && (
-                        errorMsg.contains("already exists") || 
-                        errorMsg.contains("Duplicate") ||
-                        errorMsg.contains("Table") && errorMsg.contains("already exists"))) {
+                    if (errorMsg != null && (errorMsg.contains("already exists") ||
+                            errorMsg.contains("Duplicate") ||
+                            errorMsg.contains("Table") && errorMsg.contains("already exists"))) {
                         skipCount++;
                         log.debug("表/索引已存在，跳过: {}", trimmed.substring(0, Math.min(50, trimmed.length())));
                     } else {
@@ -172,13 +172,13 @@ public class DatabaseInitializer {
                     }
                 }
             }
-            
+
             log.info("数据库初始化完成，成功执行 {} 条SQL语句，跳过 {} 条（已存在）", successCount, skipCount);
         } catch (Exception e) {
             log.error("读取或执行schema.sql失败: {}", e.getMessage(), e);
         }
     }
-    
+
     /**
      * 移除SQL注释
      */
@@ -204,30 +204,32 @@ public class DatabaseInitializer {
         }
         return result.toString();
     }
-    
+
     /**
      * 统计字符出现次数
      */
     private int countChar(String str, char ch) {
         int count = 0;
         for (char c : str.toCharArray()) {
-            if (c == ch) count++;
+            if (c == ch)
+                count++;
         }
         return count;
     }
-    
+
     /**
      * 更新表结构：添加缺失的字段
      */
     private void updateTableStructure() {
         try {
             log.info("开始检查并更新customer表结构...");
-            
+
             // 检查并添加position字段
             if (!checkColumnExists("customer", "position")) {
                 log.info("添加position字段到customer表...");
                 try {
-                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN position VARCHAR(100) COMMENT '职务' AFTER nationality");
+                    jdbcTemplate.execute(
+                            "ALTER TABLE customer ADD COLUMN position VARCHAR(100) COMMENT '职务' AFTER nationality");
                     log.info("✅ position字段添加成功");
                 } catch (Exception e) {
                     log.error("❌ 添加position字段失败: {}", e.getMessage());
@@ -235,12 +237,13 @@ public class DatabaseInitializer {
             } else {
                 log.debug("position字段已存在，跳过");
             }
-            
+
             // 检查并添加qq_weixin字段
             if (!checkColumnExists("customer", "qq_weixin")) {
                 log.info("添加qq_weixin字段到customer表...");
                 try {
-                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN qq_weixin VARCHAR(100) COMMENT 'QQ/微信' AFTER position");
+                    jdbcTemplate.execute(
+                            "ALTER TABLE customer ADD COLUMN qq_weixin VARCHAR(100) COMMENT 'QQ/微信' AFTER position");
                     log.info("✅ qq_weixin字段添加成功");
                 } catch (Exception e) {
                     log.error("❌ 添加qq_weixin字段失败: {}", e.getMessage());
@@ -248,12 +251,13 @@ public class DatabaseInitializer {
             } else {
                 log.debug("qq_weixin字段已存在，跳过");
             }
-            
+
             // 检查并添加cooperation_content字段
             if (!checkColumnExists("customer", "cooperation_content")) {
                 log.info("添加cooperation_content字段到customer表...");
                 try {
-                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN cooperation_content TEXT COMMENT '合作内容' AFTER qq_weixin");
+                    jdbcTemplate.execute(
+                            "ALTER TABLE customer ADD COLUMN cooperation_content TEXT COMMENT '合作内容' AFTER qq_weixin");
                     log.info("✅ cooperation_content字段添加成功");
                 } catch (Exception e) {
                     log.error("❌ 添加cooperation_content字段失败: {}", e.getMessage());
@@ -261,12 +265,13 @@ public class DatabaseInitializer {
             } else {
                 log.debug("cooperation_content字段已存在，跳过");
             }
-            
+
             // 检查并添加region字段
             if (!checkColumnExists("customer", "region")) {
                 log.info("添加region字段到customer表...");
                 try {
-                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN region VARCHAR(50) COMMENT '地区' AFTER cooperation_content");
+                    jdbcTemplate.execute(
+                            "ALTER TABLE customer ADD COLUMN region VARCHAR(50) COMMENT '地区' AFTER cooperation_content");
                     log.info("✅ region字段添加成功");
                 } catch (Exception e) {
                     log.error("❌ 添加region字段失败: {}", e.getMessage());
@@ -274,12 +279,13 @@ public class DatabaseInitializer {
             } else {
                 log.debug("region字段已存在，跳过");
             }
-            
+
             // 检查并添加progress字段（进度）
             if (!checkColumnExists("customer", "progress")) {
                 log.info("添加progress字段到customer表...");
                 try {
-                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN progress TINYINT DEFAULT 0 COMMENT '进度(0:未开始,1:进行中,2:暂停中,3:已成功,4:放弃)' AFTER remark");
+                    jdbcTemplate.execute(
+                            "ALTER TABLE customer ADD COLUMN progress TINYINT DEFAULT 0 COMMENT '进度(0:未开始,1:进行中,2:暂停中,3:已成功,4:放弃)' AFTER remark");
                     log.info("✅ progress字段添加成功");
                 } catch (Exception e) {
                     log.error("❌ 添加progress字段失败: {}", e.getMessage());
@@ -288,24 +294,10 @@ public class DatabaseInitializer {
                 log.debug("progress字段已存在，跳过");
             }
 
-            // 检查并添加variety字段（品种信息）
-            if (!checkColumnExists("customer", "variety")) {
-                log.info("添加variety字段到customer表...");
-                try {
-                    // 默认在progress之后，方便阅读
-                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN variety VARCHAR(255) COMMENT '品种信息' AFTER progress");
-                    log.info("✅ variety字段添加成功");
-                } catch (Exception e) {
-                    log.error("❌ 添加variety字段失败: {}", e.getMessage());
-                }
-            } else {
-                log.debug("variety字段已存在，跳过");
-            }
-            
             // 检查并添加/修改business_type字段（具体业务类型1-6）
             boolean businessTypeExists = checkColumnExists("customer", "business_type");
             log.info("检查business_type字段: {}", businessTypeExists ? "已存在" : "不存在");
-            
+
             if (!businessTypeExists) {
                 log.info("开始添加business_type字段到customer表...");
                 try {
@@ -334,7 +326,7 @@ public class DatabaseInitializer {
                     log.warn("⚠️ 更新business_type字段注释失败: {}", e.getMessage());
                 }
             }
-            
+
             // 删除business_sub_type字段（如果存在）- 强制删除，忽略错误
             try {
                 boolean businessSubTypeExists = checkColumnExists("customer", "business_sub_type");
@@ -344,7 +336,7 @@ public class DatabaseInitializer {
                         // 尝试删除字段
                         jdbcTemplate.execute("ALTER TABLE customer DROP COLUMN business_sub_type");
                         log.info("✅ business_sub_type字段删除成功");
-                        
+
                         // 验证删除是否成功
                         boolean stillExists = checkColumnExists("customer", "business_sub_type");
                         if (stillExists) {
@@ -368,21 +360,20 @@ public class DatabaseInitializer {
             } catch (Exception e) {
                 log.warn("⚠️ 检查business_sub_type字段时出错: {}", e.getMessage());
             }
-            
+
             // 将现有客户的businessType设置为默认值1（品种权申请客户）
             try {
                 boolean businessTypeExistsForUpdate = checkColumnExists("customer", "business_type");
-                
+
                 if (businessTypeExistsForUpdate) {
                     // 先查询总客户数
                     Integer totalCustomers = jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM customer WHERE deleted = 0", Integer.class);
+                            "SELECT COUNT(*) FROM customer WHERE deleted = 0", Integer.class);
                     log.info("数据库中总客户数: {}", totalCustomers);
-                    
+
                     // 更新所有未删除的客户，包括 business_type 为 NULL 的
                     int updatedCount = jdbcTemplate.update(
-                        "UPDATE customer SET business_type = 1 WHERE deleted = 0 AND (business_type IS NULL OR business_type = 0)"
-                    );
+                            "UPDATE customer SET business_type = 1 WHERE deleted = 0 AND (business_type IS NULL OR business_type = 0)");
                     if (updatedCount > 0) {
                         log.info("✅ 已将 {} 条现有客户记录的业务类型设置为默认值1（品种权申请客户）", updatedCount);
                     } else {
@@ -394,7 +385,7 @@ public class DatabaseInitializer {
             } catch (Exception e) {
                 log.error("❌ 更新现有客户业务类型失败: {}", e.getMessage(), e);
             }
-            
+
             // 检查并删除applicant_nature字段（如果存在）
             if (checkColumnExists("customer", "applicant_nature")) {
                 log.info("删除applicant_nature字段从customer表...");
@@ -405,13 +396,13 @@ public class DatabaseInitializer {
                     log.warn("⚠️ 删除applicant_nature字段失败: {}", e.getMessage());
                 }
             }
-            
+
             log.info("✅ 表结构更新完成");
         } catch (Exception e) {
             log.error("❌ 更新表结构失败: {}", e.getMessage(), e);
         }
     }
-    
+
     /**
      * 创建system_config表
      */
@@ -437,7 +428,7 @@ public class DatabaseInitializer {
             log.error("❌ 创建system_config表失败: {}", e.getMessage(), e);
         }
     }
-    
+
     /**
      * 初始化系统配置数据
      */
@@ -445,41 +436,52 @@ public class DatabaseInitializer {
         try {
             // 业务类型配置数据
             String[][] businessTypes = {
-                {"business.type.1", "品种权申请客户", "STRING", "品种权业务 - 品种权申请客户", "业务类型"},
-                {"business.type.2", "品种权转化推广客户", "STRING", "品种权业务 - 品种权转化推广客户", "业务类型"},
-                {"business.type.3", "知识产权互补协作客户", "STRING", "知识产权业务 - 知识产权互补协作客户", "业务类型"},
-                {"business.type.4", "科普教育合作客户", "STRING", "服务业务 - 科普教育合作客户", "业务类型"},
-                {"business.type.5", "景观设计服务客户", "STRING", "服务业务 - 景观设计服务客户", "业务类型"},
-                {"business.type.6", "图书出版客户", "STRING", "服务业务 - 图书出版客户", "业务类型"}
+                    { "business.type.1", "品种权申请客户", "STRING", "品种权业务 - 品种权申请客户", "业务类型" },
+                    { "business.type.2", "品种权转化推广客户", "STRING", "品种权业务 - 品种权转化推广客户", "业务类型" },
+                    { "business.type.3", "知识产权互补协作客户", "STRING", "其他知识产权业务 - 知识产权互补协作客户", "业务类型" },
+                    { "business.type.4", "科普教育合作客户", "STRING", "其他服务业务 - 科普教育合作客户", "业务类型" },
+                    { "business.type.5", "景观设计服务客户", "STRING", "其他服务业务 - 景观设计服务客户", "业务类型" },
+                    { "business.type.6", "图书出版客户", "STRING", "其他服务业务 - 图书出版客户", "业务类型" },
+                    { "business.categories",
+                            "{\n  \"品种权业务\": [1, 2],\n  \"其他知识产权业务\": [3],\n  \"其他服务业务\": [4, 5, 6]\n}", "JSON",
+                            "业务大类与具体业务类型的映射关系", "业务类型" }
             };
-            
+
             int insertedCount = 0;
             int skippedCount = 0;
-            
+
             for (String[] config : businessTypes) {
                 String configKey = config[0];
                 String configValue = config[1];
                 String configType = config[2];
                 String description = config[3];
                 String configGroup = config[4];
-                
+
                 // 检查配置是否已存在
                 Integer exists = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM system_config WHERE config_key = ? AND deleted = 0",
-                    Integer.class, configKey);
-                
+                        "SELECT COUNT(*) FROM system_config WHERE config_key = ? AND deleted = 0",
+                        Integer.class, configKey);
+
                 if (exists == null || exists == 0) {
                     // 插入新配置
                     jdbcTemplate.update(
-                        "INSERT INTO system_config (config_key, config_value, config_type, description, config_group, create_time, update_time, deleted) " +
-                        "VALUES (?, ?, ?, ?, ?, NOW(), NOW(), 0)",
-                        configKey, configValue, configType, description, configGroup);
+                            "INSERT INTO system_config (config_key, config_value, config_type, description, config_group, create_time, update_time, deleted) "
+                                    +
+                                    "VALUES (?, ?, ?, ?, ?, NOW(), NOW(), 0)",
+                            configKey, configValue, configType, description, configGroup);
                     insertedCount++;
                 } else {
+                    // 如果是业务类型配置，强制更新描述和值，确保新名称生效
+                    if (configKey.startsWith("business.")) {
+                        jdbcTemplate.update(
+                                "UPDATE system_config SET config_value = ?, description = ?, update_time = NOW() WHERE config_key = ?",
+                                configValue, description, configKey);
+                        log.debug("更新已存在的业务配置: {}", configKey);
+                    }
                     skippedCount++;
                 }
             }
-            
+
             if (insertedCount > 0) {
                 log.info("✅ 已初始化 {} 条业务类型配置数据", insertedCount);
             }
@@ -490,14 +492,14 @@ public class DatabaseInitializer {
             log.error("❌ 初始化系统配置数据失败: {}", e.getMessage(), e);
         }
     }
-    
+
     /**
      * 检查列是否存在
      */
     private boolean checkColumnExists(String tableName, String columnName) {
         try {
             String sql = "SELECT COUNT(*) FROM information_schema.columns " +
-                        "WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?";
+                    "WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?";
             Integer count = jdbcTemplate.queryForObject(sql, Integer.class, tableName, columnName);
             return count != null && count > 0;
         } catch (Exception e) {
@@ -505,7 +507,7 @@ public class DatabaseInitializer {
             return false;
         }
     }
-    
+
     /**
      * 创建communication_record表
      */
@@ -538,7 +540,8 @@ public class DatabaseInitializer {
                     "process_result TEXT COMMENT '处理结果', " +
                     "process_time DATETIME COMMENT '处理时间', " +
                     "create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
-                    "update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
+                    "update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', "
+                    +
                     "create_by VARCHAR(50) COMMENT '创建人', " +
                     "update_by VARCHAR(50) COMMENT '更新人', " +
                     "deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)', " +
@@ -551,14 +554,14 @@ public class DatabaseInitializer {
                     "INDEX idx_create_time (create_time), " +
                     "INDEX idx_deleted (deleted)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='沟通记录表'";
-            
+
             jdbcTemplate.execute(sql);
             log.info("✅ communication_record表创建成功");
         } catch (Exception e) {
             log.error("❌ 创建communication_record表失败: {}", e.getMessage(), e);
         }
     }
-    
+
     /**
      * 创建team_task表
      */
@@ -619,7 +622,8 @@ public class DatabaseInitializer {
                     "start_date DATE COMMENT '开始日期(兼容字段)', " +
                     "end_date DATE COMMENT '结束日期(兼容字段)', " +
                     "create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
-                    "update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
+                    "update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', "
+                    +
                     "create_by VARCHAR(50) COMMENT '创建人', " +
                     "update_by VARCHAR(50) COMMENT '更新人', " +
                     "deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)', " +
@@ -635,14 +639,14 @@ public class DatabaseInitializer {
                     "INDEX idx_create_time (create_time), " +
                     "INDEX idx_deleted (deleted)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='团队任务表'";
-            
+
             jdbcTemplate.execute(sql);
             log.info("✅ team_task表创建成功");
         } catch (Exception e) {
             log.error("❌ 创建team_task表失败: {}", e.getMessage(), e);
         }
     }
-    
+
     /**
      * 创建task_progress_report表
      */
@@ -657,7 +661,8 @@ public class DatabaseInitializer {
                     "report_content TEXT NOT NULL COMMENT '汇报内容', " +
                     "employee_name VARCHAR(100) NOT NULL COMMENT '员工姓名', " +
                     "create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
-                    "update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
+                    "update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', "
+                    +
                     "create_by VARCHAR(50) COMMENT '创建人', " +
                     "update_by VARCHAR(50) COMMENT '更新人', " +
                     "deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)', " +
@@ -667,7 +672,7 @@ public class DatabaseInitializer {
                     "INDEX idx_create_time (create_time), " +
                     "INDEX idx_deleted (deleted)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务进度汇报表'";
-            
+
             jdbcTemplate.execute(sql);
             log.info("✅ task_progress_report表创建成功");
         } catch (Exception e) {
@@ -675,4 +680,3 @@ public class DatabaseInitializer {
         }
     }
 }
-
