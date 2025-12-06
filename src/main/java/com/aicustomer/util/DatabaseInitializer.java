@@ -40,6 +40,8 @@ public class DatabaseInitializer {
             boolean teamTaskTableExists = checkTableExists("team_task");
             boolean taskProgressReportTableExists = checkTableExists("task_progress_report");
             boolean systemConfigTableExists = checkTableExists("system_config");
+            boolean knowledgeDocumentTableExists = checkTableExists("knowledge_document");
+            boolean faqQaTableExists = checkTableExists("faq_qa");
 
             if (!customerTableExists) {
                 log.info("检测到customer表不存在，开始初始化数据库表结构...");
@@ -82,6 +84,22 @@ public class DatabaseInitializer {
                 createTaskProgressReportTable();
             } else {
                 log.debug("task_progress_report表已存在，跳过创建");
+            }
+
+            // 检查并创建knowledge_document表（如果不存在）
+            if (!knowledgeDocumentTableExists) {
+                log.info("检测到knowledge_document表不存在，开始创建...");
+                createKnowledgeDocumentTable();
+            } else {
+                log.debug("knowledge_document表已存在，跳过创建");
+            }
+
+            // 检查并创建faq_qa表（如果不存在）
+            if (!faqQaTableExists) {
+                log.info("检测到faq_qa表不存在，开始创建...");
+                createFaqQaTable();
+            } else {
+                log.debug("faq_qa表已存在，跳过创建");
             }
         } catch (Exception e) {
             log.error("数据库初始化失败: {}", e.getMessage(), e);
@@ -447,43 +465,71 @@ public class DatabaseInitializer {
                             "业务大类与具体业务类型的映射关系", "业务类型" }
             };
 
+            // 知识库分类配置数据
+            String[][] knowledgeCategories = {
+                    { "knowledge.category.1", "专业术语", "STRING", "知识库文档分类 - 专业术语", "知识库标签" },
+                    { "knowledge.category.2", "法律法规", "STRING", "知识库文档分类 - 法律法规", "知识库标签" },
+                    { "knowledge.category.3", "技术规范", "STRING", "知识库文档分类 - 技术规范", "知识库标签" },
+                    { "knowledge.category.4", "操作指南", "STRING", "知识库文档分类 - 操作指南", "知识库标签" },
+                    { "knowledge.category.5", "案例分析", "STRING", "知识库文档分类 - 案例分析", "知识库标签" },
+                    { "knowledge.category.6", "其他", "STRING", "知识库文档分类 - 其他", "知识库标签" }
+            };
+
+            // FAQ分类配置数据
+            String[][] faqCategories = {
+                    { "faq.category.1", "名词解释", "STRING", "FAQ问答分类 - 名词解释", "知识库标签" },
+                    { "faq.category.2", "产品相关", "STRING", "FAQ问答分类 - 产品相关", "知识库标签" },
+                    { "faq.category.3", "服务相关", "STRING", "FAQ问答分类 - 服务相关", "知识库标签" },
+                    { "faq.category.4", "技术支持", "STRING", "FAQ问答分类 - 技术支持", "知识库标签" },
+                    { "faq.category.5", "商务合作", "STRING", "FAQ问答分类 - 商务合作", "知识库标签" },
+                    { "faq.category.6", "法规政策", "STRING", "FAQ问答分类 - 法规政策", "知识库标签" },
+                    { "faq.category.7", "其他问题", "STRING", "FAQ问答分类 - 其他问题", "知识库标签" }
+            };
+
             int insertedCount = 0;
             int skippedCount = 0;
 
-            for (String[] config : businessTypes) {
-                String configKey = config[0];
-                String configValue = config[1];
-                String configType = config[2];
-                String description = config[3];
-                String configGroup = config[4];
+            // 合并所有配置数据
+            java.util.List<String[][]> allConfigGroups = java.util.Arrays.asList(businessTypes, knowledgeCategories,
+                    faqCategories);
 
-                // 检查配置是否已存在
-                Integer exists = jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM system_config WHERE config_key = ? AND deleted = 0",
-                        Integer.class, configKey);
+            for (String[][] configGroup : allConfigGroups) {
+                for (String[] config : configGroup) {
+                    String configKey = config[0];
+                    String configValue = config[1];
+                    String configType = config[2];
+                    String description = config[3];
+                    String configGroupName = config[4];
 
-                if (exists == null || exists == 0) {
-                    // 插入新配置
-                    jdbcTemplate.update(
-                            "INSERT INTO system_config (config_key, config_value, config_type, description, config_group, create_time, update_time, deleted) "
-                                    +
-                                    "VALUES (?, ?, ?, ?, ?, NOW(), NOW(), 0)",
-                            configKey, configValue, configType, description, configGroup);
-                    insertedCount++;
-                } else {
-                    // 如果是业务类型配置，强制更新描述和值，确保新名称生效
-                    if (configKey.startsWith("business.")) {
+                    // 检查配置是否已存在
+                    Integer exists = jdbcTemplate.queryForObject(
+                            "SELECT COUNT(*) FROM system_config WHERE config_key = ? AND deleted = 0",
+                            Integer.class, configKey);
+
+                    if (exists == null || exists == 0) {
+                        // 插入新配置
                         jdbcTemplate.update(
-                                "UPDATE system_config SET config_value = ?, description = ?, update_time = NOW() WHERE config_key = ?",
-                                configValue, description, configKey);
-                        log.debug("更新已存在的业务配置: {}", configKey);
+                                "INSERT INTO system_config (config_key, config_value, config_type, description, config_group, create_time, update_time, deleted) "
+                                        +
+                                        "VALUES (?, ?, ?, ?, ?, NOW(), NOW(), 0)",
+                                configKey, configValue, configType, description, configGroupName);
+                        insertedCount++;
+                    } else {
+                        // 如果是业务类型配置，强制更新描述和值，确保新名称生效
+                        if (configKey.startsWith("business.") || configKey.startsWith("knowledge.")
+                                || configKey.startsWith("faq.")) {
+                            jdbcTemplate.update(
+                                    "UPDATE system_config SET config_value = ?, description = ?, update_time = NOW() WHERE config_key = ?",
+                                    configValue, description, configKey);
+                            log.debug("更新已存在的配置: {}", configKey);
+                        }
+                        skippedCount++;
                     }
-                    skippedCount++;
                 }
             }
 
             if (insertedCount > 0) {
-                log.info("✅ 已初始化 {} 条业务类型配置数据", insertedCount);
+                log.info("✅ 已初始化 {} 条系统配置数据（业务类型、知识库分类、FAQ分类）", insertedCount);
             }
             if (skippedCount > 0) {
                 log.debug("跳过 {} 条已存在的配置数据", skippedCount);
@@ -677,6 +723,80 @@ public class DatabaseInitializer {
             log.info("✅ task_progress_report表创建成功");
         } catch (Exception e) {
             log.error("❌ 创建task_progress_report表失败: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 创建knowledge_document表（知识库文档表）
+     */
+    private void createKnowledgeDocumentTable() {
+        try {
+            String sql = "CREATE TABLE IF NOT EXISTS knowledge_document (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID', " +
+                    "title VARCHAR(200) NOT NULL COMMENT '文档标题', " +
+                    "content LONGTEXT NOT NULL COMMENT '文档内容', " +
+                    "file_name VARCHAR(255) COMMENT '文件名', " +
+                    "file_type VARCHAR(50) COMMENT '文件类型(pdf/word/excel/txt)', " +
+                    "file_size BIGINT COMMENT '文件大小(字节)', " +
+                    "file_path VARCHAR(500) COMMENT '文件路径', " +
+                    "document_type VARCHAR(100) COMMENT '文档类型', " +
+                    "tags VARCHAR(500) COMMENT '标签(逗号分隔)', " +
+                    "category VARCHAR(100) COMMENT '分类', " +
+                    "summary TEXT COMMENT '摘要', " +
+                    "keywords VARCHAR(500) COMMENT '关键词', " +
+                    "view_count INT DEFAULT 0 COMMENT '查看次数', " +
+                    "download_count INT DEFAULT 0 COMMENT '下载次数', " +
+                    "status TINYINT DEFAULT 1 COMMENT '状态(1:启用 0:禁用)', " +
+                    "create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
+                    "update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
+                    "create_by VARCHAR(50) COMMENT '创建人', " +
+                    "update_by VARCHAR(50) COMMENT '更新人', " +
+                    "deleted TINYINT DEFAULT 0 COMMENT '删除标志', " +
+                    "INDEX idx_title (title), " +
+                    "INDEX idx_document_type (document_type), " +
+                    "INDEX idx_category (category), " +
+                    "INDEX idx_status (status), " +
+                    "INDEX idx_deleted (deleted), " +
+                    "FULLTEXT INDEX ft_content (content, title, summary)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='知识库文档表'";
+
+            jdbcTemplate.execute(sql);
+            log.info("✅ knowledge_document表创建成功");
+        } catch (Exception e) {
+            log.error("❌ 创建knowledge_document表失败: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 创建faq_qa表（FAQ问答表）
+     */
+    private void createFaqQaTable() {
+        try {
+            String sql = "CREATE TABLE IF NOT EXISTS faq_qa (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID', " +
+                    "question VARCHAR(500) NOT NULL COMMENT '问题', " +
+                    "answer TEXT NOT NULL COMMENT '答案', " +
+                    "keywords VARCHAR(500) COMMENT '关键词(逗号分隔)', " +
+                    "category VARCHAR(50) COMMENT '分类', " +
+                    "priority INT DEFAULT 0 COMMENT '优先级(数字越大优先级越高)', " +
+                    "hit_count INT DEFAULT 0 COMMENT '命中次数', " +
+                    "status TINYINT DEFAULT 1 COMMENT '状态(1:启用 0:禁用)', " +
+                    "create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
+                    "update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
+                    "create_by VARCHAR(50) COMMENT '创建人', " +
+                    "update_by VARCHAR(50) COMMENT '更新人', " +
+                    "deleted TINYINT DEFAULT 0 COMMENT '删除标志', " +
+                    "INDEX idx_category (category), " +
+                    "INDEX idx_priority (priority), " +
+                    "INDEX idx_status (status), " +
+                    "INDEX idx_deleted (deleted), " +
+                    "FULLTEXT INDEX ft_question (question, keywords)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='FAQ问答表'";
+
+            jdbcTemplate.execute(sql);
+            log.info("✅ faq_qa表创建成功");
+        } catch (Exception e) {
+            log.error("❌ 创建faq_qa表失败: {}", e.getMessage(), e);
         }
     }
 }
