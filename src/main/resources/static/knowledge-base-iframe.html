@@ -10,11 +10,14 @@
     <title>知识库管理</title>
     <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
     <style>
         body {
-            background: #f8f9fa;
-            margin: 0;
-            padding: 0;
+            background: transparent; /* Allows common.css background to show if set on iframe, but here common.css sets linear gradient on body */
+            /* However, typically iframes have their own body. Let's use the common.css class directly or set it to match */
+            /* If we want it to look integrated, we might want a transparent background if it's an overlay, or the same gradient */
+            /* But common.css body has: background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+            /* Let's remove the override that sets it to #f8f9fa */
         }
 
         .knowledge-container {
@@ -22,32 +25,56 @@
         }
 
         .header-section {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
         }
 
         .category-tree {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             height: calc(100vh - 200px);
             overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .document-list {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             height: calc(100vh - 200px);
             overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Custom Scrollbar for modern look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.25);
         }
 
         .category-item {
@@ -59,23 +86,32 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            color: #4a5568;
         }
 
         .category-item:hover {
-            background: #f8f9fa;
+            background: #f7fafc;
+            color: var(--primary-color);
         }
 
         .category-item.active {
-            background: #007bff;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
         }
 
         .document-item {
             padding: 1rem;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: background-color 0.2s;
+            border-radius: 8px;
+        }
+        
+        .document-item:hover {
+            background-color: #f8fafc;
         }
 
         .document-item:last-child {
@@ -89,11 +125,12 @@
         .document-title {
             font-weight: 600;
             margin-bottom: 0.25rem;
+            color: #2d3748;
         }
 
         .document-meta {
             font-size: 0.875rem;
-            color: #6c757d;
+            color: #718096;
         }
 
         .document-actions {
@@ -103,23 +140,23 @@
 
         /* 上传模态框样式 */
         .upload-area {
-            border: 2px dashed #007bff;
+            border: 2px dashed var(--primary-light);
             border-radius: 12px;
             padding: 3rem;
             text-align: center;
-            background: #f8f9fa;
+            background: #f8faff;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .upload-area:hover {
-            background: #e3f2fd;
-            border-color: #0056b3;
+            background: #ebf8ff;
+            border-color: var(--primary-color);
         }
 
         .upload-area.dragover {
-            background: #e3f2fd;
-            border-color: #0056b3;
+            background: #ebf8ff;
+            border-color: var(--primary-color);
             transform: scale(1.02);
         }
 
@@ -128,37 +165,39 @@
             flex-wrap: wrap;
             gap: 0.5rem;
             padding: 0.5rem;
-            border: 1px solid #dee2e6;
+            border: 1px solid #e2e8f0;
             border-radius: 0.375rem;
             background: #fff;
         }
 
         .type-item {
             padding: 0.5rem 1rem;
-            border: 1px solid #dee2e6;
+            border: 1px solid #e2e8f0;
             border-radius: 0.25rem;
             cursor: pointer;
             transition: all 0.2s ease;
-            background: #f8f9fa;
+            background: #f7fafc;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             font-size: 0.875rem;
+            color: #4a5568;
         }
 
         .type-item:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            color: var(--primary-color);
         }
 
         .type-item.active {
-            background: #0d6efd;
+            background: var(--primary-color);
             color: white;
-            border-color: #0d6efd;
+            border-color: var(--primary-color);
         }
 
         .level-2 {
-            border-top: 1px solid #dee2e6;
+            border-top: 1px solid #e2e8f0;
             margin-top: 0.5rem;
             padding-top: 0.5rem;
         }
@@ -166,14 +205,16 @@
         .selected-type-display {
             margin-top: 0.5rem;
             padding: 0.5rem 1rem;
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
             border-radius: 0.25rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            color: #2c5282;
         }
     </style>
+
 </head>
 
 <body>
@@ -195,25 +236,12 @@
                     <h6 class="mb-3">
                         <i class="bi bi-folder"></i> 文档分类
                     </h6>
-                    <div class="category-item active" data-category="all">
+                    <div class="category-item active" data-category="all" onclick="filterByCategory('all', this)">
                         <span><i class="bi bi-grid"></i> 全部文档</span>
-                        <span class="badge bg-primary">128</span>
+                        <span class="badge bg-primary" id="totalCount">0</span>
                     </div>
-                    <div class="category-item" data-category="product">
-                        <span><i class="bi bi-box"></i> 产品文档</span>
-                        <span class="badge bg-secondary">45</span>
-                    </div>
-                    <div class="category-item" data-category="technical">
-                        <span><i class="bi bi-gear"></i> 技术文档</span>
-                        <span class="badge bg-secondary">32</span>
-                    </div>
-                    <div class="category-item" data-category="sales">
-                        <span><i class="bi bi-graph-up"></i> 销售资料</span>
-                        <span class="badge bg-secondary">28</span>
-                    </div>
-                    <div class="category-item" data-category="training">
-                        <span><i class="bi bi-mortarboard"></i> 培训材料</span>
-                        <span class="badge bg-secondary">23</span>
+                    <div id="categoryList">
+                        <!-- 动态加载分类 -->
                     </div>
                 </div>
             </div>
@@ -312,106 +340,15 @@
                 <div class="modal-body">
                     <!-- 文件类型选择 -->
                     <div class="mb-3">
-                        <label class="form-label">文档类型 <span class="text-danger">*</span></label>
+                        <label class="form-label">文档分类 <span class="text-danger">*</span></label>
+                        <small class="text-muted d-block mb-2">可选择多个分类标签，分类可在"系统配置管理 → 知识库标签"中维护</small>
 
-                        <!-- 一级菜单 -->
-                        <div class="type-level">
-                            <div class="type-item" data-level1="product" onclick="showLevel2('product')">
-                                <i class="bi bi-box"></i> 产品相关
-                            </div>
-                            <div class="type-item" data-level1="technical" onclick="showLevel2('technical')">
-                                <i class="bi bi-gear"></i> 技术相关
-                            </div>
-                            <div class="type-item" data-level1="sales" onclick="showLevel2('sales')">
-                                <i class="bi bi-graph-up"></i> 销售相关
-                            </div>
-                            <div class="type-item" data-level1="training" onclick="showLevel2('training')">
-                                <i class="bi bi-mortarboard"></i> 培训相关
-                            </div>
-                            <div class="type-item" data-level1="business" onclick="showLevel2('business')">
-                                <i class="bi bi-briefcase"></i> 业务相关
-                            </div>
-                            <div class="type-item" data-level1="other" onclick="showLevel2('other')">
-                                <i class="bi bi-three-dots"></i> 其他
-                            </div>
+                        <!-- 动态加载的标签选择区域 -->
+                        <div class="type-level" id="categoryTagsContainer">
+                            <!-- 动态加载分类标签 -->
                         </div>
 
-                        <!-- 二级菜单 -->
-                        <div class="type-level level-2" id="level2Menu" style="display: none;">
-                            <!-- 产品相关 -->
-                            <div class="level2-group" data-group="product" style="display: none;">
-                                <div class="type-item" data-type="product-manual"
-                                    onclick="selectType('product-manual', '产品手册')">
-                                    <i class="bi bi-book"></i> 产品手册
-                                </div>
-                                <div class="type-item" data-type="product-spec"
-                                    onclick="selectType('product-spec', '产品规格')">
-                                    <i class="bi bi-clipboard-data"></i> 产品规格
-                                </div>
-                                <div class="type-item" data-type="product-price"
-                                    onclick="selectType('product-price', '产品价格')">
-                                    <i class="bi bi-tag"></i> 产品价格
-                                </div>
-                            </div>
-
-                            <!-- 技术相关 -->
-                            <div class="level2-group" data-group="technical" style="display: none;">
-                                <div class="type-item" data-type="technical-guide"
-                                    onclick="selectType('technical-guide', '技术指南')">
-                                    <i class="bi bi-book"></i> 技术指南
-                                </div>
-                                <div class="type-item" data-type="api-doc" onclick="selectType('api-doc', 'API文档')">
-                                    <i class="bi bi-code"></i> API文档
-                                </div>
-                            </div>
-
-                            <!-- 销售相关 -->
-                            <div class="level2-group" data-group="sales" style="display: none;">
-                                <div class="type-item" data-type="sales-material"
-                                    onclick="selectType('sales-material', '销售资料')">
-                                    <i class="bi bi-file-earmark-text"></i> 销售资料
-                                </div>
-                                <div class="type-item" data-type="case-study"
-                                    onclick="selectType('case-study', '案例研究')">
-                                    <i class="bi bi-journal-text"></i> 案例研究
-                                </div>
-                            </div>
-
-                            <!-- 培训相关 -->
-                            <div class="level2-group" data-group="training" style="display: none;">
-                                <div class="type-item" data-type="training-manual"
-                                    onclick="selectType('training-manual', '培训手册')">
-                                    <i class="bi bi-book"></i> 培训手册
-                                </div>
-                                <div class="type-item" data-type="tutorial" onclick="selectType('tutorial', '教程文档')">
-                                    <i class="bi bi-journal-text"></i> 教程文档
-                                </div>
-                            </div>
-
-                            <!-- 业务相关 -->
-                            <div class="level2-group" data-group="business" style="display: none;">
-                                <div class="type-item" data-type="business-plan"
-                                    onclick="selectType('business-plan', '商业计划')">
-                                    <i class="bi bi-briefcase"></i> 商业计划
-                                </div>
-                                <div class="type-item" data-type="market-report"
-                                    onclick="selectType('market-report', '市场报告')">
-                                    <i class="bi bi-graph-up"></i> 市场报告
-                                </div>
-                            </div>
-
-                            <!-- 其他 -->
-                            <div class="level2-group" data-group="other" style="display: none;">
-                                <div class="type-item" data-type="meeting" onclick="selectType('meeting', '会议记录')">
-                                    <i class="bi bi-people"></i> 会议记录
-                                </div>
-                                <div class="type-item" data-type="notice" onclick="selectType('notice', '通知公告')">
-                                    <i class="bi bi-megaphone"></i> 通知公告
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 选中的类型显示 -->
+                        <!-- 选中的标签显示 -->
                         <div class="selected-type-display" id="selectedTypeDisplay" style="display: none;">
                             <span id="selectedTypeText"></span>
                             <button type="button" class="btn btn-sm btn-outline-secondary"
@@ -450,6 +387,217 @@
         let selectedType = '';
         let selectedTypeText = '';
         let uploadModalInstance = null;
+        let currentPage = 1;
+        let currentCategory = 'all';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCategories();
+            loadDocumentList();
+        });
+
+        // 加载分类列表（从系统配置获取）
+        function loadCategories() {
+            fetch('/api/system-config/knowledge-categories')
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200 && res.data && res.data.length > 0) {
+                        renderCategories(res.data);
+                    } else {
+                        // 使用默认分类
+                        renderCategories(['专业术语', '法律法规', '技术规范', '操作指南', '案例分析', '其他']);
+                    }
+                })
+                .catch(err => {
+                    console.error('加载分类失败:', err);
+                    renderCategories(['专业术语', '法律法规', '技术规范', '操作指南', '案例分析', '其他']);
+                });
+        }
+
+        // 渲染分类列表
+        function renderCategories(categories) {
+            const categoryList = document.getElementById('categoryList');
+            const categoryTagsContainer = document.getElementById('categoryTagsContainer');
+            const iconMap = {
+                '专业术语': 'bi-book',
+                '法律法规': 'bi-file-earmark-text',
+                '技术规范': 'bi-gear',
+                '操作指南': 'bi-list-check',
+                '案例分析': 'bi-lightbulb',
+                '其他': 'bi-three-dots'
+            };
+
+            let sidebarHtml = '';
+            let tagsHtml = '';
+
+            categories.forEach(category => {
+                const icon = iconMap[category] || 'bi-tag';
+                sidebarHtml += `
+                    <div class="category-item" data-category="${category}" onclick="filterByCategory('${category}', this)">
+                        <span><i class="bi ${icon}"></i> ${category}</span>
+                        <span class="badge bg-secondary">0</span>
+                    </div>
+                `;
+                // 上传模态框中的多标签选择器
+                tagsHtml += `
+                    <div class="type-item" data-type="${category}" onclick="toggleCategoryTag('${category}', this)">
+                        <i class="bi ${icon}"></i> ${category}
+                    </div>
+                `;
+            });
+
+            categoryList.innerHTML = sidebarHtml;
+            if (categoryTagsContainer) {
+                categoryTagsContainer.innerHTML = tagsHtml;
+            }
+        }
+
+        // 选中的分类标签列表
+        let selectedCategories = [];
+
+        // 切换分类标签选中状态
+        function toggleCategoryTag(category, element) {
+            const index = selectedCategories.indexOf(category);
+            if (index > -1) {
+                // 取消选中
+                selectedCategories.splice(index, 1);
+                element.classList.remove('active');
+            } else {
+                // 选中
+                selectedCategories.push(category);
+                element.classList.add('active');
+            }
+            updateSelectedDisplay();
+        }
+
+        // 更新选中显示
+        function updateSelectedDisplay() {
+            const displayDiv = document.getElementById('selectedTypeDisplay');
+            const textSpan = document.getElementById('selectedTypeText');
+            const hiddenInput = document.getElementById('documentType');
+
+            if (selectedCategories.length > 0) {
+                const badges = selectedCategories.map(c => `<span class="badge bg-primary me-1">${c}</span>`).join('');
+                textSpan.innerHTML = `<i class="bi bi-check-circle"></i> 已选择：${badges}`;
+                displayDiv.style.display = 'flex';
+                hiddenInput.value = selectedCategories.join(',');
+            } else {
+                displayDiv.style.display = 'none';
+                hiddenInput.value = '';
+            }
+        }
+
+        // 清除分类选择
+        function clearTypeSelection() {
+            selectedCategories = [];
+            document.querySelectorAll('#categoryTagsContainer .type-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            updateSelectedDisplay();
+        }
+
+        // 按分类筛选
+        function filterByCategory(category, element) {
+            currentCategory = category;
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            if (element) {
+                element.classList.add('active');
+            } else {
+                document.querySelector(`[data-category="${category}"]`).classList.add('active');
+            }
+            loadDocumentList(1);
+        }
+
+        // 加载文档列表
+        function loadDocumentList(page = 1) {
+            currentPage = page;
+            const container = document.querySelector('.document-list');
+            const listContainer = container.querySelector('.document-items-container') || createListContainer(container);
+
+            // 获取当前选中的分类
+            const activeCategory = document.querySelector('.category-item.active');
+            const category = activeCategory ? activeCategory.dataset.category : 'all';
+
+            let url = `/api/knowledge-doc/list?pageNum=${page}&pageSize=10`;
+            if (category && category !== 'all') {
+                url += `&category=${category}`;
+            }
+
+            // 搜索关键词
+            const searchInput = document.querySelector('input[placeholder="搜索文档..."]');
+            if (searchInput && searchInput.value) {
+                url += `&keyword=${encodeURIComponent(searchInput.value)}`;
+            }
+
+            listContainer.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><div class="mt-2">正在加载...</div></div>';
+
+            fetch(url)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        renderDocumentList(res.data.list, listContainer);
+                        // 这里可以添加分页渲染逻辑
+                    } else {
+                        listContainer.innerHTML = `<div class="text-center text-danger py-5">加载失败: ${res.message}</div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    listContainer.innerHTML = `<div class="text-center text-danger py-5">网络错误</div>`;
+                });
+        }
+
+        function createListContainer(container) {
+            const div = document.createElement('div');
+            div.className = 'document-items-container';
+            // 插入到搜索栏之后
+            const searchBar = container.querySelector('.d-flex.justify-content-between');
+            if (searchBar && searchBar.nextSibling) {
+                container.insertBefore(div, searchBar.nextSibling);
+            } else {
+                container.appendChild(div);
+            }
+            // 移除旧的静态项目
+            const oldItems = container.querySelectorAll('.document-item');
+            oldItems.forEach(item => item.remove());
+            return div;
+        }
+
+        function renderDocumentList(list, container) {
+            if (!list || list.length === 0) {
+                container.innerHTML = `<div class="text-center text-muted py-5">暂无文档</div>`;
+                return;
+            }
+
+            let html = '';
+            list.forEach(doc => {
+                html += `
+                    <div class="document-item">
+                        <div class="document-info">
+                            <div class="document-title">${doc.title || doc.fileName}</div>
+                            <div class="document-meta">
+                                <i class="bi ${getFileIcon(doc.fileType)}"></i> 
+                                ${doc.fileType.toUpperCase()} · ${formatFileSize(doc.fileSize)} · ${formatDate(doc.createTime)}
+                                <span class="ms-2 badge bg-light text-dark border">${getCategoryName(doc.category)}</span>
+                            </div>
+                        </div>
+                        <div class="document-actions">
+                            <button class="btn btn-outline-primary btn-sm" onclick="viewDocument(${doc.id})" title="查看详情">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="downloadDocument(${doc.id}, '${doc.fileName}')" title="下载">
+                                <i class="bi bi-download"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteDocument(${doc.id})" title="删除">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
 
         // 显示上传模态框
         function showUploadModal() {
@@ -504,11 +652,21 @@
         function clearTypeSelection() {
             selectedType = '';
             selectedTypeText = '';
-            document.getElementById('documentType').value = '';
-            document.getElementById('selectedTypeDisplay').style.display = 'none';
-            document.getElementById('level2Menu').style.display = 'none';
+            selectedCategories = [];
+
+            const documentType = document.getElementById('documentType');
+            if (documentType) documentType.value = '';
+
+            const displayDiv = document.getElementById('selectedTypeDisplay');
+            if (displayDiv) displayDiv.style.display = 'none';
+
+            const level2Menu = document.getElementById('level2Menu');
+            if (level2Menu) level2Menu.style.display = 'none';
 
             document.querySelectorAll('.type-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelectorAll('#categoryTagsContainer .type-item').forEach(item => {
                 item.classList.remove('active');
             });
         }
@@ -541,8 +699,9 @@
         });
 
         function handleFiles(files) {
-            if (!selectedType) {
-                alert('请先选择文档类型！');
+            const documentType = document.getElementById('documentType').value;
+            if (!documentType || selectedCategories.length === 0) {
+                alert('请先选择至少一个文档分类标签！');
                 fileInput.value = '';
                 return;
             }
@@ -551,18 +710,83 @@
                 return;
             }
 
-            console.log('上传文件:', files);
-            console.log('文档类型:', selectedType);
+            // 上传逻辑
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('file', files[i]);
+            }
+            formData.append('category', documentType);
+            formData.append('documentType', documentType);
+            formData.append('tags', document.getElementById('documentTags').value);
 
-            alert(`成功上传 ${files.length} 个文件！\n文档类型：${selectedTypeText}`);
+            // 显示上传中
+            const originalText = uploadArea.innerHTML;
+            uploadArea.innerHTML = '<div class="spinner-border text-primary"></div><div class="mt-2">正在上传...</div>';
 
-            // 关闭模态框
-            uploadModalInstance.hide();
+            fetch('/api/knowledge-doc/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        alert('上传成功');
+                        uploadModalInstance.hide();
+                        loadDocumentList(1);
+                        // 重置表单
+                        fileInput.value = '';
+                        clearTypeSelection();
+                        document.getElementById('documentTags').value = '';
+                    } else {
+                        alert('上传失败: ' + res.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('上传出错');
+                })
+                .finally(() => {
+                    uploadArea.innerHTML = originalText;
+                });
+        }
 
-            // 清空表单
-            fileInput.value = '';
-            clearTypeSelection();
-            document.getElementById('documentTags').value = '';
+        // 删除文档
+        function deleteDocument(id) {
+            if (confirm('确定要删除这个文档吗？')) {
+                fetch(`/api/knowledge-doc/${id}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.code === 200) {
+                            alert('删除成功');
+                            loadDocumentList(currentPage);
+                        } else {
+                            alert('删除失败: ' + res.message);
+                        }
+                    });
+            }
+        }
+
+        // 下载文档
+        function downloadDocument(id, fileName) {
+            // 增加下载次数
+            fetch(`/api/knowledge-doc/${id}/download`, { method: 'POST' });
+            // 实际下载逻辑需要后端提供下载接口，这里暂时模拟
+            alert('开始下载: ' + fileName);
+            // window.location.href = `/api/knowledge-doc/${id}/file`;
+        }
+
+        // 查看文档
+        function viewDocument(id) {
+            fetch(`/api/knowledge-doc/${id}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        const doc = res.data;
+                        alert(`文档详情:\n标题: ${doc.title}\n摘要: ${doc.summary || '无'}`);
+                    }
+                });
         }
 
         // 分类切换
@@ -570,8 +794,51 @@
             item.addEventListener('click', function () {
                 document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
+                loadDocumentList(1);
             });
         });
+
+        // 搜索功能
+        document.querySelector('.btn-outline-primary').addEventListener('click', () => loadDocumentList(1));
+        document.querySelector('input[placeholder="搜索文档..."]').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') loadDocumentList(1);
+        });
+
+        // 辅助函数
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            return new Date(dateStr).toLocaleDateString();
+        }
+
+        function getFileIcon(fileType) {
+            if (!fileType) return 'bi-file-earmark';
+            if (fileType.includes('pdf')) return 'bi-file-earmark-pdf text-danger';
+            if (fileType.includes('doc')) return 'bi-file-earmark-word text-primary';
+            if (fileType.includes('xls')) return 'bi-file-earmark-excel text-success';
+            if (fileType.includes('ppt')) return 'bi-file-earmark-ppt text-warning';
+            if (fileType.includes('txt')) return 'bi-file-text text-secondary';
+            return 'bi-file-earmark';
+        }
+
+        function getCategoryName(category) {
+            const map = {
+                'product': '产品文档',
+                'technical': '技术文档',
+                'sales': '销售资料',
+                'training': '培训材料',
+                'business': '业务相关',
+                'other': '其他'
+            };
+            return map[category] || '其他';
+        }
     </script>
 </body>
 

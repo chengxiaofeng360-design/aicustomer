@@ -43,6 +43,12 @@ spring:
       max-request-size: 100MB
       enabled: true
 
+# 文件存储配置
+file:
+  upload:
+    # Mac开发环境使用相对路径，Linux部署时改为绝对路径如: /data/uploads/knowledge
+    path: ${FILE_UPLOAD_PATH:uploads/knowledge}
+
   # Jackson配置
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -142,4 +148,13 @@ ai-customer:
     name: AI客户管理系统
     version: 1.0.0
     author: AI Customer Management Team
+
+# 向量搜索配置（免费方案）
+vector:
+  elasticsearch:
+    url: http://localhost:9200
+  embedding:
+    url: http://localhost:5001
+  index:
+    name: knowledge_docs
 

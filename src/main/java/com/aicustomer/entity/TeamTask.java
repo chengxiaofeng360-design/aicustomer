@@ -37,6 +37,16 @@ public class TeamTask extends BaseEntity {
     private Integer taskType;
 
     /**
+     * 关联客户ID
+     */
+    private Long customerId;
+
+    /**
+     * 关联客户名称
+     */
+    private String customerName;
+
+    /**
      * 负责人ID
      */
     private Long assigneeId;

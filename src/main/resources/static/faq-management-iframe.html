@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>FAQ管理</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .knowledge-container {
+            padding: 1.5rem;
+        }
+
+        .header-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-tree {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .faq-list {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .category-item {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .category-item:hover {
+            background: #f8f9fa;
+        }
+
+        .category-item.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .faq-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+        .faq-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .faq-answer {
+            color: #666;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .faq-meta {
+            font-size: 0.875rem;
+            color: #999;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .faq-actions {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="knowledge-container">
+        <!-- 头部操作栏 -->
+        <div class="header-section">
+            <h5 class="mb-0">
+                <i class="bi bi-question-circle"></i> FAQ问答管理
+            </h5>
+            <button class="btn btn-primary" onclick="showAddModal()">
+                <i class="bi bi-plus-lg"></i> 新增问答
+            </button>
+        </div>
+
+        <div class="row">
+            <!-- 分类 -->
+            <div class="col-md-3">
+                <div class="category-tree">
+                    <h6 class="mb-3">
+                        <i class="bi bi-folder"></i> 问题分类
+                    </h6>
+                    <div class="category-item active" data-category="all" onclick="filterByCategory('all')">
+                        <span><i class="bi bi-grid"></i> 全部问题</span>
+                    </div>
+                    <div id="categoryList">
+                        <!-- 动态加载分类 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ列表 -->
+            <div class="col-md-9">
+                <div class="faq-list">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">
+                            <i class="bi bi-list-ul"></i> 问答列表
+                        </h6>
+                        <div class="d-flex gap-2">
+                            <input type="text" class="form-control form-control-sm" id="searchInput"
+                                placeholder="搜索问题或关键词..." style="width: 250px;">
+                            <button class="btn btn-outline-primary btn-sm" onclick="searchFaq()">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="faqListContainer">
+                        <!-- 动态加载FAQ列表 -->
+                        <div class="text-center py-5 text-muted">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <div class="mt-2">正在加载数据...</div>
+                        </div>
+                    </div>
+
+                    <!-- 分页 -->
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center" id="pagination">
+                            <!-- 动态加载分页 -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增/编辑模态框 -->
+    <div class="modal fade" id="faqModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">
+                        <i class="bi bi-plus-lg"></i> 新增问答
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="faqForm">
+                        <input type="hidden" id="faqId">
+                        <div class="mb-3">
+                            <label class="form-label">问题 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="question" required placeholder="请输入常见问题">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">答案 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="answer" rows="5" required
+                                placeholder="请输入问题的标准答案"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">分类</label>
+                                <input type="text" class="form-control" id="category" placeholder="输入分类名称"
+                                    list="categoryDatalist">
+                                <datalist id="categoryDatalist">
+                                    <!-- 动态加载分类选项 -->
+                                </datalist>
+                                <small class="text-muted">可以输入新分类或从现有分类中选择</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">优先级</label>
+                                <input type="number" class="form-control" id="priority" value="0"
+                                    placeholder="数字越大优先级越高">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">关键词</label>
+                            <input type="text" class="form-control" id="keywords" placeholder="多个关键词用逗号分隔">
+                            <small class="text-muted">设置关键词有助于提高搜索命中率</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveFaq()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        let faqModalInstance = null;
+        let currentPage = 1;
+        let currentCategory = '';
+        let currentKeyword = '';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCategories();
+            loadFaqList();
+        });
+
+        // 加载分类列表（从系统配置获取）
+        function loadCategories() {
+            fetch('/api/system-config/faq-categories')
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        renderCategories(res.data);
+                    } else {
+                        // 如果系统配置没有，回退到从FAQ数据库获取
+                        fetch('/api/faq/categories')
+                            .then(response => response.json())
+                            .then(res2 => {
+                                if (res2.code === 200) {
+                                    renderCategories(res2.data);
+                                }
+                            });
+                    }
+                })
+                .catch(err => {
+                    console.error('加载分类失败:', err);
+                });
+        }
+
+        // 渲染分类列表
+        function renderCategories(categories) {
+            const categoryList = document.getElementById('categoryList');
+            const categoryDatalist = document.getElementById('categoryDatalist');
+
+            let html = '';
+            let datalistHtml = '';
+
+            categories.forEach(category => {
+                const icon = getCategoryIcon(category);
+                const name = category;
+                html += `
+                    <div class="category-item" data-category="${category}" onclick="filterByCategory('${category}')">
+                        <span><i class="bi ${icon}"></i> ${name}</span>
+                    </div>
+                `;
+                datalistHtml += `<option value="${category}">`;
+            });
+
+            categoryList.innerHTML = html;
+            categoryDatalist.innerHTML = datalistHtml;
+        }
+
+        // 获取分类图标
+        function getCategoryIcon(category) {
+            const iconMap = {
+                '产品相关': 'bi-box',
+                '服务相关': 'bi-headset',
+                '技术支持': 'bi-gear',
+                '商务合作': 'bi-briefcase',
+                '名词解释': 'bi-book',
+                '其他问题': 'bi-three-dots'
+            };
+            return iconMap[category] || 'bi-tag';
+        }
+
+        // 加载FAQ列表
+        function loadFaqList(page = 1) {
+            currentPage = page;
+            const container = document.getElementById('faqListContainer');
+
+            let url = `/api/faq/list?pageNum=${page}&pageSize=10`;
+            if (currentCategory && currentCategory !== 'all') {
+                url += `&category=${currentCategory}`;
+            }
+            if (currentKeyword) {
+                url += `&keyword=${encodeURIComponent(currentKeyword)}`;
+            }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        renderFaqList(res.data.list);
+                        renderPagination(res.data);
+                    } else {
+                        container.innerHTML = `<div class="text-center text-danger py-5">加载失败: ${res.message}</div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    container.innerHTML = `<div class="text-center text-danger py-5">网络错误</div>`;
+                });
+        }
+
+        // 渲染列表
+        function renderFaqList(list) {
+            const container = document.getElementById('faqListContainer');
+            if (!list || list.length === 0) {
+                container.innerHTML = `<div class="text-center text-muted py-5">暂无数据</div>`;
+                return;
+            }
+
+            let html = '';
+            list.forEach(item => {
+                html += `
+                    <div class="faq-item">
+                        <div class="faq-question">${item.question}</div>
+                        <div class="faq-answer">${item.answer}</div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div class="faq-meta">
+                                <span class="badge bg-light text-dark border">${getCategoryName(item.category)}</span>
+                                <span><i class="bi bi-eye"></i> 命中: ${item.hitCount || 0}</span>
+                                <span><i class="bi bi-sort-numeric-down"></i> 优先级: ${item.priority || 0}</span>
+                                <span><i class="bi bi-clock"></i> ${formatDate(item.updateTime)}</span>
+                            </div>
+                            <div class="faq-actions">
+                                <button class="btn btn-outline-primary btn-sm" onclick="editFaq(${item.id})">
+                                    <i class="bi bi-pencil"></i> 编辑
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteFaq(${item.id})">
+                                    <i class="bi bi-trash"></i> 删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // 渲染分页
+        function renderPagination(data) {
+            const pagination = document.getElementById('pagination');
+            let html = '';
+
+            // 上一页
+            html += `<li class="page-item ${data.pageNum === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="loadFaqList(${data.pageNum - 1})">上一页</a>
+                    </li>`;
+
+            // 页码
+            for (let i = 1; i <= data.pages; i++) {
+                if (i === data.pageNum) {
+                    html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+                } else {
+                    // 简单的分页逻辑，只显示当前页附近的页码
+                    if (i === 1 || i === data.pages || (i >= data.pageNum - 2 && i <= data.pageNum + 2)) {
+                        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadFaqList(${i})">${i}</a></li>`;
+                    } else if (i === data.pageNum - 3 || i === data.pageNum + 3) {
+                        html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    }
+                }
+            }
+
+            // 下一页
+            html += `<li class="page-item ${data.pageNum === data.pages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="loadFaqList(${data.pageNum + 1})">下一页</a>
+                    </li>`;
+
+            pagination.innerHTML = html;
+        }
+
+        // 显示新增模态框
+        function showAddModal() {
+            document.getElementById('faqForm').reset();
+            document.getElementById('faqId').value = '';
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-plus-lg"></i> 新增问答';
+
+            const modal = document.getElementById('faqModal');
+            faqModalInstance = new bootstrap.Modal(modal);
+            faqModalInstance.show();
+        }
+
+        // 编辑FAQ
+        function editFaq(id) {
+            fetch(`/api/faq/${id}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        const data = res.data;
+                        document.getElementById('faqId').value = data.id;
+                        document.getElementById('question').value = data.question;
+                        document.getElementById('answer').value = data.answer;
+                        document.getElementById('category').value = data.category;
+                        document.getElementById('priority').value = data.priority;
+                        document.getElementById('keywords').value = data.keywords;
+
+                        document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil"></i> 编辑问答';
+
+                        const modal = document.getElementById('faqModal');
+                        faqModalInstance = new bootstrap.Modal(modal);
+                        faqModalInstance.show();
+                    }
+                });
+        }
+
+        // 保存FAQ
+        function saveFaq() {
+            const id = document.getElementById('faqId').value;
+            const data = {
+                question: document.getElementById('question').value,
+                answer: document.getElementById('answer').value,
+                category: document.getElementById('category').value,
+                priority: document.getElementById('priority').value,
+                keywords: document.getElementById('keywords').value
+            };
+
+            if (!data.question || !data.answer) {
+                alert('请填写完整的问题和答案');
+                return;
+            }
+
+            const method = id ? 'PUT' : 'POST';
+            if (id) data.id = id;
+
+            fetch('/api/faq', {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        alert('保存成功');
+                        faqModalInstance.hide();
+                        loadFaqList(currentPage);
+                    } else {
+                        alert('保存失败: ' + res.message);
+                    }
+                });
+        }
+
+        // 删除FAQ
+        function deleteFaq(id) {
+            if (confirm('确定要删除这条问答吗？')) {
+                fetch(`/api/faq/${id}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.code === 200) {
+                            alert('删除成功');
+                            loadFaqList(currentPage);
+                        } else {
+                            alert('删除失败: ' + res.message);
+                        }
+                    });
+            }
+        }
+
+        // 搜索
+        function searchFaq() {
+            currentKeyword = document.getElementById('searchInput').value;
+            loadFaqList(1);
+        }
+
+        // 分类筛选
+        function filterByCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-category="${category}"]`).classList.add('active');
+            loadFaqList(1);
+        }
+
+        // 辅助函数
+        function getCategoryName(category) {
+            return category || '未分类';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+    </script>
+</body>
+
+</html>
