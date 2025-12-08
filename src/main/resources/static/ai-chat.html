@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,100 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="/css/common.css" rel="stylesheet">
     <link href="/css/ai-chat.css" rel="stylesheet">
+    <!-- Markdown支持 -->
+    <link href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css" rel="stylesheet">
+    <style>
+        /* Markdown样式优化 */
+        .message-text h1,
+        .message-text h2,
+        .message-text h3,
+        .message-text h4 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .message-text h1 {
+            font-size: 1.5rem;
+        }
+
+        .message-text h2 {
+            font-size: 1.3rem;
+        }
+
+        .message-text h3 {
+            font-size: 1.1rem;
+        }
+
+        .message-text p {
+            margin-bottom: 0.8rem;
+        }
+
+        .message-text ul,
+        .message-text ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .message-text li {
+            margin-bottom: 0.3rem;
+        }
+
+        .message-text pre {
+            background: #f6f8fa;
+            border-radius: 6px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
+        .message-text code {
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.9em;
+            background: rgba(175, 184, 193, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+        }
+
+        .message-text pre code {
+            background: transparent;
+            padding: 0;
+            font-size: 0.9em;
+            color: inherit;
+        }
+
+        .message-text table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        .message-text th,
+        .message-text td {
+            border: 1px solid #d0d7de;
+            padding: 6px 13px;
+        }
+
+        .message-text th {
+            background-color: #f6f8fa;
+            font-weight: 600;
+        }
+
+        .message-text tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+
+        .message-text blockquote {
+            border-left: 4px solid #d0d7de;
+            color: #57606a;
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
+
 <body>
     <div class="main-container">
         <!-- 页面头部 -->
@@ -23,7 +117,7 @@
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
-        
+
         <!-- 聊天主容器 -->
         <div class="chat-main-container">
             <!-- 侧边栏 -->
@@ -45,7 +139,7 @@
                         <span class="status-text">在线服务中</span>
                     </div>
                 </div>
-                
+
                 <!-- 当前对话 -->
                 <div class="current-chat-section">
                     <h6 class="text-white mb-3">
@@ -61,7 +155,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 对话历史 -->
                 <div class="chat-history">
                     <h6 class="text-white mb-3">
@@ -71,9 +165,9 @@
                         <div class="history-empty text-white-50">正在加载会话...</div>
                     </div>
                 </div>
-                
+
             </div>
-            
+
             <!-- 主聊天区域 -->
             <div class="chat-main-area">
                 <!-- 消息容器 -->
@@ -120,7 +214,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 输入区域 -->
                 <div class="chat-input-area">
                     <div class="input-wrapper">
@@ -128,27 +222,22 @@
                         <div class="input-toolbar">
                             <div class="toolbar-group">
                                 <button class="toolbar-btn" onclick="attachFile()" title="上传文件">
-                            <i class="bi bi-paperclip"></i>
+                                    <i class="bi bi-paperclip"></i>
                                     <span class="toolbar-label">文件</span>
-                        </button>
+                                </button>
                                 <button class="toolbar-btn" onclick="startVoiceInput()" title="语音输入" id="voiceInputBtn">
-                            <i class="bi bi-mic"></i>
+                                    <i class="bi bi-mic"></i>
                                     <span class="toolbar-label">语音</span>
-                        </button>
+                                </button>
                             </div>
                         </div>
-                        
+
                         <!-- 中间输入框 -->
                         <div class="input-main">
                             <div class="input-box">
-                        <textarea 
-                            class="form-control chat-input" 
-                            id="messageInput" 
-                                    placeholder="请输入您的问题或使用语音输入..." 
-                            rows="1"
-                            onkeypress="handleKeyPress(event)"
-                            oninput="autoResize(this)"
-                        ></textarea>
+                                <textarea class="form-control chat-input" id="messageInput"
+                                    placeholder="请输入您的问题或使用语音输入..." rows="1" onkeypress="handleKeyPress(event)"
+                                    oninput="autoResize(this)"></textarea>
                                 <div class="input-actions-inline">
                                     <button class="btn btn-outline-secondary btn-sm" onclick="clearInput()" title="清空">
                                         <i class="bi bi-x"></i>
@@ -156,16 +245,16 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- 右侧发送按钮 -->
                         <div class="input-send">
                             <button class="btn btn-primary send-btn" onclick="sendMessage()" id="sendBtn" title="发送消息">
-                            <i class="bi bi-send"></i>
+                                <i class="bi bi-send"></i>
                                 <span class="send-label">发送</span>
-                        </button>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                    
+
                     <!-- 底部状态栏 -->
                     <div class="input-status">
                         <div class="status-right">
@@ -178,6 +267,9 @@
     </div>
 
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/ai-chat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+    <script src="/js/ai-chat.js"></script>
 </body>
+
 </html>

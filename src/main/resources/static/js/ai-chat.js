@@ -12,7 +12,7 @@ let isLoadingMessages = false;
 function toggleSidebar() {
     const sidebar = document.getElementById('chatSidebar');
     const toggleIcon = document.getElementById('sidebarToggleIcon');
-    
+
     if (sidebar.classList.contains('collapsed')) {
         sidebar.classList.remove('collapsed');
         toggleIcon.className = 'bi bi-chevron-left';
@@ -23,12 +23,12 @@ function toggleSidebar() {
 }
 
 // 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const input = document.getElementById('messageInput');
     if (input) {
         input.focus();
     }
-    
+
     initCurrentUser();
     initializeChat();
     initKeyboardShortcuts();
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 初始化键盘快捷键
 function initKeyboardShortcuts() {
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener('keydown', function (event) {
         // Ctrl/Cmd + K: 聚焦到输入框
         if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
             event.preventDefault();
@@ -46,14 +46,14 @@ function initKeyboardShortcuts() {
                 input.focus();
             }
         }
-        
+
         // Esc: 关闭弹窗和模态框
         if (event.key === 'Escape') {
             const imageModal = document.querySelector('.image-modal');
             if (imageModal) {
                 imageModal.remove();
             }
-            
+
             // 取消语音识别结果
             const voiceResult = document.getElementById('voiceRecognitionResult');
             if (voiceResult) {
@@ -156,18 +156,18 @@ function renderHistoryState(message, isError = false) {
 function renderSessionList(activeId = activeSessionId) {
     const historyList = document.getElementById('historyList');
     if (!historyList) return;
-    
+
     if (!sessionList || sessionList.length === 0) {
         renderHistoryState('暂无会话记录', false);
         return;
     }
-    
+
     const sortedSessions = [...sessionList].sort((a, b) => {
         const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
         const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
         return timeB - timeA;
     });
-    
+
     historyList.innerHTML = '';
     sortedSessions.forEach(session => {
         const item = document.createElement('div');
@@ -176,10 +176,10 @@ function renderSessionList(activeId = activeSessionId) {
             item.classList.add('active');
         }
         item.dataset.sessionId = session.sessionId;
-        
+
         const title = session.firstUserMessage || '与AI助手的对话';
         const meta = formatSessionMeta(session);
-        
+
         item.innerHTML = `
             <i class="bi bi-chat-dots"></i>
             <div class="history-info">
@@ -187,7 +187,7 @@ function renderSessionList(activeId = activeSessionId) {
                 <span class="history-meta">${escapeHtml(meta)}</span>
             </div>
         `;
-        
+
         item.addEventListener('click', () => selectSession(session.sessionId));
         historyList.appendChild(item);
     });
@@ -391,17 +391,17 @@ function initializeChat() {
 function handlePresetMessage() {
     const preset = localStorage.getItem('aiChatPreset');
     if (!preset) return;
-    
+
     const input = document.getElementById('messageInput');
     if (!input) {
         setTimeout(handlePresetMessage, 200);
         return;
     }
-    
+
     input.value = preset;
     autoResize(input);
     localStorage.removeItem('aiChatPreset');
-    
+
     // 轻微延迟后自动发送，确保界面就绪
     setTimeout(() => {
         sendMessage();
@@ -412,16 +412,16 @@ function handlePresetMessage() {
 async function sendMessage() {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
-    
+
     if (!message) return;
-    
+
     try {
         await ensureActiveSession();
     } catch (error) {
         console.error('创建会话失败:', error);
         return;
     }
-    
+
     // 禁用发送按钮和输入框
     const sendBtn = document.getElementById('sendBtn');
     if (sendBtn) {
@@ -429,25 +429,25 @@ async function sendMessage() {
         sendBtn.innerHTML = '<i class="bi bi-hourglass-split"></i><span class="send-label">发送中...</span>';
     }
     input.disabled = true;
-    
+
     // 添加用户消息
     addMessage(message, 'user');
-    
+
     // 添加到对话历史
     conversationHistory.push({
         role: 'user',
         content: message
     });
     trimConversationHistory();
-    
+
     // 清空输入框并重置高度
     input.value = '';
     autoResize(input);
-    
+
     // 显示正在输入状态
     showTypingIndicator();
-    
-        try {
+
+    try {
         // 调用后端API（传递对话历史以支持多轮对话）
         console.log('【前端】开始调用后端API');
         console.log('【前端】请求参数:', {
@@ -455,7 +455,7 @@ async function sendMessage() {
             message: message,
             historyCount: conversationHistory.length
         });
-        
+
         const response = await fetch('/api/ai-chat/send', {
             method: 'POST',
             headers: {
@@ -468,16 +468,16 @@ async function sendMessage() {
                 history: conversationHistory // 传递对话历史
             })
         });
-        
+
         const result = await response.json();
-        
+
         // 隐藏正在输入状态
         hideTypingIndicator();
-        
+
         // 检查HTTP状态码和业务状态码
         if (response.ok && result.code === 200 && result.data) {
             const aiResponse = result.data.replyContent || result.data.content;
-            
+
             if (aiResponse && aiResponse.trim()) {
                 // 添加AI回复到对话历史
                 conversationHistory.push({
@@ -485,9 +485,9 @@ async function sendMessage() {
                     content: aiResponse
                 });
                 trimConversationHistory();
-                
+
                 // 显示AI回复
-        addMessage(aiResponse, 'ai');
+                addMessage(aiResponse, 'ai');
                 updateSessionAfterMessage(message, aiResponse);
             } else {
                 const errorMsg = '抱歉，AI服务返回了空回复，请检查后端日志。';
@@ -515,7 +515,7 @@ async function sendMessage() {
     } catch (error) {
         console.error('发送消息失败:', error);
         hideTypingIndicator();
-        
+
         // 显示错误提示
         const errorMessage = '抱歉，AI服务暂时无法响应。' + (error.message ? '错误：' + error.message : '');
         addMessage(errorMessage, 'ai');
@@ -541,10 +541,10 @@ async function sendMessage() {
 function sendQuickMessage(message) {
     // 设置输入框内容
     document.getElementById('messageInput').value = message;
-    
+
     // 滚动到聊天区域
     scrollToChatArea();
-    
+
     // 发送消息
     sendMessage();
 }
@@ -553,11 +553,11 @@ function sendQuickMessage(message) {
 function scrollToChatArea() {
     const chatArea = document.querySelector('.chat-main-area');
     if (chatArea) {
-        chatArea.scrollIntoView({ 
+        chatArea.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
         });
-        
+
         // 聚焦到输入框
         setTimeout(() => {
             document.getElementById('messageInput').focus();
@@ -571,12 +571,12 @@ function addMessage(content, sender, options = {}) {
     const messagesContainer = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
-    
+
     const time = formatDisplayTime(timestamp);
-    
+
     // 转义HTML防止XSS攻击
     const escapedContent = escapeHtml(content);
-    
+
     if (sender === 'user') {
         messageDiv.innerHTML = `
             <div class="message-content">
@@ -590,16 +590,62 @@ function addMessage(content, sender, options = {}) {
             </div>
         `;
     } else {
-        // AI消息添加语音播放按钮
+        // AI消息添加语音播放按钮和来源显示
         const messageId = 'msg_' + Date.now();
         const escapedContentForAttr = content.replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/\n/g, '\\n');
+
+        // 解析来源信息
+        let sourceHtml = '';
+        let displayContent = content; // AI消息不转义，交给marked处理
+
+        // 检查是否有来源标记
+        if (displayContent.includes('(来源:')) {
+            const parts = displayContent.split('\n\n(来源:');
+            if (parts.length > 1) {
+                displayContent = parts[0];
+                const sourceText = parts[1].replace(')', '').trim();
+                let sourceIcon = 'bi-stars';
+                let sourceClass = 'bg-primary';
+
+                if (sourceText.includes('常见问题')) {
+                    sourceIcon = 'bi-question-circle';
+                    sourceClass = 'bg-success';
+                } else if (sourceText.includes('知识库')) {
+                    sourceIcon = 'bi-book';
+                    sourceClass = 'bg-info';
+                }
+
+                sourceHtml = `
+                    <div class="message-source mt-2">
+                        <span class="badge ${sourceClass} bg-opacity-10 text-dark border border-${sourceClass.replace('bg-', '')} rounded-pill px-2 py-1" style="font-size: 0.75rem;">
+                            <i class="bi ${sourceIcon} me-1"></i> ${sourceText}
+                        </span>
+                    </div>
+                `;
+            }
+        }
+
+        // 使用marked解析Markdown
+        let htmlContent = displayContent;
+        if (typeof marked !== 'undefined') {
+            try {
+                htmlContent = marked.parse(displayContent);
+            } catch (e) {
+                console.error('Markdown解析失败:', e);
+                htmlContent = escapeHtml(displayContent).replace(/\n/g, '<br>');
+            }
+        } else {
+            htmlContent = escapeHtml(displayContent).replace(/\n/g, '<br>');
+        }
+
         messageDiv.innerHTML = `
             <div class="message-avatar">
                 <i class="bi bi-robot"></i>
             </div>
             <div class="message-content">
                 <div class="message-bubble">
-                    <div class="message-text">${escapedContent}</div>
+                    <div class="message-text">${htmlContent}</div>
+                    ${sourceHtml}
                     <div class="message-actions">
                         <button class="btn btn-outline-primary btn-sm" onclick="speakText('${escapedContentForAttr}')" title="播放语音">
                             <i class="bi bi-volume-up"></i>
@@ -613,22 +659,31 @@ function addMessage(content, sender, options = {}) {
             </div>
         `;
         messageDiv.id = messageId;
+
+        // 代码高亮
+        if (typeof hljs !== 'undefined') {
+            setTimeout(() => {
+                messageDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }, 0);
+        }
     }
-    
+
     messagesContainer.appendChild(messageDiv);
-    
+
     if (!skipScroll) {
         // 使用requestAnimationFrame优化滚动性能
         requestAnimationFrame(() => {
-    scrollToBottom();
-    setTimeout(() => {
-        forceScrollToBottom();
+            scrollToBottom();
+            setTimeout(() => {
+                forceScrollToBottom();
             }, 50);
         });
     }
-    
+
     if (recordHistory) {
-    addToHistory(content, sender, time);
+        addToHistory(content, sender, time);
     }
 }
 
@@ -643,7 +698,7 @@ function escapeHtml(text) {
 function copyMessage(messageId) {
     const messageDiv = document.getElementById(messageId);
     const messageText = messageDiv.querySelector('.message-text').textContent;
-    
+
     navigator.clipboard.writeText(messageText).then(() => {
         // 显示复制成功提示
         showCopySuccess();
@@ -668,9 +723,9 @@ function showCopySuccess() {
             消息内容已复制到剪贴板
         </div>
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     // 3秒后自动移除
     setTimeout(() => {
         if (toast.parentNode) {
@@ -710,10 +765,10 @@ function showTypingIndicator() {
         </div>
     `;
     messagesContainer.appendChild(typingDiv);
-    
+
     // 立即滚动
     scrollToBottom();
-    
+
     // 延迟滚动，确保DOM更新完成
     setTimeout(() => {
         forceScrollToBottom();
@@ -733,19 +788,19 @@ function scrollToBottom() {
     // 获取正确的滚动容器
     const scrollContainer = document.querySelector('.chat-messages-container');
     const messagesContainer = document.getElementById('chatMessages');
-    
+
     if (scrollContainer && messagesContainer) {
         // 使用平滑滚动
         scrollContainer.scrollTo({
             top: scrollContainer.scrollHeight,
             behavior: 'smooth'
         });
-        
+
         // 备用方案：直接设置scrollTop
         setTimeout(() => {
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
         }, 100);
-        
+
         // 调试信息
         console.log('滚动容器高度:', scrollContainer.scrollHeight);
         console.log('当前滚动位置:', scrollContainer.scrollTop);
@@ -756,12 +811,12 @@ function scrollToBottom() {
 function forceScrollToBottom() {
     const scrollContainer = document.querySelector('.chat-messages-container');
     if (!scrollContainer) return;
-    
+
     // 使用requestAnimationFrame优化性能
     const scroll = () => {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-        };
-        
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    };
+
     requestAnimationFrame(scroll);
     setTimeout(scroll, 50);
     setTimeout(scroll, 150);
@@ -771,19 +826,19 @@ function forceScrollToBottom() {
 let resizeTimeout = null;
 function autoResize(textarea) {
     if (!textarea) return;
-    
+
     // 清除之前的定时器
     if (resizeTimeout) {
         clearTimeout(resizeTimeout);
     }
-    
+
     // 使用防抖优化性能
     resizeTimeout = setTimeout(() => {
-    textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-    
-    // 更新字符计数
-    updateCharCount();
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+
+        // 更新字符计数
+        updateCharCount();
     }, 10);
 }
 
@@ -794,25 +849,25 @@ function updateCharCount() {
     if (charCountTimeout) {
         clearTimeout(charCountTimeout);
     }
-    
+
     // 使用节流优化性能
     charCountTimeout = setTimeout(() => {
-    const input = document.getElementById('messageInput');
-    const charCount = document.getElementById('charCount');
+        const input = document.getElementById('messageInput');
+        const charCount = document.getElementById('charCount');
         if (!input || !charCount) return;
-        
-    const length = input.value.length;
-    const maxLength = 1000;
-    
-    charCount.textContent = `${length}/${maxLength}`;
-    
-    if (length > maxLength * 0.9) {
-        charCount.style.color = '#dc3545';
-    } else if (length > maxLength * 0.7) {
-        charCount.style.color = '#ffc107';
-    } else {
-        charCount.style.color = '#6c757d';
-    }
+
+        const length = input.value.length;
+        const maxLength = 1000;
+
+        charCount.textContent = `${length}/${maxLength}`;
+
+        if (length > maxLength * 0.9) {
+            charCount.style.color = '#dc3545';
+        } else if (length > maxLength * 0.7) {
+            charCount.style.color = '#ffc107';
+        } else {
+            charCount.style.color = '#6c757d';
+        }
     }, 100);
 }
 
@@ -1105,14 +1160,14 @@ function generateAIResponse(userMessage) {
 
 需要我详细分析某个具体指标吗？`
     };
-    
+
     // 查找匹配的回复
     for (let key in responses) {
         if (userMessage.includes(key)) {
             return responses[key];
         }
     }
-    
+
     // 默认回复
     return `🤖 **AI智能助手**
 
@@ -1158,7 +1213,7 @@ async function startNewChat() {
     if (!confirm('确定要开始新对话吗？当前对话记录将被清空。')) {
         return;
     }
-        chatHistory = [];
+    chatHistory = [];
     conversationHistory = [];
     await createNewChatSession();
 }
@@ -1194,40 +1249,71 @@ function attachFile() {
 function handleFileSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
-    
+
     // 检查文件大小（限制10MB）
     if (file.size > 10 * 1024 * 1024) {
         alert('文件大小不能超过10MB');
         return;
     }
-    
-    // 显示文件信息
-    const fileInfo = `[文件] ${file.name} (${formatFileSize(file.size)})`;
-    
-    // 如果是图片，显示预览
-    if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const imageUrl = e.target.result;
-            addFileMessage(fileInfo, imageUrl, file.name);
-        };
-        reader.readAsDataURL(file);
-    } else {
-        // 对于文本文件，尝试读取内容
-        if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const message = `${fileInfo}\n\n文件内容：\n${text}`;
-                document.getElementById('messageInput').value = message;
-                autoResize(document.getElementById('messageInput'));
-            };
-            reader.readAsText(file);
-        } else {
-            // 其他文件类型，只显示文件信息
-            addFileMessage(fileInfo, null, file.name);
-        }
-    }
+
+    // 显示上传中状态
+    const loadingId = 'upload_' + Date.now();
+    addMessage(`<div id="${loadingId}"><i class="bi bi-cloud-upload me-2"></i>正在上传文件: ${file.name}...</div>`, 'user');
+
+    // 构建FormData
+    const formData = new FormData();
+    formData.append('file', file);
+    // 默认分类为"其他"，后续可以优化为让用户选择
+    formData.append('category', 'other');
+    formData.append('documentType', 'other');
+    formData.append('title', file.name);
+
+    // 上传文件
+    fetch('/api/knowledge-doc/upload', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(result => {
+            // 移除上传中消息
+            const loadingMsg = document.getElementById(loadingId);
+            if (loadingMsg && loadingMsg.closest('.message')) {
+                loadingMsg.closest('.message').remove();
+            }
+
+            if (result.code === 200) {
+                const doc = result.data;
+                const fileInfo = `[文件] ${doc.title} (${formatFileSize(doc.fileSize)})`;
+
+                // 如果是图片，显示预览
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const imageUrl = e.target.result;
+                        addFileMessage(fileInfo, imageUrl, doc.title);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    addFileMessage(fileInfo, null, doc.title);
+                }
+
+                // 自动发送文件信息给AI，触发知识库索引
+                setTimeout(() => {
+                    sendMessageWithText(`我上传了一个文件：${doc.title}，请根据这个文件回答我的问题。`);
+                }, 500);
+            } else {
+                addMessage(`❌ 文件上传失败: ${result.message}`, 'ai');
+            }
+        })
+        .catch(error => {
+            console.error('上传失败:', error);
+            // 移除上传中消息
+            const loadingMsg = document.getElementById(loadingId);
+            if (loadingMsg && loadingMsg.closest('.message')) {
+                loadingMsg.closest('.message').remove();
+            }
+            addMessage(`❌ 文件上传发生错误: ${error.message}`, 'ai');
+        });
 }
 
 // 格式化文件大小
@@ -1244,12 +1330,12 @@ function addFileMessage(fileInfo, imageUrl, fileName) {
     const messagesContainer = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message user-message file-message';
-    
-    const time = new Date().toLocaleTimeString('zh-CN', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+
+    const time = new Date().toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit'
     });
-    
+
     let content = `
         <div class="message-content">
             <div class="message-bubble file-bubble">
@@ -1258,7 +1344,7 @@ function addFileMessage(fileInfo, imageUrl, fileName) {
                     <span>${fileInfo}</span>
                 </div>
     `;
-    
+
     if (imageUrl) {
         content += `
                 <div class="file-preview">
@@ -1266,7 +1352,7 @@ function addFileMessage(fileInfo, imageUrl, fileName) {
                 </div>
         `;
     }
-    
+
     content += `
             </div>
             <div class="message-time">${time}</div>
@@ -1275,16 +1361,16 @@ function addFileMessage(fileInfo, imageUrl, fileName) {
             <i class="bi bi-person-fill"></i>
         </div>
     `;
-    
+
     messageDiv.innerHTML = content;
     messagesContainer.appendChild(messageDiv);
-    
+
     // 滚动到底部
     scrollToBottom();
-    
+
     // 添加到历史记录
     addToHistory(fileInfo, 'user', time);
-    
+
     // 自动发送文件信息给AI
     setTimeout(() => {
         sendMessageWithText(`我上传了一个文件：${fileInfo}`);
@@ -1304,12 +1390,12 @@ function showImageModal(imageUrl) {
     modal.className = 'image-modal';
     modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; cursor: pointer;';
     modal.onclick = () => modal.remove();
-    
+
     const img = document.createElement('img');
     img.src = imageUrl;
     img.style.cssText = 'max-width: 90%; max-height: 90%; object-fit: contain;';
     modal.appendChild(img);
-    
+
     document.body.appendChild(modal);
 }
 
@@ -1334,38 +1420,38 @@ async function startRecording() {
             showVoiceError('您的浏览器不支持语音录制功能，请使用Chrome、Firefox或Safari浏览器');
             return;
         }
-        
+
         // 检查HTTPS环境
         if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
             showVoiceError('语音功能需要在HTTPS环境下使用，请使用HTTPS访问或本地环境');
             return;
         }
-        
+
         // 显示权限请求提示
         showPermissionRequest();
-        
-        const stream = await navigator.mediaDevices.getUserMedia({ 
+
+        const stream = await navigator.mediaDevices.getUserMedia({
             audio: {
                 echoCancellation: true,
                 noiseSuppression: true,
                 autoGainControl: true
-            } 
+            }
         });
-        
+
         // 隐藏权限请求提示
         hidePermissionRequest();
-        
+
         mediaRecorder = new MediaRecorder(stream, {
             mimeType: 'audio/webm;codecs=opus'
         });
         audioChunks = [];
-        
+
         mediaRecorder.ondataavailable = (event) => {
             if (event.data.size > 0) {
                 audioChunks.push(event.data);
             }
         };
-        
+
         mediaRecorder.onstop = () => {
             if (audioChunks.length > 0) {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -1375,38 +1461,38 @@ async function startRecording() {
             }
             stream.getTracks().forEach(track => track.stop());
         };
-        
+
         mediaRecorder.onerror = (event) => {
             console.error('录音错误:', event.error);
             showVoiceError('录音过程中出现错误，请重试');
             stopRecording();
         };
-        
+
         mediaRecorder.start(100); // 每100ms收集一次数据
         isRecording = true;
-        
+
         // 更新按钮状态
         const voiceBtn = document.querySelector('button[onclick="startVoiceInput()"]');
         voiceBtn.innerHTML = '<i class="bi bi-stop-circle"></i><span class="toolbar-label">停止</span>';
         voiceBtn.title = '停止录音';
         voiceBtn.classList.add('recording');
-        
+
         // 显示录音状态
         showRecordingIndicator();
-        
+
         // 自动停止录音（15秒）
         setTimeout(() => {
             if (isRecording) {
                 stopRecording();
             }
         }, 15000);
-        
+
     } catch (error) {
         console.error('无法访问麦克风:', error);
         hidePermissionRequest();
-        
+
         let errorMessage = '无法访问麦克风';
-        
+
         if (error.name === 'NotAllowedError') {
             errorMessage = '麦克风权限被拒绝，请在浏览器设置中允许访问麦克风';
         } else if (error.name === 'NotFoundError') {
@@ -1416,7 +1502,7 @@ async function startRecording() {
         } else if (error.name === 'NotReadableError') {
             errorMessage = '麦克风被其他应用占用，请关闭其他应用后重试';
         }
-        
+
         showVoiceError(errorMessage);
     }
 }
@@ -1426,13 +1512,13 @@ function stopRecording() {
     if (mediaRecorder && isRecording) {
         mediaRecorder.stop();
         isRecording = false;
-        
+
         // 恢复按钮状态
         const voiceBtn = document.querySelector('button[onclick="startVoiceInput()"]');
         voiceBtn.innerHTML = '<i class="bi bi-mic"></i><span class="toolbar-label">语音</span>';
         voiceBtn.title = '语音输入';
         voiceBtn.classList.remove('recording');
-        
+
         // 隐藏录音状态
         hideRecordingIndicator();
     }
@@ -1463,7 +1549,7 @@ function showPermissionRequest() {
         </div>
     `;
     messagesContainer.appendChild(permissionDiv);
-    
+
     // 延迟滚动，确保DOM更新完成
     setTimeout(() => {
         scrollToBottom();
@@ -1509,7 +1595,7 @@ function showVoiceError(message) {
         </div>
     `;
     messagesContainer.appendChild(errorDiv);
-    
+
     // 延迟滚动，确保DOM更新完成
     setTimeout(() => {
         scrollToBottom();
@@ -1523,7 +1609,7 @@ function retryVoiceInput() {
     if (errorDiv) {
         errorDiv.remove();
     }
-    
+
     // 重新开始语音输入
     setTimeout(() => {
         startVoiceInput();
@@ -1604,7 +1690,7 @@ function showVoiceGuide() {
         </div>
     `;
     messagesContainer.appendChild(guideDiv);
-    
+
     // 延迟滚动，确保DOM更新完成
     setTimeout(() => {
         scrollToBottom();
@@ -1644,7 +1730,7 @@ function showRecordingIndicator() {
         </div>
     `;
     messagesContainer.appendChild(recordingDiv);
-    
+
     // 延迟滚动，确保DOM更新完成
     setTimeout(() => {
         scrollToBottom();
@@ -1664,7 +1750,7 @@ function processVoiceInput(audioBlob) {
     // 模拟语音识别
     const voiceMessages = [
         '客户满意度分析',
-        '营销策略建议', 
+        '营销策略建议',
         '产品推荐',
         '市场趋势分析',
         '客户服务优化',
@@ -1674,25 +1760,25 @@ function processVoiceInput(audioBlob) {
         '推荐一些适合的产品',
         '市场情况怎么样'
     ];
-    
+
     // 随机选择一个语音消息
     const randomMessage = voiceMessages[Math.floor(Math.random() * voiceMessages.length)];
-    
+
     // 添加用户消息
     addMessage(randomMessage, 'user');
-    
+
     // 显示语音识别结果
     showVoiceRecognitionResult(randomMessage);
-    
+
     // 显示正在输入状态
     showTypingIndicator();
-    
+
     // 生成AI回复
     setTimeout(() => {
         hideTypingIndicator();
         const aiResponse = generateAIResponse(randomMessage);
         addMessage(aiResponse, 'ai');
-        
+
         // 自动播放AI回复（可选）
         // speakText(aiResponse);
     }, 1500 + Math.random() * 1000);
@@ -1705,17 +1791,17 @@ function showVoiceRecognitionResult(text) {
     if (existingResult) {
         existingResult.remove();
     }
-    
+
     const messagesContainer = document.getElementById('chatMessages');
     const resultDiv = document.createElement('div');
     resultDiv.className = 'message user-message voice-result';
     resultDiv.id = 'voiceRecognitionResult';
-    
-    const time = new Date().toLocaleTimeString('zh-CN', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+
+    const time = new Date().toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit'
     });
-    
+
     resultDiv.innerHTML = `
         <div class="message-content">
             <div class="message-bubble">
@@ -1751,9 +1837,9 @@ function showVoiceRecognitionResult(text) {
             <i class="bi bi-person-fill"></i>
         </div>
     `;
-    
+
     messagesContainer.appendChild(resultDiv);
-    
+
     // 聚焦到可编辑区域
     setTimeout(() => {
         const editable = resultDiv.querySelector('.voice-text-editable');
@@ -1767,7 +1853,7 @@ function showVoiceRecognitionResult(text) {
             selection.addRange(range);
         }
     }, 100);
-    
+
     scrollToBottom();
 }
 
@@ -1775,17 +1861,17 @@ function showVoiceRecognitionResult(text) {
 function confirmVoiceText() {
     const resultDiv = document.getElementById('voiceRecognitionResult');
     if (!resultDiv) return;
-    
+
     const editable = resultDiv.querySelector('.voice-text-editable');
     const text = editable ? editable.textContent.trim() : '';
-    
+
     if (text) {
         // 设置到输入框并发送
         document.getElementById('messageInput').value = text;
         autoResize(document.getElementById('messageInput'));
         sendMessage();
     }
-    
+
     resultDiv.remove();
 }
 
@@ -1816,7 +1902,7 @@ function showVoiceRecognitionResultOld(text) {
         </div>
     `;
     messagesContainer.appendChild(resultDiv);
-    
+
     // 延迟滚动，确保DOM更新完成
     setTimeout(() => {
         scrollToBottom();
@@ -1828,20 +1914,20 @@ function speakText(text) {
     if ('speechSynthesis' in window) {
         // 停止之前的播放
         speechSynthesis.cancel();
-        
+
         // 创建语音合成
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'zh-CN';
         utterance.rate = 0.9;
         utterance.pitch = 1.0;
         utterance.volume = 0.8;
-        
+
         // 播放语音
         speechSynthesis.speak(utterance);
-        
+
         // 显示播放状态
         showSpeakingIndicator();
-        
+
         // 播放完成后隐藏指示器
         utterance.onend = () => {
             hideSpeakingIndicator();
@@ -1875,7 +1961,7 @@ function showSpeakingIndicator() {
         </div>
     `;
     messagesContainer.appendChild(speakingDiv);
-    
+
     // 延迟滚动，确保DOM更新完成
     setTimeout(() => {
         scrollToBottom();
@@ -1894,14 +1980,14 @@ function hideSpeakingIndicator() {
 // 测试滚动功能
 function testScroll() {
     console.log('开始测试滚动功能...');
-    
+
     // 添加测试消息
     addMessage('这是一条测试消息，用于验证滚动功能是否正常工作。', 'user');
-    
+
     setTimeout(() => {
         addMessage('这是AI的测试回复，用于验证滚动功能是否正常工作。', 'ai');
     }, 1000);
-    
+
     // 强制滚动测试
     setTimeout(() => {
         console.log('执行强制滚动测试...');

@@ -20,9 +20,9 @@ import java.util.List;
 @RequestMapping("/api/system-config")
 @RequiredArgsConstructor
 public class SystemConfigController {
-    
+
     private final SystemConfigService systemConfigService;
-    
+
     /**
      * 查询所有配置
      */
@@ -36,7 +36,7 @@ public class SystemConfigController {
             return Result.error("查询配置列表失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 根据ID查询配置
      */
@@ -53,7 +53,7 @@ public class SystemConfigController {
             return Result.error("查询配置失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 根据配置键查询配置
      */
@@ -70,7 +70,7 @@ public class SystemConfigController {
             return Result.error("查询配置失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 根据分组查询配置
      */
@@ -86,7 +86,7 @@ public class SystemConfigController {
             return Result.error("查询配置失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 搜索配置
      */
@@ -100,7 +100,7 @@ public class SystemConfigController {
             return Result.error("搜索配置失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 新增配置
      */
@@ -116,7 +116,7 @@ public class SystemConfigController {
             if (config.getConfigType() == null || config.getConfigType().trim().isEmpty()) {
                 return Result.error("配置类型不能为空");
             }
-            
+
             boolean success = systemConfigService.save(config);
             if (success) {
                 return Result.success();
@@ -128,7 +128,7 @@ public class SystemConfigController {
             return Result.error("新增配置失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 更新配置
      */
@@ -145,7 +145,7 @@ public class SystemConfigController {
             if (config.getConfigType() == null || config.getConfigType().trim().isEmpty()) {
                 return Result.error("配置类型不能为空");
             }
-            
+
             boolean success = systemConfigService.save(config);
             if (success) {
                 return Result.success();
@@ -157,7 +157,7 @@ public class SystemConfigController {
             return Result.error("更新配置失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 删除配置
      */
@@ -175,5 +175,40 @@ public class SystemConfigController {
             return Result.error("删除配置失败: " + e.getMessage());
         }
     }
-}
 
+    /**
+     * 获取知识库分类列表
+     */
+    @GetMapping("/knowledge-categories")
+    public Result<List<String>> getKnowledgeCategories() {
+        try {
+            List<SystemConfig> configs = systemConfigService.getByGroup("知识库标签");
+            List<String> categories = configs.stream()
+                    .filter(c -> c.getConfigKey().startsWith("knowledge.category."))
+                    .map(SystemConfig::getConfigValue)
+                    .collect(java.util.stream.Collectors.toList());
+            return Result.success(categories);
+        } catch (Exception e) {
+            log.error("获取知识库分类失败", e);
+            return Result.error("获取知识库分类失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取FAQ分类列表
+     */
+    @GetMapping("/faq-categories")
+    public Result<List<String>> getFaqCategories() {
+        try {
+            List<SystemConfig> configs = systemConfigService.getByGroup("知识库标签");
+            List<String> categories = configs.stream()
+                    .filter(c -> c.getConfigKey().startsWith("faq.category."))
+                    .map(SystemConfig::getConfigValue)
+                    .collect(java.util.stream.Collectors.toList());
+            return Result.success(categories);
+        } catch (Exception e) {
+            log.error("获取FAQ分类失败", e);
+            return Result.error("获取FAQ分类失败: " + e.getMessage());
+        }
+    }
+}
