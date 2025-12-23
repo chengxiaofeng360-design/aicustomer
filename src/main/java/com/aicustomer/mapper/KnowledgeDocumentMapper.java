@@ -24,6 +24,13 @@ public interface KnowledgeDocumentMapper {
             @Param("documentType") String documentType);
 
     /**
+     * 统计文档数量
+     */
+    Long selectCount(@Param("keyword") String keyword,
+            @Param("category") String category,
+            @Param("documentType") String documentType);
+
+    /**
      * 全文搜索
      * 
      * @param query 搜索关键词

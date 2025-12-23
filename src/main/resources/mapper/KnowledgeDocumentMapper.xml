@@ -88,6 +88,21 @@
         ORDER BY create_time DESC
     </select>
 
+    <select id="selectCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM knowledge_document
+        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%') OR content LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <if test="documentType != null and documentType != ''">
+            AND document_type = #{documentType}
+        </if>
+    </select>
+
     <select id="searchFullText" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_List" />
         FROM knowledge_document

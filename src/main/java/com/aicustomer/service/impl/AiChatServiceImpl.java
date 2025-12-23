@@ -8,14 +8,14 @@ import com.aicustomer.service.AiChatService;
 import com.aicustomer.service.DeepSeekService;
 import com.aicustomer.service.FaqQaService;
 import com.aicustomer.service.KnowledgeDocumentService;
+import com.aicustomer.service.KnowledgeQueryService;
 import com.aicustomer.service.VectorSearchService;
 import com.aicustomer.service.CustomerQueryService;
+import com.aicustomer.service.ZhipuChatService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -50,6 +50,8 @@ public class AiChatServiceImpl implements AiChatService {
     private final KnowledgeDocumentService knowledgeDocumentService;
     private final VectorSearchService vectorSearchService;
     private final CustomerQueryService customerQueryService;
+    private final KnowledgeQueryService knowledgeQueryService;
+    private final ZhipuChatService zhipuChatService;
 
     @Qualifier("doubaoChatModel")
     private final ChatModel doubaoChatModel;
@@ -74,12 +76,20 @@ public class AiChatServiceImpl implements AiChatService {
             "- `status` (状态: 1-正常, 2-冻结, 3-注销)\n" +
             "- `create_time` (创建时间)\n" +
             "- `remark` (备注)\n" +
+            "\n**可用资料信息 (知识库/上传资料)：**\n" +
+            "- `title` (文档标题)\n" +
+            "- `file_name` (原始文件名)\n" +
+            "- `file_type` (文件类型: pdf, word, excel, txt)\n" +
+            "- `category` (分类)\n" +
+            "- `summary` (摘要)\n" +
             "\n**工具调用格式 (内部指令)：**\n" +
-            "`{\"tool\": \"dynamic_sql_query\", \"sql\": \"SELECT ... FROM customer WHERE ...\"}`\n" +
+            "1. 客户查询: `{\"tool\": \"dynamic_sql_query\", \"sql\": \"SELECT ... FROM customer WHERE ...\"}`\n" +
+            "2. 资料统计: `{\"tool\": \"query_knowledge_count\"}`\n" +
+            "3. 资料清单: `{\"tool\": \"query_knowledge_list\", \"parameters\": {\"limit\": 20}}`\n" +
             "\n**操作原则：**\n" +
-            "1. 仅支持 `SELECT` 语句。\n" +
-            "2. 结果较多时使用 `LIMIT 20`。\n" +
-            "3. 拿到数据后，整合为像真人一样的自然回复。";
+            "1. 只要涉及客户数量、具体客户信息，必须使用 `dynamic_sql_query`。\n" +
+            "2. 只要涉及**上传资料的数量、有哪些文件、文件清单**，必须调用 `query_knowledge_count` 或 `query_knowledge_list`。\n" +
+            "3. 拿到数据后，整合为自然、友好的回复。不要提到工具名。";
 
     @Override
     public AiChat sendMessage(String sessionId, String userMessage, Long customerId) {
@@ -274,147 +284,126 @@ public class AiChatServiceImpl implements AiChatService {
         }
 
         // 3. 第三层：AI生成
-        // 优先使用Spring AI的豆包模型
-        try {
-            System.out.println("【AI聊天服务】使用Spring AI豆包模型");
+        // 优先级顺序：DeepSeek -> 豆包 (Spring AI) -> 智谱 (Zhipu)
 
-            // 构建Prompt，包含系统提示、历史对话和当前消息
-            List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
-
-            // 添加系统提示
-            messages.add(new SystemMessage(finalSystemPrompt));
-
-            // 添加历史对话（如果有）
-            if (history != null && !history.isEmpty()) {
-                System.out.println("【AI聊天服务】添加对话历史，条数: " + history.size());
-                for (Map<String, String> historyItem : history) {
-                    String role = historyItem.get("role");
-                    String content = historyItem.get("content");
-                    if (content != null && !content.trim().isEmpty()) {
-                        if ("user".equals(role)) {
-                            messages.add(new UserMessage(content));
-                        } else if ("assistant".equals(role)) {
-                            messages.add(new org.springframework.ai.chat.messages.AssistantMessage(content));
-                        }
-                    }
-                }
-            }
-
-            // 添加当前用户消息
-            messages.add(new UserMessage(userMessage));
-
-            // 调用Spring AI
-            Prompt prompt = new Prompt(messages);
-            ChatResponse chatResponse = doubaoChatModel.call(prompt);
-            String aiReply = chatResponse.getResult().getOutput().getContent();
-
-            if (aiReply != null && !aiReply.trim().isEmpty()) {
-                // 检查是否需要调用工具 (更宽泛的检查，只要包含 JSON 就尝试解析)
-                if (aiReply.contains("{") && aiReply.contains("}")) {
-                    String toolResult = executeTool(aiReply);
-                    if (toolResult != null) {
-                        log.info("【AI聊天服务】工具结果获取成功，进行二次生成...");
-                        List<org.springframework.ai.chat.messages.Message> toolMessages = new ArrayList<>(messages);
-                        toolMessages.add(new org.springframework.ai.chat.messages.AssistantMessage(aiReply));
-                        toolMessages.add(new UserMessage("查询结果如下：\n" + toolResult + "\n请根据此结果给用户一个最终回复。"));
-                        ChatResponse secondResponse = doubaoChatModel.call(new Prompt(toolMessages));
-                        aiReply = secondResponse.getResult().getOutput().getContent();
-                    }
-                }
-
-                if (aiReply != null) {
-                    log.info("【AI聊天服务】Spring AI豆包模型生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(),
-                            aiReply.length());
-                    System.out.println("【AI聊天服务】Spring AI豆包模型生成回复成功，回复长度: " + aiReply.length());
-
-                    // 如果使用了知识库，添加来源标记
-                    if (!context.isEmpty()) {
-                        aiReply += "\n\n(来源: 知识库智能生成)";
-                    }
-                }
-
-                return aiReply;
-            }
-        } catch (Exception e) {
-            log.error("【AI聊天服务】Spring AI豆包模型调用失败，尝试DeepSeek: {}", e.getMessage(), e);
-            System.out.println("【AI聊天服务】错误: Spring AI豆包模型调用失败");
-            System.out.println("【AI聊天服务】错误信息: " + e.getMessage());
-        }
-
-        // 其次尝试DeepSeek
+        // A. 优先尝试 DeepSeek
         if (deepSeekService.isAvailable()) {
-            System.out.println("【AI聊天服务】DeepSeek服务可用，开始调用");
+            System.out.println("【AI聊天服务】优先使用 DeepSeek 服务");
             try {
                 String aiReply;
-
-                // 如果有对话历史，使用多轮对话
                 if (history != null && !history.isEmpty()) {
-                    System.out.println("【AI聊天服务】使用多轮对话，历史条数: " + history.size());
-                    // 构建完整的消息列表（系统提示 + 历史对话 + 当前消息）
                     List<Map<String, String>> messages = new ArrayList<>();
-
-                    // 添加系统提示
                     Map<String, String> systemMsg = new HashMap<>();
                     systemMsg.put("role", "system");
                     systemMsg.put("content", finalSystemPrompt);
                     messages.add(systemMsg);
 
-                    // 添加历史对话（最多保留最近10轮）
-                    int historySize = Math.min(history.size(), 20); // 最多10轮（每轮2条消息）
+                    int historySize = Math.min(history.size(), 20);
                     for (int i = Math.max(0, history.size() - historySize); i < history.size(); i++) {
                         messages.add(history.get(i));
                     }
 
-                    // 添加当前用户消息
                     Map<String, String> userMsg = new HashMap<>();
                     userMsg.put("role", "user");
                     userMsg.put("content", userMessage);
                     messages.add(userMsg);
-
-                    System.out.println("【AI聊天服务】构建消息列表完成，总消息数: " + messages.size());
-                    // 调用多轮对话API
                     aiReply = deepSeekService.chatWithHistory(messages);
                 } else {
-                    System.out.println("【AI聊天服务】使用单轮对话");
-                    // 单轮对话
                     aiReply = deepSeekService.chat(userMessage, finalSystemPrompt);
                 }
 
-                // 检查是否需要调用工具
-                if (aiReply != null && aiReply.contains("{") && aiReply.contains("}")) {
-                    String toolResult = executeTool(aiReply);
-                    if (toolResult != null) {
-                        log.info("【AI聊天服务】DeepSeek工具结果获取成功，进行二次生成...");
-                        aiReply = deepSeekService.chat(userMessage + "\n\n(工具查询结果: " + toolResult + ", 请整合并回复)",
-                                finalSystemPrompt);
+                if (aiReply != null && !aiReply.trim().isEmpty()) {
+                    aiReply = processPotentialToolCall(aiReply, userMessage, finalSystemPrompt, "deepseek");
+                    if (!context.isEmpty() && !aiReply.contains("(来源:")) {
+                        aiReply += "\n\n(来源: 知识库智能生成 - DeepSeek)";
                     }
+                    return aiReply;
                 }
-
-                if (aiReply != null) {
-                    log.info("【AI聊天服务】DeepSeek生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(), aiReply.length());
-                    System.out.println("【AI聊天服务】DeepSeek生成回复成功，回复长度: " + aiReply.length());
-
-                    // 如果使用了知识库，添加来源标记
-                    if (!context.isEmpty()) {
-                        aiReply += "\n\n(来源: 知识库智能生成)";
-                    }
-                }
-
-                return aiReply;
             } catch (Exception e) {
-                log.error("【AI聊天服务】DeepSeek API调用失败，回退到规则匹配: {}", e.getMessage(), e);
-                System.out.println("【AI聊天服务】错误: DeepSeek API调用失败");
-                System.out.println("【AI聊天服务】错误信息: " + e.getMessage());
-                System.out.println("【AI聊天服务】回退到规则匹配");
-                e.printStackTrace();
-                // 回退到规则匹配
-                return generateFallbackResponse(userMessage);
+                log.warn("【AI聊天服务】DeepSeek 调用失败，准备回退到豆包: {}", e.getMessage());
             }
-        } else {
-            log.warn("【AI聊天服务】DeepSeek服务不可用，使用规则匹配生成回复");
-            System.out.println("【AI聊天服务】警告: DeepSeek服务不可用，使用规则匹配");
-            return generateFallbackResponse(userMessage);
         }
+
+        // B. 其次尝试豆包 (Spring AI)
+        try {
+            System.out.println("【AI聊天服务】回退使用 Spring AI 豆包模型");
+            List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
+            messages.add(new org.springframework.ai.chat.messages.SystemMessage(finalSystemPrompt));
+
+            if (history != null && !history.isEmpty()) {
+                for (Map<String, String> historyItem : history) {
+                    String role = historyItem.get("role");
+                    String content = historyItem.get("content");
+                    if (content != null && !content.trim().isEmpty()) {
+                        if ("user".equals(role))
+                            messages.add(new org.springframework.ai.chat.messages.UserMessage(content));
+                        else if ("assistant".equals(role))
+                            messages.add(new org.springframework.ai.chat.messages.AssistantMessage(content));
+                    }
+                }
+            }
+            messages.add(new org.springframework.ai.chat.messages.UserMessage(userMessage));
+
+            ChatResponse chatResponse = doubaoChatModel.call(new Prompt(messages));
+            String aiReply = chatResponse.getResult().getOutput().getContent();
+
+            if (aiReply != null && !aiReply.trim().isEmpty()) {
+                aiReply = processPotentialToolCall(aiReply, userMessage, finalSystemPrompt, "doubao");
+                if (!context.isEmpty() && !aiReply.contains("(来源:")) {
+                    aiReply += "\n\n(来源: 知识库智能生成 - 豆包)";
+                }
+                return aiReply;
+            }
+        } catch (Exception e) {
+            log.warn("【AI聊天服务】豆包模型调用失败，准备回退到智谱: {}", e.getMessage());
+        }
+
+        // C. 最后尝试智谱 (Zhipu AI)
+        if (zhipuChatService.isAvailable()) {
+            try {
+                System.out.println("【AI聊天服务】回退使用智谱 AI 服务");
+                String aiReply = zhipuChatService.chat(userMessage, finalSystemPrompt);
+                if (aiReply != null && !aiReply.trim().isEmpty()) {
+                    aiReply = processPotentialToolCall(aiReply, userMessage, finalSystemPrompt, "zhipu");
+                    if (!context.isEmpty() && !aiReply.contains("(来源:")) {
+                        aiReply += "\n\n(来源: 知识库智能生成 - 智谱)";
+                    }
+                    return aiReply;
+                }
+            } catch (Exception e) {
+                log.error("【AI聊天服务】所有 AI 服务调用均失败: {}", e.getMessage());
+            }
+        }
+
+        // 4. 最终回退：规则匹配
+        return generateFallbackResponse(userMessage);
+    }
+
+    /**
+     * 检查并处理 AI 回复中可能存在的工具调用
+     */
+    private String processPotentialToolCall(String aiReply, String userMessage, String systemPrompt, String modelType) {
+        if (aiReply.contains("{") && aiReply.contains("}")) {
+            String toolResult = executeTool(aiReply);
+            if (toolResult != null) {
+                log.info("【AI聊天服务】工具结果获取成功 ({})，进行二次生成...", modelType);
+                String followUpMessage = userMessage + "\n\n(工具查询结果: " + toolResult + ", 请整合并回复)";
+
+                return switch (modelType) {
+                    case "deepseek" -> deepSeekService.chat(followUpMessage, systemPrompt);
+                    case "doubao" -> {
+                        List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
+                        messages.add(new org.springframework.ai.chat.messages.SystemMessage(systemPrompt));
+                        messages.add(new org.springframework.ai.chat.messages.UserMessage(followUpMessage));
+                        ChatResponse resp = doubaoChatModel.call(new Prompt(messages));
+                        yield resp.getResult().getOutput().getContent();
+                    }
+                    case "zhipu" -> zhipuChatService.chat(followUpMessage, systemPrompt);
+                    default -> aiReply;
+                };
+            }
+        }
+        return aiReply;
     }
 
     /**
@@ -513,6 +502,9 @@ public class AiChatServiceImpl implements AiChatService {
                 case "query_by_region" -> customerQueryService.getCustomersByRegion(params.getString("region"));
                 case "query_customer_detail" -> customerQueryService.getCustomerDetail(params.getString("name"));
                 case "dynamic_sql_query" -> customerQueryService.executeDynamicQuery(params.getString("sql"));
+                case "query_knowledge_count" -> knowledgeQueryService.getKnowledgeCount();
+                case "query_knowledge_list" -> knowledgeQueryService
+                        .getKnowledgeList(params.getInteger("limit") != null ? params.getInteger("limit") : 20);
                 default -> null; // 未知工具返回 null，表示不进行二次生成
             };
         } catch (Exception e) {
