@@ -103,6 +103,9 @@
         <if test="customer.source != null">
             AND source = #{customer.source}
         </if>
+        <if test="customer.region != null and customer.region != ''">
+            AND region = #{customer.region}
+        </if>
         ORDER BY create_time DESC
     </select>
 
@@ -137,6 +140,9 @@
         </if>
         <if test="customer.source != null">
             AND source = #{customer.source}
+        </if>
+        <if test="customer.region != null and customer.region != ''">
+            AND region = #{customer.region}
         </if>
         <choose>
             <when test="businessTypeList != null and businessTypeList.size() > 0">
@@ -176,6 +182,9 @@
         <if test="customer.source != null">
             AND source = #{customer.source}
         </if>
+        <if test="customer.region != null and customer.region != ''">
+            AND region = #{customer.region}
+        </if>
         <choose>
             <when test="businessTypeList != null and businessTypeList.size() > 0">
                 AND COALESCE(business_type, 1) IN
@@ -192,6 +201,11 @@
     <!-- 测试查询：获取所有客户数量（用于调试） -->
     <select id="selectAllCount" resultType="java.lang.Long">
         SELECT COUNT(1) FROM customer WHERE deleted = 0
+    </select>
+
+    <!-- 执行动态 SQL -->
+    <select id="selectDynamic" resultType="java.util.LinkedHashMap">
+        ${sql}
     </select>
 
     <!-- 插入客户 -->

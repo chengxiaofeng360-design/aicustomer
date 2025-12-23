@@ -136,13 +136,6 @@ public class MessageServiceImpl implements MessageService {
         message.setMessageType(4); // 客户消息
 
         switch (type) {
-            case "birthday":
-                message.setTitle("客户生日提醒");
-                message.setContent("今天是客户 " + customerName + " 的生日，请及时发送祝福。");
-                message.setIcon("bi-gift");
-                message.setColor("danger");
-                message.setImportance(2);
-                break;
             case "no_contact":
                 message.setTitle("客户久未联系提醒");
                 message.setContent("您已超过30天未联系客户 " + customerName + "，建议及时跟进。");

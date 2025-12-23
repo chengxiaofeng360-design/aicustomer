@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aicustomer.mapper.FaqQaMapper">
+
+    <resultMap id="BaseResultMap" type="com.aicustomer.entity.FaqQa">
+        <id column="id" property="id" />
+        <result column="question" property="question" />
+        <result column="answer" property="answer" />
+        <result column="keywords" property="keywords" />
+        <result column="category" property="category" />
+        <result column="priority" property="priority" />
+        <result column="hit_count" property="hitCount" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="create_by" property="createBy" />
+        <result column="update_by" property="updateBy" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, question, answer, keywords, category, priority, hit_count, status, 
+        create_time, update_time, create_by, update_by, deleted
+    </sql>
+
+    <insert id="insert" parameterType="com.aicustomer.entity.FaqQa" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO faq_qa (
+            question, answer, keywords, category, priority, status, create_by, update_by
+        ) VALUES (
+            #{question}, #{answer}, #{keywords}, #{category}, #{priority}, #{status}, #{createBy}, #{updateBy}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.aicustomer.entity.FaqQa">
+        UPDATE faq_qa
+        <set>
+            <if test="question != null">question = #{question},</if>
+            <if test="answer != null">answer = #{answer},</if>
+            <if test="keywords != null">keywords = #{keywords},</if>
+            <if test="category != null">category = #{category},</if>
+            <if test="priority != null">priority = #{priority},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteById">
+        UPDATE faq_qa SET deleted = 1, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM faq_qa
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM faq_qa
+        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (question LIKE CONCAT('%', #{keyword}, '%') OR keywords LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        ORDER BY priority DESC, create_time DESC
+    </select>
+
+    <select id="searchFullText" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM faq_qa
+        WHERE deleted = 0 AND status = 1
+        AND (
+            MATCH(question, keywords) AGAINST(#{query} IN NATURAL LANGUAGE MODE)
+            OR question LIKE CONCAT('%', #{query}, '%')
+            OR keywords LIKE CONCAT('%', #{query}, '%')
+            OR answer LIKE CONCAT('%', #{query}, '%')
+        )
+        ORDER BY 
+            CASE WHEN question LIKE CONCAT('%', #{query}, '%') THEN 1 ELSE 2 END,
+            priority DESC
+        LIMIT #{limit}
+    </select>
+
+    <update id="incrementHitCount">
+        UPDATE faq_qa SET hit_count = hit_count + 1 WHERE id = #{id}
+    </update>
+    
+    <select id="getDistinctCategories" resultType="String">
+        SELECT DISTINCT category 
+        FROM faq_qa 
+        WHERE deleted = 0 AND category IS NOT NULL AND category != ''
+        ORDER BY category
+    </select>
+
+</mapper>

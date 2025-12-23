@@ -240,8 +240,8 @@
                 
                 // 根据分类名称生成描述（简单逻辑）
                 let desc = '';
-                if (categoryName.includes('品种权')) {
-                    desc = '管理品种权申请和转化推广相关的客户信息';
+                if (categoryName.includes('客户业务')) {
+                    desc = '管理客户业务申请和转化推广相关的客户信息';
                 } else if (categoryName.includes('知识产权')) {
                     desc = '管理知识产权互补协作相关的客户信息';
                 } else if (categoryName.includes('服务')) {
@@ -275,14 +275,14 @@
         // 渲染默认分类（当配置加载失败时）
         function renderDefaultCategories() {
             const defaultCategories = {
-                '品种权业务': [1, 2],
+                '客户业务业务': [1, 2],
                 '其他知识产权业务': [3],
                 '其他服务业务': [4, 5, 6]
             };
             
             const defaultTypeMap = {
-                '1': '品种权申请客户',
-                '2': '品种权转化推广客户',
+                '1': '客户业务申请客户',
+                '2': '客户业务转化推广客户',
                 '3': '知识产权互补协作客户',
                 '4': '科普教育合作客户',
                 '5': '景观设计服务客户',

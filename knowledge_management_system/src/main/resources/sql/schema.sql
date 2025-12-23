@@ -1,0 +1,76 @@
+-- 1. AI Chat History Table
+CREATE TABLE IF NOT EXISTS ai_chat (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    user_id BIGINT COMMENT '用户ID',
+    user_name VARCHAR(100) COMMENT '用户姓名',
+    customer_id BIGINT COMMENT '关联客户ID',
+    customer_name VARCHAR(100) COMMENT '关联客户姓名',
+    message_type TINYINT NOT NULL COMMENT '消息类型(1:用户消息,2:AI回复,3:系统消息)',
+    content TEXT COMMENT '消息内容',
+    reply_content TEXT COMMENT 'AI回复内容',
+    reply_time DATETIME COMMENT '回复时间',
+    session_id VARCHAR(100) NOT NULL COMMENT '会话ID',
+    context TEXT COMMENT '对话上下文',
+    intent VARCHAR(200) COMMENT '意图识别结果',
+    confidence DECIMAL(5,2) COMMENT '置信度',
+    sentiment TINYINT COMMENT '情感分析结果(1:积极,2:中性,3:消极)',
+    keywords VARCHAR(500) COMMENT '关键词',
+    is_satisfied TINYINT COMMENT '是否满意(0:否,1:是)',
+    satisfaction_score TINYINT COMMENT '满意度评分',
+    feedback TEXT COMMENT '用户反馈',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    create_by VARCHAR(50) COMMENT '创建人',
+    update_by VARCHAR(50) COMMENT '更新人',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标志(0:未删除,1:已删除)',
+    version INT NOT NULL DEFAULT 1 COMMENT '版本号',
+    INDEX idx_session_id (session_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI聊天记录表';
+
+-- 2. Knowledge Document Table
+CREATE TABLE IF NOT EXISTS knowledge_document (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    title VARCHAR(255) NOT NULL COMMENT '文档标题',
+    content LONGTEXT COMMENT '文档内容',
+    file_name VARCHAR(255) COMMENT '文件名',
+    file_type VARCHAR(50) COMMENT '文件类型(pdf/word/excel/txt)',
+    file_size BIGINT COMMENT '文件大小(字节)',
+    file_path VARCHAR(500) COMMENT '文件路径',
+    document_type VARCHAR(50) COMMENT '文档类型',
+    tags VARCHAR(500) COMMENT '标签(逗号分隔)',
+    category VARCHAR(100) COMMENT '分类',
+    summary TEXT COMMENT '摘要',
+    keywords VARCHAR(500) COMMENT '关键词',
+    view_count INT DEFAULT 0 COMMENT '查看次数',
+    download_count INT DEFAULT 0 COMMENT '下载次数',
+    status TINYINT DEFAULT 1 COMMENT '状态(1:启用 0:禁用)',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    create_by VARCHAR(50),
+    update_by VARCHAR(50),
+    deleted TINYINT NOT NULL DEFAULT 0,
+    version INT NOT NULL DEFAULT 1 COMMENT '版本号',
+    INDEX idx_title (title),
+    INDEX idx_category (category),
+    INDEX idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='知识库文档表';
+
+-- 3. FAQ Table
+CREATE TABLE IF NOT EXISTS faq_qa (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    question TEXT NOT NULL COMMENT '问题',
+    answer TEXT NOT NULL COMMENT '答案',
+    keywords VARCHAR(500) COMMENT '关键词',
+    category VARCHAR(100) COMMENT '分类',
+    priority INT DEFAULT 0 COMMENT '优先级',
+    hit_count INT DEFAULT 0 COMMENT '命中次数',
+    status TINYINT DEFAULT 1 COMMENT '状态(1:启用 0:禁用)',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    create_by VARCHAR(50),
+    update_by VARCHAR(50),
+    deleted TINYINT NOT NULL DEFAULT 0,
+    FULLTEXT INDEX idx_question (question)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='FAQ问答表';

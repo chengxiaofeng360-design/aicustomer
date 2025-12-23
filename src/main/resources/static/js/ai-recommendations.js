@@ -1352,7 +1352,6 @@ AI智能推荐系统 | 让智能为业务赋能
             spring: { label: '春节', icon: 'bi-brightness-high' },
             summer: { label: '夏日', icon: 'bi-sunrise' },
             autumn: { label: '秋日', icon: 'bi-moon-stars' },
-            birthday: { label: '生日', icon: 'bi-gift' },
             thankyou: { label: '感谢', icon: 'bi-heart-fill' },
             general: { label: '通用', icon: 'bi-stars' }
         };
@@ -1505,7 +1504,7 @@ AI智能推荐系统 | 让智能为业务赋能
 • 心想事成，万事如意
 • 财源广进，鸿运当头`,
                     closing: `让我们携手并进，共创辉煌！期待在新的一年里，继续与您保持紧密合作，为彼此创造更大价值！`,
-                    signature: `此致\n敬礼！\n\n种业客户管理团队\n${date}`
+                    signature: `此致\n敬礼！\n\nAI客户管理团队\n${date}`
                 },
                 spring: {
                     title: '🌸 春节祝福',
@@ -1521,7 +1520,7 @@ AI智能推荐系统 | 让智能为业务赋能
 • 🏮 家庭和睦，幸福安康
 • 🎊 心想事成，万事顺意`,
                     closing: `愿我们在新的一年里继续携手前行，共创美好未来！`,
-                    signature: `恭贺新春！\n\n种业客户管理团队\n${date}`
+                    signature: `恭贺新春！\n\nAI客户管理团队\n${date}`
                 },
                 summer: {
                     title: '☀️ 夏日问候',
@@ -1537,7 +1536,7 @@ AI智能推荐系统 | 让智能为业务赋能
 • 🌈 心情愉悦，收获满满
 • ⭐ 每一天都充满阳光与希望`,
                     closing: `炎炎夏日，注意防暑降温。让我们一起迎接更加美好的明天！`,
-                    signature: `夏日问候\n\n种业客户管理团队\n${date}`
+                    signature: `夏日问候\n\nAI客户管理团队\n${date}`
                 },
                 autumn: {
                     title: '🍂 秋日问候',
@@ -1553,23 +1552,7 @@ AI智能推荐系统 | 让智能为业务赋能
 • 🎃 身心愉悦，万事顺心
 • 🌟 每一份努力都有所回报`,
                     closing: `秋高气爽，适宜出行。期待我们继续携手，共创辉煌！`,
-                    signature: `秋日祝福\n\n种业客户管理团队\n${date}`
-                },
-                birthday: {
-                    title: '🎂 生日快乐',
-                    sceneName: '尊享生日',
-                    greeting: `尊敬的${customerName}：`,
-                    subtitle: '客户生命周期 · 尊享关怀',
-                    tagline: 'Client Birthday Edition',
-                    badges: ['尊贵客户', '专属关怀'],
-                    opening: `值此您生日之际，谨代表全体团队向您致以最诚挚的祝福！`,
-                    body: `感谢您一直以来的信任与合作。在这个特别的日子里，愿您：
-• 🎉 生日快乐，心想事成
-• 🎁 身体健康，事业顺利
-• 🎈 家庭幸福，万事如意
-• 🌟 每一天都充满欢乐与惊喜`,
-                    closing: `祝您度过一个美好而难忘的生日，未来的日子里一切安好！`,
-                    signature: `生日祝福\n\n种业客户管理团队\n${date}`
+                    signature: `秋日祝福\n\nAI客户管理团队\n${date}`
                 },
                 thankyou: {
                     title: '🙏 感谢信',
@@ -1585,7 +1568,7 @@ AI智能推荐系统 | 让智能为业务赋能
 • 💡 您的建议让我们不断改进
 • 🌟 您的认可是我们最大的荣耀`,
                     closing: `未来，我们将继续秉承专业、诚信的原则，为您提供更优质的服务，携手共创美好未来！`,
-                    signature: `再次感谢！\n\n种业客户管理团队\n${date}`
+                    signature: `再次感谢！\n\nAI客户管理团队\n${date}`
                 },
                 general: {
                     title: '💌 诚挚问候',
@@ -1601,7 +1584,7 @@ AI智能推荐系统 | 让智能为业务赋能
 • 🎯 目标清晰，步步为赢
 • 🌈 生活美满，幸福安康`,
                     closing: `让我们携手同行，共赴精彩，共创辉煌！`,
-                    signature: `此致\n敬礼！\n\n种业客户管理团队\n${date}`
+                    signature: `此致\n敬礼！\n\nAI客户管理团队\n${date}`
                 }
             };
         }

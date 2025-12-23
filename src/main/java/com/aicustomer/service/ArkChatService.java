@@ -1,4 +1,5 @@
 package com.aicustomer.service;
+
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
 import com.volcengine.ark.runtime.model.completion.chat.ChatMessage;
 import com.volcengine.ark.runtime.model.completion.chat.ChatMessageRole;
@@ -29,7 +30,7 @@ public class ArkChatService {
     /**
      * 单轮对话（类似DeepSeekService的chat方法）
      * 
-     * @param userMessage 用户消息
+     * @param userMessage  用户消息
      * @param systemPrompt 系统提示词（可选）
      * @return AI回复
      */
@@ -52,7 +53,7 @@ public class ArkChatService {
                     .build();
 
             List<ChatMessage> chatMessages = new ArrayList<>();
-            
+
             // 添加系统提示（如果提供）
             if (systemPrompt != null && !systemPrompt.trim().isEmpty()) {
                 chatMessages.add(ChatMessage.builder()
@@ -115,8 +116,8 @@ public class ArkChatService {
     /**
      * 多模态对话，支持图片输入
      * 
-     * @param userMessage 用户消息
-     * @param imageBase64 图片Base64编码（可选）
+     * @param userMessage  用户消息
+     * @param imageBase64  图片Base64编码（可选）
      * @param systemPrompt 系统提示词（可选）
      * @return AI回复
      */
@@ -130,8 +131,10 @@ public class ArkChatService {
             String maskedKey = apiKey != null && apiKey.length() > 6
                     ? apiKey.substring(0, 3) + "***" + apiKey.substring(apiKey.length() - 3)
                     : "null";
-            log.info("【Ark】多模态对话 | model={}, baseUrl={}, hasImage={}", model, baseUrl, imageBase64 != null && !imageBase64.isEmpty());
-            System.out.println("【Ark】多模态对话 | model=" + model + ", hasImage=" + (imageBase64 != null && !imageBase64.isEmpty()));
+            log.info("【Ark】多模态对话 | model={}, baseUrl={}, hasImage={}", model, baseUrl,
+                    imageBase64 != null && !imageBase64.isEmpty());
+            System.out.println(
+                    "【Ark】多模态对话 | model=" + model + ", hasImage=" + (imageBase64 != null && !imageBase64.isEmpty()));
 
             arkService = ArkService.builder()
                     .apiKey(apiKey)
@@ -139,7 +142,7 @@ public class ArkChatService {
                     .build();
 
             List<ChatMessage> chatMessages = new ArrayList<>();
-            
+
             // 添加系统提示（如果提供）
             if (systemPrompt != null && !systemPrompt.trim().isEmpty()) {
                 chatMessages.add(ChatMessage.builder()
@@ -161,8 +164,9 @@ public class ArkChatService {
                 String imageDataUri = "data:image/jpeg;base64," + imageBase64;
                 // 如果API支持，可以尝试将图片作为消息的一部分
                 // 这里先尝试在文本中嵌入图片信息
-                userContent = userMessage + "\n\n[图片数据: " + imageDataUri.substring(0, Math.min(50, imageDataUri.length())) + "...]";
-                
+                userContent = userMessage + "\n\n[图片数据: "
+                        + imageDataUri.substring(0, Math.min(50, imageDataUri.length())) + "...]";
+
                 // 尝试使用JSON格式传递多模态内容
                 // 注意：这取决于Ark API是否支持这种格式
                 try {
@@ -224,6 +228,13 @@ public class ArkChatService {
      * 使用火山方舟 Ark 对话模型，支持带历史消息
      */
     public String chatWithHistory(String userMessage, List<Map<String, String>> history) {
+        return chatWithHistory(userMessage, history, null);
+    }
+
+    /**
+     * 使用火山方舟 Ark 对话模型，支持带历史消息和系统提示词
+     */
+    public String chatWithHistory(String userMessage, List<Map<String, String>> history, String systemPrompt) {
         if (!isAvailable()) {
             return null;
         }
@@ -244,10 +255,17 @@ public class ArkChatService {
 
             List<ChatMessage> chatMessages = new ArrayList<>();
             // 系统提示，保证对话风格
-            chatMessages.add(ChatMessage.builder()
-                    .role(ChatMessageRole.SYSTEM)
-                    .content("You are a helpful assistant.")
-                    .build());
+            if (systemPrompt != null && !systemPrompt.trim().isEmpty()) {
+                chatMessages.add(ChatMessage.builder()
+                        .role(ChatMessageRole.SYSTEM)
+                        .content(systemPrompt)
+                        .build());
+            } else {
+                chatMessages.add(ChatMessage.builder()
+                        .role(ChatMessageRole.SYSTEM)
+                        .content("You are a helpful assistant.")
+                        .build());
+            }
 
             // 将历史消息转换为Ark消息
             if (history != null) {
@@ -309,5 +327,3 @@ public class ArkChatService {
         }
     }
 }
-
-

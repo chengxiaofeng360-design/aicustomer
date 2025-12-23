@@ -55,8 +55,8 @@ const progressClassMap = {
 
 // 业务类型映射（具体业务类型1-6，从系统配置动态加载，这里是默认值）
 let businessTypeMap = {
-    '1': '品种权申请客户',
-    '2': '品种权转化推广客户',
+    '1': '客户业务申请客户',
+    '2': '客户业务转化推广客户',
     '3': '知识产权互补协作客户',
     '4': '科普教育合作客户',
     '5': '景观设计服务客户',
@@ -67,7 +67,7 @@ let businessTypeMap = {
 // 业务类型大类到具体类型的映射（用于分类页面）
 // 默认值，实际会从系统配置加载
 let businessCategoryToTypes = {
-    '品种权业务': [1, 2],  // 品种权业务：品种权申请客户、品种权转化推广客户
+    '客户业务业务': [1, 2],  // 客户业务业务：客户业务申请客户、客户业务转化推广客户
     '其他知识产权业务': [3],     // 其他知识产权业务：知识产权互补协作客户
     '其他服务业务': [4, 5, 6]   // 其他服务业务：科普教育合作客户、景观设计服务客户、图书出版客户
 };
@@ -612,7 +612,7 @@ function showAddCustomerModal() {
     document.getElementById('customerForm').reset();
     document.getElementById('customerId').value = '';
 
-    // 设置默认值：第一种类型（品种权申请客户）
+    // 设置默认值：第一种类型（客户业务申请客户）
     const businessTypeSelect = document.getElementById('businessTypeSelect');
     if (businessTypeSelect) {
         if (currentBusinessTypeList && currentBusinessTypeList.length === 1) {
@@ -1484,7 +1484,7 @@ function showVoiceHelp() {
 6. 录音结束后自动重新开始监听
 
 📝 录音格式示例：
-"张三公司，联系人李四，电话13800138000，企业，北京，经理，微信123，新品种申请，邮箱zhangsan@example.com，地址北京市朝阳区，备注重要客户，下一个客户，王五农场，联系人赵六，电话13900139000，个人，上海"
+"张三公司，联系人李四，电话13800138000，企业，北京，经理，微信123，新业务申请，邮箱zhangsan@example.com，地址北京市朝阳区，备注重要客户，下一个客户，王五农场，联系人赵六，电话13900139000，个人，上海"
 
 ⚙️ 操作流程：
 1. 页面加载 → 自动开始监听
@@ -1515,7 +1515,7 @@ function showVoiceHelp() {
 - 请确保在安静的环境中录入
 - 说话要清晰，语速适中
 - 必填字段：客户名称、联系人、电话、客户类型、地区
-- 可选字段：品种名称等
+- 可选字段：业务名称等
 - 麦克风按钮可用于手动控制监听状态
     `;
 
@@ -1887,7 +1887,7 @@ function parseComplexFile(content, fileName) {
             customerType: '企业客户',
             position: '总经理',
             qqWeixin: 'QQ:123456789',
-            cooperationContent: '新品种保护申请',
+            cooperationContent: '新业务保护申请',
             region: '北京',
             status: 'valid'
         },
@@ -1898,7 +1898,7 @@ function parseComplexFile(content, fileName) {
             customerType: '个人客户',
             position: '市场总监',
             qqWeixin: '微信:test_weixin',
-            cooperationContent: '品种权申请',
+            cooperationContent: '客户业务申请',
             region: '上海',
             status: 'valid'
         }
@@ -2550,7 +2550,7 @@ function saveCustomer() {
     const customerLevel = customerLevelReverseMap[customerLevelText] || parseInt(customerLevelText) || 1;
 
     const progress = parseInt(formData.get('progress')) || 0;
-    // 默认设置为第一种类型（品种权申请客户）
+    // 默认设置为第一种类型（客户业务申请客户）
     const businessType = formData.get('businessType') ? parseInt(formData.get('businessType')) : 1;
 
     const customerId = document.getElementById('customerId').value;

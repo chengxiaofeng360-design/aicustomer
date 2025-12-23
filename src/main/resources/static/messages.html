@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="/css/common.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="main-container">
         <!-- 页面头部 -->
@@ -20,7 +22,7 @@
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
-        
+
         <!-- 统计卡片 -->
         <div class="row mb-4" id="statsCards">
             <div class="col-md-3">
@@ -116,11 +118,11 @@
                         <span class="visually-hidden">加载中...</span>
                     </div>
                     <p class="mt-2 text-muted">正在加载活动数据...</p>
-                                </div>
+                </div>
                 <div id="activitiesEmpty" class="text-center py-5" style="display: none;">
                     <i class="bi bi-clock-history" style="font-size: 3rem; color: #ccc;"></i>
                     <p class="mt-3 text-muted">暂无最近活动</p>
-                                </div>
+                </div>
                 <div id="activitiesList" style="display: none;">
                     <!-- 动态加载 -->
                 </div>
@@ -149,25 +151,25 @@
 
     <script>
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadStats();
             loadPendingTasks();
             loadRecentActivities();
             loadImportantReminders();
-            
+
             // 每30秒自动刷新
-            setInterval(function() {
+            setInterval(function () {
                 loadStats();
                 loadRecentActivities();
             }, 30000);
         });
-        
+
         // 加载统计数据
         async function loadStats() {
             try {
                 const response = await fetch('/api/message-center/stats');
                 const result = await response.json();
-                
+
                 if (result.code === 200 && result.data) {
                     const stats = result.data;
                     document.getElementById('pendingTasksCount').textContent = stats.pendingTasks || 0;
@@ -179,24 +181,24 @@
                 console.error('加载统计数据失败:', error);
             }
         }
-        
+
         // 加载待处理任务
         async function loadPendingTasks() {
             const loadingEl = document.getElementById('tasksLoading');
             const emptyEl = document.getElementById('tasksEmpty');
             const tableEl = document.getElementById('tasksTable');
             const tbodyEl = document.getElementById('tasksTableBody');
-            
+
             loadingEl.style.display = 'block';
             emptyEl.style.display = 'none';
             tableEl.style.display = 'none';
-            
+
             try {
                 const response = await fetch('/api/message-center/pending-tasks?limit=20');
                 const result = await response.json();
-                
+
                 loadingEl.style.display = 'none';
-                
+
                 if (result.code === 200 && result.data && result.data.length > 0) {
                     tbodyEl.innerHTML = '';
                     result.data.forEach(task => {
@@ -204,7 +206,7 @@
                         const priorityBadge = getPriorityBadge(task.priorityLevel);
                         const statusBadge = getStatusBadge(task.statusCode);
                         const urgentClass = task.isUrgent ? 'text-danger fw-bold' : '';
-                        
+
                         row.innerHTML = `
                             <td>${task.taskType || '其他'}</td>
                             <td>${task.title || '无标题'}</td>
@@ -231,23 +233,23 @@
                 emptyEl.innerHTML = '<p class="text-danger">加载失败，请刷新重试</p>';
             }
         }
-        
+
         // 加载最近活动
         async function loadRecentActivities() {
             const loadingEl = document.getElementById('activitiesLoading');
             const emptyEl = document.getElementById('activitiesEmpty');
             const listEl = document.getElementById('activitiesList');
-            
+
             loadingEl.style.display = 'block';
             emptyEl.style.display = 'none';
             listEl.style.display = 'none';
-            
+
             try {
                 const response = await fetch('/api/message-center/recent-activities?limit=20');
                 const result = await response.json();
-                
+
                 loadingEl.style.display = 'none';
-                
+
                 if (result.code === 200 && result.data && result.data.length > 0) {
                     listEl.innerHTML = '';
                     result.data.forEach(activity => {
@@ -263,7 +265,7 @@
                                 <div class="activity-time">${activity.relativeTime || activity.time || ''}</div>
                             </div>
                         `;
-                        
+
                         // 添加点击事件，可以跳转到详情
                         if (activity.customerId) {
                             activityItem.style.cursor = 'pointer';
@@ -271,7 +273,7 @@
                                 window.location.href = `/customers.html?customerId=${activity.customerId}`;
                             };
                         }
-                        
+
                         listEl.appendChild(activityItem);
                     });
                     listEl.style.display = 'block';
@@ -285,155 +287,15 @@
                 emptyEl.innerHTML = '<p class="text-danger">加载失败，请刷新重试</p>';
             }
         }
-        
+
         // 加载重要提醒
         async function loadImportantReminders() {
             try {
                 const response = await fetch('/api/message-center/important-reminders');
                 const result = await response.json();
-                
+
                 const cardEl = document.getElementById('importantRemindersCard');
                 const listEl = document.getElementById('importantRemindersList');
-                
-                if (result.code === 200 && result.data && result.data.length > 0) {
-                    listEl.innerHTML = '';
-                    result.data.forEach(reminder => {
-                        const reminderItem = document.createElement('div');
-                        reminderItem.className = 'alert alert-warning alert-dismissible fade show mb-2';
-                        reminderItem.innerHTML = `
-                            <strong>${reminder.title || '提醒'}</strong><br>
-                            ${reminder.description || ''}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        `;
-                        listEl.appendChild(reminderItem);
-                    });
-                    cardEl.style.display = 'block';
-                } else {
-                    cardEl.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('加载重要提醒失败:', error);
-            }
-        }
-        
-        // 查看任务详情
-        async function viewTask(taskId) {
-            try {
-                const response = await fetch(`/api/team-task/tasks/${taskId}`);
-                const result = await response.json();
-                
-                if (result.code === 200 && result.data) {
-                    const task = result.data;
-                    const content = `
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>基本信息</h6>
-                                <p><strong>任务类型：</strong>${getTaskTypeName(task.taskType)}</p>
-                                <p><strong>任务标题：</strong>${task.title || '无标题'}</p>
-                                <p><strong>优先级：</strong>${getPriorityBadge(task.priority)}</p>
-                                <p><strong>截止时间：</strong>${task.deadline ? new Date(task.deadline).toLocaleString('zh-CN') : '未设置'}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>状态信息</h6>
-                                <p><strong>状态：</strong>${getStatusBadge(task.status)}</p>
-                                <p><strong>负责人：</strong>${task.assigneeName || '未分配'}</p>
-                                <p><strong>创建人：</strong>${task.creatorName || '未知'}</p>
-                                <p><strong>进度：</strong>${task.progress || 0}%</p>
-                            </div>
-                        </div>
-                        ${task.description ? `
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <h6>任务描述</h6>
-                                <p>${task.description}</p>
-                            </div>
-                        </div>
-                        ` : ''}
-                        ${task.customerName ? `
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <h6>关联客户</h6>
-                                <p><a href="/customers.html?customerId=${task.customerId}" target="_blank">${task.customerName}</a></p>
-                            </div>
-                        </div>
-                        ` : ''}
-                    `;
-                document.getElementById('messageDetailContent').innerHTML = content;
-                new bootstrap.Modal(document.getElementById('messageDetailModal')).show();
-                } else {
-                    alert('获取任务详情失败: ' + (result.message || '未知错误'));
-                }
-            } catch (error) {
-                console.error('查看任务详情失败:', error);
-                alert('获取任务详情失败，请重试');
-            }
-        }
-        
-        // 完成任务
-        async function completeTask(taskId) {
-            if (!confirm('确定要完成这个任务吗？')) {
-                return;
-            }
-            
-            try {
-                // 这里需要调用任务完成API，如果还没有实现，可以先提示
-                const response = await fetch(`/api/team-task/tasks/${taskId}`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({status: 4}) // 4=已完成
-                });
-                
-                const result = await response.json();
-                if (result.code === 200) {
-                alert('任务已完成！');
-                    loadPendingTasks();
-                    loadStats();
-                } else {
-                    alert('完成任务失败: ' + (result.message || '未知错误'));
-                }
-            } catch (error) {
-                console.error('完成任务失败:', error);
-                alert('完成任务失败，请重试');
-            }
-        }
-        
-        // 辅助函数
-        function getPriorityBadge(priority) {
-            const priorityMap = {
-                1: {text: '低', class: 'success'},
-                2: {text: '中', class: 'warning'},
-                3: {text: '高', class: 'danger'},
-                4: {text: '紧急', class: 'danger'}
-            };
-            const p = priorityMap[priority] || priorityMap[2];
-            return `<span class="badge bg-${p.class}">${p.text}</span>`;
-        }
-        
-        function getStatusBadge(status) {
-            const statusMap = {
-                1: {text: '待分配', class: 'secondary'},
-                2: {text: '进行中', class: 'warning'},
-                3: {text: '待审核', class: 'info'},
-                4: {text: '已完成', class: 'success'},
-                5: {text: '已取消', class: 'secondary'}
-            };
-            const s = statusMap[status] || statusMap[1];
-            return `<span class="badge bg-${s.class}">${s.text}</span>`;
-        }
-        
-        function getTaskTypeName(type) {
-            const typeMap = {
-                1: '客户跟进',
-                2: '项目推进',
-                3: '问题处理',
-                4: '会议安排',
-                5: '其他'
-            };
-            return typeMap[type] || '其他';
-        }
-    </script>
-</body>
-</html>
 
                 if (result.code === 200 && result.data && result.data.length > 0) {
                     listEl.innerHTML = '';
@@ -455,153 +317,13 @@
                 console.error('加载重要提醒失败:', error);
             }
         }
-        
-        // 查看任务详情
-        async function viewTask(taskId) {
-            try {
-                const response = await fetch(`/api/team-task/tasks/${taskId}`);
-                const result = await response.json();
-                
-                if (result.code === 200 && result.data) {
-                    const task = result.data;
-                    const content = `
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>基本信息</h6>
-                                <p><strong>任务类型：</strong>${getTaskTypeName(task.taskType)}</p>
-                                <p><strong>任务标题：</strong>${task.title || '无标题'}</p>
-                                <p><strong>优先级：</strong>${getPriorityBadge(task.priority)}</p>
-                                <p><strong>截止时间：</strong>${task.deadline ? new Date(task.deadline).toLocaleString('zh-CN') : '未设置'}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>状态信息</h6>
-                                <p><strong>状态：</strong>${getStatusBadge(task.status)}</p>
-                                <p><strong>负责人：</strong>${task.assigneeName || '未分配'}</p>
-                                <p><strong>创建人：</strong>${task.creatorName || '未知'}</p>
-                                <p><strong>进度：</strong>${task.progress || 0}%</p>
-                            </div>
-                        </div>
-                        ${task.description ? `
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <h6>任务描述</h6>
-                                <p>${task.description}</p>
-                            </div>
-                        </div>
-                        ` : ''}
-                        ${task.customerName ? `
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <h6>关联客户</h6>
-                                <p><a href="/customers.html?customerId=${task.customerId}" target="_blank">${task.customerName}</a></p>
-                            </div>
-                        </div>
-                        ` : ''}
-                    `;
-                document.getElementById('messageDetailContent').innerHTML = content;
-                new bootstrap.Modal(document.getElementById('messageDetailModal')).show();
-                } else {
-                    alert('获取任务详情失败: ' + (result.message || '未知错误'));
-                }
-            } catch (error) {
-                console.error('查看任务详情失败:', error);
-                alert('获取任务详情失败，请重试');
-            }
-        }
-        
-        // 完成任务
-        async function completeTask(taskId) {
-            if (!confirm('确定要完成这个任务吗？')) {
-                return;
-            }
-            
-            try {
-                // 这里需要调用任务完成API，如果还没有实现，可以先提示
-                const response = await fetch(`/api/team-task/tasks/${taskId}`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({status: 4}) // 4=已完成
-                });
-                
-                const result = await response.json();
-                if (result.code === 200) {
-                alert('任务已完成！');
-                    loadPendingTasks();
-                    loadStats();
-                } else {
-                    alert('完成任务失败: ' + (result.message || '未知错误'));
-                }
-            } catch (error) {
-                console.error('完成任务失败:', error);
-                alert('完成任务失败，请重试');
-            }
-        }
-        
-        // 辅助函数
-        function getPriorityBadge(priority) {
-            const priorityMap = {
-                1: {text: '低', class: 'success'},
-                2: {text: '中', class: 'warning'},
-                3: {text: '高', class: 'danger'},
-                4: {text: '紧急', class: 'danger'}
-            };
-            const p = priorityMap[priority] || priorityMap[2];
-            return `<span class="badge bg-${p.class}">${p.text}</span>`;
-        }
-        
-        function getStatusBadge(status) {
-            const statusMap = {
-                1: {text: '待分配', class: 'secondary'},
-                2: {text: '进行中', class: 'warning'},
-                3: {text: '待审核', class: 'info'},
-                4: {text: '已完成', class: 'success'},
-                5: {text: '已取消', class: 'secondary'}
-            };
-            const s = statusMap[status] || statusMap[1];
-            return `<span class="badge bg-${s.class}">${s.text}</span>`;
-        }
-        
-        function getTaskTypeName(type) {
-            const typeMap = {
-                1: '客户跟进',
-                2: '项目推进',
-                3: '问题处理',
-                4: '会议安排',
-                5: '其他'
-            };
-            return typeMap[type] || '其他';
-        }
-    </script>
-</body>
-</html>
 
-                if (result.code === 200 && result.data && result.data.length > 0) {
-                    listEl.innerHTML = '';
-                    result.data.forEach(reminder => {
-                        const reminderItem = document.createElement('div');
-                        reminderItem.className = 'alert alert-warning alert-dismissible fade show mb-2';
-                        reminderItem.innerHTML = `
-                            <strong>${reminder.title || '提醒'}</strong><br>
-                            ${reminder.description || ''}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        `;
-                        listEl.appendChild(reminderItem);
-                    });
-                    cardEl.style.display = 'block';
-                } else {
-                    cardEl.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('加载重要提醒失败:', error);
-            }
-        }
-        
         // 查看任务详情
         async function viewTask(taskId) {
             try {
                 const response = await fetch(`/api/team-task/tasks/${taskId}`);
                 const result = await response.json();
-                
+
                 if (result.code === 200 && result.data) {
                     const task = result.data;
                     const content = `
@@ -638,8 +360,8 @@
                         </div>
                         ` : ''}
                     `;
-                document.getElementById('messageDetailContent').innerHTML = content;
-                new bootstrap.Modal(document.getElementById('messageDetailModal')).show();
+                    document.getElementById('messageDetailContent').innerHTML = content;
+                    new bootstrap.Modal(document.getElementById('messageDetailModal')).show();
                 } else {
                     alert('获取任务详情失败: ' + (result.message || '未知错误'));
                 }
@@ -648,24 +370,24 @@
                 alert('获取任务详情失败，请重试');
             }
         }
-        
+
         // 完成任务
         async function completeTask(taskId) {
             if (!confirm('确定要完成这个任务吗？')) {
                 return;
             }
-            
+
             try {
                 // 这里需要调用任务完成API，如果还没有实现，可以先提示
                 const response = await fetch(`/api/team-task/tasks/${taskId}`, {
                     method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({status: 4}) // 4=已完成
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 4 }) // 4=已完成
                 });
-                
+
                 const result = await response.json();
                 if (result.code === 200) {
-                alert('任务已完成！');
+                    alert('任务已完成！');
                     loadPendingTasks();
                     loadStats();
                 } else {
@@ -676,31 +398,31 @@
                 alert('完成任务失败，请重试');
             }
         }
-        
+
         // 辅助函数
         function getPriorityBadge(priority) {
             const priorityMap = {
-                1: {text: '低', class: 'success'},
-                2: {text: '中', class: 'warning'},
-                3: {text: '高', class: 'danger'},
-                4: {text: '紧急', class: 'danger'}
+                1: { text: '低', class: 'success' },
+                2: { text: '中', class: 'warning' },
+                3: { text: '高', class: 'danger' },
+                4: { text: '紧急', class: 'danger' }
             };
             const p = priorityMap[priority] || priorityMap[2];
             return `<span class="badge bg-${p.class}">${p.text}</span>`;
         }
-        
+
         function getStatusBadge(status) {
             const statusMap = {
-                1: {text: '待分配', class: 'secondary'},
-                2: {text: '进行中', class: 'warning'},
-                3: {text: '待审核', class: 'info'},
-                4: {text: '已完成', class: 'success'},
-                5: {text: '已取消', class: 'secondary'}
+                1: { text: '待分配', class: 'secondary' },
+                2: { text: '进行中', class: 'warning' },
+                3: { text: '待审核', class: 'info' },
+                4: { text: '已完成', class: 'success' },
+                5: { text: '已取消', class: 'secondary' }
             };
             const s = statusMap[status] || statusMap[1];
             return `<span class="badge bg-${s.class}">${s.text}</span>`;
         }
-        
+
         function getTaskTypeName(type) {
             const typeMap = {
                 1: '客户跟进',
@@ -713,4 +435,5 @@
         }
     </script>
 </body>
+
 </html>

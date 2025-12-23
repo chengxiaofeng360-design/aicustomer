@@ -87,9 +87,9 @@ function renderWelcomeMessage() {
                 <div class="message-bubble">
                     <div class="welcome-content">
                         <h6 class="welcome-title">
-                            <i class="bi bi-sparkles me-2"></i>欢迎使用AI智能助手
+                            <i class="bi bi-sparkles me-2"></i>欢迎使用AI智能聊天
                         </h6>
-                        <p>您好！我是专门为种业客户管理系统设计的AI智能助手。</p>
+                        <p>您好！我是专门为AI客户管理系统设计的AI智能助手。</p>
                         <div class="capabilities">
                             <h6>我可以帮助您：</h6>
                             <div class="capability-grid">
@@ -947,7 +947,7 @@ function generateAIResponse(userMessage) {
 基于您的客户画像和市场分析，我为您推荐以下产品组合：
 
 **🌾 核心产品推荐**
-1. **抗病性水稻品种**
+1. **抗病性水稻业务**
    - 适合病虫害多发地区
    - 产量提升15-20%
    - 客户满意度95%+
@@ -984,9 +984,9 @@ function generateAIResponse(userMessage) {
 
 需要我为您制定具体的销售策略吗？`,
 
-        '市场趋势分析': `📈 **种业市场趋势深度分析**
+        '市场趋势分析': `📈 **业务市场趋势深度分析**
 
-基于大数据分析和行业洞察，当前种业市场呈现以下重要趋势：
+基于大数据分析和行业洞察，当前业务市场呈现以下重要趋势：
 
 **🌱 技术发展趋势**
 1. **智能化种植**
@@ -997,14 +997,14 @@ function generateAIResponse(userMessage) {
 
 2. **生物技术突破**
    - 基因编辑技术成熟
-   - 抗逆性品种增多
+   - 抗逆性业务增多
    - 产量和质量双提升
    - 研发投入持续增加
 
 **🌍 市场环境变化**
 1. **政策支持力度加大**
    - 农业现代化政策
-   - 种业振兴计划
+   - 业务振兴计划
    - 绿色农业发展
    - 补贴政策优化
 
@@ -1186,7 +1186,7 @@ function generateAIResponse(userMessage) {
 • 业务流程改进
 
 **🎯 专业咨询服务**
-• 种业市场分析
+• 业务市场分析
 • 技术发展趋势
 • 竞争环境分析
 • 投资决策支持

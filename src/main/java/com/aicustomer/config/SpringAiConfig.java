@@ -26,13 +26,13 @@ import java.util.Map;
  */
 @Configuration
 public class SpringAiConfig {
-    
+
     private final ArkChatService arkChatService;
-    
+
     public SpringAiConfig(ArkChatService arkChatService) {
         this.arkChatService = arkChatService;
     }
-    
+
     /**
      * 创建自定义ChatModel，使用豆包模型
      * 这个Bean可以在Controller中注入使用
@@ -41,24 +41,24 @@ public class SpringAiConfig {
     public ChatModel doubaoChatModel() {
         return new DoubaoChatModel(arkChatService);
     }
-    
+
     /**
      * 自定义ChatModel实现，封装豆包服务
      * 实现Spring AI的ChatModel接口，提供统一的AI调用方式
      */
     private static class DoubaoChatModel implements ChatModel {
         private final ArkChatService arkChatService;
-        
+
         public DoubaoChatModel(ArkChatService arkChatService) {
             this.arkChatService = arkChatService;
         }
-        
+
         @Override
         public ChatResponse call(Prompt prompt) {
             String systemPrompt = null;
             String userMessage = null;
             List<Map<String, String>> history = new ArrayList<>();
-            
+
             // 提取系统消息、用户消息和对话历史
             for (Message message : prompt.getInstructions()) {
                 if (message instanceof SystemMessage) {
@@ -73,7 +73,7 @@ public class SpringAiConfig {
                     history.add(assistantMsg);
                 }
             }
-            
+
             // 如果有对话历史，需要重新构建历史列表（包含用户和助手消息）
             // 注意：Spring AI的Prompt可能已经包含了历史消息，我们需要正确提取
             List<Map<String, String>> fullHistory = new ArrayList<>();
@@ -94,40 +94,40 @@ public class SpringAiConfig {
                     hasHistory = true;
                 }
             }
-            
+
             // 调用豆包服务
             String response;
             if (userMessage == null) {
                 response = "错误：未找到用户消息";
             } else if (hasHistory && !fullHistory.isEmpty()) {
                 // 使用对话历史
-                response = arkChatService.chatWithHistory(userMessage, fullHistory);
+                response = arkChatService.chatWithHistory(userMessage, fullHistory, systemPrompt);
             } else {
                 // 单轮对话
                 response = arkChatService.chat(userMessage, systemPrompt);
             }
-            
+
             // 构建ChatResponse
             if (response == null) {
                 response = "抱歉，AI服务暂时无法响应";
             }
-            
+
             // 创建Generation和ChatResponse
-            org.springframework.ai.chat.messages.AssistantMessage assistantMessage = 
-                new org.springframework.ai.chat.messages.AssistantMessage(response);
+            org.springframework.ai.chat.messages.AssistantMessage assistantMessage = new org.springframework.ai.chat.messages.AssistantMessage(
+                    response);
             Generation generation = new Generation(assistantMessage);
-            
+
             return ChatResponse.builder()
-                .withGenerations(List.of(generation))
-                .build();
+                    .withGenerations(List.of(generation))
+                    .build();
         }
-        
+
         @Override
         public Flux<ChatResponse> stream(Prompt prompt) {
             // 流式响应暂不支持，返回单次响应
             return Flux.just(call(prompt));
         }
-        
+
         @Override
         public org.springframework.ai.chat.prompt.ChatOptions getDefaultOptions() {
             // 返回默认选项（可以为null或空选项）
@@ -135,4 +135,3 @@ public class SpringAiConfig {
         }
     }
 }
-

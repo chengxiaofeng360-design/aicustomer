@@ -9,6 +9,9 @@ import com.aicustomer.service.DeepSeekService;
 import com.aicustomer.service.FaqQaService;
 import com.aicustomer.service.KnowledgeDocumentService;
 import com.aicustomer.service.VectorSearchService;
+import com.aicustomer.service.CustomerQueryService;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.SystemMessage;
@@ -46,15 +49,37 @@ public class AiChatServiceImpl implements AiChatService {
     private final FaqQaService faqQaService;
     private final KnowledgeDocumentService knowledgeDocumentService;
     private final VectorSearchService vectorSearchService;
+    private final CustomerQueryService customerQueryService;
 
     @Qualifier("doubaoChatModel")
     private final ChatModel doubaoChatModel;
 
     // 系统提示词，定义AI助手的角色和行为
-    private static final String SYSTEM_PROMPT = "你是一个专业的客户服务AI助手，专门为种业客户管理系统提供服务。" +
-            "你的职责是帮助用户解答关于客户管理、业务分析、产品推荐、市场趋势等方面的问题。" +
-            "请用友好、专业、简洁的语言回答用户问题。如果遇到无法回答的问题，建议用户联系人工客服。" +
-            "请使用Markdown格式优化你的回答，例如使用**加粗**强调重点，使用列表展示步骤，使用表格展示数据，使用代码块展示代码等，以提高可读性。";
+    private static final String SYSTEM_PROMPT = "你是一个专业的AI客户管理助手。" +
+            "你的职责是帮助用户解答关于客户管理、业务分析等问题。" +
+            "\n\n### 极其重要的回复原则 (面向非技术用户) ###\n" +
+            "1. **禁止使用技术术语**：在回复用户时，严禁使用“数据库”、“表”、“字段”、“列”、“SQL”、“代码”、“JSON”、“null”、“表结构”等词汇。用户不知道这些是什么。\n" +
+            "2. **身份定位**：你是一个贴心的业务助手，不是一个编程接口。你的回复应该像真人一样自然。\n" +
+            "3. **强制工具调用**：只要用户询问涉及客户的数量、名单、具体信息，你**必须**生成查询指令，**严禁凭历史对话或记忆猜测数据**。哪怕你刚查过，也请再次生成指令以确保准确。\n" +
+            "4. **自然解释缺失信息**：如果用户询问的信息在系统中没有记录（如性别、年龄等），请礼貌地自然解释，例如：“抱歉，我们的系统中目前没有这些信息。” 而不是说“表中没有这个字段”。\n" +
+            "5. **数据展示**：拿到数据后，请直接以自然语言或清晰的表格告知用户结果，不要提及是如何查询到的。\n" +
+            "\n\n### 数据库查询工具说明 (仅供你内部使用) ###\n" +
+            "当用户需要查询客户数据（如统计、筛选、详情）时，你必须根据以下结构生成指令，但**不要在回复中提到这些结构**。\n" +
+            "**可用信息：**\n" +
+            "- `customer_name` (客户名称/企业名)\n" +
+            "- `contact_person` (联系人)\n" +
+            "- `region` (地区，如北京、上海)\n" +
+            "- `customer_level` (等级: 1-普通, 2-VIP, 3-钻石)\n" +
+            "- `business_type` (业务: 1-品种权申请, 2-品种权转化, 3-知识产权协作, 4-科普教育, 5-景观设计, 6-图书出版)\n" +
+            "- `status` (状态: 1-正常, 2-冻结, 3-注销)\n" +
+            "- `create_time` (创建时间)\n" +
+            "- `remark` (备注)\n" +
+            "\n**工具调用格式 (内部指令)：**\n" +
+            "`{\"tool\": \"dynamic_sql_query\", \"sql\": \"SELECT ... FROM customer WHERE ...\"}`\n" +
+            "\n**操作原则：**\n" +
+            "1. 仅支持 `SELECT` 语句。\n" +
+            "2. 结果较多时使用 `LIMIT 20`。\n" +
+            "3. 拿到数据后，整合为像真人一样的自然回复。";
 
     @Override
     public AiChat sendMessage(String sessionId, String userMessage, Long customerId) {
@@ -284,12 +309,28 @@ public class AiChatServiceImpl implements AiChatService {
             String aiReply = chatResponse.getResult().getOutput().getContent();
 
             if (aiReply != null && !aiReply.trim().isEmpty()) {
-                log.info("【AI聊天服务】Spring AI豆包模型生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(), aiReply.length());
-                System.out.println("【AI聊天服务】Spring AI豆包模型生成回复成功，回复长度: " + aiReply.length());
+                // 检查是否需要调用工具 (更宽泛的检查，只要包含 JSON 就尝试解析)
+                if (aiReply.contains("{") && aiReply.contains("}")) {
+                    String toolResult = executeTool(aiReply);
+                    if (toolResult != null) {
+                        log.info("【AI聊天服务】工具结果获取成功，进行二次生成...");
+                        List<org.springframework.ai.chat.messages.Message> toolMessages = new ArrayList<>(messages);
+                        toolMessages.add(new org.springframework.ai.chat.messages.AssistantMessage(aiReply));
+                        toolMessages.add(new UserMessage("查询结果如下：\n" + toolResult + "\n请根据此结果给用户一个最终回复。"));
+                        ChatResponse secondResponse = doubaoChatModel.call(new Prompt(toolMessages));
+                        aiReply = secondResponse.getResult().getOutput().getContent();
+                    }
+                }
 
-                // 如果使用了知识库，添加来源标记
-                if (!context.isEmpty()) {
-                    aiReply += "\n\n(来源: 知识库智能生成)";
+                if (aiReply != null) {
+                    log.info("【AI聊天服务】Spring AI豆包模型生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(),
+                            aiReply.length());
+                    System.out.println("【AI聊天服务】Spring AI豆包模型生成回复成功，回复长度: " + aiReply.length());
+
+                    // 如果使用了知识库，添加来源标记
+                    if (!context.isEmpty()) {
+                        aiReply += "\n\n(来源: 知识库智能生成)";
+                    }
                 }
 
                 return aiReply;
@@ -339,12 +380,24 @@ public class AiChatServiceImpl implements AiChatService {
                     aiReply = deepSeekService.chat(userMessage, finalSystemPrompt);
                 }
 
-                log.info("【AI聊天服务】DeepSeek生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(), aiReply.length());
-                System.out.println("【AI聊天服务】DeepSeek生成回复成功，回复长度: " + aiReply.length());
+                // 检查是否需要调用工具
+                if (aiReply != null && aiReply.contains("{") && aiReply.contains("}")) {
+                    String toolResult = executeTool(aiReply);
+                    if (toolResult != null) {
+                        log.info("【AI聊天服务】DeepSeek工具结果获取成功，进行二次生成...");
+                        aiReply = deepSeekService.chat(userMessage + "\n\n(工具查询结果: " + toolResult + ", 请整合并回复)",
+                                finalSystemPrompt);
+                    }
+                }
 
-                // 如果使用了知识库，添加来源标记
-                if (!context.isEmpty()) {
-                    aiReply += "\n\n(来源: 知识库智能生成)";
+                if (aiReply != null) {
+                    log.info("【AI聊天服务】DeepSeek生成回复成功，用户消息长度: {}, 回复长度: {}", userMessage.length(), aiReply.length());
+                    System.out.println("【AI聊天服务】DeepSeek生成回复成功，回复长度: " + aiReply.length());
+
+                    // 如果使用了知识库，添加来源标记
+                    if (!context.isEmpty()) {
+                        aiReply += "\n\n(来源: 知识库智能生成)";
+                    }
                 }
 
                 return aiReply;
@@ -420,6 +473,52 @@ public class AiChatServiceImpl implements AiChatService {
                 + (userId != null ? userId : DEFAULT_USER_ID);
         log.info("创建新会话: sessionId={}, userId={}, customerId={}", newSessionId, userId, customerId);
         return newSessionId;
+    }
+
+    /**
+     * 执行 AI 调用的工具
+     */
+    private String executeTool(String aiReply) {
+        try {
+            // 提取 JSON 部分
+            int startIndex = aiReply.indexOf("{");
+            int endIndex = aiReply.lastIndexOf("}");
+            if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
+                return null;
+            }
+
+            String jsonStr = aiReply.substring(startIndex, endIndex + 1);
+            log.info("【AI聊天服务】解析到工具调用 JSON: {}", jsonStr);
+            JSONObject json = JSON.parseObject(jsonStr);
+
+            // 支持两种格式: {"tool": "name", ...} 和 {"name": "name", "parameters": {...}}
+            String tool = json.getString("tool");
+            if (tool == null) {
+                tool = json.getString("name");
+            }
+
+            if (tool == null)
+                return null;
+
+            log.info("【AI聊天服务】正在执行工具查询: {}", tool);
+
+            // 获取参数
+            JSONObject params = json.getJSONObject("parameters");
+            if (params == null) {
+                params = json; // 如果没有 parameters 对象，则从根节点获取
+            }
+
+            return switch (tool) {
+                case "query_total_count" -> customerQueryService.getTotalCustomerCount();
+                case "query_by_region" -> customerQueryService.getCustomersByRegion(params.getString("region"));
+                case "query_customer_detail" -> customerQueryService.getCustomerDetail(params.getString("name"));
+                case "dynamic_sql_query" -> customerQueryService.executeDynamicQuery(params.getString("sql"));
+                default -> null; // 未知工具返回 null，表示不进行二次生成
+            };
+        } catch (Exception e) {
+            log.error("【AI聊天服务】工具执行异常", e);
+            return "服务暂时无法处理该查询：" + e.getMessage();
+        }
     }
 
     private AiChat buildMessageRecord(String sessionId, Long customerId, Integer messageType, String content,
