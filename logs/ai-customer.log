@@ -831,3 +831,34 @@ Identify and stop the process that's listening on port 8085 or configure this ap
 2025-12-24 17:43:15 [http-nio-8085-exec-8] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
 2025-12-24 17:43:15 [http-nio-8085-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
 2025-12-24 17:43:17 [http-nio-8085-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
+2025-12-24 17:51:36 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 47645 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
+2025-12-24 17:51:36 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
+2025-12-24 17:51:37 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
+2025-12-24 17:51:37 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-24 17:51:37 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-24 17:51:37 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-24 17:51:37 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1122 ms
+2025-12-24 17:51:37 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
+2025-12-24 17:51:38 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
+2025-12-24 17:51:38 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@1b19712f
+2025-12-24 17:51:38 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
+2025-12-24 17:51:38 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
+2025-12-24 17:51:38 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: true, 总体: true
+2025-12-24 17:51:38 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
+2025-12-24 17:51:38 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
+2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
+2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
+2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
+2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
+2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
+2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
+2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
+2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
+2025-12-24 17:51:39 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@119f072c, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@66456506, org.springframework.security.web.context.SecurityContextHolderFilter@e2f6a45, org.springframework.security.web.header.HeaderWriterFilter@2ee095c9, org.springframework.security.web.authentication.logout.LogoutFilter@719bb60d, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6c19769c, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@434d001d, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@69944a90, org.springframework.security.web.access.ExceptionTranslationFilter@4ea43d4d, org.springframework.security.web.access.intercept.AuthorizationFilter@6843fdc4]
+2025-12-24 17:51:39 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-12-24 17:51:39 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
+2025-12-24 17:51:39 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
+2025-12-24 17:51:39 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 3.513 seconds (process running for 3.85)
+2025-12-24 17:51:52 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-24 17:51:52 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-12-24 17:51:52 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms

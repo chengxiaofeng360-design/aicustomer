@@ -850,10 +850,11 @@
 
         // 辅助函数
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 B';
+            if (bytes === undefined || bytes === null || isNaN(bytes) || bytes === 0) return '0 B';
             const k = 1024;
             const sizes = ['B', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
+            if (i < 0) return bytes + ' B';
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
@@ -873,6 +874,7 @@
         }
 
         function getCategoryName(category) {
+            if (!category) return '其他';
             const map = {
                 'product': '产品文档',
                 'technical': '技术文档',
@@ -881,7 +883,7 @@
                 'business': '业务相关',
                 'other': '其他'
             };
-            return map[category] || '其他';
+            return map[category] || category; // 如果没匹配到，直接返回原词（支持动态中文分类）
         }
     </script>
 </body>
