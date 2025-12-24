@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +18,7 @@
             'https://cdn.bootcdn.net/ajax/libs/qrcode/1.5.3/qrcode.min.js'
         ];
         var currentCDNIndex = 0;
-        
+
         function loadQRCodeFallback() {
             if (currentCDNIndex >= qrcodeCDNs.length) {
                 console.error('所有QRCode源都加载失败，二维码功能不可用');
@@ -28,16 +29,16 @@
                 }
                 return;
             }
-            
+
             var sourceName = currentCDNIndex === 0 ? '本地文件' : 'CDN ' + currentCDNIndex;
             console.warn('QRCode ' + sourceName + ' 加载失败，尝试下一个源...');
             const script = document.createElement('script');
             script.src = qrcodeCDNs[currentCDNIndex];
-            script.onerror = function() {
+            script.onerror = function () {
                 currentCDNIndex++;
                 loadQRCodeFallback(); // 尝试下一个源
             };
-            script.onload = function() {
+            script.onload = function () {
                 console.log('QRCode加载成功: ' + (currentCDNIndex === 0 ? '本地文件' : qrcodeCDNs[currentCDNIndex]));
                 if (typeof window !== 'undefined') {
                     window.QRCodeAvailable = true;
@@ -47,6 +48,7 @@
         }
     </script>
 </head>
+
 <body>
     <div class="main-container ai-page">
         <!-- 页面头部 -->
@@ -59,10 +61,10 @@
             <div class="ai-header-actions">
                 <a href="/index.html" class="btn btn-outline-secondary">
                     <i class="bi bi-house"></i> 返回首页
-            </a>
+                </a>
             </div>
         </div>
-        
+
         <!-- 工作流程 -->
         <div class="workflow-steps mb-4">
             <div class="step">
@@ -106,16 +108,17 @@
                         <div class="module-actions">
                             <div class="action-block">
                                 <p class="action-label">步骤 1 · 建立模板</p>
-                                <button class="btn btn-dark btn-sm w-100" onclick="openGenerateContentModal('marketing-long')">
+                                <button class="btn btn-dark btn-sm w-100"
+                                    onclick="openGenerateContentModal('marketing-long')">
                                     <i class="bi bi-tools"></i> 编辑模板
                                 </button>
-                        </div>
+                            </div>
                             <div class="action-block">
                                 <p class="action-label">步骤 2 · 推送客户</p>
                                 <button class="btn btn-light btn-sm w-100" onclick="openSendShareModal()">
                                     <i class="bi bi-send"></i> 发送 / 分享
                                 </button>
-                    </div>
+                            </div>
                         </div>
                     </div>
                     <div class="content-module-card module-gradient-pink">
@@ -149,9 +152,9 @@
                             </button>
                             <button class="btn btn-light btn-sm" onclick="openSendShareModal()">
                                 <i class="bi bi-people"></i> 发送给客户
-                        </button>
+                            </button>
+                        </div>
                     </div>
-                </div>
                     <div class="content-module-card module-gradient-indigo">
                         <div class="module-badge"><i class="bi bi-journal-text"></i> 推荐报告</div>
                         <h5 class="module-title">正式推荐报告</h5>
@@ -167,8 +170,8 @@
                             <button class="btn btn-light btn-sm" onclick="openSendShareModal()">
                                 <i class="bi bi-people"></i> 发送给客户
                             </button>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
                     <div class="content-module-card module-gradient-purple">
                         <div class="module-badge"><i class="bi bi-lightning-charge"></i> 短促销</div>
                         <h5 class="module-title">短促销文案</h5>
@@ -184,22 +187,11 @@
                             <button class="btn btn-light btn-sm" onclick="openSendShareModal()">
                                 <i class="bi bi-people"></i> 发送给客户
                             </button>
-                                </div>
-                            </div>
-                                </div>
-                <div class="card template-card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                            <h5 class="mb-0">我的模板</h5>
-                            <small class="text-muted">保存常用内容结构，随时复用或再次编辑</small>
                         </div>
-                        <button class="btn btn-outline-primary btn-sm" onclick="openGenerateContentModal('marketing-long')">
-                            <i class="bi bi-plus-circle"></i> 新建模板
-                    </button>
+                    </div>
                 </div>
-                    <div class="card-body" id="templateListContainer">
-                        <!-- 模板列表 -->
-            </div>
+                <div id="recommendationResults">
+                    <!-- 推荐结果列表 -->
                 </div>
                 <div id="recommendationResults">
                     <!-- 推荐结果列表 -->
@@ -207,36 +199,6 @@
             </div>
         </div>
 
-        <!-- 历史推荐记录 -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">历史推荐记录</h5>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3" id="statisticsRow">
-                    <!-- 统计数据将通过JavaScript动态加载 -->
-                </div>
-                
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>客户名称</th>
-                                <th>推荐类型</th>
-                                <th>推荐内容</th>
-                                <th>优先级</th>
-                                <th>状态</th>
-                                <th>创建时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTableBody">
-                            <!-- 历史记录将通过JavaScript动态加载 -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- 推荐详情模态框 -->
@@ -261,7 +223,8 @@
     </div>
 
     <!-- 内容生成模态框 -->
-    <div class="modal fade" id="generateContentModal" tabindex="-1" aria-labelledby="generateContentModalLabel" aria-hidden="true">
+    <div class="modal fade" id="generateContentModal" tabindex="-1" aria-labelledby="generateContentModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
@@ -274,32 +237,37 @@
                     <!-- Tab导航 - 仅在非编辑模式下显示 -->
                     <ul class="nav nav-tabs mb-3" id="contentTabs" role="tablist" style="display: none;">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="report-tab" data-bs-toggle="tab" data-bs-target="#report-pane" type="button" role="tab">
+                            <button class="nav-link active" id="report-tab" data-bs-toggle="tab"
+                                data-bs-target="#report-pane" type="button" role="tab">
                                 <i class="bi bi-file-text"></i> 推荐报告
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="template-tab" data-bs-toggle="tab" data-bs-target="#template-pane" type="button" role="tab">
+                            <button class="nav-link" id="template-tab" data-bs-toggle="tab"
+                                data-bs-target="#template-pane" type="button" role="tab">
                                 <i class="bi bi-envelope"></i> 营销模板
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="customer-tab" data-bs-toggle="tab" data-bs-target="#customer-pane" type="button" role="tab">
+                            <button class="nav-link" id="customer-tab" data-bs-toggle="tab"
+                                data-bs-target="#customer-pane" type="button" role="tab">
                                 <i class="bi bi-people"></i> 选择客户
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview-pane" type="button" role="tab">
+                            <button class="nav-link" id="preview-tab" data-bs-toggle="tab"
+                                data-bs-target="#preview-pane" type="button" role="tab">
                                 <i class="bi bi-eye"></i> 发送预览
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="share-tab" data-bs-toggle="tab" data-bs-target="#share-pane" type="button" role="tab">
+                            <button class="nav-link" id="share-tab" data-bs-toggle="tab" data-bs-target="#share-pane"
+                                type="button" role="tab">
                                 <i class="bi bi-share"></i> 分享
                             </button>
                         </li>
                     </ul>
-                    
+
                     <!-- Tab内容 -->
                     <div class="tab-content" id="contentTabContent">
                         <!-- Tab 1: 内容生成/编辑 -->
@@ -322,271 +290,116 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="mb-0" id="contentTypeTitle">推荐报告预览</h6>
                                 <div>
-                                    <button class="btn btn-sm btn-outline-warning" id="editReportBtn" onclick="toggleReportEdit()">
+                                    <button class="btn btn-sm btn-outline-warning" id="editReportBtn"
+                                        onclick="toggleReportEdit()">
                                         <i class="bi bi-pencil"></i> 编辑内容
                                     </button>
-                                    <button class="btn btn-sm btn-outline-dark" onclick="saveCurrentTemplate()">
-                                        <i class="bi bi-bookmark"></i> 保存为模板
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" onclick="downloadReport()">
-                                        <i class="bi bi-download"></i> 下载
+                                    <button class="btn btn-outline-info" id="footerShareBtn"
+                                        onclick="openSendShareModal()">
+                                        <i class="bi bi-share"></i> 分享
                                     </button>
                                 </div>
-                            </div>
-                            <div id="reportContent" class="report-preview">
-                                <!-- 内容将动态生成 -->
-                            </div>
-                            <div id="reportEditor" class="report-editor" style="display: none;">
-                                <div class="mb-3">
-                                    <label class="form-label" id="editorTitleLabel">标题</label>
-                                    <input type="text" class="form-control" id="reportTitle" placeholder="请输入标题">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">内容 <small class="text-muted">(支持HTML格式)</small></label>
-                                    <textarea class="form-control" id="reportContentEditor" rows="15" style="font-family: monospace;" placeholder="请输入内容..."></textarea>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-primary" onclick="saveReportEdit()">
-                                        <i class="bi bi-check"></i> 保存
-                                    </button>
-                                    <button class="btn btn-secondary" onclick="cancelReportEdit()">
-                                        <i class="bi bi-x"></i> 取消
-                                    </button>
-                                    <button class="btn btn-outline-info" onclick="previewReportEdit()">
-                                        <i class="bi bi-eye"></i> 预览
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Tab 2: 营销模板 -->
-                        <div class="tab-pane fade" id="template-pane" role="tabpanel">
-                            <div class="mb-3">
-                                <label class="form-label">模板类型</label>
-                                <select class="form-select" id="templateType" onchange="generateTemplate()">
-                                    <option value="email">邮件模板</option>
-                                    <option value="sms">短信模板</option>
-                                </select>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0">模板内容</h6>
-                                <div>
-                                    <button class="btn btn-sm btn-outline-warning" id="editTemplateBtn" onclick="toggleTemplateEdit()">
-                                        <i class="bi bi-pencil"></i> 编辑内容
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="copyTemplateContent()">
-                                        <i class="bi bi-clipboard"></i> 复制内容
-                                    </button>
-                    </div>
-                            </div>
-                            <div id="templateContent" class="template-preview">
-                                <!-- 模板内容将动态生成 -->
-                            </div>
-                            <div id="templateEditor" class="template-editor" style="display: none;">
-                                <div class="mb-3">
-                                    <label class="form-label">邮件主题 / 短信标题</label>
-                                    <input type="text" class="form-control" id="templateSubject" placeholder="请输入主题">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">模板内容 <small class="text-muted">(邮件支持HTML，短信为纯文本)</small></label>
-                                    <textarea class="form-control" id="templateContentEditor" rows="12" style="font-family: monospace;"></textarea>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-primary" onclick="saveTemplateEdit()">
-                                        <i class="bi bi-check"></i> 保存
-                                    </button>
-                                    <button class="btn btn-secondary" onclick="cancelTemplateEdit()">
-                                        <i class="bi bi-x"></i> 取消
-                                    </button>
-                                    <button class="btn btn-outline-info" onclick="previewTemplateEdit()">
-                                        <i class="bi bi-eye"></i> 预览
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Tab 3: 选择客户 -->
-                        <div class="tab-pane fade" id="customer-pane" role="tabpanel">
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label class="form-label mb-0">选择客户 <span class="text-danger">*</span></label>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button" class="btn btn-outline-primary" onclick="selectAllCustomers()">
-                                            <i class="bi bi-check-square"></i> 全选
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="invertCustomerSelection()">
-                                            <i class="bi bi-arrow-left-right"></i> 反选
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger" onclick="clearCustomerSelection()">
-                                            <i class="bi bi-x-square"></i> 清空
-                                        </button>
-                                    </div>
-                                </div>
-                                <input type="text" class="form-control" id="customerSearch" placeholder="搜索客户..." onkeyup="filterCustomers()">
-                            </div>
-                            <div id="customerList" class="customer-selection-list">
-                                <!-- 客户列表将动态加载 -->
-                            </div>
-                            <div class="mt-2">
-                                <small class="text-muted">已选择 <span id="selectedCustomerCountDisplay">0</span> 位客户</small>
-                    </div>
-                </div>
-                        
-                        <!-- Tab 4: 发送预览 -->
-                        <div class="tab-pane fade" id="preview-pane" role="tabpanel">
-                            <div class="mb-3">
-                                <label class="form-label">选择客户查看预览</label>
-                                <select class="form-select" id="previewCustomerSelect" onchange="updateSendPreview()">
-                                    <option value="">请选择客户</option>
-                                </select>
-                    </div>
-                            <div class="mb-3">
-                                <label class="form-label">发送方式</label>
-                                <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="sendType" id="sendTypeSms" value="sms" checked onchange="updateSendPreview()">
-                                    <label class="btn btn-outline-primary" for="sendTypeSms">
-                                        <i class="bi bi-chat-dots"></i> 短信
-                                    </label>
-                                    <input type="radio" class="btn-check" name="sendType" id="sendTypeEmail" value="email" onchange="updateSendPreview()">
-                                    <label class="btn btn-outline-primary" for="sendTypeEmail">
-                                        <i class="bi bi-envelope"></i> 邮件
-                                    </label>
-                                </div>
-                            </div>
-                            <div id="sendPreviewContent">
-                                <!-- 发送预览内容将动态生成 -->
-                            </div>
-                        </div>
-                        
-                        <!-- Tab 5: 分享 -->
-                        <div class="tab-pane fade" id="share-pane" role="tabpanel">
-                            <div class="text-center mb-4">
-                                <h6>分享推荐报告</h6>
-                                <p class="text-muted">扫描二维码或复制链接分享给他人</p>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 text-center mb-3">
-                                    <div id="qrcodeContainer" class="mb-3">
-                                        <!-- 二维码将动态生成 -->
-                                    </div>
-                                    <button class="btn btn-outline-primary btn-sm" onclick="downloadQRCode()">
-                                        <i class="bi bi-download"></i> 下载二维码
-                                    </button>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">分享链接</label>
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" id="shareLink" readonly>
-                                        <button class="btn btn-outline-secondary" onclick="copyShareLink()">
-                                            <i class="bi bi-clipboard"></i> 复制
-                                        </button>
-                                    </div>
-                                    <div class="alert alert-info">
-                                        <i class="bi bi-info-circle"></i> 分享链接有效期为7天
-                                    </div>
-                                </div>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <div class="me-auto">
-                        <button class="btn btn-outline-primary" id="footerCopyBtn" onclick="copyCurrentContent()">
-                            <i class="bi bi-clipboard"></i> 复制内容
-                        </button>
-                        <button class="btn btn-outline-info" id="footerShareBtn" onclick="openSendShareModal()">
-                            <i class="bi bi-share"></i> 分享
-                        </button>
-                    </div>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- 发送/分享模态框 -->
-    <div class="modal fade" id="sendShareModal" tabindex="-1" aria-labelledby="sendShareModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="sendShareModalLabel">
-                        <i class="bi bi-send"></i> 发送给客户并分享
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- 步骤1: 选择客户 -->
-                    <div class="mb-4">
-                        <h6 class="mb-3"><i class="bi bi-people"></i> 步骤 1: 选择客户 <span class="text-danger">*</span></h6>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label mb-0">批量操作</label>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button type="button" class="btn btn-outline-primary" onclick="selectAllSendCustomers()">
-                                        <i class="bi bi-check-square"></i> 全选
-                                    </button>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="invertSendCustomerSelection()">
-                                        <i class="bi bi-arrow-left-right"></i> 反选
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger" onclick="clearSendCustomerSelection()">
-                                        <i class="bi bi-x-square"></i> 清空
-                                    </button>
+                <!-- 发送/分享模态框 -->
+                <div class="modal fade" id="sendShareModal" tabindex="-1" aria-labelledby="sendShareModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="sendShareModalLabel">
+                                    <i class="bi bi-send"></i> 发送给客户并分享
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- 步骤1: 选择客户 -->
+                                <div class="mb-4">
+                                    <h6 class="mb-3"><i class="bi bi-people"></i> 步骤 1: 选择客户 <span
+                                            class="text-danger">*</span></h6>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label mb-0">批量操作</label>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-primary"
+                                                    onclick="selectAllSendCustomers()">
+                                                    <i class="bi bi-check-square"></i> 全选
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                    onclick="invertSendCustomerSelection()">
+                                                    <i class="bi bi-arrow-left-right"></i> 反选
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger"
+                                                    onclick="clearSendCustomerSelection()">
+                                                    <i class="bi bi-x-square"></i> 清空
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <input type="text" class="form-control" id="sendCustomerSearch"
+                                            placeholder="搜索客户..." onkeyup="filterSendCustomers()">
+                                    </div>
+                                    <div id="sendCustomerList" class="customer-selection-list"
+                                        style="max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 0.5rem;">
+                                        <!-- 客户列表将动态加载 -->
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">已选择 <span id="selectedCustomerCount">0</span>
+                                            位客户</small>
+                                    </div>
+                                </div>
+
+                                <!-- 步骤2: 生成分享链接和二维码 -->
+                                <div class="mb-4" id="shareSection" style="display: none;">
+                                    <h6 class="mb-3"><i class="bi bi-share"></i> 步骤 2: 分享链接和二维码</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 text-center mb-3">
+                                            <div id="sendQRCodeContainer" class="mb-3">
+                                                <!-- 二维码将动态生成 -->
+                                            </div>
+                                            <button class="btn btn-outline-primary btn-sm"
+                                                onclick="downloadSendQRCode()">
+                                                <i class="bi bi-download"></i> 下载二维码
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">分享链接</label>
+                                            <div class="input-group mb-3">
+                                                <input type="text" class="form-control" id="sendShareLink" readonly>
+                                                <button class="btn btn-outline-secondary" onclick="copySendShareLink()">
+                                                    <i class="bi bi-clipboard"></i> 复制
+                                                </button>
+                                            </div>
+                                            <div class="alert alert-info">
+                                                <i class="bi bi-info-circle"></i> 分享链接有效期为7天
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <input type="text" class="form-control" id="sendCustomerSearch" placeholder="搜索客户..." onkeyup="filterSendCustomers()">
-                        </div>
-                        <div id="sendCustomerList" class="customer-selection-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 0.5rem;">
-                            <!-- 客户列表将动态加载 -->
-                        </div>
-                        <div class="mt-2">
-                            <small class="text-muted">已选择 <span id="selectedCustomerCount">0</span> 位客户</small>
-                        </div>
-                    </div>
-                    
-                    <!-- 步骤2: 生成分享链接和二维码 -->
-                    <div class="mb-4" id="shareSection" style="display: none;">
-                        <h6 class="mb-3"><i class="bi bi-share"></i> 步骤 2: 分享链接和二维码</h6>
-                        <div class="row">
-                            <div class="col-md-6 text-center mb-3">
-                                <div id="sendQRCodeContainer" class="mb-3">
-                                    <!-- 二维码将动态生成 -->
-                                </div>
-                                <button class="btn btn-outline-primary btn-sm" onclick="downloadSendQRCode()">
-                                    <i class="bi bi-download"></i> 下载二维码
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" id="generateShareBtn"
+                                    onclick="generateSendShareLink()" disabled>
+                                    <i class="bi bi-magic"></i> 生成分享链接
+                                </button>
+                                <button type="button" class="btn btn-success" id="sendBtn" onclick="sendToCustomers()"
+                                    style="display: none;">
+                                    <i class="bi bi-send"></i> 发送给客户
                                 </button>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">分享链接</label>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" id="sendShareLink" readonly>
-                                    <button class="btn btn-outline-secondary" onclick="copySendShareLink()">
-                                        <i class="bi bi-clipboard"></i> 复制
-                                    </button>
-                                </div>
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle"></i> 分享链接有效期为7天
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" id="generateShareBtn" onclick="generateSendShareLink()" disabled>
-                        <i class="bi bi-magic"></i> 生成分享链接
-                    </button>
-                    <button type="button" class="btn btn-success" id="sendBtn" onclick="sendToCustomers()" style="display: none;">
-                        <i class="bi bi-send"></i> 发送给客户
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
-    <!-- 优先尝试本地QRCode库，失败则尝试CDN -->
-    <script src="/lib/qrcode/qrcode.min.js" 
-            onerror="loadQRCodeFallback()"></script>
-    <script src="/js/ai-recommendations.js"></script>
+                <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+                <!-- 优先尝试本地QRCode库，失败则尝试CDN -->
+                <script src="/lib/qrcode/qrcode.min.js" onerror="loadQRCodeFallback()"></script>
+                <script src="/js/ai-recommendations.js"></script>
 </body>
+
 </html>

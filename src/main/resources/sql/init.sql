@@ -546,3 +546,101 @@ CREATE TABLE IF NOT EXISTS message (
     INDEX idx_create_time (create_time),
     INDEX idx_deleted (deleted)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='消息表';
+
+-- 知识库文档表 (Legacy)
+CREATE TABLE IF NOT EXISTS knowledge_document (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    title VARCHAR(255) NOT NULL COMMENT '文档标题',
+    content LONGTEXT COMMENT '文档内容',
+    file_name VARCHAR(255) COMMENT '文件名',
+    file_type VARCHAR(50) COMMENT '文件类型(pdf/word/excel/txt)',
+    file_size BIGINT COMMENT '文件大小(字节)',
+    file_path VARCHAR(500) COMMENT '文件路径',
+    document_type VARCHAR(100) COMMENT '文档类型',
+    tags VARCHAR(500) COMMENT '标签(逗号分隔)',
+    category VARCHAR(100) COMMENT '分类',
+    summary TEXT COMMENT '摘要',
+    keywords VARCHAR(500) COMMENT '关键词',
+    view_count INT DEFAULT 0 COMMENT '查看次数',
+    download_count INT DEFAULT 0 COMMENT '下载次数',
+    status TINYINT DEFAULT 1 COMMENT '状态(1:启用 0:禁用)',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    create_by VARCHAR(50),
+    update_by VARCHAR(50),
+    deleted TINYINT NOT NULL DEFAULT 0,
+    version INT NOT NULL DEFAULT 1 COMMENT '版本号',
+    INDEX idx_title (title),
+    INDEX idx_category (category),
+    INDEX idx_create_time (create_time),
+    FULLTEXT INDEX ft_kd_content (title, content, summary)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='知识库文档表';
+
+-- 知识库文档表 (New)
+CREATE TABLE IF NOT EXISTS kb_document (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content LONGTEXT,
+    original_content LONGTEXT,
+    file_path VARCHAR(500),
+    file_name VARCHAR(255),
+    file_type VARCHAR(50),
+    file_mime VARCHAR(100),
+    file_size BIGINT,
+    category_id BIGINT,
+    tags VARCHAR(500),
+    auto_tags VARCHAR(500),
+    keywords VARCHAR(500),
+    summary TEXT,
+    priority INT DEFAULT 0,
+    view_count INT DEFAULT 0,
+    download_count INT DEFAULT 0,
+    like_count INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    is_public TINYINT(1) DEFAULT 1,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    create_by VARCHAR(50),
+    update_by VARCHAR(50),
+    deleted TINYINT(1) DEFAULT 0,
+    version INT DEFAULT 1,
+    FULLTEXT INDEX ft_kb_content (title, content, keywords)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- FAQ问答表
+CREATE TABLE IF NOT EXISTS faq_qa (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    question VARCHAR(500) NOT NULL COMMENT '问题',
+    answer TEXT NOT NULL COMMENT '答案',
+    keywords VARCHAR(500) COMMENT '关键词(逗号分隔)',
+    category VARCHAR(50) COMMENT '分类',
+    priority INT DEFAULT 0 COMMENT '优先级(数字越大优先级越高)',
+    hit_count INT DEFAULT 0 COMMENT '命中次数',
+    status TINYINT DEFAULT 1 COMMENT '状态(1:启用 0:禁用)',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    create_by VARCHAR(50) COMMENT '创建人',
+    update_by VARCHAR(50) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '删除标志',
+    INDEX idx_category (category),
+    INDEX idx_priority (priority),
+    INDEX idx_status (status),
+    INDEX idx_deleted (deleted),
+    FULLTEXT INDEX ft_question (question, keywords)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='FAQ问答表';
+
+-- 系统配置表
+CREATE TABLE IF NOT EXISTS system_config (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    config_key VARCHAR(200) NOT NULL UNIQUE COMMENT '配置键（唯一标识）',
+    config_value TEXT NOT NULL COMMENT '配置值',
+    config_type VARCHAR(20) NOT NULL DEFAULT 'STRING' COMMENT '配置类型(STRING,NUMBER,BOOLEAN,JSON)',
+    description VARCHAR(500) COMMENT '配置描述',
+    config_group VARCHAR(100) DEFAULT '其他' COMMENT '配置分组',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '是否删除(0:未删除,1:已删除)',
+    INDEX idx_config_key (config_key),
+    INDEX idx_config_group (config_group),
+    INDEX idx_deleted (deleted)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统配置表';

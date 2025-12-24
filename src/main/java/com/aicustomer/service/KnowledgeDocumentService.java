@@ -53,4 +53,9 @@ public interface KnowledgeDocumentService {
      * 增加下载次数
      */
     void incrementDownloadCount(Long id);
+
+    /**
+     * 获取各分类的文档统计
+     */
+    Map<String, Long> getCategoryCounts();
 }

@@ -118,5 +118,11 @@
     <update id="incrementDownloadCount">
         UPDATE knowledge_document SET download_count = download_count + 1 WHERE id = #{id}
     </update>
-
+    
+    <select id="selectCategoryCounts" resultType="java.util.Map">
+        SELECT category as name, COUNT(*) as count
+        FROM knowledge_document
+        WHERE deleted = 0
+        GROUP BY category
+    </select>
 </mapper>

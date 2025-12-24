@@ -1,211 +1,339 @@
 // 系统配置管理 JavaScript
 
+// 术语映射表 (去技术化)
+const typeNameMap = {
+    'STRING': '普通文本',
+    'NUMBER': '数值/数字',
+    'BOOLEAN': '开关/状态',
+    'JSON': '分类型业务配置'
+};
+
 let allConfigs = []; // 存储所有配置数据
 let currentGroup = '全部'; // 当前选中的分组
+let searchTimer = null; // 搜索防抖定时器
 
 // 加载配置列表
 function loadConfigs() {
     const configList = document.getElementById('configList');
-    configList.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3 text-muted">正在加载配置数据...</p></div>';
+    configList.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-grow text-primary" role="status"></div>
+            <p class="mt-3 text-muted">正在同步中心化配置...</p>
+        </div>
+    `;
 
-    const url = '/api/system-config/list';
-    console.log('🔍 加载配置列表，URL:', url);
-
-    fetch(url)
+    fetch('/api/system-config/list')
         .then(response => {
-            console.log('🔍 API响应状态:', response.status, response.statusText);
-            if (!response.ok) {
-                if (response.status === 404) {
-                    console.error('❌ API不存在（404），请确认应用已重启且Controller已注册');
-                    configList.innerHTML = '<div class="alert alert-danger">系统配置API不存在（404），请确认应用已重启</div>';
-                    return null;
-                }
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return response.json();
         })
         .then(result => {
-            if (!result) return; // 404情况已处理
-            
-            console.log('🔍 API响应数据:', result);
             if (result.code === 200 && result.data) {
                 allConfigs = result.data;
-                loadGroupList(); // 加载分组列表
-                renderConfigList(allConfigs); // 渲染配置列表
+                loadGroupList();
+                renderConfigList(allConfigs);
             } else {
-                configList.innerHTML = '<div class="alert alert-warning">加载配置失败: ' + (result.message || '未知错误') + '</div>';
+                configList.innerHTML = `<div class="alert alert-warning">数据同步失败: ${result.message}</div>`;
             }
         })
         .catch(error => {
             console.error('❌ 加载配置失败:', error);
-            configList.innerHTML = '<div class="alert alert-danger">加载配置失败: ' + error.message + '<br><small>请检查网络连接或确认应用已重启</small></div>';
+            configList.innerHTML = `<div class="alert alert-danger">连接配置服务异常，请重试</div>`;
         });
 }
 
-// 加载分组列表到左侧目录
+// 加载分组列表
 function loadGroupList() {
     const groupList = document.getElementById('groupList');
-    
-    // 获取所有分组
     const groups = new Set();
-    allConfigs.forEach(config => {
-        const group = config.configGroup || '其他';
-        if (group && group.trim()) {
-            groups.add(group);
-        }
-    });
-    
-    // 按字母顺序排序
+    allConfigs.forEach(config => groups.add(config.configGroup || '其他'));
+
     const sortedGroups = Array.from(groups).sort();
-    
+
     let html = '';
     sortedGroups.forEach(group => {
         const count = allConfigs.filter(c => (c.configGroup || '其他') === group).length;
         html += `
-            <div class="config-group-item" onclick="filterByGroup('${group}')" data-group="${group}">
-                <i class="bi bi-folder"></i> ${escapeHtml(group)} <span class="badge bg-secondary ms-2">${count}</span>
+            <div class="config-group-item ${currentGroup === group ? 'active' : ''}" 
+                 onclick="filterByGroup('${group}')" data-group="${group}">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-folder2-open"></i>
+                    <span>${escapeHtml(group)}</span>
+                </div>
+                <span class="badge rounded-pill bg-light text-dark border scale-in">${count}</span>
             </div>
         `;
     });
-    
     groupList.innerHTML = html;
-    
-    // 更新当前选中状态
-    updateActiveGroup();
 }
 
-// 更新当前选中的分组样式
-function updateActiveGroup() {
-    document.querySelectorAll('.config-group-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('data-group') === currentGroup) {
-            item.classList.add('active');
-        }
-    });
-}
-
-// 按分组过滤配置
+// 按分组过滤
 function filterByGroup(group) {
     currentGroup = group;
-    updateActiveGroup();
-    
-    let filteredConfigs = allConfigs;
-    if (group !== '全部') {
-        filteredConfigs = allConfigs.filter(config => {
-            const configGroup = config.configGroup || '其他';
-            return configGroup === group;
-        });
-    }
-    
-    renderConfigList(filteredConfigs);
+    document.querySelectorAll('.config-group-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-group') === group) item.classList.add('active');
+    });
+
+    const filtered = group === '全部' ? allConfigs : allConfigs.filter(c => (c.configGroup || '其他') === group);
+    renderConfigList(filtered);
 }
 
-// 渲染配置列表（新布局：卡片式）
+// 实时搜索处理（防抖）
+function handleRealtimeSearch(keyword) {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        const kw = keyword.toLowerCase().trim();
+        if (!kw) {
+            filterByGroup(currentGroup);
+            return;
+        }
+
+        const filtered = allConfigs.filter(c =>
+            c.configKey.toLowerCase().includes(kw) ||
+            c.configValue.toLowerCase().includes(kw) ||
+            (c.description && c.description.toLowerCase().includes(kw))
+        );
+        renderConfigList(filtered);
+    }, 300);
+}
+
+// 渲染配置列表
 function renderConfigList(configs) {
     const configList = document.getElementById('configList');
-    
     if (!configs || configs.length === 0) {
-        configList.innerHTML = '<div class="alert alert-info">暂无配置数据，请点击"新增配置"添加</div>';
+        configList.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-search display-1 text-light"></i>
+                <p class="mt-3 text-muted">目前还没有找到相关的配置项</p>
+            </div>
+        `;
         return;
     }
 
     let html = '';
     configs.forEach(config => {
         const typeClass = `type-${config.configType.toLowerCase()}`;
+        const humanTypeName = typeNameMap[config.configType] || config.configType;
+
+        let valueDisplay = escapeHtml(config.configValue);
+
+        // 如果是 JSON，尝试更友好的显示
+        if (config.configType === 'JSON') {
+            try {
+                const jsonObj = JSON.parse(config.configValue);
+                if (typeof jsonObj === 'object' && jsonObj !== null) {
+                    let preview = '';
+                    for (let key in jsonObj) {
+                        const val = jsonObj[key];
+                        const valStr = Array.isArray(val) ? val.join(', ') : val;
+                        preview += `<div class="mb-1"><span class="badge bg-secondary bg-opacity-10 text-secondary border me-1">${escapeHtml(key)}:</span> <span class="small text-muted">${escapeHtml(String(valStr))}</span></div>`;
+                    }
+                    valueDisplay = `<div class="json-preview-box">${preview || '空分类'}</div>`;
+                }
+            } catch (e) { }
+        }
+
+        // 优先显示描述作为标题
+        const displayTitle = config.description ? escapeHtml(config.description) : escapeHtml(config.configKey);
+        const subTitle = config.description ? `<code>${escapeHtml(config.configKey)}</code>` : '';
+
         html += `
             <div class="config-item-card">
                 <div class="config-item-header">
-                    <div class="config-item-key">
-                        ${escapeHtml(config.configKey)}
-                        <span class="config-type-badge ${typeClass}">${escapeHtml(config.configType)}</span>
-                    </div>
                     <div>
-                        <button class="btn btn-sm btn-outline-primary" onclick="editConfig(${config.id})" title="编辑">
-                            <i class="bi bi-pencil"></i>
+                        <div class="fs-6 fw-bold text-dark mb-1">
+                            ${displayTitle}
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="config-type-badge ${typeClass}">${humanTypeName}</span>
+                            <span class="text-muted small">${subTitle}</span>
+                            ${subTitle ? `<i class="bi bi-clipboard copy-btn small" title="复制键名" onclick="copyToClipboard('${config.configKey}')"></i>` : ''}
+                        </div>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-icon btn-sm" onclick="editConfig(${config.id})" title="修改">
+                            <i class="bi bi-pencil-square text-primary"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteConfig(${config.id})" title="删除">
-                            <i class="bi bi-trash"></i>
+                        <button class="btn btn-icon btn-sm" onclick="deleteConfig(${config.id})" title="移除">
+                            <i class="bi bi-trash3 text-danger"></i>
                         </button>
                     </div>
                 </div>
-                <div class="config-item-value">${escapeHtml(config.configValue)}</div>
-                ${config.description ? `<div class="text-muted small mt-2">${escapeHtml(config.description)}</div>` : ''}
-                <div class="config-item-meta mt-2">
-                    <span><i class="bi bi-folder"></i> ${escapeHtml(config.configGroup || '其他')}</span>
-                    ${config.createTime ? `<span><i class="bi bi-calendar"></i> ${formatDate(config.createTime)}</span>` : ''}
+                <div class="config-item-value">${valueDisplay}</div>
+                <div class="mt-2 text-muted small">
+                    <i class="bi bi-folder-symlink"></i> 所属分组: ${escapeHtml(config.configGroup || '未分类')}
                 </div>
             </div>
         `;
     });
-
     configList.innerHTML = html;
 }
 
-// 格式化日期
-function formatDate(dateString) {
-    if (!dateString) return '';
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    } catch (e) {
-        return dateString;
+// 可视化编辑器逻辑
+let currentEditorMode = 'raw'; // 'raw' or 'visual'
+
+function handleTypeChange(type) {
+    const toggle = document.getElementById('modeToggleContainer');
+    if (type === 'JSON') {
+        toggle.style.display = 'flex';
+    } else {
+        toggle.style.display = 'none';
+        switchEditorMode('raw'); // 非 JSON 强制切回源码模式
     }
 }
 
-// 显示新增配置模态框
+function switchEditorMode(mode) {
+    currentEditorMode = mode;
+    const rawEditor = document.getElementById('configValue');
+    const visualEditor = document.getElementById('visualEditor');
+    const modeRawBtn = document.getElementById('modeRaw');
+    const modeVisualBtn = document.getElementById('modeVisual');
+
+    if (mode === 'visual') {
+        // 源码 -> 可视化
+        try {
+            const jsonObj = JSON.parse(rawEditor.value || '{}');
+            renderVisualItems(jsonObj);
+            rawEditor.style.display = 'none';
+            visualEditor.style.display = 'block';
+            modeVisualBtn.classList.add('active');
+            modeRawBtn.classList.remove('active');
+        } catch (e) {
+            alert('当前 JSON 格式有误，请先在源码模式下修正后再切换可视化。');
+            switchEditorMode('raw');
+        }
+    } else {
+        // 可视化 -> 源码
+        if (visualEditor.style.display === 'block') {
+            syncVisualToRaw();
+        }
+        rawEditor.style.display = 'block';
+        visualEditor.style.display = 'none';
+        modeRawBtn.classList.add('active');
+        modeVisualBtn.classList.remove('active');
+    }
+}
+
+function renderVisualItems(obj) {
+    const container = document.getElementById('visualItems');
+    container.innerHTML = '';
+
+    for (let key in obj) {
+        let val = obj[key];
+        // 如果是数组，转为逗号分隔字符串
+        if (Array.isArray(val)) val = val.join(', ');
+        addVisualItem(key, val);
+    }
+
+    if (Object.keys(obj).length === 0) {
+        addVisualItem('', '');
+    }
+}
+
+function addVisualItem(key = '', value = '') {
+    const container = document.getElementById('visualItems');
+    const row = document.createElement('div');
+    row.className = 'visual-item-row';
+    row.innerHTML = `
+        <div class="visual-item-key">
+            <input type="text" class="form-control form-control-sm" placeholder="项名/分类" value="${escapeHtml(key)}">
+        </div>
+        <div class="visual-item-value">
+            <input type="text" class="form-control form-control-sm" placeholder="值(多个用逗号隔开)" value="${escapeHtml(String(value))}">
+        </div>
+        <button type="button" class="btn btn-link text-danger p-0 ms-2" onclick="this.parentElement.remove()" title="删除项">
+            <i class="bi bi-x-circle"></i>
+        </button>
+    `;
+    container.appendChild(row);
+}
+
+function syncVisualToRaw() {
+    const rows = document.querySelectorAll('.visual-item-row');
+    const result = {};
+
+    rows.forEach(row => {
+        const key = row.querySelector('.visual-item-key input').value.trim();
+        let val = row.querySelector('.visual-item-value input').value.trim();
+
+        if (key) {
+            // 尝试检测是否是数组或数字
+            if (val.includes(',')) {
+                // 如果包含逗号，转为处理过的数组
+                result[key] = val.split(',').map(v => {
+                    v = v.trim();
+                    return isNaN(v) || v === '' ? v : Number(v);
+                });
+            } else {
+                // 普通值，尝试转数字
+                result[key] = (isNaN(val) || val === '') ? val : Number(val);
+            }
+        }
+    });
+
+    document.getElementById('configValue').value = JSON.stringify(result, null, 2);
+}
+
+// 复制到剪贴板 (保持原样...)
+async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        const alert = document.createElement('div');
+        alert.className = 'position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-success py-1 px-3 z-3';
+        alert.style.borderRadius = '20px';
+        alert.innerHTML = '<small><i class="bi bi-check-circle"></i> 已复制到剪贴板</small>';
+        document.body.appendChild(alert);
+        setTimeout(() => alert.remove(), 2000);
+    } catch (err) { }
+}
+
+// 重写部分已有函数以适配新功能
 function showAddConfigModal() {
-    document.getElementById('configModalTitle').textContent = '新增配置';
+    document.getElementById('configModalTitle').textContent = '新增系统项';
     document.getElementById('configForm').reset();
     document.getElementById('configId').value = '';
-    // 如果当前有选中的分组，自动填充
+    handleTypeChange('STRING'); // 默认非 JSON
+    switchEditorMode('raw');
     if (currentGroup && currentGroup !== '全部') {
         document.getElementById('configGroup').value = currentGroup;
     }
     new bootstrap.Modal(document.getElementById('configModal')).show();
 }
 
-// 编辑配置
 function editConfig(id) {
-    const url = `/api/system-config/${id}`;
-    console.log('🔍 获取配置详情，URL:', url);
-    
-    fetch(url)
-        .then(response => {
-            console.log('🔍 API响应状态:', response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-        })
+    fetch(`/api/system-config/${id}`)
+        .then(response => response.json())
         .then(result => {
             if (result.code === 200 && result.data) {
                 const config = result.data;
-                document.getElementById('configModalTitle').textContent = '编辑配置';
+                document.getElementById('configModalTitle').textContent = '编辑系统项';
                 document.getElementById('configId').value = config.id;
                 document.getElementById('configKey').value = config.configKey;
                 document.getElementById('configValue').value = config.configValue;
                 document.getElementById('configType').value = config.configType;
                 document.getElementById('configDescription').value = config.description || '';
                 document.getElementById('configGroup').value = config.configGroup || '';
+
+                handleTypeChange(config.configType);
+                // 默认切换到可视化模式（如果是 JSON 且解析成功）
+                if (config.configType === 'JSON') {
+                    switchEditorMode('visual');
+                } else {
+                    switchEditorMode('raw');
+                }
+
                 new bootstrap.Modal(document.getElementById('configModal')).show();
-            } else {
-                alert('获取配置信息失败: ' + (result.message || '未知错误'));
             }
-        })
-        .catch(error => {
-            console.error('❌ 获取配置信息失败:', error);
-            alert('获取配置信息失败: ' + error.message);
         });
 }
 
-// 保存配置
 function saveConfig() {
+    // 如果在可视化模式，先同步回源码
+    if (currentEditorMode === 'visual') {
+        syncVisualToRaw();
+    }
+
     const form = document.getElementById('configForm');
     if (!form.checkValidity()) {
         form.reportValidity();
@@ -221,112 +349,31 @@ function saveConfig() {
         configGroup: document.getElementById('configGroup').value.trim() || '其他'
     };
 
-    const url = configId ? `/api/system-config/${configId}` : '/api/system-config';
-    const method = configId ? 'PUT' : 'POST';
-    console.log('🔍 保存配置，URL:', url, 'Method:', method);
-
-    fetch(url, {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json'
-        },
+    fetch(configId ? `/api/system-config/${configId}` : '/api/system-config', {
+        method: configId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
     })
-        .then(response => {
-            console.log('🔍 保存配置响应状态:', response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(result => {
             if (result.code === 200) {
                 bootstrap.Modal.getInstance(document.getElementById('configModal')).hide();
-                loadConfigs(); // 重新加载所有数据
-                alert('保存成功');
+                loadConfigs();
             } else {
-                alert('保存失败: ' + (result.message || '未知错误'));
+                alert('保存失败: ' + result.message);
             }
-        })
-        .catch(error => {
-            console.error('保存配置失败:', error);
-            alert('保存配置失败，请重试');
         });
 }
 
 // 删除配置
 function deleteConfig(id) {
-    if (!confirm('确定要删除这个配置吗？')) {
-        return;
-    }
-
-    const url = `/api/system-config/${id}`;
-    console.log('🔍 删除配置，URL:', url);
-
-    fetch(url, {
-        method: 'DELETE'
-    })
-        .then(response => {
-            console.log('🔍 删除配置响应状态:', response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-        })
+    if (!confirm('确定要移除此配置项吗？')) return;
+    fetch(`/api/system-config/${id}`, { method: 'DELETE' })
+        .then(response => response.json())
         .then(result => {
-            if (result.code === 200) {
-                loadConfigs(); // 重新加载所有数据
-                alert('删除成功');
-            } else {
-                alert('删除失败: ' + (result.message || '未知错误'));
-            }
-        })
-        .catch(error => {
-            console.error('删除配置失败:', error);
-            alert('删除配置失败，请重试');
+            if (result.code === 200) loadConfigs();
+            else alert('移除失败');
         });
-}
-
-// 搜索配置
-function searchConfigs() {
-    const keyword = document.getElementById('searchInput').value.trim();
-    if (!keyword) {
-        loadConfigs();
-        return;
-    }
-
-    const configList = document.getElementById('configList');
-    configList.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3 text-muted">正在搜索...</p></div>';
-
-    const url = `/api/system-config/search?keyword=${encodeURIComponent(keyword)}`;
-    console.log('🔍 搜索配置，URL:', url);
-
-    fetch(url)
-        .then(response => {
-            console.log('🔍 搜索配置响应状态:', response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(result => {
-            if (result.code === 200 && result.data) {
-                renderConfigList(result.data);
-            } else {
-                configList.innerHTML = '<div class="alert alert-warning">搜索失败: ' + (result.message || '未知错误') + '</div>';
-            }
-        })
-        .catch(error => {
-            console.error('搜索配置失败:', error);
-            configList.innerHTML = '<div class="alert alert-danger">搜索失败，请检查网络连接</div>';
-        });
-}
-
-// 处理搜索框回车事件
-function handleSearchKeyPress(event) {
-    if (event.key === 'Enter') {
-        searchConfigs();
-    }
 }
 
 // HTML转义
@@ -337,7 +384,5 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
-    loadConfigs();
-});
+// 初始化
+document.addEventListener('DOMContentLoaded', loadConfigs);

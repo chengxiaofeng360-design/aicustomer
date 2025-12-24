@@ -13,7 +13,8 @@
     <link href="/css/common.css" rel="stylesheet">
     <style>
         body {
-            background: transparent; /* Allows common.css background to show if set on iframe, but here common.css sets linear gradient on body */
+            background: transparent;
+            /* Allows common.css background to show if set on iframe, but here common.css sets linear gradient on body */
             /* However, typically iframes have their own body. Let's use the common.css class directly or set it to match */
             /* If we want it to look integrated, we might want a transparent background if it's an overlay, or the same gradient */
             /* But common.css body has: background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
@@ -56,23 +57,23 @@
             overflow-y: auto;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         /* Custom Scrollbar for modern look */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.02);
             border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: rgba(0, 0, 0, 0.15);
             border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(0, 0, 0, 0.25);
         }
@@ -109,7 +110,7 @@
             transition: background-color 0.2s;
             border-radius: 8px;
         }
-        
+
         .document-item:hover {
             background-color: #f8fafc;
         }
@@ -254,9 +255,10 @@
                             <i class="bi bi-file-text"></i> 文档列表
                         </h6>
                         <div class="d-flex gap-2">
-                            <input type="text" class="form-control form-control-sm" placeholder="搜索文档..."
-                                style="width: 200px;">
-                            <button class="btn btn-outline-primary btn-sm">
+                            <input type="text" id="searchInput" class="form-control form-control-sm"
+                                placeholder="搜索文档..." style="width: 200px;"
+                                onkeyup="if(event.keyCode==13) loadDocumentList(1)">
+                            <button class="btn btn-outline-primary btn-sm" onclick="loadDocumentList(1)">
                                 <i class="bi bi-search"></i>
                             </button>
                         </div>
@@ -393,6 +395,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             loadCategories();
             loadDocumentList();
+            loadCategoryCounts();
         });
 
         // 加载分类列表（从系统配置获取）
@@ -410,7 +413,46 @@
                 .catch(err => {
                     console.error('加载分类失败:', err);
                     renderCategories(['专业术语', '法律法规', '技术规范', '操作指南', '案例分析', '其他']);
+                })
+                .finally(() => {
+                    loadCategoryCounts();
                 });
+        }
+
+        // 加载分类统计数量
+        function loadCategoryCounts() {
+            fetch('/api/knowledge-doc/statistics/category-counts')
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        const counts = res.data;
+                        // 更新总数
+                        const totalCount = document.getElementById('totalCount');
+                        if (totalCount) {
+                            totalCount.textContent = counts.all || 0;
+                        }
+
+                        // 更新各分类数量
+                        document.querySelectorAll('.category-item[data-category]').forEach(item => {
+                            const category = item.dataset.category;
+                            if (category !== 'all') {
+                                const badge = item.querySelector('.badge');
+                                if (badge) {
+                                    badge.textContent = counts[category] || 0;
+                                    // 根据是否有内容切换颜色
+                                    if ((counts[category] || 0) > 0) {
+                                        badge.classList.remove('bg-secondary');
+                                        badge.classList.add('bg-primary');
+                                    } else {
+                                        badge.classList.add('bg-secondary');
+                                        badge.classList.remove('bg-primary');
+                                    }
+                                }
+                            }
+                        });
+                    }
+                })
+                .catch(err => console.error('加载分类统计失败:', err));
         }
 
         // 渲染分类列表
@@ -525,7 +567,7 @@
             }
 
             // 搜索关键词
-            const searchInput = document.querySelector('input[placeholder="搜索文档..."]');
+            const searchInput = document.getElementById('searchInput');
             if (searchInput && searchInput.value) {
                 url += `&keyword=${encodeURIComponent(searchInput.value)}`;
             }
@@ -537,6 +579,8 @@
                 .then(res => {
                     if (res.code === 200) {
                         renderDocumentList(res.data.list, listContainer);
+                        // 数据量变动时刷新分类统计
+                        loadCategoryCounts();
                         // 这里可以添加分页渲染逻辑
                     } else {
                         listContainer.innerHTML = `<div class="text-center text-danger py-5">加载失败: ${res.message}</div>`;

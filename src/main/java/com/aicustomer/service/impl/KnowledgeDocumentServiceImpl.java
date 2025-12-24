@@ -94,4 +94,22 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     public void incrementDownloadCount(Long id) {
         knowledgeDocumentMapper.incrementDownloadCount(id);
     }
+
+    @Override
+    public Map<String, Long> getCategoryCounts() {
+        List<Map<String, Object>> counts = knowledgeDocumentMapper.selectCategoryCounts();
+        Map<String, Long> result = new HashMap<>();
+        long total = 0;
+        for (Map<String, Object> map : counts) {
+            String name = (String) map.get("name");
+            Long count = ((Number) map.get("count")).longValue();
+            if (name == null || name.isEmpty()) {
+                name = "其他";
+            }
+            result.put(name, result.getOrDefault(name, 0L) + count);
+            total += count;
+        }
+        result.put("all", total);
+        return result;
+    }
 }

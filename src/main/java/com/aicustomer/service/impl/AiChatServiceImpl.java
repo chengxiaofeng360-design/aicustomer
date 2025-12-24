@@ -9,11 +9,13 @@ import com.aicustomer.service.DeepSeekService;
 import com.aicustomer.service.FaqQaService;
 import com.aicustomer.service.KnowledgeDocumentService;
 import com.aicustomer.service.KnowledgeQueryService;
+import com.aicustomer.service.KbDocumentService;
 import com.aicustomer.service.VectorSearchService;
 import com.aicustomer.service.CustomerQueryService;
 import com.aicustomer.service.ZhipuChatService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONArray;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.model.ChatModel;
@@ -23,6 +25,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,44 +58,36 @@ public class AiChatServiceImpl implements AiChatService {
     private final CustomerQueryService customerQueryService;
     private final KnowledgeQueryService knowledgeQueryService;
     private final ZhipuChatService zhipuChatService;
+    private final KbDocumentService kbDocumentService;
 
     @Qualifier("doubaoChatModel")
     private final ChatModel doubaoChatModel;
 
     // 系统提示词，定义AI助手的角色和行为
     private static final String SYSTEM_PROMPT = "你是一个专业的AI客户管理助手。" +
-            "你的职责是帮助用户解答关于客户管理、业务分析等问题。" +
-            "\n\n### 极其重要的回复原则 (面向非技术用户) ###\n" +
-            "1. **禁止使用技术术语**：在回复用户时，严禁使用“数据库”、“表”、“字段”、“列”、“SQL”、“代码”、“JSON”、“null”、“表结构”等词汇。用户不知道这些是什么。\n" +
-            "2. **身份定位**：你是一个贴心的业务助手，不是一个编程接口。你的回复应该像真人一样自然。\n" +
-            "3. **强制工具调用**：只要用户询问涉及客户的数量、名单、具体信息，你**必须**生成查询指令，**严禁凭历史对话或记忆猜测数据**。哪怕你刚查过，也请再次生成指令以确保准确。\n" +
-            "4. **自然解释缺失信息**：如果用户询问的信息在系统中没有记录（如性别、年龄等），请礼貌地自然解释，例如：“抱歉，我们的系统中目前没有这些信息。” 而不是说“表中没有这个字段”。\n" +
-            "5. **数据展示**：拿到数据后，请直接以自然语言或清晰的表格告知用户结果，不要提及是如何查询到的。\n" +
-            "\n\n### 数据库查询工具说明 (仅供你内部使用) ###\n" +
-            "当用户需要查询客户数据（如统计、筛选、详情）时，你必须根据以下结构生成指令，但**不要在回复中提到这些结构**。\n" +
-            "**可用信息：**\n" +
-            "- `customer_name` (客户名称/企业名)\n" +
-            "- `contact_person` (联系人)\n" +
-            "- `region` (地区，如北京、上海)\n" +
-            "- `customer_level` (等级: 1-普通, 2-VIP, 3-钻石)\n" +
-            "- `business_type` (业务: 1-品种权申请, 2-品种权转化, 3-知识产权协作, 4-科普教育, 5-景观设计, 6-图书出版)\n" +
-            "- `status` (状态: 1-正常, 2-冻结, 3-注销)\n" +
-            "- `create_time` (创建时间)\n" +
-            "- `remark` (备注)\n" +
-            "\n**可用资料信息 (知识库/上传资料)：**\n" +
-            "- `title` (文档标题)\n" +
-            "- `file_name` (原始文件名)\n" +
-            "- `file_type` (文件类型: pdf, word, excel, txt)\n" +
-            "- `category` (分类)\n" +
-            "- `summary` (摘要)\n" +
-            "\n**工具调用格式 (内部指令)：**\n" +
-            "1. 客户查询: `{\"tool\": \"dynamic_sql_query\", \"sql\": \"SELECT ... FROM customer WHERE ...\"}`\n" +
-            "2. 资料统计: `{\"tool\": \"query_knowledge_count\"}`\n" +
-            "3. 资料清单: `{\"tool\": \"query_knowledge_list\", \"parameters\": {\"limit\": 20}}`\n" +
+            "\n\n### 极其重要的回复原则 ###\n" +
+            "1. **强制工具调用 (核心指令)**：你本身并不了解系统的任何实时数据。只要用户的问题涉及“有多少文件”、“有哪些资料”、“查看文件内容”、“查找客户”、“统计数据”等，你**必须且仅能**通过调用下方定义的 JSON 工具指令来获取。**严禁凭猜测回答。**\n"
+            +
+            "2. **严禁解释过程**：你的回复中不要提到“我在查表”、“调用接口”等。用户只需要答案。\n" +
+            "3. **先查后说**：对于任何关于“资料/清单/详情”的问题，必须先输出 JSON 工具指令。\n" +
+            "\n\n### 数据库查询工具说明 ###\n" +
+            "**可用资料信息 (知识库)：**\n" +
+            "- `query_knowledge_count`: 用于统计当前上传的文件总数。\n" +
+            "- `query_knowledge_list`: 用于获取已上传文件的列表。\n" +
+            "- `query_knowledge_detail`: 用于获取特定文件的详细全文内容。参数: {\"fileName\": \"文件名或标题\"}\n" +
+            "\n**可用客户信息：**\n" +
+            "- `dynamic_sql_query`: **仅用于查询客户数据** (数据源是 customer 表)。禁止用于查询知识库文档内容。\n" +
+            "\n**工具调用格式：**\n" +
+            "{\n" +
+            "  \"tool\": \"工具名\",\n" +
+            "  \"parameters\": { \"key\": \"value\" }\n" +
+            "}\n" +
             "\n**操作原则：**\n" +
-            "1. 只要涉及客户数量、具体客户信息，必须使用 `dynamic_sql_query`。\n" +
-            "2. 只要涉及**上传资料的数量、有哪些文件、文件清单**，必须调用 `query_knowledge_count` 或 `query_knowledge_list`。\n" +
-            "3. 拿到数据后，整合为自然、友好的回复。不要提到工具名。";
+            "1. 用户问“有哪些资料”、“上传了什么”，用 `{\"tool\": \"query_knowledge_list\"}`。\n" +
+            "2. 用户问“有多少个文件”，用 `{\"tool\": \"query_knowledge_count\"}`。\n" +
+            "3. 用户问“某某文件的内容是什么”、“查看某某文件”，用 `{\"tool\": \"query_knowledge_detail\", \"parameters\": {\"fileName\": \"xxx\"}}`。\n"
+            +
+            "4. 只有当工具返回数据后，才整合为自然语言回复。";
 
     @Override
     public AiChat sendMessage(String sessionId, String userMessage, Long customerId) {
@@ -152,143 +150,93 @@ public class AiChatServiceImpl implements AiChatService {
      * @param history     对话历史（可选，用于多轮对话）
      */
     private String generateAiResponse(String userMessage, List<Map<String, String>> history) {
-        System.out.println("【AI聊天服务】开始生成AI回复");
-        System.out.println("【AI聊天服务】用户消息: " + userMessage);
+        log.info("【AI聊天服务】开始处理查询: {}", userMessage);
 
         // 1. 第一层：FAQ匹配
         try {
             List<FaqQa> faqs = faqQaService.searchFaq(userMessage, 1);
             if (faqs != null && !faqs.isEmpty()) {
                 FaqQa faq = faqs.get(0);
-                // 简单判断：如果包含关键词或问题长度相似，认为匹配成功
-                // 实际生产中应该有更复杂的相似度计算
                 log.info("【AI聊天服务】命中FAQ: {}", faq.getQuestion());
-                System.out.println("【AI聊天服务】命中FAQ: " + faq.getQuestion());
                 faqQaService.incrementHitCount(faq.getId());
                 return faq.getAnswer() + "\n\n(来源: 常见问题库)";
             }
         } catch (Exception e) {
-            log.error("【AI聊天服务】FAQ匹配失败: {}", e.getMessage());
+            log.error("【AI聊天服务】FAQ匹配异常: {}", e.getMessage());
         }
 
-        // 2. 第二层A：向量搜索（语义匹配，更精准）
-        try {
-            if (vectorSearchService.isAvailable()) {
-                log.info("【AI聊天服务】开始向量搜索，查询: {}", userMessage);
-                List<Map<String, Object>> vectorResults = vectorSearchService.searchByVector(userMessage, 3);
-
-                if (vectorResults != null && !vectorResults.isEmpty()) {
-                    // 获取第一个高相似度结果
-                    Map<String, Object> topResult = vectorResults.get(0);
-                    double score = (Double) topResult.getOrDefault("score", 0.0);
-                    String title = (String) topResult.get("title");
-                    String content = (String) topResult.get("content");
-
-                    // 相似度阈值设为0.65，同时检查内容是否真的包含查询关键词
-                    boolean contentContainsQuery = (content != null
-                            && content.toLowerCase().contains(userMessage.toLowerCase())) ||
-                            (title != null && title.toLowerCase().contains(userMessage.toLowerCase()));
-
-                    // 高相似度(>0.65)直接返回，或者中等相似度(>0.55)且内容包含关键词也返回
-                    if (score > 0.65 || (score > 0.55 && contentContainsQuery)) {
-                        log.info("【AI聊天服务】向量搜索命中文档，score: {}, title: {}, 包含关键词: {}",
-                                score, title, contentContainsQuery);
-
-                        StringBuilder answer = new StringBuilder();
-                        answer.append("**").append(title).append("**\n\n");
-                        if (content != null && content.length() > 2000) {
-                            answer.append(content.substring(0, 2000)).append("...\n\n*（内容较长，已截取）*");
-                        } else if (content != null) {
-                            answer.append(content);
-                        }
-                        answer.append("\n\n(来源: 知识库向量搜索，相似度: ").append(String.format("%.2f", score)).append(")");
-                        return answer.toString();
-                    }
-
-                    log.info("【AI聊天服务】向量搜索结果相似度较低({})或不包含关键词, 继续使用全文搜索", score);
-                }
-            } else {
-                log.info("【AI聊天服务】向量搜索服务不可用，使用MySQL全文搜索");
-            }
-        } catch (Exception e) {
-            log.warn("【AI聊天服务】向量搜索失败，回退到MySQL: {}", e.getMessage());
-        }
-
-        // 2. 第二层B：知识库MySQL全文搜索（作为向量搜索的回退）
+        // 2. 知识库检索与主动干预准备
         StringBuilder contextBuilder = new StringBuilder();
         try {
-            log.info("【AI聊天服务】开始全文搜索知识库，关键词: {}", userMessage);
-            List<KnowledgeDocument> documents = knowledgeDocumentService.searchDocuments(userMessage, 3);
-            log.info("【AI聊天服务】知识库搜索结果数量: {}", documents != null ? documents.size() : 0);
-
-            if (documents != null && !documents.isEmpty()) {
-                System.out.println("【AI聊天服务】搜索到知识库文档: " + documents.size() + "篇");
-
-                // 检查是否有高度匹配的文档（标题包含关键词或内容开头包含关键词）
-                for (KnowledgeDocument doc : documents) {
-                    log.info("【AI聊天服务】找到文档: id={}, title={}, contentLength={}",
-                            doc.getId(), doc.getTitle(), doc.getContent() != null ? doc.getContent().length() : 0);
-
-                    String title = doc.getTitle() != null ? doc.getTitle().toLowerCase() : "";
-                    String content = doc.getContent() != null ? doc.getContent() : "";
-                    String searchTermLower = userMessage.toLowerCase();
-
-                    // 如果标题高度匹配，直接返回知识库内容
-                    if (title.contains(searchTermLower)
-                            || searchTermLower.contains(title.replace("是什么", "").replace("什么是", ""))) {
-                        log.info("【AI聊天服务】找到高度匹配的知识库文档，直接返回: {}", doc.getTitle());
-                        knowledgeDocumentService.incrementViewCount(doc.getId());
-
-                        // 格式化返回内容
-                        StringBuilder answer = new StringBuilder();
-                        answer.append("**").append(doc.getTitle()).append("**\n\n");
-
-                        // 返回完整内容（如果内容过长则截取）
-                        if (content.length() > 2000) {
-                            answer.append(content.substring(0, 2000)).append("...\n\n*（内容较长，已截取）*");
-                        } else {
-                            answer.append(content);
+            // 语义/向量搜索 (如果可用)
+            if (vectorSearchService.isAvailable()) {
+                List<Map<String, Object>> vectorResults = vectorSearchService.searchByVector(userMessage, 3);
+                if (vectorResults != null && !vectorResults.isEmpty()) {
+                    for (Map<String, Object> res : vectorResults) {
+                        double score = (Double) res.getOrDefault("score", 0.0);
+                        if (score > 0.65) {
+                            contextBuilder.append("相关文档[").append(res.get("title")).append("]: ")
+                                    .append(res.get("content")).append("\n\n");
                         }
-                        answer.append("\n\n(来源: 知识库文档)");
-                        return answer.toString();
                     }
                 }
-
-                // 如果没有高度匹配，构建上下文供AI参考
-                contextBuilder.append("以下是参考资料：\n");
-                for (int i = 0; i < documents.size(); i++) {
-                    KnowledgeDocument doc = documents.get(i);
-                    contextBuilder.append(i + 1).append(". ").append(doc.getTitle()).append("：\n");
-                    // 截取部分内容作为上下文，避免Token过长
-                    String content = doc.getContent();
-                    if (content.length() > 500) {
-                        content = content.substring(0, 500) + "...";
-                    }
-                    contextBuilder.append(content).append("\n\n");
-
-                    // 增加查看次数
-                    knowledgeDocumentService.incrementViewCount(doc.getId());
-                }
-            } else {
-                log.info("【AI聊天服务】知识库中未找到相关文档");
+            }
+            // 全文检索回退
+            List<KnowledgeDocument> documents = knowledgeDocumentService.searchDocuments(userMessage, 3);
+            List<com.aicustomer.entity.KbDocument> kbDocs = kbDocumentService.searchDocuments(userMessage, null, null,
+                    3);
+            if (documents != null) {
+                for (KnowledgeDocument d : documents)
+                    contextBuilder.append("资料[").append(d.getTitle()).append("]: ").append(d.getContent())
+                            .append("\n\n");
+            }
+            if (kbDocs != null) {
+                for (com.aicustomer.entity.KbDocument d : kbDocs)
+                    contextBuilder.append("上传资料[").append(d.getTitle()).append("]: ").append(d.getContent())
+                            .append("\n\n");
             }
         } catch (Exception e) {
-            log.error("【AI聊天服务】知识库搜索失败: {}", e.getMessage(), e);
+            log.warn("【AI聊天服务】检索过程异常: {}", e.getMessage());
         }
 
         String context = contextBuilder.toString();
-        String finalSystemPrompt = SYSTEM_PROMPT;
+        String lowerMsg = userMessage.toLowerCase();
+        boolean isKnowledgeQuery = lowerMsg.contains("文件") || lowerMsg.contains("上传") || lowerMsg.contains("资料")
+                || lowerMsg.contains("清单") || lowerMsg.contains("多少") || lowerMsg.contains("统计")
+                || lowerMsg.contains("内容") || lowerMsg.contains("详情");
 
-        if (!context.isEmpty()) {
-            finalSystemPrompt += "\n\n" + context + "\n请根据上述参考资料回答用户问题。如果参考资料中没有相关信息，请利用你的通用知识回答。";
+        String finalSystemPrompt = SYSTEM_PROMPT;
+        String enhancedUserMessage = userMessage;
+
+        // 【核心干预】
+        if (isKnowledgeQuery) {
+            String realTimeCount = knowledgeQueryService.getKnowledgeCount();
+            String realTimeList = knowledgeQueryService.getKnowledgeList(10);
+
+            // 调试日志记录
+            try {
+                Path debugPath = Paths.get("/Users/zuozuo/Downloads/cxf/aicustomer/ai_debug.log");
+                String logMsg = String.format("[%s] User: %s | Result: %s\n", LocalDateTime.now(), userMessage,
+                        realTimeCount);
+                Files.write(debugPath, logMsg.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (Exception ignore) {
+            }
+
+            // 将绝对真实的系统状态注入用户消息首部，确保 AI 无法回避
+            enhancedUserMessage = String.format("### 当前系统实时状态 (极高优先级) ###\n%s\n- 详细清单：%s\n\n请根据上述真实数据回答：\n%s",
+                    realTimeCount, realTimeList, userMessage);
+
+            log.info("【AI聊天服务】已执行主动干预，注入数据: {}", realTimeCount);
         }
 
-        // 3. 第三层：AI生成
-        // 优先级顺序：DeepSeek -> 豆包 (Spring AI) -> 智谱 (Zhipu)
+        if (!context.isEmpty()) {
+            finalSystemPrompt += "\n\n### 检索到的背景资料 ###\n"
+                    + (context.length() > 3000 ? context.substring(0, 3000) : context);
+        }
 
-        // A. 优先尝试 DeepSeek
+        // 3. AI 调用
+        // A. DeepSeek
         if (deepSeekService.isAvailable()) {
-            System.out.println("【AI聊天服务】优先使用 DeepSeek 服务");
             try {
                 String aiReply;
                 if (history != null && !history.isEmpty()) {
@@ -298,93 +246,101 @@ public class AiChatServiceImpl implements AiChatService {
                     systemMsg.put("content", finalSystemPrompt);
                     messages.add(systemMsg);
 
-                    int historySize = Math.min(history.size(), 20);
-                    for (int i = Math.max(0, history.size() - historySize); i < history.size(); i++) {
+                    int startIdx = Math.max(0, history.size() - 10); // 最近10轮
+                    for (int i = startIdx; i < history.size(); i++) {
                         messages.add(history.get(i));
                     }
 
                     Map<String, String> userMsg = new HashMap<>();
                     userMsg.put("role", "user");
-                    userMsg.put("content", userMessage);
+                    userMsg.put("content", enhancedUserMessage);
                     messages.add(userMsg);
                     aiReply = deepSeekService.chatWithHistory(messages);
                 } else {
-                    aiReply = deepSeekService.chat(userMessage, finalSystemPrompt);
+                    aiReply = deepSeekService.chat(enhancedUserMessage, finalSystemPrompt);
                 }
 
-                if (aiReply != null && !aiReply.trim().isEmpty()) {
-                    aiReply = processPotentialToolCall(aiReply, userMessage, finalSystemPrompt, "deepseek");
-                    if (!context.isEmpty() && !aiReply.contains("(来源:")) {
-                        aiReply += "\n\n(来源: 知识库智能生成 - DeepSeek)";
+                if (aiReply != null && !aiReply.trim().isEmpty() && !aiReply.startsWith("⚠️")) {
+                    String finalReply = finalizeResponse(aiReply, userMessage, finalSystemPrompt, "deepseek", context);
+                    if (finalReply != null && !finalReply.startsWith("⚠️")) {
+                        return finalReply;
                     }
-                    return aiReply;
+                    log.warn("【AI聊天服务】DeepSeek 的最终回复（含工具调用）包含错误，尝试下一个模型");
+                } else if (aiReply != null && aiReply.startsWith("⚠️")) {
+                    log.warn("【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: {}", aiReply);
                 }
             } catch (Exception e) {
-                log.warn("【AI聊天服务】DeepSeek 调用失败，准备回退到豆包: {}", e.getMessage());
+                log.warn("【DeepSeek失败】: {}", e.getMessage());
             }
         }
 
-        // B. 其次尝试豆包 (Spring AI)
+        // B. 豆包 (Doubao)
         try {
-            System.out.println("【AI聊天服务】回退使用 Spring AI 豆包模型");
-            List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
-            messages.add(new org.springframework.ai.chat.messages.SystemMessage(finalSystemPrompt));
-
-            if (history != null && !history.isEmpty()) {
-                for (Map<String, String> historyItem : history) {
-                    String role = historyItem.get("role");
-                    String content = historyItem.get("content");
-                    if (content != null && !content.trim().isEmpty()) {
-                        if ("user".equals(role))
-                            messages.add(new org.springframework.ai.chat.messages.UserMessage(content));
-                        else if ("assistant".equals(role))
-                            messages.add(new org.springframework.ai.chat.messages.AssistantMessage(content));
-                    }
+            log.info("【AI聊天服务】尝试豆包模型");
+            List<org.springframework.ai.chat.messages.Message> springMessages = new ArrayList<>();
+            springMessages.add(new org.springframework.ai.chat.messages.SystemMessage(finalSystemPrompt));
+            if (history != null) {
+                for (Map<String, String> h : history) {
+                    if ("user".equals(h.get("role")))
+                        springMessages.add(new org.springframework.ai.chat.messages.UserMessage(h.get("content")));
+                    else
+                        springMessages.add(new org.springframework.ai.chat.messages.AssistantMessage(h.get("content")));
                 }
             }
-            messages.add(new org.springframework.ai.chat.messages.UserMessage(userMessage));
+            springMessages.add(new org.springframework.ai.chat.messages.UserMessage(enhancedUserMessage));
 
-            ChatResponse chatResponse = doubaoChatModel.call(new Prompt(messages));
+            ChatResponse chatResponse = doubaoChatModel.call(new Prompt(springMessages));
             String aiReply = chatResponse.getResult().getOutput().getContent();
-
-            if (aiReply != null && !aiReply.trim().isEmpty()) {
-                aiReply = processPotentialToolCall(aiReply, userMessage, finalSystemPrompt, "doubao");
-                if (!context.isEmpty() && !aiReply.contains("(来源:")) {
-                    aiReply += "\n\n(来源: 知识库智能生成 - 豆包)";
+            if (aiReply != null && !aiReply.trim().isEmpty() && !aiReply.startsWith("⚠️")) {
+                String finalReply = finalizeResponse(aiReply, userMessage, finalSystemPrompt, "doubao", context);
+                if (finalReply != null && !finalReply.startsWith("⚠️")) {
+                    return finalReply;
                 }
-                return aiReply;
+            } else if (aiReply != null && aiReply.startsWith("⚠️")) {
+                log.warn("【AI聊天服务】豆包返回了错误状态，准备回退: {}", aiReply);
             }
         } catch (Exception e) {
-            log.warn("【AI聊天服务】豆包模型调用失败，准备回退到智谱: {}", e.getMessage());
+            log.warn("【豆包失败】: {}", e.getMessage());
         }
 
-        // C. 最后尝试智谱 (Zhipu AI)
+        // C. 智谱 (Zhipu)
         if (zhipuChatService.isAvailable()) {
             try {
-                System.out.println("【AI聊天服务】回退使用智谱 AI 服务");
-                String aiReply = zhipuChatService.chat(userMessage, finalSystemPrompt);
-                if (aiReply != null && !aiReply.trim().isEmpty()) {
-                    aiReply = processPotentialToolCall(aiReply, userMessage, finalSystemPrompt, "zhipu");
-                    if (!context.isEmpty() && !aiReply.contains("(来源:")) {
-                        aiReply += "\n\n(来源: 知识库智能生成 - 智谱)";
+                String aiReply = zhipuChatService.chat(enhancedUserMessage, finalSystemPrompt);
+                if (aiReply != null && !aiReply.trim().isEmpty() && !aiReply.startsWith("⚠️")) {
+                    String finalReply = finalizeResponse(aiReply, userMessage, finalSystemPrompt, "zhipu", context);
+                    if (finalReply != null && !finalReply.startsWith("⚠️")) {
+                        return finalReply;
                     }
-                    return aiReply;
                 }
             } catch (Exception e) {
-                log.error("【AI聊天服务】所有 AI 服务调用均失败: {}", e.getMessage());
+                log.warn("【AI聊天服务】智谱调用失败: {}", e.getMessage());
             }
         }
 
-        // 4. 最终回退：规则匹配
         return generateFallbackResponse(userMessage);
+    }
+
+    /**
+     * 统一处理 AI 回复的后置逻辑
+     */
+    private String finalizeResponse(String aiReply, String userMessage, String systemPrompt, String modelType,
+            String context) {
+        String processed = processPotentialToolCall(aiReply, userMessage, systemPrompt, modelType);
+        if (!context.isEmpty() && !processed.contains("(来源:")) {
+            processed += "\n\n(来源: 知识库检索 - " + modelType + ")";
+        }
+        return processed;
     }
 
     /**
      * 检查并处理 AI 回复中可能存在的工具调用
      */
     private String processPotentialToolCall(String aiReply, String userMessage, String systemPrompt, String modelType) {
+        log.info("【AI聊天服务】模型 {} 的原始回复: {}", modelType, aiReply);
         if (aiReply.contains("{") && aiReply.contains("}")) {
             String toolResult = executeTool(aiReply);
+            log.info("【AI聊天服务】模型 {} 的工具执行结果: {}", modelType, toolResult);
             if (toolResult != null) {
                 log.info("【AI聊天服务】工具结果获取成功 ({})，进行二次生成...", modelType);
                 String followUpMessage = userMessage + "\n\n(工具查询结果: " + toolResult + ", 请整合并回复)";
@@ -401,6 +357,8 @@ public class AiChatServiceImpl implements AiChatService {
                     case "zhipu" -> zhipuChatService.chat(followUpMessage, systemPrompt);
                     default -> aiReply;
                 };
+            } else {
+                log.warn("【AI聊天服务】工具 {} 执行结果为空", aiReply);
             }
         }
         return aiReply;
@@ -464,21 +422,52 @@ public class AiChatServiceImpl implements AiChatService {
         return newSessionId;
     }
 
-    /**
-     * 执行 AI 调用的工具
-     */
     private String executeTool(String aiReply) {
         try {
-            // 提取 JSON 部分
-            int startIndex = aiReply.indexOf("{");
-            int endIndex = aiReply.lastIndexOf("}");
+            // 提取 JSON 部分 - 寻找最外层的 { } 或 [ ]
+            int braceStart = aiReply.indexOf("{");
+            int bracketStart = aiReply.indexOf("[");
+            int startIndex = -1;
+
+            if (braceStart != -1 && bracketStart != -1)
+                startIndex = Math.min(braceStart, bracketStart);
+            else if (braceStart != -1)
+                startIndex = braceStart;
+            else if (bracketStart != -1)
+                startIndex = bracketStart;
+
+            int braceEnd = aiReply.lastIndexOf("}");
+            int bracketEnd = aiReply.lastIndexOf("]");
+            int endIndex = -1;
+
+            if (braceEnd != -1 && bracketEnd != -1)
+                endIndex = Math.max(braceEnd, bracketEnd);
+            else if (braceEnd != -1)
+                endIndex = braceEnd;
+            else if (bracketEnd != -1)
+                endIndex = bracketEnd;
+
             if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
                 return null;
             }
 
             String jsonStr = aiReply.substring(startIndex, endIndex + 1);
-            log.info("【AI聊天服务】解析到工具调用 JSON: {}", jsonStr);
-            JSONObject json = JSON.parseObject(jsonStr);
+            log.info("【AI聊天服务】解析到工具调用字符串: {}", jsonStr);
+
+            Object parsed = JSON.parse(jsonStr);
+            JSONObject json = null;
+
+            if (parsed instanceof JSONArray) {
+                JSONArray array = (JSONArray) parsed;
+                if (!array.isEmpty()) {
+                    json = array.getJSONObject(0);
+                }
+            } else if (parsed instanceof JSONObject) {
+                json = (JSONObject) parsed;
+            }
+
+            if (json == null)
+                return null;
 
             // 支持两种格式: {"tool": "name", ...} 和 {"name": "name", "parameters": {...}}
             String tool = json.getString("tool");
@@ -505,6 +494,7 @@ public class AiChatServiceImpl implements AiChatService {
                 case "query_knowledge_count" -> knowledgeQueryService.getKnowledgeCount();
                 case "query_knowledge_list" -> knowledgeQueryService
                         .getKnowledgeList(params.getInteger("limit") != null ? params.getInteger("limit") : 20);
+                case "query_knowledge_detail" -> knowledgeQueryService.getKnowledgeDetail(params.getString("fileName"));
                 default -> null; // 未知工具返回 null，表示不进行二次生成
             };
         } catch (Exception e) {

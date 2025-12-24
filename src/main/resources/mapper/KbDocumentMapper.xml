@@ -24,7 +24,6 @@
         <result column="like_count" property="likeCount"/>
         <result column="is_active" property="isActive"/>
         <result column="is_public" property="isPublic"/>
-        <result column="created_by" property="createBy"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="create_by" property="createBy"/>
@@ -46,6 +45,9 @@
         <if test="document.isActive != null">
             AND is_active = #{document.isActive}
         </if>
+        <if test="document.title != null and document.title != ''">
+            AND (title LIKE CONCAT('%', #{document.title}, '%') OR file_name LIKE CONCAT('%', #{document.title}, '%'))
+        </if>
         ORDER BY priority DESC, create_time DESC
         LIMIT #{offset}, #{limit}
     </select>
@@ -54,14 +56,17 @@
     <select id="selectCount" resultType="java.lang.Long">
         SELECT COUNT(*) FROM kb_document 
         WHERE deleted = 0
-        <if test="document.categoryId != null">
-            AND category_id = #{document.categoryId}
+        <if test="categoryId != null">
+            AND category_id = #{categoryId}
         </if>
-        <if test="document.fileType != null and document.fileType != ''">
-            AND file_type = #{document.fileType}
+        <if test="fileType != null and fileType != ''">
+            AND file_type = #{fileType}
         </if>
-        <if test="document.isActive != null">
-            AND is_active = #{document.isActive}
+        <if test="isActive != null">
+            AND is_active = #{isActive}
+        </if>
+        <if test="title != null and title != ''">
+            AND (title LIKE CONCAT('%', #{title}, '%') OR file_name LIKE CONCAT('%', #{title}, '%'))
         </if>
     </select>
 

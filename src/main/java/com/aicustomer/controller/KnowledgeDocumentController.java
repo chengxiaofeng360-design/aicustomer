@@ -67,15 +67,6 @@ public class KnowledgeDocumentController {
     }
 
     /**
-     * 获取文档详情
-     */
-    @GetMapping("/{id}")
-    public Result<KnowledgeDocument> getDocument(@PathVariable Long id) {
-        knowledgeDocumentService.incrementViewCount(id);
-        return Result.success(knowledgeDocumentService.getDocument(id));
-    }
-
-    /**
      * 获取文档列表
      */
     @GetMapping("/list")
@@ -87,6 +78,23 @@ public class KnowledgeDocumentController {
             @RequestParam(defaultValue = "10") int pageSize) {
         return Result
                 .success(knowledgeDocumentService.getDocumentList(keyword, category, documentType, pageNum, pageSize));
+    }
+
+    /**
+     * 获取分类统计
+     */
+    @GetMapping("/statistics/category-counts")
+    public Result<Map<String, Long>> getCategoryCounts() {
+        return Result.success(knowledgeDocumentService.getCategoryCounts());
+    }
+
+    /**
+     * 获取文档详情
+     */
+    @GetMapping("/{id}")
+    public Result<KnowledgeDocument> getDocument(@PathVariable Long id) {
+        knowledgeDocumentService.incrementViewCount(id);
+        return Result.success(knowledgeDocumentService.getDocument(id));
     }
 
     /**
