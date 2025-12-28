@@ -8,71 +8,216 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .container-fluid {
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
             padding: 20px;
         }
 
+        .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title i {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-title h2 {
+            font-weight: 700;
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .page-subtitle {
+            color: #718096;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* 卡片样式 */
         .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border: none;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
 
         .card-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-radius: 10px 10px 0 0 !important;
-            padding: 15px 20px;
+            border: none;
+            padding: 20px 30px;
             font-weight: 600;
+            font-size: 1.1rem;
         }
 
+        .card-body {
+            padding: 30px;
+        }
+
+        /* 按钮样式 */
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .btn-primary:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
+        /* 表格样式 */
+        .table {
+            margin: 0;
+        }
+
+        .table thead th {
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            border: none;
+            padding: 15px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            border-color: #e2e8f0;
+        }
+
+        .table tbody tr {
+            transition: all 0.2s;
+        }
+
+        .table tbody tr:hover {
+            background: #f7fafc;
+            transform: scale(1.01);
+        }
+
+        /* 模态框样式 */
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 25px 30px;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        /* 权限区域 */
         .permission-section {
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #e2e8f0;
         }
 
         .permission-section h6 {
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 8px;
+            color: #2d3748;
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
+        .permission-section h6 i {
+            color: #667eea;
+            font-size: 1.3rem;
+        }
+
+        /* 权限网格 */
         .permission-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
         }
 
         .permission-item {
             background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 10px 15px;
-            transition: all 0.2s;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
         }
 
         .permission-item:hover {
             border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .permission-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .permission-item label {
+            cursor: pointer;
+            margin: 0;
+            font-weight: 500;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .permission-item input[type="checkbox"]:checked+label {
@@ -80,33 +225,106 @@
             font-weight: 600;
         }
 
-        .form-check-input:checked {
-            background-color: #667eea;
-            border-color: #667eea;
-        }
-
+        /* 数据权限项 */
         .data-permission-item {
             background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            transition: all 0.2s;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
         }
 
         .data-permission-item:hover {
             border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
         }
 
-        .data-permission-item input[type="checkbox"]:checked {
-            background-color: #667eea;
+        .data-permission-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #667eea;
+            margin-right: 12px;
+        }
+
+        .data-permission-item label {
+            cursor: pointer;
+            margin: 0;
+            flex: 1;
+        }
+
+        .data-permission-item strong {
+            color: #2d3748;
+            font-size: 1.05rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .data-permission-item small {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        /* 表单样式 */
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .form-control,
+        .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
             border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
 
+        /* 徽章样式 */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        /* 分隔线 */
         .section-divider {
             height: 2px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, transparent, #667eea, #764ba2, transparent);
             margin: 30px 0;
+            border-radius: 2px;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .permission-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -114,21 +332,27 @@
 <body>
     <div class="container-fluid">
         <!-- 页面标题 -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-users"></i> 用户管理</h2>
+        <div class="page-header">
+            <div class="page-title">
+                <i class="fas fa-users-cog"></i>
+                <div>
+                    <h2>用户管理</h2>
+                    <p class="page-subtitle">管理系统用户及其访问权限</p>
+                </div>
+            </div>
             <button class="btn btn-primary" onclick="showCreateUserModal()">
-                <i class="fas fa-plus"></i> 新建用户
+                <i class="fas fa-plus me-2"></i> 新建用户
             </button>
         </div>
 
         <!-- 用户列表 -->
         <div class="card">
             <div class="card-header">
-                <i class="fas fa-list"></i> 用户列表
+                <i class="fas fa-list me-2"></i> 用户列表
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th>用户名</th>
@@ -141,7 +365,11 @@
                         </thead>
                         <tbody id="userTableBody">
                             <tr>
-                                <td colspan="6" class="text-center">加载中...</td>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">加载中...</span>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -155,48 +383,48 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="userModalTitle">新建用户</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="userModalTitle">
+                        <i class="fas fa-user-plus me-2"></i> 新建用户
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="userForm">
                         <input type="hidden" id="userId">
 
                         <!-- 基本信息 -->
-                        <div class="card mb-3">
-                            <div class="card-header bg-light">
-                                <i class="fas fa-user"></i> 基本信息
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">用户名 <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="username" required>
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">密码 <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" id="password" required>
-                                        <small class="text-muted">编辑时留空表示不修改</small>
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">真实姓名 <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="realName" required>
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">状态</label>
-                                        <select class="form-select" id="status">
-                                            <option value="1">正常</option>
-                                            <option value="2">禁用</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">邮箱</label>
-                                        <input type="email" class="form-control" id="email">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">手机号</label>
-                                        <input type="tel" class="form-control" id="phone">
-                                    </div>
+                        <div class="permission-section">
+                            <h6><i class="fas fa-id-card"></i> 基本信息</h6>
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">用户名 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="username" required placeholder="请输入用户名">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">密码 <span class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" id="password" required
+                                        placeholder="请输入密码">
+                                    <small class="text-muted">编辑时留空表示不修改</small>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">真实姓名 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="realName" required
+                                        placeholder="请输入真实姓名">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">状态</label>
+                                    <select class="form-select" id="status">
+                                        <option value="1">正常</option>
+                                        <option value="2">禁用</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">邮箱</label>
+                                    <input type="email" class="form-control" id="email" placeholder="请输入邮箱">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">手机号</label>
+                                    <input type="tel" class="form-control" id="phone" placeholder="请输入手机号">
                                 </div>
                             </div>
                         </div>
@@ -205,9 +433,10 @@
 
                         <!-- 菜单权限 -->
                         <div class="permission-section">
-                            <h6><i class="fas fa-sitemap"></i> 菜单权限 - 勾选用户可以访问的菜单</h6>
+                            <h6><i class="fas fa-sitemap"></i> 菜单权限</h6>
+                            <p class="text-muted mb-3">勾选用户可以访问的菜单功能</p>
                             <div class="permission-grid" id="menuPermissions">
-                                <!-- 动态加载菜单权限 -->
+                                <!-- 动态加载 -->
                             </div>
                         </div>
 
@@ -215,17 +444,20 @@
 
                         <!-- 数据权限 -->
                         <div class="permission-section">
-                            <h6><i class="fas fa-database"></i> 数据权限 - 勾选用户可以访问的数据</h6>
+                            <h6><i class="fas fa-database"></i> 数据权限</h6>
+                            <p class="text-muted mb-3">勾选用户可以访问的数据范围和操作权限</p>
                             <div id="dataPermissions">
-                                <!-- 动态加载数据权限 -->
+                                <!-- 动态加载 -->
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i> 取消
+                    </button>
                     <button type="button" class="btn btn-primary" onclick="saveUser()">
-                        <i class="fas fa-save"></i> 保存
+                        <i class="fas fa-save me-2"></i> 保存
                     </button>
                 </div>
             </div>
@@ -261,16 +493,15 @@
 
         // 所有数据权限定义
         const allDataPermissions = [
-            { id: 'view-sensitive', name: '查看敏感数据', description: '可以查看客户的敏感信息（如身份证号、详细地址等）' },
-            { id: 'access-vip', name: '访问VIP客户', description: '可以查看和管理VIP等级的客户资料' },
-            { id: 'access-diamond', name: '访问钻石客户', description: '可以查看和管理钻石等级的客户资料' },
-            { id: 'export-data', name: '导出数据', description: '可以导出客户、沟通记录等数据为Excel' },
-            { id: 'delete-data', name: '删除数据', description: '可以删除客户、沟通记录等数据' },
-            { id: 'view-all-data', name: '查看所有数据', description: '可以查看所有人创建的数据，不限于自己的' },
-            { id: 'view-department-data', name: '查看本部门数据', description: '可以查看本部门所有人的数据' }
+            { id: 'view-sensitive', name: '查看敏感数据', description: '可以查看客户的敏感信息（如身份证号、详细地址等）', icon: '🔒' },
+            { id: 'access-vip', name: '访问VIP客户', description: '可以查看和管理VIP等级的客户资料', icon: '⭐' },
+            { id: 'access-diamond', name: '访问钻石客户', description: '可以查看和管理钻石等级的客户资料', icon: '💎' },
+            { id: 'export-data', name: '导出数据', description: '可以导出客户、沟通记录等数据为Excel', icon: '📤' },
+            { id: 'delete-data', name: '删除数据', description: '可以删除客户、沟通记录等数据', icon: '🗑️' },
+            { id: 'view-all-data', name: '查看所有数据', description: '可以查看所有人创建的数据，不限于自己的', icon: '🌍' },
+            { id: 'view-department-data', name: '查看本部门数据', description: '可以查看本部门所有人的数据', icon: '🏢' }
         ];
 
-        // 页面加载完成后初始化
         $(document).ready(function () {
             userModal = new bootstrap.Modal(document.getElementById('userModal'));
             loadUsers();
@@ -278,7 +509,6 @@
             renderDataPermissions();
         });
 
-        // 渲染菜单权限
         function renderMenuPermissions() {
             const container = $('#menuPermissions');
             container.empty();
@@ -286,18 +516,16 @@
             allMenus.forEach(menu => {
                 container.append(`
                     <div class="permission-item">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="menu_${menu.id}" value="${menu.id}">
-                            <label class="form-check-label" for="menu_${menu.id}">
-                                ${menu.icon} ${menu.name}
-                            </label>
-                        </div>
+                        <input class="form-check-input" type="checkbox" id="menu_${menu.id}" value="${menu.id}">
+                        <label class="form-check-label" for="menu_${menu.id}">
+                            <span>${menu.icon}</span>
+                            <span>${menu.name}</span>
+                        </label>
                     </div>
                 `);
             });
         }
 
-        // 渲染数据权限
         function renderDataPermissions() {
             const container = $('#dataPermissions');
             container.empty();
@@ -305,20 +533,16 @@
             allDataPermissions.forEach(perm => {
                 container.append(`
                     <div class="data-permission-item">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="data_${perm.id}" value="${perm.id}">
-                            <label class="form-check-label" for="data_${perm.id}">
-                                <strong>${perm.name}</strong>
-                                <br>
-                                <small class="text-muted">${perm.description}</small>
-                            </label>
-                        </div>
+                        <input class="form-check-input" type="checkbox" id="data_${perm.id}" value="${perm.id}">
+                        <label class="form-check-label" for="data_${perm.id}">
+                            <strong>${perm.icon} ${perm.name}</strong>
+                            <small>${perm.description}</small>
+                        </label>
                     </div>
                 `);
             });
         }
 
-        // 加载用户列表
         function loadUsers() {
             $.get('/api/user/list', function (response) {
                 if (response.code === 200) {
@@ -327,13 +551,12 @@
             });
         }
 
-        // 渲染用户表格
         function renderUserTable(users) {
             const tbody = $('#userTableBody');
             tbody.empty();
 
             if (!users || users.length === 0) {
-                tbody.html('<tr><td colspan="6" class="text-center">暂无数据</td></tr>');
+                tbody.html('<tr><td colspan="6" class="text-center py-4">暂无数据</td></tr>');
                 return;
             }
 
@@ -344,13 +567,13 @@
 
                 tbody.append(`
                     <tr>
-                        <td>${user.username}</td>
+                        <td><strong>${user.username}</strong></td>
                         <td>${user.realName || '-'}</td>
                         <td>${user.email || '-'}</td>
                         <td>${user.phone || '-'}</td>
                         <td>${statusLabel}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick="editUser(${user.id})">
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick="editUser(${user.id})">
                                 <i class="fas fa-edit"></i> 编辑
                             </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})">
@@ -362,32 +585,25 @@
             });
         }
 
-        // 显示创建用户模态框
         function showCreateUserModal() {
-            $('#userModalTitle').text('新建用户');
+            $('#userModalTitle').html('<i class="fas fa-user-plus me-2"></i> 新建用户');
             $('#userForm')[0].reset();
             $('#userId').val('');
             $('#password').prop('required', true);
             $('#username').prop('readonly', false);
-
-            // 清空所有权限勾选
             $('input[type="checkbox"]').prop('checked', false);
-
-            // 默认勾选基础菜单
             $('#menu_home').prop('checked', true);
             $('#menu_customer-list').prop('checked', true);
             $('#menu_communication-list').prop('checked', true);
             $('#menu_message').prop('checked', true);
-
             userModal.show();
         }
 
-        // 编辑用户
         function editUser(userId) {
             $.get(`/api/user-permission/${userId}`, function (response) {
                 if (response.code === 200) {
                     const user = response.data;
-                    $('#userModalTitle').text('编辑用户');
+                    $('#userModalTitle').html('<i class="fas fa-user-edit me-2"></i> 编辑用户');
                     $('#userId').val(user.id);
                     $('#username').val(user.username).prop('readonly', true);
                     $('#password').val('').prop('required', false);
@@ -396,17 +612,14 @@
                     $('#phone').val(user.phone);
                     $('#status').val(user.status);
 
-                    // 清空所有权限勾选
                     $('input[type="checkbox"]').prop('checked', false);
 
-                    // 设置菜单权限
                     if (user.menuPermissions) {
                         user.menuPermissions.forEach(menuId => {
                             $(`#menu_${menuId}`).prop('checked', true);
                         });
                     }
 
-                    // 设置数据权限
                     if (user.dataPermission) {
                         if (user.dataPermission.canViewSensitive) $('#data_view-sensitive').prop('checked', true);
                         if (user.dataPermission.canAccessVip) $('#data_access-vip').prop('checked', true);
@@ -422,7 +635,6 @@
             });
         }
 
-        // 保存用户
         function saveUser() {
             const userId = $('#userId').val();
             const username = $('#username').val();
@@ -439,13 +651,11 @@
                 return;
             }
 
-            // 收集菜单权限
             const menuPermissions = [];
             $('#menuPermissions input[type="checkbox"]:checked').each(function () {
                 menuPermissions.push($(this).val());
             });
 
-            // 收集数据权限
             const dataPermission = {
                 canViewSensitive: $('#data_view-sensitive').is(':checked'),
                 canAccessVip: $('#data_access-vip').is(':checked'),
@@ -491,7 +701,6 @@
             });
         }
 
-        // 删除用户
         function deleteUser(userId) {
             if (!confirm('确定要删除该用户吗？')) {
                 return;
