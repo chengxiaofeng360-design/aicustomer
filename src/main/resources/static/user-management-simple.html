@@ -361,6 +361,7 @@
 
         // 数据权限
         const dataPermissions = [
+            { id: 'viewSensitive', name: '查看敏感数据', desc: '可以查看身份证号、银行卡号等敏感信息' },
             { id: 'export', name: '允许导出数据', desc: '可以导出Excel、CSV等格式' },
             { id: 'delete', name: '允许删除数据', desc: '可以删除客户、沟通记录等' }
         ];
@@ -475,6 +476,7 @@
                         });
                     }
                     if (u.dataPermission) {
+                        if (u.dataPermission.canViewSensitive) $('#data_viewSensitive').prop('checked', true);
                         if (u.dataPermission.canExport) $('#data_export').prop('checked', true);
                         if (u.dataPermission.canDelete) $('#data_delete').prop('checked', true);
                     }
@@ -516,6 +518,7 @@
                 status: 1,
                 menuPermissions,
                 dataPermission: {
+                    canViewSensitive: $('#data_viewSensitive').is(':checked'),
                     canExport: $('#data_export').is(':checked'),
                     canDelete: $('#data_delete').is(':checked')
                 }
