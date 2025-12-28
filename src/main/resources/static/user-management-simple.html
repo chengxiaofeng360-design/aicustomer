@@ -102,30 +102,34 @@
         }
 
         .form-section {
-            background: #f8f9fa;
+            background: #f8fafe;
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #edf2f7;
         }
 
         .form-section-title {
-            color: #667eea;
-            font-weight: 600;
-            font-size: 1rem;
+            color: #4a5568;
+            font-weight: 700;
+            font-size: 1.1rem;
             margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #edf2f7;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-section-title i {
+            color: #667eea;
         }
 
         .permission-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 10px;
-            background: white;
-            border-radius: 6px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+            padding: 5px 0;
+            background: transparent;
         }
 
         .permission-item {
@@ -137,7 +141,7 @@
         }
 
         .permission-item:hover {
-            background: #f0f4ff;
+            background: #edf2f7;
         }
 
         .permission-item input[type="checkbox"] {
@@ -150,14 +154,14 @@
         .permission-item label {
             margin: 0;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             user-select: none;
+            color: #4a5568;
         }
 
         .data-permission-box {
-            background: white;
-            border-radius: 6px;
-            padding: 15px;
+            background: transparent;
+            padding: 5px 0;
         }
 
         .data-permission-item {
@@ -333,32 +337,29 @@
     <script>
         let modal;
 
-        // 菜单列表
+        // 菜单权限 (已精简为核心模块)
         const menus = [
-            { id: 'home', name: '首页' },
-            { id: 'customer-list', name: '客户列表' },
-            { id: 'customer-add', name: '新增客户' },
-            { id: 'customer-import', name: '批量导入' },
-            { id: 'communication-list', name: '沟通记录' },
-            { id: 'communication-add', name: '新增记录' },
-            { id: 'ai-chat', name: 'AI对话' },
-            { id: 'ai-analysis', name: '智能分析' },
-            { id: 'team-task', name: '任务管理' },
-            { id: 'team-report', name: '进度汇报' },
-            { id: 'knowledge-doc', name: '文档管理' },
-            { id: 'knowledge-faq', name: '常见问题' },
-            { id: 'message', name: '消息中心' },
-            { id: 'report-customer', name: '客户统计' },
-            { id: 'report-business', name: '业务分析' },
-            { id: 'system-user', name: '用户管理' },
-            { id: 'system-config', name: '系统配置' }
+            { id: 'home', name: '首页与消息' },
+            { id: 'customer', name: '客户管理' },
+            { id: 'ai', name: '智能AI' },
+            { id: 'team', name: '团队协作' },
+            { id: 'knowledge', name: '知识库管理' },
+            { id: 'system', name: '系统管理' }
         ];
 
-        // 数据权限
+        // 这里的映射逻辑用于兼容旧的权限数据，防止编辑时丢失
+        const menuIdMap = {
+            'home': 'home', 'message': 'home',
+            'customer-list': 'customer', 'customer-add': 'customer', 'customer-import': 'customer', 'customer-pool': 'customer', 'contact-record': 'customer', 'communication-list': 'customer', 'communication-add': 'customer', 'report-customer': 'customer',
+            'ai-chat': 'ai', 'ai-analysis': 'ai', 'report-business': 'ai',
+            'team-task': 'team', 'team-report': 'team',
+            'knowledge-doc': 'knowledge', 'knowledge-faq': 'knowledge',
+            'system-user': 'system', 'system-config': 'system'
+        };
+
+        // 数据权限 (已整合为单项)
         const dataPermissions = [
-            { id: 'viewSensitive', name: '查看敏感数据', desc: '可以查看身份证号、银行卡号等敏感信息' },
-            { id: 'export', name: '允许导出数据', desc: '可以导出Excel、CSV等格式' },
-            { id: 'delete', name: '允许删除数据', desc: '可以删除客户、沟通记录等' }
+            { id: 'viewSensitive', name: '敏感数据处理', desc: '包含除普通用户外的查看、导出、编辑和删除' }
         ];
 
         $(document).ready(function () {
@@ -377,13 +378,13 @@
             `).join('');
             $('#menuList').html(menuHtml);
 
-            // 渲染数据权限
+            // 渲染数据权限 (单项渲染)
             const dataHtml = dataPermissions.map(p => `
-                <div class="data-permission-item d-flex align-items-start">
-                    <input type="checkbox" id="data_${p.id}" value="${p.id}">
+                <div class="permission-item align-items-start">
+                    <input type="checkbox" id="data_${p.id}" value="${p.id}" style="margin-top: 5px">
                     <label for="data_${p.id}">
-                        <strong>${p.name}</strong>
-                        <small>${p.desc}</small>
+                        <strong style="font-size: 0.95rem">${p.name}</strong>
+                        <div class="text-muted" style="font-size: 0.8rem">${p.desc}</div>
                     </label>
                 </div>
             `).join('');
@@ -465,13 +466,20 @@
                     $('input[type="checkbox"]').prop('checked', false);
                     if (u.menuPermissions) {
                         u.menuPermissions.forEach(m => {
-                            $(`input[value="${m}"]`).prop('checked', true);
+                            // 先尝试匹配当前 ID
+                            let checkbox = $(`#menuList input[value="${m}"]`);
+                            if (checkbox.length === 0) {
+                                // 尝试映射旧 ID
+                                const newId = menuIdMap[m];
+                                if (newId) {
+                                    checkbox = $(`#menuList input[value="${newId}"]`);
+                                }
+                            }
+                            checkbox.prop('checked', true);
                         });
                     }
                     if (u.dataPermission) {
                         if (u.dataPermission.canViewSensitive) $('#data_viewSensitive').prop('checked', true);
-                        if (u.dataPermission.canExport) $('#data_export').prop('checked', true);
-                        if (u.dataPermission.canDelete) $('#data_delete').prop('checked', true);
                     }
 
                     modal.show();
@@ -510,8 +518,12 @@
                 menuPermissions,
                 dataPermission: {
                     canViewSensitive: $('#data_viewSensitive').is(':checked'),
-                    canExport: $('#data_export').is(':checked'),
-                    canDelete: $('#data_delete').is(':checked')
+                    canExport: $('#data_viewSensitive').is(':checked'),
+                    canDelete: $('#data_viewSensitive').is(':checked'),
+                    canAccessVip: $('#data_viewSensitive').is(':checked'),
+                    canAccessDiamond: $('#data_viewSensitive').is(':checked'),
+                    canViewAllData: $('#data_viewSensitive').is(':checked'),
+                    canViewDepartmentData: $('#data_viewSensitive').is(':checked')
                 }
             };
 

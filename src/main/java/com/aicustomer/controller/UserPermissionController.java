@@ -55,4 +55,18 @@ public class UserPermissionController {
             return Result.error("获取用户权限失败: " + e.getMessage());
         }
     }
+
+    /**
+     * 获取当前登录用户的权限配置
+     */
+    @GetMapping("/me")
+    public Result<UserPermissionDTO> getCurrentUserPermission() {
+        try {
+            // 目前还没有真正的登录态管理，暂时模拟当前用户为 admin
+            // 后续可以通过 SecurityContextHolder.getContext().getAuthentication().getName() 获取
+            return Result.success(userPermissionService.getUserPermissionByUsername("admin"));
+        } catch (Exception e) {
+            return Result.error("获取当前权限失败: " + e.getMessage());
+        }
+    }
 }

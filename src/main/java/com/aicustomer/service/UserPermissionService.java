@@ -21,4 +21,9 @@ public interface UserPermissionService {
      * 获取用户权限配置
      */
     UserPermissionDTO getUserPermission(Long userId);
+
+    /**
+     * 根据用户名获取权限配置
+     */
+    UserPermissionDTO getUserPermissionByUsername(String username);
 }

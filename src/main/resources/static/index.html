@@ -513,8 +513,8 @@
             </div>
         </section>
         <!-- 现代化功能卡片网格 -->
-        <div class="modern-grid">
-            <div class="modern-card" onclick="navigateTo('customer-categories')">
+        <div class="modern-grid" id="mainGrid">
+            <div class="modern-card" onclick="navigateTo('customer-categories')" data-permission="customer">
                 <div class="modern-card-icon">
                     <i class="bi bi-people-fill"></i>
                 </div>
@@ -522,9 +522,7 @@
                 <div class="modern-card-desc">管理客户业务分类和客户档案</div>
             </div>
 
-
-
-            <div class="modern-card" onclick="navigateTo('messages')">
+            <div class="modern-card" onclick="navigateTo('messages')" data-permission="home">
                 <div class="modern-card-icon">
                     <i class="bi bi-bell-fill"></i>
                 </div>
@@ -532,7 +530,7 @@
                 <div class="modern-card-desc">集中管理通知提醒，快速操作入口</div>
             </div>
 
-            <div class="modern-card" onclick="navigateTo('team')">
+            <div class="modern-card" onclick="navigateTo('team')" data-permission="team">
                 <div class="modern-card-icon">
                     <i class="bi bi-people"></i>
                 </div>
@@ -541,7 +539,7 @@
             </div>
 
             <!-- AI智能分析 -->
-            <div class="modern-card" onclick="navigateTo('ai-analysis')">
+            <div class="modern-card" onclick="navigateTo('ai-analysis')" data-permission="ai">
                 <div class="modern-card-icon">
                     <i class="bi bi-graph-up"></i>
                 </div>
@@ -550,7 +548,7 @@
             </div>
 
             <!-- AI智能推荐 -->
-            <div class="modern-card" onclick="navigateTo('ai-recommendations')">
+            <div class="modern-card" onclick="navigateTo('ai-recommendations')" data-permission="ai">
                 <div class="modern-card-icon">
                     <i class="bi bi-lightbulb"></i>
                 </div>
@@ -559,7 +557,7 @@
             </div>
 
             <!-- 知识库管理 -->
-            <div class="modern-card" onclick="navigateTo('system-management')">
+            <div class="modern-card" onclick="navigateTo('system-management')" data-permission="knowledge">
                 <div class="modern-card-icon">
                     <i class="bi bi-book"></i>
                 </div>
@@ -568,7 +566,7 @@
             </div>
 
             <!-- AI智能聊天 -->
-            <div class="modern-card" onclick="navigateTo('ai-chat')">
+            <div class="modern-card" onclick="navigateTo('ai-chat')" data-permission="ai">
                 <div class="modern-card-icon">
                     <i class="bi bi-chat-square-text"></i>
                 </div>
@@ -576,14 +574,13 @@
                 <div class="modern-card-desc">24小时智能客服，即时响应</div>
             </div>
 
-            <div class="modern-card" onclick="navigateTo('system-config')">
+            <div class="modern-card" onclick="navigateTo('system-config')" data-permission="system">
                 <div class="modern-card-icon">
                     <i class="bi bi-sliders"></i>
                 </div>
                 <div class="modern-card-title">系统配置管理</div>
                 <div class="modern-card-desc">动态维护系统变量和静态字段配置</div>
             </div>
-
         </div>
 
     </div>
@@ -609,20 +606,33 @@
             }
         }
 
-        // 页面加载完成后的初始化
+        // 页面初始化
         document.addEventListener('DOMContentLoaded', function () {
-            console.log('AI客户管理系统已加载');
+            initPermissions();
         });
 
-        function quickStartChat(prompt) {
+        async function initPermissions() {
             try {
-                if (prompt) {
-                    localStorage.setItem('aiChatPreset', prompt);
+                const response = await fetch('/api/user-permission/me');
+                const result = await response.json();
+
+                if (result.code === 200 && result.data) {
+                    const perms = result.data.menuPermissions || [];
+                    // 保存权限到缓存，供子页面使用
+                    localStorage.setItem('userPermissions', JSON.stringify(result.data));
+
+                    // 过滤卡片
+                    const cards = document.querySelectorAll('.modern-card');
+                    cards.forEach(card => {
+                        const required = card.getAttribute('data-permission');
+                        if (required && !perms.includes(required)) {
+                            card.style.display = 'none';
+                        }
+                    });
                 }
             } catch (error) {
-                console.warn('本地存储不可用', error);
+                console.error('获取权限失败:', error);
             }
-            window.location.href = '/ai-chat.html';
         }
     </script>
 </body>

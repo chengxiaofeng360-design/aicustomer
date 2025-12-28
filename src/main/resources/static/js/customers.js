@@ -72,11 +72,17 @@ let businessCategoryToTypes = {
     '其他服务业务': [4, 5, 6]   // 其他服务业务：科普教育合作客户、景观设计服务客户、图书出版客户
 };
 
+// 权限配置
+let userPermissions = null;
+
 // 当前选中的业务类型列表（支持多个）
 let currentBusinessTypeList = null;
 
 // 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
+    // 首先加载权限
+    await loadUserPermissions();
+
     // 从URL参数获取业务类型列表（支持多个businessType参数）
     const urlParams = new URLSearchParams(window.location.search);
     const businessTypes = urlParams.getAll('businessType'); // 获取所有businessType参数
@@ -107,9 +113,57 @@ document.addEventListener('DOMContentLoaded', function () {
     // 初始化文件上传功能
     initFileUpload();
 
+    // 根据权限调整UI
+    applyPermissionUI();
+
     // 不再自动启动语音识别，只在用户点击打开模态框时启动
     // 移除自动启动，避免权限错误和用户体验问题
 });
+
+// 加载用户权限
+async function loadUserPermissions() {
+    try {
+        // 先尝试从本地存储获取
+        const cached = localStorage.getItem('userPermissions');
+        if (cached) {
+            userPermissions = JSON.parse(cached);
+        } else {
+            // 否则从后端获取
+            const response = await fetch('/api/user-permission/me');
+            const result = await response.json();
+            if (result.code === 200) {
+                userPermissions = result.data;
+                localStorage.setItem('userPermissions', JSON.stringify(userPermissions));
+            }
+        }
+        console.log('✅ 用户权限已加载:', userPermissions);
+    } catch (e) {
+        console.error('❌ 加载权限失败:', e);
+    }
+}
+
+// 根据权限调整UI显示
+function applyPermissionUI() {
+    if (!userPermissions) return;
+
+    const dataPerm = userPermissions.dataPermission || {};
+    // “敏感数据处理”包含：查看全量、导出、编辑、删除
+    const canManageSensitive = dataPerm.canViewSensitive === true;
+
+    // 隐藏/显示 导出按钮
+    const exportBtn = document.querySelector('button[onclick="exportCustomers()"]');
+    if (exportBtn && !canManageSensitive) {
+        exportBtn.style.display = 'none';
+        console.log('🚫 已隐藏导出按钮 (无敏感数据处理权限)');
+    }
+
+    // 隐藏/显示 批量导入按钮
+    const importBtn = document.querySelector('button[onclick="showFileUpload()"]');
+    if (importBtn && !canManageSensitive) {
+        importBtn.style.display = 'none';
+        console.log('🚫 已隐藏批量导入按钮 (无敏感数据处理权限)');
+    }
+}
 
 // 从系统配置加载业务类型
 function loadBusinessTypesFromConfig() {
@@ -442,6 +496,31 @@ function renderCustomerTable(customerList) {
 
         const createTime = customer.createTime ? new Date(customer.createTime).toLocaleString('zh-CN') : '';
 
+        const dataPerm = (userPermissions && userPermissions.dataPermission) || {};
+        const canManageSensitive = dataPerm.canViewSensitive === true;
+
+        let actionButtons =
+            '<div class="action-buttons">' +
+            '<button class="btn btn-sm btn-outline-info" onclick="goToCommunications(' + customer.id + ')" title="沟通管理">' +
+            '<i class="bi bi-chat-dots"></i> 沟通管理' +
+            '</button>' +
+            '<button class="btn btn-sm btn-outline-primary" onclick="viewCustomer(' + customer.id + ')" title="查看详情">' +
+            '<i class="bi bi-eye"></i> 详情' +
+            '</button>';
+
+        // 只有拥有敏感数据处理权限才能编辑和删除
+        if (canManageSensitive) {
+            actionButtons +=
+                '<button class="btn btn-sm btn-outline-warning" onclick="editCustomer(' + customer.id + ')" title="编辑客户">' +
+                '<i class="bi bi-pencil"></i> 编辑' +
+                '</button>' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(' + customer.id + ')" title="删除客户">' +
+                '<i class="bi bi-trash"></i> 删除' +
+                '</button>';
+        }
+
+        actionButtons += '</div>';
+
         row.innerHTML =
             '<td class="table-cell-truncate" title="' + (customer.customerName || '') + '">' + (customer.customerName || '') + '</td>' +
             '<td class="table-cell-truncate" title="' + (customer.contactPerson || '') + '">' + (customer.contactPerson || '') + '</td>' +
@@ -454,22 +533,7 @@ function renderCustomerTable(customerList) {
             '</td>' +
             '<td class="table-cell-truncate" title="' + businessTypeText + '">' + businessTypeText + '</td>' +
             '<td class="table-cell-truncate">' + sensitiveStatus + '</td>' +
-            '<td>' +
-            '<div class="action-buttons">' +
-            '<button class="btn btn-sm btn-outline-info" onclick="goToCommunications(' + customer.id + ')" title="沟通管理">' +
-            '<i class="bi bi-chat-dots"></i> 沟通管理' +
-            '</button>' +
-            '<button class="btn btn-sm btn-outline-primary" onclick="viewCustomer(' + customer.id + ')" title="查看详情">' +
-            '<i class="bi bi-eye"></i> 详情' +
-            '</button>' +
-            '<button class="btn btn-sm btn-outline-warning" onclick="editCustomer(' + customer.id + ')" title="编辑客户">' +
-            '<i class="bi bi-pencil"></i> 编辑' +
-            '</button>' +
-            '<button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(' + customer.id + ')" title="删除客户">' +
-            '<i class="bi bi-trash"></i> 删除' +
-            '</button>' +
-            '</div>' +
-            '</td>';
+            '<td>' + actionButtons + '</td>';
         tbody.appendChild(row);
     });
 }
@@ -2265,9 +2329,13 @@ function viewCustomer(id) {
                 const customer = result.data;
                 // 检查是否为敏感数据
                 if (customer.isSensitive) {
-                    currentCustomerId = id;
-                    showPasswordModal();
-                    return;
+                    const dataPerm = (userPermissions && userPermissions.dataPermission) || {};
+                    const canManageSensitive = dataPerm.canViewSensitive === true;
+                    if (!canManageSensitive) {
+                        currentCustomerId = id;
+                        showPasswordModal();
+                        return;
+                    }
                 }
                 showCustomerDetail(customer);
             } else {
@@ -2622,7 +2690,11 @@ function saveCustomer() {
 
 // 删除客户
 function deleteCustomer(id) {
-    if (confirm('确定要删除这个客户吗？')) {
+    if (userPermissions && userPermissions.dataPermission && !userPermissions.dataPermission.canViewSensitive) {
+        alert('权限不足：您的账号没有敏感数据处理权限，无法执行删除操作。');
+        return;
+    }
+    if (confirm('确定要删除该客户吗？删除后不可恢复！')) {
         fetch(`/api/customer/${id}`, {
             method: 'DELETE'
         })
@@ -2754,6 +2826,10 @@ function downloadTemplate() {
 
 // 导出客户
 function exportCustomers() {
+    if (userPermissions && userPermissions.dataPermission && !userPermissions.dataPermission.canViewSensitive) {
+        alert('权限不足：您的账号没有敏感数据处理权限，无法执行导出操作。');
+        return;
+    }
     try {
         // 获取当前筛选条件（添加空值检查，使用正确的元素ID）
         const params = new URLSearchParams();

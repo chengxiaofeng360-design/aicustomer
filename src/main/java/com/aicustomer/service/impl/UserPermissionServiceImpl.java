@@ -4,6 +4,7 @@ import com.aicustomer.dto.UserPermissionDTO;
 import com.aicustomer.entity.User;
 import com.aicustomer.mapper.UserMapper;
 import com.aicustomer.service.UserPermissionService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -118,66 +119,87 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
     @Override
     public UserPermissionDTO getUserPermission(Long userId) {
-        try {
-            User user = userMapper.selectById(userId);
-            if (user == null) {
-                throw new IllegalArgumentException("用户不存在");
-            }
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+        return convertToDTO(user);
+    }
 
-            UserPermissionDTO dto = new UserPermissionDTO();
-            dto.setId(user.getId());
-            dto.setUsername(user.getUsername());
-            dto.setRealName(user.getRealName());
-            dto.setEmail(user.getEmail());
-            dto.setPhone(user.getPhone());
-            dto.setStatus(user.getStatus());
+    @Override
+    public UserPermissionDTO getUserPermissionByUsername(String username) {
+        User user = userMapper.findByUsername(username);
+        if (user == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+        return convertToDTO(user);
+    }
 
-            // 反序列化权限配置
-            String permissionJson = user.getPermissionSettings();
-            if (permissionJson != null && !permissionJson.isEmpty()) {
-                try {
-                    Map<String, Object> map = objectMapper.readValue(permissionJson, Map.class);
+    private UserPermissionDTO convertToDTO(User user) {
+        UserPermissionDTO dto = new UserPermissionDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setRealName(user.getRealName());
+        dto.setEmail(user.getEmail());
+        dto.setPhone(user.getPhone());
+        dto.setStatus(user.getStatus());
 
-                    // 提取菜单权限
-                    if (map.containsKey("menuPermissions")) {
-                        dto.setMenuPermissions((List<String>) map.get("menuPermissions"));
-                    }
+        // 反序列化权限配置
+        String permissionJson = user.getPermissionSettings();
+        if (permissionJson != null && !permissionJson.isEmpty()) {
+            try {
+                Map<String, Object> map = objectMapper.readValue(permissionJson,
+                        new TypeReference<Map<String, Object>>() {
+                        });
 
-                    // 提取数据权限
-                    if (map.containsKey("dataPermission")) {
-                        // Jackson会将内嵌对象转为Map
-                        Map<String, Object> dataMap = (Map<String, Object>) map.get("dataPermission");
-                        UserPermissionDTO.DataPermissionConfig config = new UserPermissionDTO.DataPermissionConfig();
-
-                        // 安全地获取Boolean值
-                        config.setCanExport(getBoolean(dataMap, "canExport"));
-                        config.setCanDelete(getBoolean(dataMap, "canDelete"));
-                        // 兼容旧字段，默认为false
-                        config.setCanViewSensitive(getBoolean(dataMap, "canViewSensitive"));
-                        config.setCanAccessVip(getBoolean(dataMap, "canAccessVip"));
-                        config.setCanAccessDiamond(getBoolean(dataMap, "canAccessDiamond"));
-                        config.setCanViewAllData(getBoolean(dataMap, "canViewAllData"));
-                        config.setCanViewDepartmentData(getBoolean(dataMap, "canViewDepartmentData"));
-
-                        dto.setDataPermission(config);
-                    }
-                } catch (Exception e) {
-                    log.error("解析权限配置失败: " + permissionJson, e);
-                    // 解析失败时返回默认
-                    dto.setMenuPermissions(getDefaultMenuPermissions());
-                    dto.setDataPermission(new UserPermissionDTO.DataPermissionConfig());
+                // 提取菜单权限
+                Object menuPerms = map.get("menuPermissions");
+                if (menuPerms instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<String> perms = (List<String>) menuPerms;
+                    dto.setMenuPermissions(perms);
                 }
-            } else {
-                // 无配置时返回默认
+
+                // 提取数据权限
+                Object dataPerm = map.get("dataPermission");
+                if (dataPerm instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> dataMap = (Map<String, Object>) dataPerm;
+                    UserPermissionDTO.DataPermissionConfig config = new UserPermissionDTO.DataPermissionConfig();
+                    config.setCanExport(getBoolean(dataMap, "canExport"));
+                    config.setCanDelete(getBoolean(dataMap, "canDelete"));
+                    config.setCanViewSensitive(getBoolean(dataMap, "canViewSensitive"));
+                    config.setCanAccessVip(getBoolean(dataMap, "canAccessVip"));
+                    config.setCanAccessDiamond(getBoolean(dataMap, "canAccessDiamond"));
+                    config.setCanViewAllData(getBoolean(dataMap, "canViewAllData"));
+                    config.setCanViewDepartmentData(getBoolean(dataMap, "canViewDepartmentData"));
+                    dto.setDataPermission(config);
+                }
+            } catch (Exception e) {
+                log.error("解析用户权限配置失败: userId={}", user.getId(), e);
                 dto.setMenuPermissions(getDefaultMenuPermissions());
                 dto.setDataPermission(new UserPermissionDTO.DataPermissionConfig());
             }
-
-            return dto;
-        } catch (Exception e) {
-            log.error("获取用户权限失败", e);
-            throw new RuntimeException("获取用户权限失败: " + e.getMessage());
+        } else {
+            // 无配置时返回默认
+            if ("admin".equals(user.getUsername())) {
+                dto.setMenuPermissions(
+                        java.util.Arrays.asList("home", "customer", "ai", "team", "knowledge", "system"));
+                UserPermissionDTO.DataPermissionConfig config = new UserPermissionDTO.DataPermissionConfig();
+                config.setCanViewSensitive(true);
+                config.setCanExport(true);
+                config.setCanDelete(true);
+                config.setCanAccessVip(true);
+                config.setCanAccessDiamond(true);
+                config.setCanViewAllData(true);
+                config.setCanViewDepartmentData(true);
+                dto.setDataPermission(config);
+            } else {
+                dto.setMenuPermissions(getDefaultMenuPermissions());
+                dto.setDataPermission(new UserPermissionDTO.DataPermissionConfig());
+            }
         }
+        return dto;
     }
 
     private Boolean getBoolean(Map<String, Object> map, String key) {
