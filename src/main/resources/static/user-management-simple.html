@@ -469,37 +469,36 @@
     <script>
         let userModal;
 
-        // 所有菜单定义
+        // 所有菜单定义 - 功能菜单
         const allMenus = [
-            { id: 'home', name: '首页', icon: '🏠' },
-            { id: 'customer-list', name: '客户列表', icon: '📋' },
-            { id: 'customer-add', name: '新增客户', icon: '➕' },
-            { id: 'customer-import', name: '批量导入', icon: '📥' },
-            { id: 'customer-export', name: '数据导出', icon: '📤' },
-            { id: 'communication-list', name: '沟通记录', icon: '💬' },
-            { id: 'communication-add', name: '新增记录', icon: '✍️' },
-            { id: 'ai-chat', name: 'AI对话', icon: '🤖' },
-            { id: 'ai-analysis', name: '智能分析', icon: '📊' },
-            { id: 'team-task', name: '任务管理', icon: '✅' },
-            { id: 'team-report', name: '进度汇报', icon: '📈' },
-            { id: 'knowledge-doc', name: '文档管理', icon: '📚' },
-            { id: 'knowledge-faq', name: '常见问题', icon: '❓' },
-            { id: 'message', name: '消息中心', icon: '📬' },
-            { id: 'report-customer', name: '客户统计', icon: '📊' },
-            { id: 'report-business', name: '业务分析', icon: '💼' },
-            { id: 'system-user', name: '用户管理', icon: '👤' },
-            { id: 'system-config', name: '系统配置', icon: '⚙️' }
+            { id: 'home', name: '首页', icon: '🏠', category: '基础' },
+            { id: 'customer-list', name: '客户列表', icon: '📋', category: '客户管理' },
+            { id: 'customer-add', name: '新增客户', icon: '➕', category: '客户管理' },
+            { id: 'customer-import', name: '批量导入', icon: '📥', category: '客户管理' },
+            { id: 'communication-list', name: '沟通记录', icon: '💬', category: '沟通管理' },
+            { id: 'communication-add', name: '新增记录', icon: '✍️', category: '沟通管理' },
+            { id: 'ai-chat', name: 'AI对话', icon: '🤖', category: 'AI功能' },
+            { id: 'ai-analysis', name: '智能分析', icon: '📊', category: 'AI功能' },
+            { id: 'team-task', name: '任务管理', icon: '✅', category: '团队协作' },
+            { id: 'team-report', name: '进度汇报', icon: '📈', category: '团队协作' },
+            { id: 'knowledge-doc', name: '文档管理', icon: '📚', category: '知识库' },
+            { id: 'knowledge-faq', name: '常见问题', icon: '❓', category: '知识库' },
+            { id: 'message', name: '消息中心', icon: '📬', category: '基础' },
+            { id: 'report-customer', name: '客户统计', icon: '📊', category: '数据报表' },
+            { id: 'report-business', name: '业务分析', icon: '💼', category: '数据报表' },
+            { id: 'system-user', name: '用户管理', icon: '👤', category: '系统管理' },
+            { id: 'system-config', name: '系统配置', icon: '⚙️', category: '系统管理' }
         ];
 
-        // 所有数据权限定义
+        // 所有数据权限定义 - 数据访问和操作权限
         const allDataPermissions = [
-            { id: 'view-sensitive', name: '查看敏感数据', description: '可以查看客户的敏感信息（如身份证号、详细地址等）', icon: '🔒' },
-            { id: 'access-vip', name: '访问VIP客户', description: '可以查看和管理VIP等级的客户资料', icon: '⭐' },
-            { id: 'access-diamond', name: '访问钻石客户', description: '可以查看和管理钻石等级的客户资料', icon: '💎' },
-            { id: 'export-data', name: '导出数据', description: '可以导出客户、沟通记录等数据为Excel', icon: '📤' },
-            { id: 'delete-data', name: '删除数据', description: '可以删除客户、沟通记录等数据', icon: '🗑️' },
-            { id: 'view-all-data', name: '查看所有数据', description: '可以查看所有人创建的数据，不限于自己的', icon: '🌍' },
-            { id: 'view-department-data', name: '查看本部门数据', description: '可以查看本部门所有人的数据', icon: '🏢' }
+            { id: 'view-sensitive', name: '查看敏感数据', description: '身份证号、银行卡号、详细地址等', icon: '🔒', category: '数据访问' },
+            { id: 'access-vip', name: '访问VIP客户', description: 'VIP等级客户的完整资料', icon: '⭐', category: '客户等级' },
+            { id: 'access-diamond', name: '访问钻石客户', description: '钻石等级客户的完整资料', icon: '💎', category: '客户等级' },
+            { id: 'view-all-data', name: '查看所有数据', description: '不限于自己创建的数据', icon: '🌍', category: '数据范围' },
+            { id: 'view-department-data', name: '查看本部门数据', description: '本部门所有人的数据', icon: '🏢', category: '数据范围' },
+            { id: 'export-data', name: '导出数据', description: '导出Excel、CSV等格式', icon: '📤', category: '数据操作' },
+            { id: 'delete-data', name: '删除数据', description: '删除客户、沟通记录等', icon: '🗑️', category: '数据操作' }
         ];
 
         $(document).ready(function () {
@@ -512,16 +511,36 @@
             const container = $('#menuPermissions');
             container.empty();
 
+            // 按分类分组
+            const categories = {};
             allMenus.forEach(menu => {
+                if (!categories[menu.category]) {
+                    categories[menu.category] = [];
+                }
+                categories[menu.category].push(menu);
+            });
+
+            // 渲染每个分类
+            Object.keys(categories).forEach(category => {
                 container.append(`
-                    <div class="permission-item">
-                        <input class="form-check-input" type="checkbox" id="menu_${menu.id}" value="${menu.id}">
-                        <label class="form-check-label" for="menu_${menu.id}">
-                            <span>${menu.icon}</span>
-                            <span>${menu.name}</span>
-                        </label>
+                    <div style="grid-column: 1 / -1; margin-top: 15px; margin-bottom: 10px;">
+                        <strong style="color: #667eea; font-size: 0.9rem;">
+                            <i class="fas fa-folder-open me-1"></i> ${category}
+                        </strong>
                     </div>
                 `);
+
+                categories[category].forEach(menu => {
+                    container.append(`
+                        <div class="permission-item">
+                            <input class="form-check-input" type="checkbox" id="menu_${menu.id}" value="${menu.id}">
+                            <label class="form-check-label" for="menu_${menu.id}">
+                                <span>${menu.icon}</span>
+                                <span>${menu.name}</span>
+                            </label>
+                        </div>
+                    `);
+                });
             });
         }
 
@@ -529,16 +548,37 @@
             const container = $('#dataPermissions');
             container.empty();
 
+            // 按分类分组
+            const categories = {};
             allDataPermissions.forEach(perm => {
+                if (!categories[perm.category]) {
+                    categories[perm.category] = [];
+                }
+                categories[perm.category].push(perm);
+            });
+
+            // 渲染每个分类
+            Object.keys(categories).forEach(category => {
                 container.append(`
-                    <div class="data-permission-item">
-                        <input class="form-check-input" type="checkbox" id="data_${perm.id}" value="${perm.id}">
-                        <label class="form-check-label" for="data_${perm.id}">
-                            <strong>${perm.icon} ${perm.name}</strong>
-                            <small>${perm.description}</small>
-                        </label>
+                    <div style="margin-top: 20px; margin-bottom: 10px;">
+                        <strong style="color: #667eea; font-size: 1rem;">
+                            <i class="fas fa-shield-alt me-1"></i> ${category}
+                        </strong>
+                        <hr style="margin: 8px 0; border-color: #e2e8f0;">
                     </div>
                 `);
+
+                categories[category].forEach(perm => {
+                    container.append(`
+                        <div class="data-permission-item">
+                            <input class="form-check-input" type="checkbox" id="data_${perm.id}" value="${perm.id}">
+                            <label class="form-check-label" for="data_${perm.id}">
+                                <strong>${perm.icon} ${perm.name}</strong>
+                                <small>${perm.description}</small>
+                            </label>
+                        </div>
+                    `);
+                });
             });
         }
 
