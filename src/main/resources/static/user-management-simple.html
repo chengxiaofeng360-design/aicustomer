@@ -298,6 +298,13 @@
                                     <label class="form-label">手机</label>
                                     <input type="tel" class="form-control" id="phone">
                                 </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">账号状态</label>
+                                    <select class="form-select" id="status">
+                                        <option value="1">正常</option>
+                                        <option value="2">禁用</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -461,6 +468,7 @@
                     $('#password').val('').prop('required', false);
                     $('#email').val(u.email);
                     $('#phone').val(u.phone);
+                    $('#status').val(u.status || 1);
 
                     // 设置权限
                     $('input[type="checkbox"]').prop('checked', false);
@@ -514,7 +522,7 @@
                 password: password || null,
                 email: $('#email').val(),
                 phone: $('#phone').val(),
-                status: 1,
+                status: parseInt($('#status').val()) || 1,
                 menuPermissions,
                 dataPermission: {
                     canViewSensitive: $('#data_viewSensitive').is(':checked'),

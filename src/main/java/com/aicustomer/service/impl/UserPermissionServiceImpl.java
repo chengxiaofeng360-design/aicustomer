@@ -36,11 +36,17 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     @Transactional
     public Boolean createUserWithPermission(UserPermissionDTO dto) {
         try {
+            // 1. 检查用户名是否存在
+            if (userMapper.findByUsername(dto.getUsername()) != null) {
+                throw new RuntimeException("用户名已存在: " + dto.getUsername());
+            }
+
             // 1. 创建用户基本信息
             User user = new User();
             user.setUsername(dto.getUsername());
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
-            user.setRealName(dto.getRealName());
+            // 真实姓名默认为用户名
+            user.setRealName(dto.getRealName() != null ? dto.getRealName() : dto.getUsername());
             user.setEmail(dto.getEmail());
             user.setPhone(dto.getPhone());
             user.setStatus(dto.getStatus() != null ? dto.getStatus() : 1);
@@ -82,7 +88,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                 throw new IllegalArgumentException("用户不存在");
             }
 
-            // 2. 更新基本信息
+            // 2. 更新基本信息 (如果传了就更新)
             if (dto.getRealName() != null)
                 user.setRealName(dto.getRealName());
             if (dto.getEmail() != null)
@@ -91,29 +97,55 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                 user.setPhone(dto.getPhone());
             if (dto.getStatus() != null)
                 user.setStatus(dto.getStatus());
-            if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+            if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
                 user.setPassword(passwordEncoder.encode(dto.getPassword()));
+            }
+
+            // 3. 强制覆写权限配置 (不再进行不可靠的合并，以前端传的数据为准)
+            // 只要前端传了菜单权限或数据权限，就进行保存
+            if (dto.getMenuPermissions() != null || dto.getDataPermission() != null) {
+                Map<String, Object> permissionMap = new HashMap<>();
+
+                // 菜单权限：如果没有传，则保留原有的；如果传了空列表，也视为更新
+                if (dto.getMenuPermissions() != null) {
+                    permissionMap.put("menuPermissions", dto.getMenuPermissions());
+                } else {
+                    // 尝试保留原有的菜单权限
+                    try {
+                        Map<String, Object> oldMap = objectMapper.readValue(user.getPermissionSettings(),
+                                new TypeReference<Map<String, Object>>() {
+                                });
+                        permissionMap.put("menuPermissions", oldMap.get("menuPermissions"));
+                    } catch (Exception e) {
+                    }
+                }
+
+                // 数据权限：核心修复点，直接转换 DTO 为 Map 存储，避免 Jackson 序列化嵌套问题
+                if (dto.getDataPermission() != null) {
+                    permissionMap.put("dataPermission", dto.getDataPermission());
+                } else {
+                    // 尝试保留原有的数据权限
+                    try {
+                        Map<String, Object> oldMap = objectMapper.readValue(user.getPermissionSettings(),
+                                new TypeReference<Map<String, Object>>() {
+                                });
+                        permissionMap.put("dataPermission", oldMap.get("dataPermission"));
+                    } catch (Exception e) {
+                    }
+                }
+
+                user.setPermissionSettings(objectMapper.writeValueAsString(permissionMap));
             }
 
             user.setUpdateTime(LocalDateTime.now());
 
-            // 3. 更新权限配置
-            if (dto.getMenuPermissions() != null || dto.getDataPermission() != null) {
-                Map<String, Object> permissionMap = new HashMap<>();
-                // 如果只传了一部分，应该先反序列化旧的再合并？简化版直接覆盖，假定前端传的是全量
-                permissionMap.put("menuPermissions", dto.getMenuPermissions());
-                permissionMap.put("dataPermission", dto.getDataPermission());
-                String permissionJson = objectMapper.writeValueAsString(permissionMap);
-                user.setPermissionSettings(permissionJson);
-            }
-
             // 4. 更新数据库
             int result = userMapper.updateById(user);
-            log.info("更新用户权限成功: userId={}", user.getId());
+            log.info("更新用户记录成功: userId={}, 影响行数={}", user.getId(), result);
             return result > 0;
         } catch (Exception e) {
-            log.error("更新用户权限失败", e);
-            throw new RuntimeException("更新用户权限失败: " + e.getMessage());
+            log.error("更新用户权限致命失败", e);
+            throw new RuntimeException("更新失败: " + e.getMessage());
         }
     }
 
@@ -152,7 +184,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                         new TypeReference<Map<String, Object>>() {
                         });
 
-                // 提取菜单权限
+                // 转换菜单权限
                 Object menuPerms = map.get("menuPermissions");
                 if (menuPerms instanceof List) {
                     @SuppressWarnings("unchecked")
@@ -160,45 +192,53 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                     dto.setMenuPermissions(perms);
                 }
 
-                // 提取数据权限
+                // 转换数据权限 (手动映射每个字段，确保稳定性)
                 Object dataPerm = map.get("dataPermission");
                 if (dataPerm instanceof Map) {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> dataMap = (Map<String, Object>) dataPerm;
                     UserPermissionDTO.DataPermissionConfig config = new UserPermissionDTO.DataPermissionConfig();
+
+                    config.setCanViewSensitive(getBoolean(dataMap, "canViewSensitive"));
                     config.setCanExport(getBoolean(dataMap, "canExport"));
                     config.setCanDelete(getBoolean(dataMap, "canDelete"));
-                    config.setCanViewSensitive(getBoolean(dataMap, "canViewSensitive"));
                     config.setCanAccessVip(getBoolean(dataMap, "canAccessVip"));
                     config.setCanAccessDiamond(getBoolean(dataMap, "canAccessDiamond"));
                     config.setCanViewAllData(getBoolean(dataMap, "canViewAllData"));
                     config.setCanViewDepartmentData(getBoolean(dataMap, "canViewDepartmentData"));
+
                     dto.setDataPermission(config);
                 }
             } catch (Exception e) {
                 log.error("解析用户权限配置失败: userId={}", user.getId(), e);
-                dto.setMenuPermissions(getDefaultMenuPermissions());
-                dto.setDataPermission(new UserPermissionDTO.DataPermissionConfig());
             }
-        } else {
-            // 无配置时返回默认
+        }
+
+        // 兜底逻辑：只有在完全没有解析到权限配置时（null），才应用默认值
+        // 注意：不要在权限列表为空时也覆盖，因为空列表可能是用户的真实配置
+        if (dto.getMenuPermissions() == null) {
             if ("admin".equals(user.getUsername())) {
                 dto.setMenuPermissions(
                         java.util.Arrays.asList("home", "customer", "ai", "team", "knowledge", "system"));
-                UserPermissionDTO.DataPermissionConfig config = new UserPermissionDTO.DataPermissionConfig();
-                config.setCanViewSensitive(true);
-                config.setCanExport(true);
-                config.setCanDelete(true);
-                config.setCanAccessVip(true);
-                config.setCanAccessDiamond(true);
-                config.setCanViewAllData(true);
-                config.setCanViewDepartmentData(true);
-                dto.setDataPermission(config);
+                UserPermissionDTO.DataPermissionConfig adminConfig = new UserPermissionDTO.DataPermissionConfig();
+                adminConfig.setCanViewSensitive(true);
+                adminConfig.setCanExport(true);
+                adminConfig.setCanDelete(true);
+                adminConfig.setCanAccessVip(true);
+                adminConfig.setCanAccessDiamond(true);
+                adminConfig.setCanViewAllData(true);
+                adminConfig.setCanViewDepartmentData(true);
+                dto.setDataPermission(adminConfig);
             } else {
                 dto.setMenuPermissions(getDefaultMenuPermissions());
-                dto.setDataPermission(new UserPermissionDTO.DataPermissionConfig());
             }
         }
+
+        // 确保数据权限不为null
+        if (dto.getDataPermission() == null) {
+            dto.setDataPermission(new UserPermissionDTO.DataPermissionConfig());
+        }
+
         return dto;
     }
 
