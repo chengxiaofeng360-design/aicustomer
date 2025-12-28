@@ -78,6 +78,19 @@ public class AiChatServiceImpl implements AiChatService {
             "- `query_knowledge_word_count`: 用于统计特定文件的字数/字符数。参数: {\"fileName\": \"文件名或标题\"}\n" +
             "\n**可用客户信息：**\n" +
             "- `dynamic_sql_query`: **仅用于查询客户数据** (数据源是 customer 表)。禁止用于查询知识库文档内容。\n" +
+            "\n**客户表 (customer) 字段说明：**\n" +
+            "- `customer_name`: 客户名称\n" +
+            "- `region`: 地区（如\"北京\"、\"上海\"、\"广东\"等）\n" +
+            "- `contact_person`: 联系人\n" +
+            "- `phone`: 电话\n" +
+            "- `customer_type`: 客户类型 (1=个人, 2=企业, 3=科研院所)\n" +
+            "- `customer_level`: 客户等级 (1=普通, 2=VIP, 3=钻石)\n" +
+            "- `business_type`: 业务类型 (1-6)\n" +
+            "- `progress`: 进度 (0=未开始, 1=进行中, 2=暂停, 3=已成功, 4=放弃)\n" +
+            "\n**SQL 查询示例：**\n" +
+            "- 查询北京客户数量: `SELECT COUNT(*) FROM customer WHERE region = '北京'`\n" +
+            "- 查询VIP客户: `SELECT customer_name, contact_person FROM customer WHERE customer_level = 2`\n" +
+            "- 查询进行中的项目: `SELECT customer_name, region FROM customer WHERE progress = 1`\n" +
             "\n**工具调用格式：**\n" +
             "{\n" +
             "  \"tool\": \"工具名\",\n" +
@@ -90,7 +103,10 @@ public class AiChatServiceImpl implements AiChatService {
             +
             "4. 用户问“某某文件有多少字”，用 `{\"tool\": \"query_knowledge_word_count\", \"parameters\": {\"fileName\": \"xxx\"}}`。\n"
             +
-            "5. 只有当工具返回数据后，才整合为自然语言回复。";
+            "5. 用户问客户相关问题（如“北京客户有几个”、“VIP客户有哪些”），用 `{\"tool\": \"dynamic_sql_query\", \"parameters\": {\"sql\": \"SELECT COUNT(*) FROM customer WHERE region = '北京'\"}}`。\n"
+            +
+            "6. **重要**：查询地区时必须使用 `region` 字段，不要使用 `location`。\n" +
+            "7. 只有当工具返回数据后，才整合为自然语言回复。";
 
     @Override
     public AiChat sendMessage(String sessionId, String userMessage, Long customerId) {
