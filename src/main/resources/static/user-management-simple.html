@@ -544,9 +544,67 @@
         }
 
         function loadUsers() {
-            $.get('/api/user/list', function (response) {
-                if (response.code === 200) {
-                    renderUserTable(response.data);
+            const tbody = $('#userTableBody');
+
+            // 设置超时
+            const timeout = setTimeout(function () {
+                tbody.html(`
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                加载超时，请检查网络连接或
+                                <a href="javascript:loadUsers()" class="alert-link">点击重试</a>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            }, 10000); // 10秒超时
+
+            $.ajax({
+                url: '/api/user/list',
+                method: 'GET',
+                timeout: 10000,
+                success: function (response) {
+                    clearTimeout(timeout);
+                    if (response.code === 200) {
+                        renderUserTable(response.data);
+                    } else {
+                        tbody.html(`
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="alert alert-danger mb-0">
+                                        <i class="fas fa-times-circle me-2"></i>
+                                        ${response.message || '加载失败'}
+                                        <a href="javascript:loadUsers()" class="alert-link ms-2">重试</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        `);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    clearTimeout(timeout);
+                    let errorMsg = '加载失败';
+                    if (status === 'timeout') {
+                        errorMsg = '请求超时，请检查网络连接';
+                    } else if (xhr.status === 404) {
+                        errorMsg = 'API接口不存在';
+                    } else if (xhr.status === 500) {
+                        errorMsg = '服务器错误';
+                    }
+
+                    tbody.html(`
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="alert alert-danger mb-0">
+                                    <i class="fas fa-times-circle me-2"></i>
+                                    ${errorMsg}
+                                    <a href="javascript:loadUsers()" class="alert-link ms-2">重试</a>
+                                </div>
+                            </td>
+                        </tr>
+                    `);
                 }
             });
         }
