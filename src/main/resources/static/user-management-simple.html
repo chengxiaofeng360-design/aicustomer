@@ -490,15 +490,10 @@
             { id: 'system-config', name: '系统配置', icon: '⚙️', category: '系统管理' }
         ];
 
-        // 所有数据权限定义 - 数据访问和操作权限
+        // 所有数据权限定义 - 只保留两个核心设置
         const allDataPermissions = [
-            { id: 'view-sensitive', name: '查看敏感数据', description: '身份证号、银行卡号、详细地址等', icon: '🔒', category: '数据访问' },
-            { id: 'access-vip', name: '访问VIP客户', description: 'VIP等级客户的完整资料', icon: '⭐', category: '客户等级' },
-            { id: 'access-diamond', name: '访问钻石客户', description: '钻石等级客户的完整资料', icon: '💎', category: '客户等级' },
-            { id: 'view-all-data', name: '查看所有数据', description: '不限于自己创建的数据', icon: '🌍', category: '数据范围' },
-            { id: 'view-department-data', name: '查看本部门数据', description: '本部门所有人的数据', icon: '🏢', category: '数据范围' },
-            { id: 'export-data', name: '导出数据', description: '导出Excel、CSV等格式', icon: '📤', category: '数据操作' },
-            { id: 'delete-data', name: '删除数据', description: '删除客户、沟通记录等', icon: '🗑️', category: '数据操作' }
+            { id: 'can-export', name: '允许导出数据', description: '可以导出客户、沟通记录等数据为Excel、CSV等格式', icon: '📤' },
+            { id: 'can-delete', name: '允许删除数据', description: '可以删除客户、沟通记录等重要数据', icon: '🗑️' }
         ];
 
         $(document).ready(function () {
@@ -548,37 +543,17 @@
             const container = $('#dataPermissions');
             container.empty();
 
-            // 按分类分组
-            const categories = {};
+            // 直接渲染，不需要分类
             allDataPermissions.forEach(perm => {
-                if (!categories[perm.category]) {
-                    categories[perm.category] = [];
-                }
-                categories[perm.category].push(perm);
-            });
-
-            // 渲染每个分类
-            Object.keys(categories).forEach(category => {
                 container.append(`
-                    <div style="margin-top: 20px; margin-bottom: 10px;">
-                        <strong style="color: #667eea; font-size: 1rem;">
-                            <i class="fas fa-shield-alt me-1"></i> ${category}
-                        </strong>
-                        <hr style="margin: 8px 0; border-color: #e2e8f0;">
+                    <div class="data-permission-item">
+                        <input class="form-check-input" type="checkbox" id="data_${perm.id}" value="${perm.id}">
+                        <label class="form-check-label" for="data_${perm.id}">
+                            <strong>${perm.icon} ${perm.name}</strong>
+                            <small>${perm.description}</small>
+                        </label>
                     </div>
                 `);
-
-                categories[category].forEach(perm => {
-                    container.append(`
-                        <div class="data-permission-item">
-                            <input class="form-check-input" type="checkbox" id="data_${perm.id}" value="${perm.id}">
-                            <label class="form-check-label" for="data_${perm.id}">
-                                <strong>${perm.icon} ${perm.name}</strong>
-                                <small>${perm.description}</small>
-                            </label>
-                        </div>
-                    `);
-                });
             });
         }
 
@@ -776,13 +751,8 @@
                     }
 
                     if (user.dataPermission) {
-                        if (user.dataPermission.canViewSensitive) $('#data_view-sensitive').prop('checked', true);
-                        if (user.dataPermission.canAccessVip) $('#data_access-vip').prop('checked', true);
-                        if (user.dataPermission.canAccessDiamond) $('#data_access-diamond').prop('checked', true);
-                        if (user.dataPermission.canExport) $('#data_export-data').prop('checked', true);
-                        if (user.dataPermission.canDelete) $('#data_delete-data').prop('checked', true);
-                        if (user.dataPermission.canViewAllData) $('#data_view-all-data').prop('checked', true);
-                        if (user.dataPermission.canViewDepartmentData) $('#data_view-department-data').prop('checked', true);
+                        if (user.dataPermission.canExport) $('#data_can-export').prop('checked', true);
+                        if (user.dataPermission.canDelete) $('#data_can-delete').prop('checked', true);
                     }
 
                     userModal.show();
@@ -812,13 +782,8 @@
             });
 
             const dataPermission = {
-                canViewSensitive: $('#data_view-sensitive').is(':checked'),
-                canAccessVip: $('#data_access-vip').is(':checked'),
-                canAccessDiamond: $('#data_access-diamond').is(':checked'),
-                canExport: $('#data_export-data').is(':checked'),
-                canDelete: $('#data_delete-data').is(':checked'),
-                canViewAllData: $('#data_view-all-data').is(':checked'),
-                canViewDepartmentData: $('#data_view-department-data').is(':checked')
+                canExport: $('#data_can-export').is(':checked'),
+                canDelete: $('#data_can-delete').is(':checked')
             };
 
             const data = {
