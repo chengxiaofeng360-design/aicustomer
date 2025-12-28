@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>职位权限方案</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
+    <style>
+        body {
+            background: transparent;
+        }
+
+        .management-container {
+            padding: 1.5rem;
+        }
+
+        .header-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="management-container">
+        <div class="header-section">
+            <h5 class="mb-0"><i class="bi bi-shield-check"></i> 职位权限方案</h5>
+            <button class="btn btn-primary" onclick="showAddRoleModal()">
+                <i class="bi bi-plus-lg"></i> 新增职位方案
+            </button>
+        </div>
+
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>角色名称</th>
+                            <th>角色编码</th>
+                            <th>描述</th>
+                            <th>状态</th>
+                            <th class="text-end">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roleTableBody">
+                        <!-- 动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 角色模态框 -->
+    <div class="modal fade" id="roleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">新增职位方案</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="roleForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="roleId">
+                        <div class="mb-3">
+                            <label class="form-label">权限项名称</label>
+                            <input type="text" class="form-control" id="roleName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">权限项编码</label>
+                            <input type="text" class="form-control" id="roleCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">描述</label>
+                            <textarea class="form-control" id="description" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 权限分配模态框 -->
+    <div class="modal fade" id="permissionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">分配权限</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="permissionTree" class="p-2 border rounded" style="max-height: 400px; overflow-y: auto;">
+                        <!-- 动态加载权限树 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="savePermissions()">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        let roleModal, permissionModal;
+        let currentRoleId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            roleModal = new bootstrap.Modal(document.getElementById('roleModal'));
+            permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
+            loadRoles();
+
+            document.getElementById('roleForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveRole();
+            });
+        });
+
+        function loadRoles() {
+            fetch('/api/role/list')
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        renderRoles(res.data);
+                    }
+                });
+        }
+
+        function renderRoles(roles) {
+            const tbody = document.getElementById('roleTableBody');
+            tbody.innerHTML = roles.map(role => `
+                <tr>
+                    <td>${role.roleName}</td>
+                    <td><code>${role.roleCode}</code></td>
+                    <td>${role.description || '-'}</td>
+                    <td><span class="badge ${role.status === 1 ? 'bg-success' : 'bg-danger'}">${role.status === 1 ? '启用' : '禁用'}</span></td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showEditRoleModal(${role.id})">编辑</button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="showPermissions(${role.id})">权限</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteRole(${role.id})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddRoleModal() {
+            document.getElementById('modalTitle').innerText = '新增权限项';
+            document.getElementById('roleForm').reset();
+            document.getElementById('roleId').value = '';
+            roleModal.show();
+        }
+
+        function showEditRoleModal(id) {
+            fetch('/api/role/' + id)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        const role = res.data;
+                        document.getElementById('modalTitle').innerText = '编辑权限项';
+                        document.getElementById('roleId').value = role.id;
+                        document.getElementById('roleName').value = role.roleName;
+                        document.getElementById('roleCode').value = role.roleCode;
+                        document.getElementById('description').value = role.description;
+                        roleModal.show();
+                    }
+                });
+        }
+
+        function saveRole() {
+            const id = document.getElementById('roleId').value;
+            const data = {
+                id: id || null,
+                roleName: document.getElementById('roleName').value,
+                roleCode: document.getElementById('roleCode').value,
+                description: document.getElementById('description').value,
+                status: 1
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            fetch('/api/role', {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(res => res.json()).then(res => {
+                if (res.code === 200) {
+                    roleModal.hide();
+                    loadRoles();
+                } else {
+                    alert(res.message);
+                }
+            });
+        }
+
+        function deleteRole(id) {
+            if (confirm('确认删除该角色？')) {
+                fetch('/api/role/' + id, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.code === 200) loadRoles();
+                    });
+            }
+        }
+
+        function showPermissions(roleId) {
+            currentRoleId = roleId;
+            Promise.all([
+                fetch('/api/permission/tree').then(res => res.json()),
+                fetch('/api/permission/role/' + roleId).then(res => res.json())
+            ]).then(([treeRes, rolePermsRes]) => {
+                if (treeRes.code === 200 && rolePermsRes.code === 200) {
+                    const rolePermIds = rolePermsRes.data.map(p => p.id);
+                    renderPermissionTree(treeRes.data, rolePermIds);
+                    permissionModal.show();
+                }
+            });
+        }
+
+        function renderPermissionTree(tree, selectedIds) {
+            const container = document.getElementById('permissionTree');
+            container.innerHTML = buildTreeHtml(tree, selectedIds);
+        }
+
+        function buildTreeHtml(nodes, selectedIds) {
+            if (!nodes || nodes.length === 0) return '';
+            return '<ul class="list-unstyled ms-3">' + nodes.map(node => `
+                <li>
+                    <label>
+                        <input type="checkbox" name="permCheck" value="${node.id}" ${selectedIds.includes(node.id) ? 'checked' : ''}> ${node.label}
+                    </label>
+                    ${buildTreeHtml(node.children, selectedIds)}
+                </li>
+            `).join('') + '</ul>';
+        }
+
+        function savePermissions() {
+            const checked = Array.from(document.querySelectorAll('input[name="permCheck"]:checked')).map(el => parseInt(el.value));
+            fetch(`/api/role/${currentRoleId}/permissions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ permissionIds: checked })
+            }).then(res => res.json()).then(res => {
+                if (res.code === 200) {
+                    permissionModal.hide();
+                    alert('权限分配成功');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

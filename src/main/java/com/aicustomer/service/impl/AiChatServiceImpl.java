@@ -75,6 +75,7 @@ public class AiChatServiceImpl implements AiChatService {
             "- `query_knowledge_count`: 用于统计当前上传的文件总数。\n" +
             "- `query_knowledge_list`: 用于获取已上传文件的列表。\n" +
             "- `query_knowledge_detail`: 用于获取特定文件的详细全文内容。参数: {\"fileName\": \"文件名或标题\"}\n" +
+            "- `query_knowledge_word_count`: 用于统计特定文件的字数/字符数。参数: {\"fileName\": \"文件名或标题\"}\n" +
             "\n**可用客户信息：**\n" +
             "- `dynamic_sql_query`: **仅用于查询客户数据** (数据源是 customer 表)。禁止用于查询知识库文档内容。\n" +
             "\n**工具调用格式：**\n" +
@@ -87,7 +88,9 @@ public class AiChatServiceImpl implements AiChatService {
             "2. 用户问“有多少个文件”，用 `{\"tool\": \"query_knowledge_count\"}`。\n" +
             "3. 用户问“某某文件的内容是什么”、“查看某某文件”，用 `{\"tool\": \"query_knowledge_detail\", \"parameters\": {\"fileName\": \"xxx\"}}`。\n"
             +
-            "4. 只有当工具返回数据后，才整合为自然语言回复。";
+            "4. 用户问“某某文件有多少字”，用 `{\"tool\": \"query_knowledge_word_count\", \"parameters\": {\"fileName\": \"xxx\"}}`。\n"
+            +
+            "5. 只有当工具返回数据后，才整合为自然语言回复。";
 
     @Override
     public AiChat sendMessage(String sessionId, String userMessage, Long customerId) {
@@ -495,6 +498,8 @@ public class AiChatServiceImpl implements AiChatService {
                 case "query_knowledge_list" -> knowledgeQueryService
                         .getKnowledgeList(params.getInteger("limit") != null ? params.getInteger("limit") : 20);
                 case "query_knowledge_detail" -> knowledgeQueryService.getKnowledgeDetail(params.getString("fileName"));
+                case "query_knowledge_word_count" ->
+                    knowledgeQueryService.getKnowledgeWordCount(params.getString("fileName"));
                 default -> null; // 未知工具返回 null，表示不进行二次生成
             };
         } catch (Exception e) {

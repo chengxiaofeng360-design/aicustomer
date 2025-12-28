@@ -1,864 +1,619 @@
-2025-12-24 00:02:58 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
-2025-12-24 00:02:58 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.
-2025-12-24 10:40:59 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 20574 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
-2025-12-24 10:40:59 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
-2025-12-24 10:41:00 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
-2025-12-24 10:41:00 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2025-12-24 10:41:00 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
-2025-12-24 10:41:00 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2025-12-24 10:41:00 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 674 ms
-2025-12-24 10:41:00 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
-2025-12-24 10:41:00 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
-2025-12-24 10:41:00 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@73dbe25
-2025-12-24 10:41:00 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
-2025-12-24 10:41:01 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
-2025-12-24 10:41:01 [main] WARN  c.a.s.impl.VectorSearchServiceImpl - Embedding服务不可用: I/O error on GET request for "http://localhost:5001/health": Connection refused
-2025-12-24 10:41:01 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: false, 总体: false
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
-2025-12-24 10:41:01 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
-2025-12-24 10:41:01 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@504c415c, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@6c9e74f3, org.springframework.security.web.context.SecurityContextHolderFilter@6f785a27, org.springframework.security.web.header.HeaderWriterFilter@14fff5e7, org.springframework.security.web.authentication.logout.LogoutFilter@7096d451, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@8f09a02, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5454be, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@813ab53, org.springframework.security.web.access.ExceptionTranslationFilter@5a6af2c4, org.springframework.security.web.access.intercept.AuthorizationFilter@1325f967]
-2025-12-24 10:41:01 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2025-12-24 10:41:01 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
-2025-12-24 10:41:01 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
-2025-12-24 10:41:01 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 2.072 seconds (process running for 2.272)
-2025-12-24 10:41:05 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-24 10:41:05 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2025-12-24 10:41:05 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 6 ms
-2025-12-24 10:41:35 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 内容是什么呢
-2025-12-24 10:41:35 [http-nio-8085-exec-9] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 10:41:35 [http-nio-8085-exec-9] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 10:41:35 [http-nio-8085-exec-9] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 10:41:35 [http-nio-8085-exec-9] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 10:41:35 [http-nio-8085-exec-9] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 10:41:35 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 10:41:35 [http-nio-8085-exec-9] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 10:41:35 [http-nio-8085-exec-9] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=20
-2025-12-24 10:41:37 [http-nio-8085-exec-9] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 125
-2025-12-24 10:41:37 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: <|FunctionCallBegin|>[{"name": "query_knowledge_detail", "parameters": {"fileName": "MBA高校篮球自由积分赛.docx"}}]<|FunctionCallEnd|>
-2025-12-24 10:41:37 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用 JSON: {"fileName": "MBA高校篮球自由积分赛.docx"}}
-2025-12-24 10:41:37 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: null
-2025-12-24 10:41:37 [http-nio-8085-exec-9] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具 <|FunctionCallBegin|>[{"name": "query_knowledge_detail", "parameters": {"fileName": "MBA高校篮球自由积分赛.docx"}}]<|FunctionCallEnd|> 执行结果为空
-2025-12-24 10:41:47 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 内容是什么呢
-2025-12-24 10:41:47 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 10:41:47 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 10:41:47 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 10:41:48 [http-nio-8085-exec-6] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 10:41:48 [http-nio-8085-exec-6] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 10:41:48 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 10:41:48 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 10:41:48 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=19
-2025-12-24 10:41:49 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 125
-2025-12-24 10:41:49 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: <|FunctionCallBegin|>[{"name": "query_knowledge_detail", "parameters": {"fileName": "MBA高校篮球自由积分赛.docx"}}]<|FunctionCallEnd|>
-2025-12-24 10:41:49 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用 JSON: {"fileName": "MBA高校篮球自由积分赛.docx"}}
-2025-12-24 10:41:49 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: null
-2025-12-24 10:41:49 [http-nio-8085-exec-6] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具 <|FunctionCallBegin|>[{"name": "query_knowledge_detail", "parameters": {"fileName": "MBA高校篮球自由积分赛.docx"}}]<|FunctionCallEnd|> 执行结果为空
-2025-12-24 10:42:24 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 内容是什么呢
-2025-12-24 10:42:24 [http-nio-8085-exec-9] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 10:42:24 [http-nio-8085-exec-9] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 10:42:24 [http-nio-8085-exec-9] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 10:42:25 [http-nio-8085-exec-9] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 10:42:25 [http-nio-8085-exec-9] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 10:42:25 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 10:42:25 [http-nio-8085-exec-9] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 10:42:25 [http-nio-8085-exec-9] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=18
-2025-12-24 10:42:27 [http-nio-8085-exec-9] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 125
-2025-12-24 10:42:27 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: <|FunctionCallBegin|>[{"name": "query_knowledge_detail", "parameters": {"fileName": "MBA高校篮球自由积分赛.docx"}}]<|FunctionCallEnd|>
-2025-12-24 10:42:27 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用 JSON: {"fileName": "MBA高校篮球自由积分赛.docx"}}
-2025-12-24 10:42:27 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: null
-2025-12-24 10:42:27 [http-nio-8085-exec-9] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具 <|FunctionCallBegin|>[{"name": "query_knowledge_detail", "parameters": {"fileName": "MBA高校篮球自由积分赛.docx"}}]<|FunctionCallEnd|> 执行结果为空
-2025-12-24 10:44:44 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: MBA高校篮球自由积分赛的内容是什么？
-2025-12-24 10:44:44 [http-nio-8085-exec-3] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 10:44:44 [http-nio-8085-exec-3] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 10:44:44 [http-nio-8085-exec-3] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 10:44:45 [http-nio-8085-exec-3] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 10:44:45 [http-nio-8085-exec-3] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 10:44:45 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 10:44:45 [http-nio-8085-exec-3] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 10:44:45 [http-nio-8085-exec-3] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=21
-2025-12-24 10:44:46 [http-nio-8085-exec-3] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 97
-2025-12-24 10:44:46 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: {
-  "tool": "query_knowledge_detail",
-  "parameters": {
-    "fileName": "MBA高校篮球自由积分赛.docx"
-  }
-}
-2025-12-24 10:44:46 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用 JSON: {
-    "fileName": "MBA高校篮球自由积分赛.docx"
-  }
-}
-2025-12-24 10:44:46 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: null
-2025-12-24 10:44:46 [http-nio-8085-exec-3] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具 {
-  "tool": "query_knowledge_detail",
-  "parameters": {
-    "fileName": "MBA高校篮球自由积分赛.docx"
-  }
-} 执行结果为空
-2025-12-24 10:45:33 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 21023 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
-2025-12-24 10:45:33 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
-2025-12-24 10:45:33 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
-2025-12-24 10:45:33 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2025-12-24 10:45:33 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
-2025-12-24 10:45:33 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2025-12-24 10:45:33 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 550 ms
-2025-12-24 10:45:33 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
-2025-12-24 10:45:34 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
-2025-12-24 10:45:34 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@5477d90e
-2025-12-24 10:45:34 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
-2025-12-24 10:45:34 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
-2025-12-24 10:45:34 [main] WARN  c.a.s.impl.VectorSearchServiceImpl - Embedding服务不可用: I/O error on GET request for "http://localhost:5001/health": Connection refused
-2025-12-24 10:45:34 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: false, 总体: false
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
-2025-12-24 10:45:34 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
-2025-12-24 10:45:34 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@66456506, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@69944a90, org.springframework.security.web.context.SecurityContextHolderFilter@24cbf894, org.springframework.security.web.header.HeaderWriterFilter@185a0811, org.springframework.security.web.authentication.logout.LogoutFilter@5981f2c6, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@434d001d, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@36453773, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@1ed52f44, org.springframework.security.web.access.ExceptionTranslationFilter@6f22c1f1, org.springframework.security.web.access.intercept.AuthorizationFilter@147375b3]
-2025-12-24 10:45:34 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2025-12-24 10:45:34 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
-2025-12-24 10:45:34 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
-2025-12-24 10:45:34 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 1.592 seconds (process running for 1.722)
-2025-12-24 10:46:06 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-24 10:46:06 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2025-12-24 10:46:06 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 8 ms
-2025-12-24 10:46:09 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: MBA高校篮球自由积分赛的内容是什么？
-2025-12-24 10:46:09 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】已执行主动干预，注入数据: 系统知识库中目前共有 19 份上传的资料。
-2025-12-24 10:46:09 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 10:46:09 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 10:46:09 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 10:46:09 [http-nio-8085-exec-6] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 10:46:09 [http-nio-8085-exec-6] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 10:46:09 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 10:46:09 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 10:46:10 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=22
-2025-12-24 10:46:11 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 97
-2025-12-24 10:46:11 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: {
-  "tool": "query_knowledge_detail",
-  "parameters": {
-    "fileName": "MBA高校篮球自由积分赛.docx"
-  }
-}
-2025-12-24 10:46:11 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: {
-  "tool": "query_knowledge_detail",
-  "parameters": {
-    "fileName": "MBA高校篮球自由积分赛.docx"
-  }
-}
-2025-12-24 10:46:12 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: query_knowledge_detail
-2025-12-24 10:46:12 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: 案例一：某育种者诉某公司...
-2025-12-24 10:46:12 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (doubao)，进行二次生成...
-2025-12-24 10:46:12 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 10:46:12 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
-2025-12-24 10:46:14 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话生成回复成功，长度: 65
-2025-12-24 10:47:52 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 21799 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
-2025-12-24 10:47:52 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
-2025-12-24 10:47:53 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
-2025-12-24 10:47:53 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2025-12-24 10:47:53 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
-2025-12-24 10:47:53 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2025-12-24 10:47:53 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 862 ms
-2025-12-24 10:47:53 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
-2025-12-24 10:47:53 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
-2025-12-24 10:47:53 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@6dc9a56e
-2025-12-24 10:47:53 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
-2025-12-24 10:47:53 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
-2025-12-24 10:47:53 [main] WARN  c.a.s.impl.VectorSearchServiceImpl - Embedding服务不可用: I/O error on GET request for "http://localhost:5001/health": Connection refused
-2025-12-24 10:47:53 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: false, 总体: false
-2025-12-24 10:47:53 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
-2025-12-24 10:47:53 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
-2025-12-24 10:47:53 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
-2025-12-24 10:47:53 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
-2025-12-24 10:47:54 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
-2025-12-24 10:47:54 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
-2025-12-24 10:47:54 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
-2025-12-24 10:47:54 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
-2025-12-24 10:47:54 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
-2025-12-24 10:47:54 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
-2025-12-24 10:47:54 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@69944a90, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@1ed52f44, org.springframework.security.web.context.SecurityContextHolderFilter@6c19769c, org.springframework.security.web.header.HeaderWriterFilter@77fb1002, org.springframework.security.web.authentication.logout.LogoutFilter@49639118, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@36453773, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@4db16677, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@771afdd5, org.springframework.security.web.access.ExceptionTranslationFilter@2ee095c9, org.springframework.security.web.access.intercept.AuthorizationFilter@6f430ea8]
-2025-12-24 10:47:54 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2025-12-24 10:47:54 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
-2025-12-24 10:47:54 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
-2025-12-24 10:47:54 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 1.979 seconds (process running for 2.106)
-2025-12-24 10:48:19 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 22011 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
-2025-12-24 10:48:19 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
-2025-12-24 10:48:20 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
-2025-12-24 10:48:20 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2025-12-24 10:48:20 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
-2025-12-24 10:48:20 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2025-12-24 10:48:20 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 566 ms
-2025-12-24 10:48:20 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
-2025-12-24 10:48:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
-2025-12-24 10:48:20 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@654b899f
-2025-12-24 10:48:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
-2025-12-24 10:48:20 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
-2025-12-24 10:48:20 [main] WARN  c.a.s.impl.VectorSearchServiceImpl - Embedding服务不可用: I/O error on GET request for "http://localhost:5001/health": Connection refused
-2025-12-24 10:48:20 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: false, 总体: false
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
-2025-12-24 10:48:20 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
-2025-12-24 10:48:20 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@147375b3, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@6f430ea8, org.springframework.security.web.context.SecurityContextHolderFilter@185a0811, org.springframework.security.web.header.HeaderWriterFilter@4ea43d4d, org.springframework.security.web.authentication.logout.LogoutFilter@19213a74, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@e2f6a45, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@24cbf894, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@119f072c, org.springframework.security.web.access.ExceptionTranslationFilter@5a537a16, org.springframework.security.web.access.intercept.AuthorizationFilter@2b1a1a37]
-2025-12-24 10:48:20 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2025-12-24 10:48:21 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
-2025-12-24 10:48:21 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
-2025-12-24 10:48:21 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 1.591 seconds (process running for 1.723)
-2025-12-24 10:49:14 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-24 10:49:14 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2025-12-24 10:49:14 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 4 ms
-2025-12-24 10:49:20 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: MBA高校篮球自由积分赛的内容是什么？
-2025-12-24 10:49:20 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】已执行主动干预，注入数据: 系统知识库中目前共有 29 份上传的资料。
-2025-12-24 10:49:20 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 10:49:20 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 10:49:20 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 10:49:20 [http-nio-8085-exec-6] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 10:49:20 [http-nio-8085-exec-6] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 10:49:20 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 10:49:20 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 10:49:20 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=22
-2025-12-24 10:49:23 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 125
-2025-12-24 10:49:23 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: <|FunctionCallBegin|>[{"name": "query_knowledge_detail", "parameters": {"fileName": "MBA高校篮球自由积分赛.docx"}}]<|FunctionCallEnd|>
-2025-12-24 10:49:23 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: [{"name": "query_knowledge_detail", "parameters": {"fileName": "MBA高校篮球自由积分赛.docx"}}]
-2025-12-24 10:49:23 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: query_knowledge_detail
-2025-12-24 10:49:23 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: MBA高校篮球自由积分赛
-—— 不报备 · 自由约战 · 打就有分 · 三个月排一次名次
-一、这是什么比赛？
-这是一个完全自由的MBA篮球积分赛：
-你可以随时和别的队约球，
-打完只需上传结果，
-系统自动累计积分，
-每 3 个月统一排名，半年进行一次颁奖。
-✅ 不设固定赛程　✅ 不用赛前报备　✅ 不限定比赛时间　✅ 打就有积分
-二、谁可以参加？
-本校在读学生或已毕业校友
-自由组队
-每队 5–12 人
-赛季内一队固定，不可重复报名
-三、比赛怎么进行？
-各队自行约战
-比赛形式：以 5v5 为主
-场地、时间双方自行协商
-不设统一裁判，双方认可结果即可有效
-四、唯一必须做的事：赛后上传成绩 ✅
-比赛结束后，提交以下 3 项即可计分：
-双方队名
-最终比分
-现场合影
-审核通过后 → 自动加分
-❌ 未提交成绩 = 该场不计分
-五、积分规则（超级简单）
-比赛结果	获得积分
-赢	+3 分
-输	+1 分
-无效成绩	0 分
-
-👉 核心原则：只要你来打，就一定有分。
-六、防刷分规则
-每队每天最多记 1 场
-同一对手一周最多记 1 场
-其余时间完全自由。
-七、赛季与排名
-一个赛季：3 个月
-按总积分从高到低排名
-积分相同：
-        看胜场
-再看参赛场次
-半年积分前三名+挑战者队伍一名，四队进行冠亚军季军争夺
-八、奖项设置（每赛季一次）
-🏆 冠军
-🥈 亚军
-🥉 季军
-🔥 最活跃球队（比赛场次最多）
-九、违规说明
-造假比分：本场 0 分 + 警告
-打架斗殴：直接取消本赛季资格
-
-2025-12-24 10:49:23 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (doubao)，进行二次生成...
-2025-12-24 10:49:23 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 10:49:23 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
-2025-12-24 10:49:34 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话生成回复成功，长度: 588
-2025-12-24 10:50:02 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: MBA高校篮球自由积分赛的积分规则
-2025-12-24 10:50:02 [http-nio-8085-exec-9] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 10:50:02 [http-nio-8085-exec-9] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 10:50:02 [http-nio-8085-exec-9] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 10:50:02 [http-nio-8085-exec-9] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 10:50:02 [http-nio-8085-exec-9] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 10:50:02 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 10:50:02 [http-nio-8085-exec-9] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 10:50:02 [http-nio-8085-exec-9] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=21
-2025-12-24 10:50:05 [http-nio-8085-exec-9] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 119
-2025-12-24 10:50:05 [http-nio-8085-exec-9] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: 根据之前查询到的内容，MBA高校篮球自由积分赛的积分规则如下：
- - 赢：+3分
- - 输：+1分
- - 无效成绩：0分
-
-核心原则是只要参赛就一定有分。同时还有防刷分规则，每队每天最多记1场，同一对手一周最多记1场，其余时间完全自由。 
-2025-12-24 11:01:47 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 23447 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
-2025-12-24 11:01:47 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
-2025-12-24 11:01:48 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
-2025-12-24 11:01:48 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2025-12-24 11:01:48 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
-2025-12-24 11:01:48 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2025-12-24 11:01:48 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 584 ms
-2025-12-24 11:01:48 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
-2025-12-24 11:01:48 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
-2025-12-24 11:01:48 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@1e5b33e5
-2025-12-24 11:01:48 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
-2025-12-24 11:01:48 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
-2025-12-24 11:01:49 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: true, 总体: true
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
-2025-12-24 11:01:49 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
-2025-12-24 11:01:49 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@59b1edab, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@3855b27e, org.springframework.security.web.context.SecurityContextHolderFilter@1136122a, org.springframework.security.web.header.HeaderWriterFilter@2a0c244e, org.springframework.security.web.authentication.logout.LogoutFilter@443dae2, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@72288480, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@4ea43d4d, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5305f936, org.springframework.security.web.access.ExceptionTranslationFilter@13ebccd, org.springframework.security.web.access.intercept.AuthorizationFilter@70cd122]
-2025-12-24 11:01:49 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2025-12-24 11:01:49 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
-2025-12-24 11:01:49 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
-2025-12-24 11:01:49 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 1.619 seconds (process running for 1.773)
-2025-12-24 11:01:57 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-24 11:01:57 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2025-12-24 11:01:57 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 1 ms
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 14
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=14, title=植物新品种保护条例（2024版）
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 15
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=15, title=DUS测试技术指南 - 蔷薇属
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 12
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=12, title=植物新品种保护条例（2024版）
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 13
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=13, title=DUS测试技术指南 - 蔷薇属
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 10
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=10, title=植物新品种保护条例（2024版）
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 11
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=11, title=DUS测试技术指南 - 蔷薇属
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 8
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=8, title=植物新品种保护条例（2024版）
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 9
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=9, title=DUS测试技术指南 - 蔷薇属
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 6
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=6, title=植物新品种保护条例（2024版）
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 7
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=7, title=DUS测试技术指南 - 蔷薇属
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 5
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=5, title=MBA高校篮球自由积分赛.docx
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 3
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=3, title=植物新品种保护条例（2024版）
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 4
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=4, title=DUS测试技术指南 - 蔷薇属
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 2
-2025-12-24 11:01:58 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=2, title=什么是青蛙跳.docx
-2025-12-24 11:01:59 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 1
-2025-12-24 11:01:59 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=1, title=什么是青蛙跳.docx
-2025-12-24 11:01:59 [http-nio-8085-exec-1] INFO  c.a.c.KnowledgeDocumentController - 批量索引完成: {success=15, total=15, fail=0, message=索引完成}
-2025-12-24 11:18:27 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 24887 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
-2025-12-24 11:18:27 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
-2025-12-24 11:18:27 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
-2025-12-24 11:18:27 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2025-12-24 11:18:27 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
-2025-12-24 11:18:27 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2025-12-24 11:18:27 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 768 ms
-2025-12-24 11:18:28 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
-2025-12-24 11:18:28 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
-2025-12-24 11:18:28 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@77f03916
-2025-12-24 11:18:28 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
-2025-12-24 11:18:28 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
-2025-12-24 11:18:28 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: true, 总体: true
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
-2025-12-24 11:18:28 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
-2025-12-24 11:18:28 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@3c116f26, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@7db06c50, org.springframework.security.web.context.SecurityContextHolderFilter@19213a74, org.springframework.security.web.header.HeaderWriterFilter@2dd08ff1, org.springframework.security.web.authentication.logout.LogoutFilter@6b33892a, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@719bb60d, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5981f2c6, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@1554eaa4, org.springframework.security.web.access.ExceptionTranslationFilter@8f09a02, org.springframework.security.web.access.intercept.AuthorizationFilter@62c47480]
-2025-12-24 11:18:28 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2025-12-24 11:18:28 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
-2025-12-24 11:18:28 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
-2025-12-24 11:18:28 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
-2025-12-24 11:18:28 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.
-2025-12-24 11:18:28 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+2025-12-28 16:45:36 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 89031 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
+2025-12-28 16:45:36 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
+2025-12-28 16:45:36 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
+2025-12-28 16:45:36 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-28 16:45:36 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-28 16:45:37 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-28 16:45:37 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 581 ms
+2025-12-28 16:45:37 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
+2025-12-28 16:45:37 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
+2025-12-28 16:45:37 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@280ecc33
+2025-12-28 16:45:37 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新sys_user表结构...
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - 添加user_type字段到sys_user表...
+2025-12-28 16:45:37 [main] ERROR c.a.util.DatabaseInitializer - ❌ 添加user_type字段失败: StatementCallback; bad SQL grammar [ALTER TABLE sys_user ADD COLUMN user_type TINYINT DEFAULT 2 COMMENT '用户类型 (1:管理员, 2:业务员, 3:助理, 4:其他)' AFTER version]
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
+2025-12-28 16:45:37 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
+2025-12-28 16:45:37 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'customUserDetailsService': Unsatisfied dependency expressed through field 'userService': Error creating bean with name 'userServiceImpl': Invocation of init method failed
+2025-12-28 16:45:37 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
+2025-12-28 16:45:37 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.
+2025-12-28 16:45:37 [main] INFO  o.a.catalina.core.StandardService - Stopping service [Tomcat]
+2025-12-28 16:45:37 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
 
 Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2025-12-24 11:18:28 [main] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
-
-***************************
-APPLICATION FAILED TO START
-***************************
-
-Description:
-
-Web server failed to start. Port 8085 was already in use.
-
-Action:
-
-Identify and stop the process that's listening on port 8085 or configure this application to listen on another port.
-
-2025-12-24 11:19:00 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: MBA高校篮球违规说明
-2025-12-24 11:19:00 [http-nio-8085-exec-3] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索完成，查询: MBA高校篮球违规说明, 结果数: 3
-2025-12-24 11:19:00 [http-nio-8085-exec-3] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 11:19:00 [http-nio-8085-exec-3] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 11:19:00 [http-nio-8085-exec-3] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 11:19:01 [http-nio-8085-exec-3] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 11:19:01 [http-nio-8085-exec-3] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 11:19:01 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 11:19:01 [http-nio-8085-exec-3] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 11:19:01 [http-nio-8085-exec-3] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=21
-2025-12-24 11:19:03 [http-nio-8085-exec-3] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 57
-2025-12-24 11:19:03 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: MBA高校篮球自由积分赛的违规说明如下：
-- 造假比分：本场0分 + 警告；
-- 打架斗殴：直接取消本赛季资格。 
-2025-12-24 11:19:12 [http-nio-8085-exec-8] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 什么事青蛙跳
-2025-12-24 11:19:13 [http-nio-8085-exec-8] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索完成，查询: 什么事青蛙跳, 结果数: 3
-2025-12-24 11:19:13 [http-nio-8085-exec-8] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 11:19:13 [http-nio-8085-exec-8] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 11:19:13 [http-nio-8085-exec-8] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 11:19:13 [http-nio-8085-exec-8] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 11:19:13 [http-nio-8085-exec-8] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 11:19:13 [http-nio-8085-exec-8] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 11:19:13 [http-nio-8085-exec-8] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 11:19:13 [http-nio-8085-exec-8] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=21
-2025-12-24 11:19:15 [http-nio-8085-exec-8] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 119
-2025-12-24 11:19:15 [http-nio-8085-exec-8] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: <|FunctionCallBegin|>[{"name": "query_knowledge_detail", "parameters": {"fileName": "什么是青蛙跳.docx"}}]<|FunctionCallEnd|>
-2025-12-24 11:19:15 [http-nio-8085-exec-8] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: [{"name": "query_knowledge_detail", "parameters": {"fileName": "什么是青蛙跳.docx"}}]
-2025-12-24 11:19:15 [http-nio-8085-exec-8] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: query_knowledge_detail
-2025-12-24 11:19:15 [http-nio-8085-exec-8] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: 什么是青蛙跳
-青蛙跳就是学着青蛙样子123跳一跳。
-
-
-爱情买卖定义：
-
-请把你的爱，让我不离开
-
-2025-12-24 11:19:15 [http-nio-8085-exec-8] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (doubao)，进行二次生成...
-2025-12-24 11:19:15 [http-nio-8085-exec-8] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 11:19:15 [http-nio-8085-exec-8] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
-2025-12-24 11:19:17 [http-nio-8085-exec-8] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话生成回复成功，长度: 18
-2025-12-24 11:24:44 [http-nio-8085-exec-1] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 植物保护
-2025-12-24 11:24:45 [http-nio-8085-exec-1] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索完成，查询: 植物保护, 结果数: 3
-2025-12-24 11:24:45 [http-nio-8085-exec-1] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 11:24:45 [http-nio-8085-exec-1] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 11:24:45 [http-nio-8085-exec-1] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 11:24:45 [http-nio-8085-exec-1] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 11:24:45 [http-nio-8085-exec-1] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 11:24:45 [http-nio-8085-exec-1] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 11:24:45 [http-nio-8085-exec-1] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 11:24:45 [http-nio-8085-exec-1] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=21
-2025-12-24 11:24:47 [http-nio-8085-exec-1] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 92
-2025-12-24 11:24:47 [http-nio-8085-exec-1] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: <|FunctionCallBegin|>[{"name": "query_knowledge_list", "parameters": {}}]<|FunctionCallEnd|>
-2025-12-24 11:24:47 [http-nio-8085-exec-1] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: [{"name": "query_knowledge_list", "parameters": {}}]
-2025-12-24 11:24:47 [http-nio-8085-exec-1] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: query_knowledge_list
-2025-12-24 11:24:47 [http-nio-8085-exec-1] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: 为您找到以下资料清单（共 39 份）：
-1. **植物新品种保护条例（2024版）** (类型: docx)
-2. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-3. **植物新品种保护条例（2024版）** (类型: docx)
-4. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-5. **植物新品种保护条例（2024版）** (类型: docx)
-6. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-7. **植物新品种保护条例（2024版）** (类型: docx)
-8. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-9. **植物新品种保护条例（2024版）** (类型: docx)
-10. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-11. **植物新品种保护条例（2024版）** (类型: docx)
-12. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-13. **MBA高校篮球自由积分赛.docx** (类型: docx)
-14. **植物新品种保护条例（2024版）** (类型: docx)
-15. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-16. **什么是青蛙跳.docx** (类型: docx)
-17. **什么是青蛙跳.docx** (类型: docx)
-18. **品种权申请操作流程** (类型: txt)
-19. **品种权转让协议模板** (类型: txt)
-20. **常见侵权案例分析** (类型: txt)
-
-... 以及更多共 39 份文件。
-2025-12-24 11:24:47 [http-nio-8085-exec-1] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (doubao)，进行二次生成...
-2025-12-24 11:24:47 [http-nio-8085-exec-1] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 11:24:47 [http-nio-8085-exec-1] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
-2025-12-24 11:24:51 [http-nio-8085-exec-1] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话生成回复成功，长度: 207
-2025-12-24 11:25:08 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 什么事新品种
-2025-12-24 11:25:08 [http-nio-8085-exec-2] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索完成，查询: 什么事新品种, 结果数: 3
-2025-12-24 11:25:08 [http-nio-8085-exec-2] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 11:25:08 [http-nio-8085-exec-2] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 11:25:08 [http-nio-8085-exec-2] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 11:25:09 [http-nio-8085-exec-2] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 11:25:09 [http-nio-8085-exec-2] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 11:25:09 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 11:25:09 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 11:25:09 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=21
-2025-12-24 11:25:10 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 36
-2025-12-24 11:25:10 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: {
-  "tool": "query_knowledge_list"
-}
-2025-12-24 11:25:10 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: {
-  "tool": "query_knowledge_list"
-}
-2025-12-24 11:25:10 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: query_knowledge_list
-2025-12-24 11:25:10 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: 为您找到以下资料清单（共 39 份）：
-1. **植物新品种保护条例（2024版）** (类型: docx)
-2. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-3. **植物新品种保护条例（2024版）** (类型: docx)
-4. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-5. **植物新品种保护条例（2024版）** (类型: docx)
-6. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-7. **植物新品种保护条例（2024版）** (类型: docx)
-8. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-9. **植物新品种保护条例（2024版）** (类型: docx)
-10. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-11. **植物新品种保护条例（2024版）** (类型: docx)
-12. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-13. **MBA高校篮球自由积分赛.docx** (类型: docx)
-14. **植物新品种保护条例（2024版）** (类型: docx)
-15. **DUS测试技术指南 - 蔷薇属** (类型: docx)
-16. **什么是青蛙跳.docx** (类型: docx)
-17. **什么是青蛙跳.docx** (类型: docx)
-18. **品种权申请操作流程** (类型: txt)
-19. **品种权转让协议模板** (类型: txt)
-20. **常见侵权案例分析** (类型: txt)
-
-... 以及更多共 39 份文件。
-2025-12-24 11:25:10 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (doubao)，进行二次生成...
-2025-12-24 11:25:10 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 11:25:10 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
-2025-12-24 11:25:14 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话生成回复成功，长度: 220
-2025-12-24 11:25:52 [http-nio-8085-exec-4] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 什么植物新品种，解释下
-2025-12-24 11:25:53 [http-nio-8085-exec-4] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索完成，查询: 什么植物新品种，解释下, 结果数: 3
-2025-12-24 11:25:53 [http-nio-8085-exec-4] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
-2025-12-24 11:25:53 [http-nio-8085-exec-4] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
-2025-12-24 11:25:53 [http-nio-8085-exec-4] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
-2025-12-24 11:25:53 [http-nio-8085-exec-4] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
-2025-12-24 11:25:53 [http-nio-8085-exec-4] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
-
-您的DeepSeek API账户余额已用完，无法继续使用AI服务。
-
-**解决方案：**
-1. 登录DeepSeek平台（https://platform.deepseek.com）
-2. 为账户充值
-3. 充值后即可恢复正常使用
-
-如有疑问，请联系系统管理员。
-2025-12-24 11:25:53 [http-nio-8085-exec-4] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
-2025-12-24 11:25:53 [http-nio-8085-exec-4] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 11:25:53 [http-nio-8085-exec-4] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=21
-2025-12-24 11:25:55 [http-nio-8085-exec-4] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 96
-2025-12-24 11:25:55 [http-nio-8085-exec-4] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: {
-  "tool": "query_knowledge_detail",
-  "parameters": {
-    "fileName": "植物新品种保护条例（2024版）"
-  }
-}
-2025-12-24 11:25:55 [http-nio-8085-exec-4] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: {
-  "tool": "query_knowledge_detail",
-  "parameters": {
-    "fileName": "植物新品种保护条例（2024版）"
-  }
-}
-2025-12-24 11:25:55 [http-nio-8085-exec-4] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: query_knowledge_detail
-2025-12-24 11:25:55 [http-nio-8085-exec-4] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: 这是条例的全文内容...
-2025-12-24 11:25:55 [http-nio-8085-exec-4] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (doubao)，进行二次生成...
-2025-12-24 11:25:55 [http-nio-8085-exec-4] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
-2025-12-24 11:25:55 [http-nio-8085-exec-4] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
-2025-12-24 11:25:58 [http-nio-8085-exec-4] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话生成回复成功，长度: 207
-2025-12-24 11:27:39 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 26297 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
-2025-12-24 11:27:39 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
-2025-12-24 11:27:40 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
-2025-12-24 11:27:40 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2025-12-24 11:27:40 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
-2025-12-24 11:27:40 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2025-12-24 11:27:40 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 584 ms
-2025-12-24 11:27:40 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
-2025-12-24 11:27:40 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
-2025-12-24 11:27:40 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@71468613
-2025-12-24 11:27:40 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
-2025-12-24 11:27:40 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
-2025-12-24 11:27:41 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: true, 总体: true
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
-2025-12-24 11:27:41 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
-2025-12-24 11:27:41 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@5305f936, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@2b1a1a37, org.springframework.security.web.context.SecurityContextHolderFilter@72288480, org.springframework.security.web.header.HeaderWriterFilter@5bccef9f, org.springframework.security.web.authentication.logout.LogoutFilter@5454be, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6f22c1f1, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@2ee095c9, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@7d90764a, org.springframework.security.web.access.ExceptionTranslationFilter@2a0c244e, org.springframework.security.web.access.intercept.AuthorizationFilter@5fd4e67f]
-2025-12-24 11:27:41 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2025-12-24 11:27:41 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
-2025-12-24 11:27:41 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
-2025-12-24 11:27:41 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 1.823 seconds (process running for 1.979)
-2025-12-24 11:39:10 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-24 11:39:10 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2025-12-24 11:39:10 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 19 ms
-2025-12-24 11:39:30 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 什么是新颖性？
-2025-12-24 11:39:30 [http-nio-8085-exec-3] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】命中FAQ: 什么是新颖性？
-2025-12-24 11:39:49 [http-nio-8085-exec-9] INFO  c.a.c.KnowledgeDocumentController - 文件保存到: /Users/zuozuo/Downloads/cxf/aicustomer/uploads/knowledge/38a2c166-4ebf-430c-bbfe-a712214f1f71.docx
-2025-12-24 11:39:51 [http-nio-8085-exec-9] INFO  c.a.s.impl.VectorSearchServiceImpl - 文档索引成功，docId: 20
-2025-12-24 11:39:51 [http-nio-8085-exec-9] INFO  c.a.c.KnowledgeDocumentController - 文档已索引到向量库: id=20, title=MBA高校篮球自由积分赛.docx
-2025-12-24 14:14:29 [http-nio-8085-exec-1] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:29 [http-nio-8085-exec-9] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:29 [http-nio-8085-exec-10] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:35 [http-nio-8085-exec-1] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:35 [http-nio-8085-exec-10] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:35 [http-nio-8085-exec-8] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:37 [http-nio-8085-exec-6] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:38 [http-nio-8085-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:38 [http-nio-8085-exec-10] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:39 [http-nio-8085-exec-8] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:39 [http-nio-8085-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:40 [http-nio-8085-exec-6] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:14:40 [http-nio-8085-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 14:18:18 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 38059 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
-2025-12-24 14:18:18 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
-2025-12-24 14:18:19 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
-2025-12-24 14:18:19 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2025-12-24 14:18:19 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
-2025-12-24 14:18:19 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2025-12-24 14:18:19 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 727 ms
-2025-12-24 14:18:19 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
-2025-12-24 14:18:19 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
-2025-12-24 14:18:19 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@21c34bf8
-2025-12-24 14:18:19 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
-2025-12-24 14:18:19 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
-2025-12-24 14:18:19 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: true, 总体: true
-2025-12-24 14:18:19 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
-2025-12-24 14:18:19 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
-2025-12-24 14:18:19 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
-2025-12-24 14:18:19 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
-2025-12-24 14:18:20 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
-2025-12-24 14:18:20 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
-2025-12-24 14:18:20 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
-2025-12-24 14:18:20 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
-2025-12-24 14:18:20 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
-2025-12-24 14:18:20 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
-2025-12-24 14:18:20 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@7074da1d, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@5bdb6ea8, org.springframework.security.web.context.SecurityContextHolderFilter@6942ee48, org.springframework.security.web.header.HeaderWriterFilter@5981f2c6, org.springframework.security.web.authentication.logout.LogoutFilter@9cb927e, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6abd8bcd, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@70cd122, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@3e55eeb9, org.springframework.security.web.access.ExceptionTranslationFilter@30a791a6, org.springframework.security.web.access.intercept.AuthorizationFilter@b340615]
-2025-12-24 14:18:20 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2025-12-24 14:18:20 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
-2025-12-24 14:18:20 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
-2025-12-24 14:18:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
-2025-12-24 14:18:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.
-2025-12-24 14:18:20 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+2025-12-28 16:45:37 [main] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'customUserDetailsService': Unsatisfied dependency expressed through field 'userService': Error creating bean with name 'userServiceImpl': Invocation of init method failed
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:772)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:752)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:145)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1420)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:600)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:973)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:946)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:616)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:455)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:323)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1342)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1331)
+	at com.aicustomer.AiCustomerApplication.main(AiCustomerApplication.java:20)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'userServiceImpl': Invocation of init method failed
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:222)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization(AbstractAutowireCapableBeanFactory.java:421)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1767)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:601)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1441)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1348)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:769)
+	... 20 common frames omitted
+Caused by: org.springframework.jdbc.BadSqlGrammarException: 
+### Error querying database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column 'real_name' in 'field list'
+### The error may exist in file [/Users/zuozuo/Downloads/cxf/aicustomer/target/classes/mapper/UserMapper.xml]
+### The error may involve defaultParameterMap
+### The error occurred while setting parameters
+### SQL: SELECT                   id, username, password, real_name, email, phone, status,         create_time, update_time, create_by, update_by, deleted, version, user_type               FROM sys_user         WHERE username = ? AND deleted = 0
+### Cause: java.sql.SQLSyntaxErrorException: Unknown column 'real_name' in 'field list'
+; bad SQL grammar []
+	at org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator.doTranslate(SQLErrorCodeSQLExceptionTranslator.java:246)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at org.mybatis.spring.MyBatisExceptionTranslator.translateExceptionIfPossible(MyBatisExceptionTranslator.java:92)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:439)
+	at jdk.proxy2/jdk.proxy2.$Proxy90.selectOne(Unknown Source)
+	at org.mybatis.spring.SqlSessionTemplate.selectOne(SqlSessionTemplate.java:160)
+	at org.apache.ibatis.binding.MapperMethod.execute(MapperMethod.java:87)
+	at org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke(MapperProxy.java:141)
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86)
+	at jdk.proxy2/jdk.proxy2.$Proxy91.findByUsername(Unknown Source)
+	at com.aicustomer.service.impl.UserServiceImpl.initAdmin(UserServiceImpl.java:149)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMethod.invoke(InitDestroyAnnotationBeanPostProcessor.java:457)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMetadata.invokeInitMethods(InitDestroyAnnotationBeanPostProcessor.java:401)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:219)
+	... 32 common frames omitted
+Caused by: java.sql.SQLSyntaxErrorException: Unknown column 'real_name' in 'field list'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:121)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:916)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.execute(ClientPreparedStatement.java:354)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.execute(ProxyPreparedStatement.java:44)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute(HikariProxyPreparedStatement.java)
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.query(PreparedStatementHandler.java:65)
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.query(RoutingStatementHandler.java:80)
+	at org.apache.ibatis.executor.SimpleExecutor.doQuery(SimpleExecutor.java:65)
+	at org.apache.ibatis.executor.BaseExecutor.queryFromDatabase(BaseExecutor.java:336)
+	at org.apache.ibatis.executor.BaseExecutor.query(BaseExecutor.java:158)
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:110)
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:90)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:154)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:147)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:142)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne(DefaultSqlSession.java:75)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:425)
+	... 46 common frames omitted
+2025-12-28 16:48:04 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 89658 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
+2025-12-28 16:48:04 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
+2025-12-28 16:48:05 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
+2025-12-28 16:48:05 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-28 16:48:05 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-28 16:48:05 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-28 16:48:05 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 605 ms
+2025-12-28 16:48:05 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
+2025-12-28 16:48:05 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
+2025-12-28 16:48:05 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@4cb4c4cc
+2025-12-28 16:48:05 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新sys_user表结构...
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - 添加user_type字段到sys_user表...
+2025-12-28 16:48:05 [main] ERROR c.a.util.DatabaseInitializer - ❌ 添加user_type字段失败: StatementCallback; bad SQL grammar [ALTER TABLE sys_user ADD COLUMN user_type TINYINT DEFAULT 2 COMMENT '用户类型 (1:管理员, 2:业务员, 3:助理, 4:其他)' AFTER version]
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
+2025-12-28 16:48:05 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
+2025-12-28 16:48:05 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'customUserDetailsService': Unsatisfied dependency expressed through field 'userService': Error creating bean with name 'userServiceImpl': Invocation of init method failed
+2025-12-28 16:48:05 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
+2025-12-28 16:48:05 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.
+2025-12-28 16:48:05 [main] INFO  o.a.catalina.core.StandardService - Stopping service [Tomcat]
+2025-12-28 16:48:05 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
 
 Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2025-12-24 14:18:20 [main] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+2025-12-28 16:48:05 [main] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'customUserDetailsService': Unsatisfied dependency expressed through field 'userService': Error creating bean with name 'userServiceImpl': Invocation of init method failed
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:772)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:752)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:145)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1420)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:600)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:973)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:946)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:616)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:455)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:323)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1342)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1331)
+	at com.aicustomer.AiCustomerApplication.main(AiCustomerApplication.java:20)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'userServiceImpl': Invocation of init method failed
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:222)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization(AbstractAutowireCapableBeanFactory.java:421)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1767)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:601)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1441)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1348)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:769)
+	... 20 common frames omitted
+Caused by: org.springframework.jdbc.BadSqlGrammarException: 
+### Error querying database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column 'real_name' in 'field list'
+### The error may exist in file [/Users/zuozuo/Downloads/cxf/aicustomer/target/classes/mapper/UserMapper.xml]
+### The error may involve defaultParameterMap
+### The error occurred while setting parameters
+### SQL: SELECT                   id, username, password, real_name, email, phone, status,         create_time, update_time, create_by, update_by, deleted, version, user_type               FROM sys_user         WHERE username = ? AND deleted = 0
+### Cause: java.sql.SQLSyntaxErrorException: Unknown column 'real_name' in 'field list'
+; bad SQL grammar []
+	at org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator.doTranslate(SQLErrorCodeSQLExceptionTranslator.java:246)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at org.mybatis.spring.MyBatisExceptionTranslator.translateExceptionIfPossible(MyBatisExceptionTranslator.java:92)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:439)
+	at jdk.proxy2/jdk.proxy2.$Proxy90.selectOne(Unknown Source)
+	at org.mybatis.spring.SqlSessionTemplate.selectOne(SqlSessionTemplate.java:160)
+	at org.apache.ibatis.binding.MapperMethod.execute(MapperMethod.java:87)
+	at org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke(MapperProxy.java:141)
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86)
+	at jdk.proxy2/jdk.proxy2.$Proxy91.findByUsername(Unknown Source)
+	at com.aicustomer.service.impl.UserServiceImpl.initAdmin(UserServiceImpl.java:149)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMethod.invoke(InitDestroyAnnotationBeanPostProcessor.java:457)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMetadata.invokeInitMethods(InitDestroyAnnotationBeanPostProcessor.java:401)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:219)
+	... 32 common frames omitted
+Caused by: java.sql.SQLSyntaxErrorException: Unknown column 'real_name' in 'field list'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:121)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:916)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.execute(ClientPreparedStatement.java:354)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.execute(ProxyPreparedStatement.java:44)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute(HikariProxyPreparedStatement.java)
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.query(PreparedStatementHandler.java:65)
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.query(RoutingStatementHandler.java:80)
+	at org.apache.ibatis.executor.SimpleExecutor.doQuery(SimpleExecutor.java:65)
+	at org.apache.ibatis.executor.BaseExecutor.queryFromDatabase(BaseExecutor.java:336)
+	at org.apache.ibatis.executor.BaseExecutor.query(BaseExecutor.java:158)
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:110)
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:90)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:154)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:147)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:142)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne(DefaultSqlSession.java:75)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:425)
+	... 46 common frames omitted
+2025-12-28 16:49:02 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 89799 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
+2025-12-28 16:49:02 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
+2025-12-28 16:49:02 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
+2025-12-28 16:49:02 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-28 16:49:02 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-28 16:49:02 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-28 16:49:02 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 579 ms
+2025-12-28 16:49:03 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
+2025-12-28 16:49:03 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
+2025-12-28 16:49:03 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@5f6a8efe
+2025-12-28 16:49:03 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新sys_user表结构...
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - 添加user_type字段到sys_user表...
+2025-12-28 16:49:03 [main] ERROR c.a.util.DatabaseInitializer - ❌ 添加user_type字段失败: StatementCallback; bad SQL grammar [ALTER TABLE sys_user ADD COLUMN user_type TINYINT DEFAULT 2 COMMENT '用户类型 (1:管理员, 2:业务员, 3:助理, 4:其他)' AFTER version]
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
+2025-12-28 16:49:03 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
+2025-12-28 16:49:03 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'customUserDetailsService': Unsatisfied dependency expressed through field 'userService': Error creating bean with name 'userServiceImpl': Invocation of init method failed
+2025-12-28 16:49:03 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
+2025-12-28 16:49:03 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.
+2025-12-28 16:49:03 [main] INFO  o.a.catalina.core.StandardService - Stopping service [Tomcat]
+2025-12-28 16:49:03 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
 
-***************************
-APPLICATION FAILED TO START
-***************************
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-12-28 16:49:03 [main] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'customUserDetailsService': Unsatisfied dependency expressed through field 'userService': Error creating bean with name 'userServiceImpl': Invocation of init method failed
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:772)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:752)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:145)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1420)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:600)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:973)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:946)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:616)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:455)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:323)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1342)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1331)
+	at com.aicustomer.AiCustomerApplication.main(AiCustomerApplication.java:20)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'userServiceImpl': Invocation of init method failed
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:222)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization(AbstractAutowireCapableBeanFactory.java:421)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1767)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:601)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1441)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1348)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:769)
+	... 20 common frames omitted
+Caused by: org.springframework.jdbc.BadSqlGrammarException: 
+### Error querying database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column 'real_name' in 'field list'
+### The error may exist in file [/Users/zuozuo/Downloads/cxf/aicustomer/target/classes/mapper/UserMapper.xml]
+### The error may involve defaultParameterMap
+### The error occurred while setting parameters
+### SQL: SELECT                   id, username, password, real_name, email, phone, status,         create_time, update_time, create_by, update_by, deleted, version, user_type               FROM sys_user         WHERE username = ? AND deleted = 0
+### Cause: java.sql.SQLSyntaxErrorException: Unknown column 'real_name' in 'field list'
+; bad SQL grammar []
+	at org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator.doTranslate(SQLErrorCodeSQLExceptionTranslator.java:246)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at org.mybatis.spring.MyBatisExceptionTranslator.translateExceptionIfPossible(MyBatisExceptionTranslator.java:92)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:439)
+	at jdk.proxy2/jdk.proxy2.$Proxy90.selectOne(Unknown Source)
+	at org.mybatis.spring.SqlSessionTemplate.selectOne(SqlSessionTemplate.java:160)
+	at org.apache.ibatis.binding.MapperMethod.execute(MapperMethod.java:87)
+	at org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke(MapperProxy.java:141)
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86)
+	at jdk.proxy2/jdk.proxy2.$Proxy91.findByUsername(Unknown Source)
+	at com.aicustomer.service.impl.UserServiceImpl.initAdmin(UserServiceImpl.java:149)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMethod.invoke(InitDestroyAnnotationBeanPostProcessor.java:457)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMetadata.invokeInitMethods(InitDestroyAnnotationBeanPostProcessor.java:401)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:219)
+	... 32 common frames omitted
+Caused by: java.sql.SQLSyntaxErrorException: Unknown column 'real_name' in 'field list'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:121)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:916)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.execute(ClientPreparedStatement.java:354)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.execute(ProxyPreparedStatement.java:44)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute(HikariProxyPreparedStatement.java)
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.query(PreparedStatementHandler.java:65)
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.query(RoutingStatementHandler.java:80)
+	at org.apache.ibatis.executor.SimpleExecutor.doQuery(SimpleExecutor.java:65)
+	at org.apache.ibatis.executor.BaseExecutor.queryFromDatabase(BaseExecutor.java:336)
+	at org.apache.ibatis.executor.BaseExecutor.query(BaseExecutor.java:158)
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:110)
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:90)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:154)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:147)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:142)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne(DefaultSqlSession.java:75)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:425)
+	... 46 common frames omitted
+2025-12-28 16:49:42 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 89939 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
+2025-12-28 16:49:42 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
+2025-12-28 16:49:42 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
+2025-12-28 16:49:42 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-28 16:49:42 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-28 16:49:42 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-28 16:49:42 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 593 ms
+2025-12-28 16:49:42 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
+2025-12-28 16:49:42 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
+2025-12-28 16:49:42 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@2807cf3
+2025-12-28 16:49:42 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新sys_user表结构...
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - 添加user_type字段到sys_user表...
+2025-12-28 16:49:43 [main] ERROR c.a.util.DatabaseInitializer - ❌ 添加user_type字段失败: StatementCallback; bad SQL grammar [ALTER TABLE sys_user ADD COLUMN user_type TINYINT DEFAULT 2 COMMENT '用户类型 (1:管理员, 2:业务员, 3:助理, 4:其他)' AFTER version]
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
+2025-12-28 16:49:43 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
+2025-12-28 16:49:43 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'customUserDetailsService': Unsatisfied dependency expressed through field 'userService': Error creating bean with name 'userServiceImpl': Invocation of init method failed
+2025-12-28 16:49:43 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
+2025-12-28 16:49:43 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.
+2025-12-28 16:49:43 [main] INFO  o.a.catalina.core.StandardService - Stopping service [Tomcat]
+2025-12-28 16:49:43 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
 
-Description:
-
-Web server failed to start. Port 8085 was already in use.
-
-Action:
-
-Identify and stop the process that's listening on port 8085 or configure this application to listen on another port.
-
-2025-12-24 15:32:25 [http-nio-8085-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 15:32:25 [http-nio-8085-exec-2] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 15:32:25 [http-nio-8085-exec-2] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:17:45 [http-nio-8085-exec-2] INFO  c.a.c.SystemConfigController - 查询配置分组: 业务类型
-2025-12-24 17:17:45 [http-nio-8085-exec-2] INFO  c.a.c.SystemConfigController - 查询到 1 条配置
-2025-12-24 17:17:48 [http-nio-8085-exec-4] INFO  c.a.c.SystemConfigController - 查询配置分组: 业务类型
-2025-12-24 17:17:48 [http-nio-8085-exec-4] INFO  c.a.c.SystemConfigController - 查询到 1 条配置
-2025-12-24 17:17:48 [http-nio-8085-exec-10] INFO  c.a.controller.CustomerController - 统计业务类型筛选条件: businessTypeList=[1, 2]
-2025-12-24 17:17:48 [http-nio-8085-exec-8] INFO  c.a.controller.CustomerController - 设置业务类型筛选条件: businessTypeList=[1, 2]
-2025-12-24 17:17:48 [http-nio-8085-exec-8] INFO  c.a.controller.CustomerController - 查询客户列表 - 页码: 1, 每页大小: 10, 查询条件: customerName=null, customerType=null, customerLevel=null, region=null, businessTypeList=[1, 2]
-2025-12-24 17:17:48 [http-nio-8085-exec-8] INFO  c.a.controller.CustomerController - 查询结果 - 总数: 19, 当前页数据量: 10
-2025-12-24 17:18:35 [http-nio-8085-exec-7] INFO  c.a.controller.CustomerController - 设置业务类型筛选条件: businessTypeList=[1, 2]
-2025-12-24 17:18:35 [http-nio-8085-exec-5] INFO  c.a.controller.CustomerController - 统计业务类型筛选条件: businessTypeList=[1, 2]
-2025-12-24 17:18:35 [http-nio-8085-exec-9] INFO  c.a.c.SystemConfigController - 查询配置分组: 业务类型
-2025-12-24 17:18:35 [http-nio-8085-exec-7] INFO  c.a.controller.CustomerController - 查询客户列表 - 页码: 1, 每页大小: 10, 查询条件: customerName=null, customerType=null, customerLevel=null, region=null, businessTypeList=[1, 2]
-2025-12-24 17:18:35 [http-nio-8085-exec-9] INFO  c.a.c.SystemConfigController - 查询到 1 条配置
-2025-12-24 17:18:35 [http-nio-8085-exec-7] INFO  c.a.controller.CustomerController - 查询结果 - 总数: 19, 当前页数据量: 10
-2025-12-24 17:18:37 [http-nio-8085-exec-3] INFO  c.a.c.SystemConfigController - 查询配置分组: 业务类型
-2025-12-24 17:18:37 [http-nio-8085-exec-3] INFO  c.a.c.SystemConfigController - 查询到 1 条配置
-2025-12-24 17:34:42 [http-nio-8085-exec-4] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:34:42 [http-nio-8085-exec-6] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:34:42 [http-nio-8085-exec-10] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:34:44 [http-nio-8085-exec-6] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:34:44 [http-nio-8085-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:34:44 [http-nio-8085-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:36:33 [http-nio-8085-exec-2] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:37:33 [http-nio-8085-exec-1] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:38:41 [http-nio-8085-exec-8] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:38:41 [http-nio-8085-exec-5] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:38:41 [http-nio-8085-exec-2] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:56 [http-nio-8085-exec-8] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:56 [http-nio-8085-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:56 [http-nio-8085-exec-10] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:57 [http-nio-8085-exec-5] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:57 [http-nio-8085-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:57 [http-nio-8085-exec-2] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:57 [http-nio-8085-exec-8] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:57 [http-nio-8085-exec-1] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:57 [http-nio-8085-exec-2] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:57 [http-nio-8085-exec-10] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:57 [http-nio-8085-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:57 [http-nio-8085-exec-9] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:58 [http-nio-8085-exec-2] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:58 [http-nio-8085-exec-4] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:58 [http-nio-8085-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:58 [http-nio-8085-exec-1] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:58 [http-nio-8085-exec-5] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:42:58 [http-nio-8085-exec-4] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:43:02 [http-nio-8085-exec-9] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:43:02 [http-nio-8085-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:43:02 [http-nio-8085-exec-4] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:43:15 [http-nio-8085-exec-6] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:43:15 [http-nio-8085-exec-8] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:43:15 [http-nio-8085-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:43:17 [http-nio-8085-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "category-counts"]
-2025-12-24 17:51:36 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 47645 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
-2025-12-24 17:51:36 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
-2025-12-24 17:51:37 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
-2025-12-24 17:51:37 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2025-12-24 17:51:37 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
-2025-12-24 17:51:37 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2025-12-24 17:51:37 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1122 ms
-2025-12-24 17:51:37 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
-2025-12-24 17:51:38 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
-2025-12-24 17:51:38 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@1b19712f
-2025-12-24 17:51:38 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
-2025-12-24 17:51:38 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
-2025-12-24 17:51:38 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: true, 总体: true
-2025-12-24 17:51:38 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
-2025-12-24 17:51:38 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
-2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
-2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
-2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
-2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
-2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
-2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
-2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
-2025-12-24 17:51:39 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
-2025-12-24 17:51:39 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@119f072c, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@66456506, org.springframework.security.web.context.SecurityContextHolderFilter@e2f6a45, org.springframework.security.web.header.HeaderWriterFilter@2ee095c9, org.springframework.security.web.authentication.logout.LogoutFilter@719bb60d, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6c19769c, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@434d001d, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@69944a90, org.springframework.security.web.access.ExceptionTranslationFilter@4ea43d4d, org.springframework.security.web.access.intercept.AuthorizationFilter@6843fdc4]
-2025-12-24 17:51:39 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-2025-12-24 17:51:39 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
-2025-12-24 17:51:39 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
-2025-12-24 17:51:39 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 3.513 seconds (process running for 3.85)
-2025-12-24 17:51:52 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-24 17:51:52 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2025-12-24 17:51:52 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-12-28 16:49:43 [main] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'customUserDetailsService': Unsatisfied dependency expressed through field 'userService': Error creating bean with name 'userServiceImpl': Invocation of init method failed
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:772)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:752)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:145)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:493)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1420)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:600)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:973)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:946)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:616)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:455)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:323)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1342)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1331)
+	at com.aicustomer.AiCustomerApplication.main(AiCustomerApplication.java:20)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'userServiceImpl': Invocation of init method failed
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:222)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization(AbstractAutowireCapableBeanFactory.java:421)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1767)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:601)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1441)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1348)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:769)
+	... 20 common frames omitted
+Caused by: org.springframework.jdbc.BadSqlGrammarException: 
+### Error querying database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column 'create_by' in 'field list'
+### The error may exist in file [/Users/zuozuo/Downloads/cxf/aicustomer/target/classes/mapper/UserMapper.xml]
+### The error may involve defaultParameterMap
+### The error occurred while setting parameters
+### SQL: SELECT                   id, username, password, real_name, email, phone, status,         create_time, update_time, create_by, update_by, deleted, version, user_type               FROM sys_user         WHERE username = ? AND deleted = 0
+### Cause: java.sql.SQLSyntaxErrorException: Unknown column 'create_by' in 'field list'
+; bad SQL grammar []
+	at org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator.doTranslate(SQLErrorCodeSQLExceptionTranslator.java:246)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at org.mybatis.spring.MyBatisExceptionTranslator.translateExceptionIfPossible(MyBatisExceptionTranslator.java:92)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:439)
+	at jdk.proxy2/jdk.proxy2.$Proxy90.selectOne(Unknown Source)
+	at org.mybatis.spring.SqlSessionTemplate.selectOne(SqlSessionTemplate.java:160)
+	at org.apache.ibatis.binding.MapperMethod.execute(MapperMethod.java:87)
+	at org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke(MapperProxy.java:141)
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86)
+	at jdk.proxy2/jdk.proxy2.$Proxy91.findByUsername(Unknown Source)
+	at com.aicustomer.service.impl.UserServiceImpl.initAdmin(UserServiceImpl.java:149)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMethod.invoke(InitDestroyAnnotationBeanPostProcessor.java:457)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMetadata.invokeInitMethods(InitDestroyAnnotationBeanPostProcessor.java:401)
+	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:219)
+	... 32 common frames omitted
+Caused by: java.sql.SQLSyntaxErrorException: Unknown column 'create_by' in 'field list'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:121)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:916)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.execute(ClientPreparedStatement.java:354)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.execute(ProxyPreparedStatement.java:44)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute(HikariProxyPreparedStatement.java)
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.query(PreparedStatementHandler.java:65)
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.query(RoutingStatementHandler.java:80)
+	at org.apache.ibatis.executor.SimpleExecutor.doQuery(SimpleExecutor.java:65)
+	at org.apache.ibatis.executor.BaseExecutor.queryFromDatabase(BaseExecutor.java:336)
+	at org.apache.ibatis.executor.BaseExecutor.query(BaseExecutor.java:158)
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:110)
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:90)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:154)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:147)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:142)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne(DefaultSqlSession.java:75)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:425)
+	... 46 common frames omitted
+2025-12-28 16:50:17 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 90063 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
+2025-12-28 16:50:17 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
+2025-12-28 16:50:18 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
+2025-12-28 16:50:18 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-28 16:50:18 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-28 16:50:18 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-28 16:50:18 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 707 ms
+2025-12-28 16:50:18 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
+2025-12-28 16:50:18 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
+2025-12-28 16:50:18 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@70cf7d1e
+2025-12-28 16:50:18 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新sys_user表结构...
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
+2025-12-28 16:50:19 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
+2025-12-28 16:50:19 [main] INFO  c.a.config.DatabaseMigrationConfig - 开始执行数据库迁移...
+2025-12-28 16:50:19 [main] INFO  c.a.config.DatabaseMigrationConfig - sys_user.real_name 字段已存在，跳过
+2025-12-28 16:50:19 [main] INFO  c.a.config.DatabaseMigrationConfig - sys_user.user_type 字段已存在，跳过
+2025-12-28 16:50:19 [main] INFO  c.a.config.DatabaseMigrationConfig - sys_user.last_login_time 字段已存在，跳过
+2025-12-28 16:50:19 [main] INFO  c.a.config.DatabaseMigrationConfig - 数据库迁移完成！
+2025-12-28 16:50:19 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
+2025-12-28 16:50:19 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: true, 总体: true
+2025-12-28 16:50:19 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@28a3fc34, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@7582a16b, org.springframework.security.web.context.SecurityContextHolderFilter@1a88d194, org.springframework.security.web.header.HeaderWriterFilter@53c40ed6, org.springframework.security.web.authentication.logout.LogoutFilter@1f70bce5, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@fe13916, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5ea0a7a9, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@4dd752e8, org.springframework.security.web.access.ExceptionTranslationFilter@2697c156, org.springframework.security.web.access.intercept.AuthorizationFilter@79b4cff]
+2025-12-28 16:50:19 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-12-28 16:50:19 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
+2025-12-28 16:50:19 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
+2025-12-28 16:50:19 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 1.991 seconds (process running for 2.192)
+2025-12-28 16:50:46 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-28 16:50:46 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-12-28 16:50:46 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-12-28 16:51:04 [http-nio-8085-exec-3] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 16:51:04 [http-nio-8085-exec-3] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 16:51:12 [http-nio-8085-exec-10] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 16:51:12 [http-nio-8085-exec-10] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 16:51:21 [http-nio-8085-exec-6] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 16:51:21 [http-nio-8085-exec-6] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 16:51:24 [http-nio-8085-exec-8] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 16:51:24 [http-nio-8085-exec-8] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 16:51:35 [http-nio-8085-exec-6] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 16:51:35 [http-nio-8085-exec-6] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 16:51:37 [http-nio-8085-exec-3] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 16:51:37 [http-nio-8085-exec-3] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 16:51:43 [http-nio-8085-exec-1] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 16:51:43 [http-nio-8085-exec-1] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 16:51:46 [http-nio-8085-exec-8] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' is not supported]
+2025-12-28 16:51:48 [http-nio-8085-exec-4] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' is not supported]
+2025-12-28 16:51:48 [http-nio-8085-exec-6] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' is not supported]
+2025-12-28 16:51:48 [http-nio-8085-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' is not supported]
+2025-12-28 16:51:49 [http-nio-8085-exec-5] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' is not supported]
+2025-12-28 16:58:00 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
+2025-12-28 16:58:00 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.
+2025-12-28 16:58:10 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 90606 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
+2025-12-28 16:58:10 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
+2025-12-28 16:58:10 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
+2025-12-28 16:58:10 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-28 16:58:10 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-28 16:58:10 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-28 16:58:10 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 559 ms
+2025-12-28 16:58:10 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
+2025-12-28 16:58:10 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
+2025-12-28 16:58:11 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@1dca62c2
+2025-12-28 16:58:11 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新sys_user表结构...
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
+2025-12-28 16:58:11 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
+2025-12-28 16:58:11 [main] INFO  c.a.config.DatabaseMigrationConfig - 开始执行数据库迁移...
+2025-12-28 16:58:11 [main] INFO  c.a.config.DatabaseMigrationConfig - sys_user.real_name 字段已存在，跳过
+2025-12-28 16:58:11 [main] INFO  c.a.config.DatabaseMigrationConfig - sys_user.user_type 字段已存在，跳过
+2025-12-28 16:58:11 [main] INFO  c.a.config.DatabaseMigrationConfig - sys_user.last_login_time 字段已存在，跳过
+2025-12-28 16:58:11 [main] INFO  c.a.config.DatabaseMigrationConfig - 数据库迁移完成！
+2025-12-28 16:58:11 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
+2025-12-28 16:58:11 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: true, 总体: true
+2025-12-28 16:58:11 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@2f39b534, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@60fbc34d, org.springframework.security.web.context.SecurityContextHolderFilter@1b5f960a, org.springframework.security.web.header.HeaderWriterFilter@ba86c53, org.springframework.security.web.authentication.logout.LogoutFilter@35d81657, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@39ac8c0c, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@361f1647, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@7736c41e, org.springframework.security.web.access.ExceptionTranslationFilter@69ac5752, org.springframework.security.web.access.intercept.AuthorizationFilter@1cfa7ee0]
+2025-12-28 16:58:11 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-12-28 16:58:11 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
+2025-12-28 16:58:11 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
+2025-12-28 16:58:11 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 1.593 seconds (process running for 1.727)
+2025-12-28 16:58:33 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-28 16:58:33 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-12-28 16:58:33 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-12-28 16:58:33 [http-nio-8085-exec-7] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 16:58:33 [http-nio-8085-exec-7] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 17:01:03 [http-nio-8085-exec-4] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 17:01:03 [http-nio-8085-exec-4] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 17:01:12 [http-nio-8085-exec-2] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 17:01:12 [http-nio-8085-exec-2] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 17:01:14 [http-nio-8085-exec-8] INFO  c.a.service.impl.UserServiceImpl - 正在获取用户列表，查询条件: User(username=null, password=null, realName=null, nickname=null, email=null, phone=null, avatar=null, status=null, userType=null, departmentId=null, departmentName=null, position=null, joinTime=null, lastLoginTime=null, lastLoginIp=null, loginCount=null, passwordChangeTime=null, isFirstLogin=null, signature=null, bio=null, workLocation=null, timezone=null, language=null, theme=null, notificationSettings=null, permissionSettings=null, roleIds=null)
+2025-12-28 17:01:14 [http-nio-8085-exec-8] INFO  c.a.service.impl.UserServiceImpl - 用户列表获取成功，记录数: 3
+2025-12-28 17:01:54 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
+2025-12-28 17:01:54 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.
+2025-12-28 17:02:04 [main] INFO  c.aicustomer.AiCustomerApplication - Starting AiCustomerApplication using Java 17.0.17 with PID 90904 (/Users/zuozuo/Downloads/cxf/aicustomer/target/classes started by zuozuo in /Users/zuozuo/Downloads/cxf/aicustomer)
+2025-12-28 17:02:04 [main] INFO  c.aicustomer.AiCustomerApplication - No active profile set, falling back to 1 default profile: "default"
+2025-12-28 17:02:05 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8085 (http)
+2025-12-28 17:02:05 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-28 17:02:05 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-28 17:02:05 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-28 17:02:05 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 744 ms
+2025-12-28 17:02:05 [main] INFO  com.aicustomer.config.ArkConfig - Ark配置加载成功，模型: doubao-1-5-pro-32k-250115, 端点: https://ark.cn-beijing.volces.com/api/v3
+2025-12-28 17:02:05 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Starting...
+2025-12-28 17:02:05 [main] INFO  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Added connection com.mysql.cj.jdbc.ConnectionImpl@41be8db9
+2025-12-28 17:02:05 [main] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Start completed.
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - 数据库表已存在，检查并更新表结构...
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新customer表结构...
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - 检查business_type字段: 已存在
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - business_type字段已存在，更新字段注释...
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - ✅ business_type字段注释更新成功
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - business_sub_type字段不存在，跳过删除
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - 数据库中总客户数: 22
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - ℹ️ 没有需要更新的客户记录
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - 开始检查并更新sys_user表结构...
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - ✅ 表结构更新完成
+2025-12-28 17:02:05 [main] INFO  c.a.util.DatabaseInitializer - ✅ 已初始化 14 条系统配置数据（业务类型、知识库分类、FAQ分类）
+2025-12-28 17:02:05 [main] INFO  c.a.config.DatabaseMigrationConfig - 开始执行数据库迁移...
+2025-12-28 17:02:05 [main] INFO  c.a.config.DatabaseMigrationConfig - sys_user.real_name 字段已存在，跳过
+2025-12-28 17:02:05 [main] INFO  c.a.config.DatabaseMigrationConfig - sys_user.user_type 字段已存在，跳过
+2025-12-28 17:02:05 [main] INFO  c.a.config.DatabaseMigrationConfig - sys_user.last_login_time 字段已存在，跳过
+2025-12-28 17:02:05 [main] INFO  c.a.config.DatabaseMigrationConfig - 数据库迁移完成！
+2025-12-28 17:02:05 [main] INFO  c.aicustomer.config.DeepSeekConfig - DeepSeek配置加载成功，模型: deepseek-chat, 端点: https://api.deepseek.com/v1
+2025-12-28 17:02:05 [main] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索服务状态 - ES: true, Embedding: true, 总体: true
+2025-12-28 17:02:05 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@5340ccb9, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@2bc8caa7, org.springframework.security.web.context.SecurityContextHolderFilter@6b278b17, org.springframework.security.web.header.HeaderWriterFilter@3cfab340, org.springframework.security.web.authentication.logout.LogoutFilter@5cba890e, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@4203529f, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@7d82ca56, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@582ea164, org.springframework.security.web.access.ExceptionTranslationFilter@234ce7ff, org.springframework.security.web.access.intercept.AuthorizationFilter@5d94ac8a]
+2025-12-28 17:02:05 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-12-28 17:02:06 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
+2025-12-28 17:02:06 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8085 (http) with context path ''
+2025-12-28 17:02:06 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 2.06 seconds (process running for 2.21)

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>员工账号管理</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
+    <style>
+        body {
+            background: transparent;
+        }
+
+        .management-container {
+            padding: 1.5rem;
+        }
+
+        .header-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .badge-status-1 {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-status-0 {
+            background-color: #fed7d7;
+            color: #822727;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="management-container">
+        <div class="header-section">
+            <h5 class="mb-0"><i class="bi bi-person-badge"></i> 员工账号管理</h5>
+            <button class="btn btn-primary" onclick="showAddUserModal()">
+                <i class="bi bi-person-plus"></i> 新增账号
+            </button>
+        </div>
+
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>真实姓名</th>
+                            <th>邮箱</th>
+                            <th>电话</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th class="text-end">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- 动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户模态框 -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">新增账号</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="userForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="userId">
+                        <div class="mb-3">
+                            <label class="form-label">账号名称</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">真实姓名</label>
+                            <input type="text" class="form-control" id="realName">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">密码</label>
+                            <input type="password" class="form-control" id="password" placeholder="不修改请留空">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">邮箱</label>
+                            <input type="email" class="form-control" id="email">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">状态</label>
+                            <select class="form-select" id="status">
+                                <option value="1">启用</option>
+                                <option value="0">禁用</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block">职位权限方案</label>
+                            <div id="userRoleCheckboxes" class="border rounded p-2 bg-light"
+                                style="max-height: 150px; overflow-y: auto;">
+                                <!-- 动态加载角色列表 -->
+                                <div class="text-center py-2 text-muted small">加载方案中...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 角色分配模态框 -->
+    <div class="modal fade" id="roleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">分配角色</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="roleList" class="list-group">
+                        <!-- 动态加载 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveRoles()">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        let userModal, roleModal;
+        let currentUserId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            userModal = new bootstrap.Modal(document.getElementById('userModal'));
+            roleModal = new bootstrap.Modal(document.getElementById('roleModal'));
+            loadUsers();
+            loadRolesForSelector(); // 预加载可用职位列表
+
+            document.getElementById('userForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveUser();
+            });
+        });
+
+        let allRoles = [];
+        function loadRolesForSelector() {
+            fetch('/api/role/list')
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        allRoles = res.data;
+                    }
+                });
+        }
+
+        function renderRoleCheckboxes(selectedIds = []) {
+            const container = document.getElementById('userRoleCheckboxes');
+            if (allRoles.length === 0) {
+                container.innerHTML = '<div class="text-center py-2 text-muted small">暂无可用职位方案</div>';
+                return;
+            }
+            container.innerHTML = allRoles.map(role => `
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="${role.id}" id="role_${role.id}" name="modalRoleCheck" ${selectedIds.includes(role.id) ? 'checked' : ''}>
+                    <label class="form-check-label small" for="role_${role.id}">
+                        ${role.roleName}
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        function loadUsers() {
+            fetch('/api/user/list')
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        renderUsers(res.data);
+                    }
+                });
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.username}</td>
+                    <td>${user.realName || '-'}</td>
+                    <td>${user.email || '-'}</td>
+                    <td>${user.phone || '-'}</td>
+                    <td><span class="badge badge-status-${user.status}">${user.status === 1 ? '启用' : '禁用'}</span></td>
+                    <td>${user.createTime ? user.createTime.replace('T', ' ') : '-'}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showEditUserModal(${user.id})">编辑</button>
+                        <button class="btn btn-sm btn-outline-info" onclick="showRoles(${user.id})">职位权限</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddUserModal() {
+            document.getElementById('modalTitle').innerText = '新增账号';
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            renderRoleCheckboxes(); // 清空选择
+            userModal.show();
+        }
+
+        function showEditUserModal(id) {
+            fetch('/api/user/' + id)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        const user = res.data;
+                        document.getElementById('modalTitle').innerText = '编辑账号';
+                        document.getElementById('userId').value = user.id;
+                        document.getElementById('username').value = user.username;
+                        document.getElementById('realName').value = user.realName;
+                        document.getElementById('email').value = user.email;
+                        document.getElementById('status').value = user.status;
+                        document.getElementById('password').value = '';
+                        renderRoleCheckboxes(user.roleIds || []); // 支持回显
+                        userModal.show();
+                    }
+                });
+        }
+
+        function saveUser() {
+            const id = document.getElementById('userId').value;
+            const roleIds = Array.from(document.querySelectorAll('input[name="modalRoleCheck"]:checked')).map(el => parseInt(el.value));
+
+            const data = {
+                id: id || null,
+                username: document.getElementById('username').value,
+                realName: document.getElementById('realName').value,
+                email: document.getElementById('email').value,
+                status: parseInt(document.getElementById('status').value),
+                roleIds: roleIds
+            };
+            const password = document.getElementById('password').value;
+            if (password) data.password = password;
+
+            const method = id ? 'PUT' : 'POST';
+            fetch('/api/user', {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(res => res.json()).then(res => {
+                if (res.code === 200) {
+                    userModal.hide();
+                    loadUsers();
+                } else {
+                    alert(res.message);
+                }
+            });
+        }
+
+        function deleteUser(id) {
+            if (confirm('确认删除该用户？')) {
+                fetch('/api/user/' + id, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.code === 200) loadUsers();
+                    });
+            }
+        }
+
+        function showRoles(userId) {
+            currentUserId = userId;
+            Promise.all([
+                fetch('/api/role/list').then(res => res.json()),
+                fetch('/api/role/user/' + userId).then(res => res.json())
+            ]).then(([allRes, userRes]) => {
+                if (allRes.code === 200 && userRes.code === 200) {
+                    const roles = allRes.data;
+                    const userRoleIds = userRes.data.map(r => r.id);
+                    const roleList = document.getElementById('roleList');
+                    roleList.innerHTML = roles.map(role => `
+                        <label class="list-group-item">
+                            <input class="form-check-input me-1" type="checkbox" value="${role.id}" name="roleCheck" ${userRoleIds.includes(role.id) ? 'checked' : ''}>
+                            ${role.roleName} (${role.roleCode})
+                        </label>
+                    `).join('');
+                    roleModal.show();
+                }
+            });
+        }
+
+        function saveRoles() {
+            const checked = Array.from(document.querySelectorAll('input[name="roleCheck"]:checked')).map(el => parseInt(el.value));
+            fetch(`/api/user/${currentUserId}/roles`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roleIds: checked })
+            }).then(res => res.json()).then(res => {
+                if (res.code === 200) {
+                    roleModal.hide();
+                    alert('分配成功');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

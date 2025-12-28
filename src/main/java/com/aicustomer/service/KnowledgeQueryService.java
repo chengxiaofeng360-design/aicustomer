@@ -125,4 +125,24 @@ public class KnowledgeQueryService {
             return "获取文档内容失败：" + e.getMessage();
         }
     }
+
+    /**
+     * 获取指定文档的字数统计
+     * 
+     * @param fileNameOrTitle 文件名或标题
+     * @return 字数统计结果
+     */
+    public String getKnowledgeWordCount(String fileNameOrTitle) {
+        try {
+            String content = getKnowledgeDetail(fileNameOrTitle);
+            if (content.startsWith("未能找到") || content.startsWith("获取文档内容失败")) {
+                return content;
+            }
+            int count = content.length();
+            return "文档 [" + fileNameOrTitle + "] 的总字数为 " + count + " 字。";
+        } catch (Exception e) {
+            log.error("统计文档字数失败: {}", fileNameOrTitle, e);
+            return "统计字数失败：" + e.getMessage();
+        }
+    }
 }

@@ -52,7 +52,6 @@ function loadGroupList() {
 
     let html = '';
     sortedGroups.forEach(group => {
-        const count = allConfigs.filter(c => (c.configGroup || '其他') === group).length;
         html += `
             <div class="config-group-item ${currentGroup === group ? 'active' : ''}" 
                  onclick="filterByGroup('${group}')" data-group="${group}">
@@ -60,7 +59,6 @@ function loadGroupList() {
                     <i class="bi bi-folder2-open"></i>
                     <span>${escapeHtml(group)}</span>
                 </div>
-                <span class="badge rounded-pill bg-light text-dark border scale-in">${count}</span>
             </div>
         `;
     });

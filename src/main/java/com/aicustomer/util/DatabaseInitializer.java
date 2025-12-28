@@ -415,6 +415,25 @@ public class DatabaseInitializer {
                 }
             }
 
+            // --- 新增：检查并更新 sys_user 表结构 ---
+            log.info("开始检查并更新sys_user表结构...");
+            if (checkTableExists("sys_user")) {
+                if (!checkColumnExists("sys_user", "user_type")) {
+                    log.info("添加user_type字段到sys_user表...");
+                    try {
+                        jdbcTemplate.execute(
+                                "ALTER TABLE sys_user ADD COLUMN user_type TINYINT DEFAULT 2 COMMENT '用户类型 (1:管理员, 2:业务员, 3:助理, 4:其他)' AFTER version");
+                        log.info("✅ user_type字段添加成功");
+                    } catch (Exception e) {
+                        log.error("❌ 添加user_type字段失败: {}", e.getMessage());
+                    }
+                } else {
+                    log.debug("sys_user table user_type column already exists");
+                }
+            } else {
+                log.warn("sys_user表不存在，跳过结构更新（这可能在初次初始化时由initializeDatabase处理）");
+            }
+
             log.info("✅ 表结构更新完成");
         } catch (Exception e) {
             log.error("❌ 更新表结构失败: {}", e.getMessage(), e);

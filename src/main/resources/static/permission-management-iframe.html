@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统功能定义</title>
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
+    <style>
+        body {
+            background: transparent;
+        }
+
+        .management-container {
+            padding: 1.5rem;
+        }
+
+        .header-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="management-container">
+        <div class="header-section">
+            <h5 class="mb-0"><i class="bi bi-key"></i> 系统功能定义</h5>
+            <button class="btn btn-primary" onclick="showAddPermissionModal()">
+                <i class="bi bi-plus-lg"></i> 新增功能项
+            </button>
+        </div>
+
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>权限名称</th>
+                            <th>编码</th>
+                            <th>类型</th>
+                            <th>路径</th>
+                            <th class="text-end">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="permissionTableBody">
+                        <!-- 动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 权限模态框 -->
+    <div class="modal fade" id="permissionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">新增功能项</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="permissionForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="permId">
+                        <div class="mb-3">
+                            <label class="form-label">常用权限预设</label>
+                            <select class="form-select border-primary" onchange="applyPreset(this.value)">
+                                <option value="">-- 请选择预设模板 --</option>
+                                <option value="sys:user:view|用户查看|MENU|/user-management-iframe.html">核心-用户管理菜单</option>
+                                <option value="sys:user:add|用户新增|BUTTON|">功能-用户新增按钮</option>
+                                <option value="sys:user:edit|用户编辑|BUTTON|">功能-用户编辑按钮</option>
+                                <option value="sys:user:delete|用户删除|BUTTON|">功能-用户删除按钮</option>
+                                <option value="sys:role:view|角色管理|MENU|/role-management-iframe.html">核心-角色管理菜单</option>
+                                <option value="sys:perm:view|权限管理|MENU|/permission-management-iframe.html">核心-权限管理菜单
+                                </option>
+                            </select>
+                            <small class="text-muted">选择后将自动填入下方表单</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">权限名称</label>
+                            <input type="text" class="form-control" id="permName" required placeholder="如：系统设置">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">权限编码</label>
+                            <input type="text" class="form-control" id="permCode" required
+                                placeholder="如：sys:config:view">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">类型</label>
+                            <select class="form-select" id="permType">
+                                <option value="MENU">菜单 (MENU)</option>
+                                <option value="BUTTON">按钮/操作 (BUTTON)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">前端路径</label>
+                            <input type="text" class="form-control" id="path"
+                                placeholder="仅菜单类型需要，如：/user-management.html">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">父级权限</label>
+                            <select class="form-select" id="parentId">
+                                <option value="0">顶级权限</option>
+                                <!-- 动态加载 -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">图标</label>
+                            <select class="form-select" id="icon">
+                                <option value="">无图标</option>
+                                <option value="bi-person">用户 (Person)</option>
+                                <option value="bi-shield-lock">安全 (Shield)</option>
+                                <option value="bi-key">密钥 (Key)</option>
+                                <option value="bi-gear">设置 (Gear)</option>
+                                <option value="bi-book">书籍 (Book)</option>
+                                <option value="bi-chat">聊天 (Chat)</option>
+                                <option value="bi-graph-up">图表 (Graph)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        let permModal;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            permModal = new bootstrap.Modal(document.getElementById('permissionModal'));
+            loadPermissions();
+
+            document.getElementById('permissionForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                savePermission();
+            });
+        });
+
+        function loadPermissions() {
+            fetch('/api/permission/list')
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        renderPermissions(res.data);
+                        updateParentDropdown(res.data);
+                    }
+                });
+        }
+
+        function updateParentDropdown(perms) {
+            const select = document.getElementById('parentId');
+            let html = '<option value="0">顶级权限</option>';
+            perms.filter(p => p.permissionType === 'MENU').forEach(p => {
+                html += `<option value="${p.id}">${p.permissionName}</option>`;
+            });
+            select.innerHTML = html;
+        }
+
+        function applyPreset(val) {
+            if (!val) return;
+            const [code, name, type, path] = val.split('|');
+            document.getElementById('permCode').value = code;
+            document.getElementById('permName').value = name;
+            document.getElementById('permType').value = type;
+            document.getElementById('path').value = path;
+        }
+
+        function renderPermissions(perms) {
+            const tbody = document.getElementById('permissionTableBody');
+            tbody.innerHTML = perms.map(perm => `
+                <tr>
+                    <td>${perm.permissionName}</td>
+                    <td><code>${perm.permissionCode}</code></td>
+                    <td><span class="badge ${perm.permissionType === 'MENU' ? 'bg-info' : 'bg-secondary'}">${perm.permissionType}</span></td>
+                    <td>${perm.path || '-'}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showEditPermModal(${perm.id})">编辑</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deletePerm(${perm.id})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddPermissionModal() {
+            document.getElementById('modalTitle').innerText = '新增功能项';
+            document.getElementById('permissionForm').reset();
+            document.getElementById('permId').value = '';
+            permModal.show();
+        }
+
+        function showEditPermModal(id) {
+            fetch('/api/permission/' + id)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        const perm = res.data;
+                        document.getElementById('modalTitle').innerText = '编辑功能项';
+                        document.getElementById('permId').value = perm.id;
+                        document.getElementById('permName').value = perm.permissionName;
+                        document.getElementById('permCode').value = perm.permissionCode;
+                        document.getElementById('permType').value = perm.permissionType;
+                        document.getElementById('path').value = perm.path;
+                        document.getElementById('parentId').value = perm.parentId || 0;
+                        document.getElementById('icon').value = perm.icon || '';
+                        permModal.show();
+                    }
+                });
+        }
+
+        function savePermission() {
+            const id = document.getElementById('permId').value;
+            const data = {
+                id: id || null,
+                permissionName: document.getElementById('permName').value,
+                permissionCode: document.getElementById('permCode').value,
+                permissionType: document.getElementById('permType').value,
+                path: document.getElementById('path').value,
+                parentId: parseInt(document.getElementById('parentId').value),
+                icon: document.getElementById('icon').value,
+                status: 1
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            fetch('/api/permission', {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(res => res.json()).then(res => {
+                if (res.code === 200) {
+                    permModal.hide();
+                    loadPermissions();
+                } else {
+                    alert(res.message);
+                }
+            });
+        }
+
+        function deletePerm(id) {
+            if (confirm('确认删除该权限点？')) {
+                fetch('/api/permission/' + id, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.code === 200) loadPermissions();
+                    });
+            }
+        }
+    </script>
+</body>
+
+</html>
