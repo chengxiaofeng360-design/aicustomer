@@ -614,33 +614,79 @@
             tbody.empty();
 
             if (!users || users.length === 0) {
-                tbody.html('<tr><td colspan="6" class="text-center py-4">暂无数据</td></tr>');
+                tbody.html(`
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div style="color: #a0aec0; font-size: 1.1rem;">
+                                <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                                <p class="mb-2">暂无用户数据</p>
+                                <small>点击上方"新建用户"按钮创建第一个用户</small>
+                            </div>
+                        </td>
+                    </tr>
+                `);
                 return;
             }
 
             users.forEach(user => {
+                // 处理状态
                 const statusLabel = user.status === 1 ?
-                    '<span class="badge bg-success">正常</span>' :
-                    '<span class="badge bg-danger">禁用</span>';
+                    '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>正常</span>' :
+                    '<span class="badge bg-danger"><i class="fas fa-ban me-1"></i>禁用</span>';
+
+                // 处理真实姓名 - 如果为空则显示用户名
+                const displayName = user.realName || user.username;
+
+                // 处理邮箱和手机 - 添加图标
+                const emailDisplay = user.email ?
+                    `<i class="fas fa-envelope text-muted me-1"></i>${user.email}` :
+                    '<span class="text-muted">-</span>';
+                const phoneDisplay = user.phone ?
+                    `<i class="fas fa-phone text-muted me-1"></i>${user.phone}` :
+                    '<span class="text-muted">-</span>';
 
                 tbody.append(`
                     <tr>
-                        <td><strong>${user.username}</strong></td>
-                        <td>${user.realName || '-'}</td>
-                        <td>${user.email || '-'}</td>
-                        <td>${user.phone || '-'}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                    ${user.username.charAt(0).toUpperCase()}
+                                </div>
+                                <strong>${user.username}</strong>
+                            </div>
+                        </td>
+                        <td>${displayName}</td>
+                        <td><small>${emailDisplay}</small></td>
+                        <td><small>${phoneDisplay}</small></td>
                         <td>${statusLabel}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary me-2" onclick="editUser(${user.id})">
-                                <i class="fas fa-edit"></i> 编辑
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick="editUser(${user.id})" title="编辑用户">
+                                <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})">
-                                <i class="fas fa-trash"></i> 删除
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})" title="删除用户">
+                                <i class="fas fa-trash"></i>
                             </button>
                         </td>
                     </tr>
                 `);
             });
+
+            // 添加统计信息
+            const activeCount = users.filter(u => u.status === 1).length;
+            const inactiveCount = users.filter(u => u.status !== 1).length;
+
+            tbody.append(`
+                <tr style="background: #f7fafc; font-weight: 600;">
+                    <td colspan="4">
+                        <i class="fas fa-chart-bar me-2 text-primary"></i>
+                        统计：共 ${users.length} 个用户
+                    </td>
+                    <td colspan="2">
+                        <span class="badge bg-success me-2">${activeCount} 正常</span>
+                        ${inactiveCount > 0 ? `<span class="badge bg-danger">${inactiveCount} 禁用</span>` : ''}
+                    </td>
+                </tr>
+            `);
         }
 
         function showCreateUserModal() {
