@@ -298,23 +298,11 @@
         <div class="config-layout">
             <!-- 左侧目录 -->
             <div class="config-sidebar">
-                <div class="config-group-title">核心管理</div>
+                <div class="config-group-title">系统管理</div>
                 <div class="config-group-item" onclick="switchMainSection('user', this)">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-people"></i>
-                        <span>员工账号管理</span>
-                    </div>
-                </div>
-                <div class="config-group-item" onclick="switchMainSection('role', this)">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-shield-check"></i>
-                        <span>职位权限方案</span>
-                    </div>
-                </div>
-                <div class="config-group-item" onclick="switchMainSection('permission', this)">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-gear-wide-connected"></i>
-                        <span>系统功能定义</span>
+                        <span>用户管理</span>
                     </div>
                 </div>
 
@@ -409,9 +397,7 @@
                 if (refreshGroup) refreshGroup.style.display = 'none';
 
                 const urlMap = {
-                    'user': '/user-management-iframe.html',
-                    'role': '/role-management-iframe.html',
-                    'permission': '/permission-management-iframe.html'
+                    'user': '/user-management-simple.html'
                 };
                 mgmtIframe.src = urlMap[type];
             }
