@@ -340,10 +340,23 @@
 
         // 菜单列表
         const menus = [
-            '首页', '客户列表', '新增客户', '批量导入',
-            '沟通记录', '新增记录', 'AI对话', '智能分析',
-            '任务管理', '进度汇报', '文档管理', '常见问题',
-            '消息中心', '客户统计', '业务分析', '用户管理', '系统配置'
+            { id: 'home', name: '首页' },
+            { id: 'customer-list', name: '客户列表' },
+            { id: 'customer-add', name: '新增客户' },
+            { id: 'customer-import', name: '批量导入' },
+            { id: 'communication-list', name: '沟通记录' },
+            { id: 'communication-add', name: '新增记录' },
+            { id: 'ai-chat', name: 'AI对话' },
+            { id: 'ai-analysis', name: '智能分析' },
+            { id: 'team-task', name: '任务管理' },
+            { id: 'team-report', name: '进度汇报' },
+            { id: 'knowledge-doc', name: '文档管理' },
+            { id: 'knowledge-faq', name: '常见问题' },
+            { id: 'message', name: '消息中心' },
+            { id: 'report-customer', name: '客户统计' },
+            { id: 'report-business', name: '业务分析' },
+            { id: 'system-user', name: '用户管理' },
+            { id: 'system-config', name: '系统配置' }
         ];
 
         // 数据权限
@@ -360,10 +373,10 @@
 
         function initPermissions() {
             // 渲染菜单权限
-            const menuHtml = menus.map((menu, i) => `
+            const menuHtml = menus.map(menu => `
                 <div class="permission-item">
-                    <input type="checkbox" id="menu_${i}" value="${menu}">
-                    <label for="menu_${i}">${menu}</label>
+                    <input type="checkbox" id="menu_${menu.id}" value="${menu.id}">
+                    <label for="menu_${menu.id}">${menu.name}</label>
                 </div>
             `).join('');
             $('#menuList').html(menuHtml);
