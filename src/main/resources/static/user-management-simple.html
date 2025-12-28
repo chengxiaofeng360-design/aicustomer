@@ -505,8 +505,7 @@
         $(document).ready(function () {
             userModal = new bootstrap.Modal(document.getElementById('userModal'));
             loadUsers();
-            renderMenuPermissions();
-            renderDataPermissions();
+            // 权限选项延迟加载，只在打开模态框时渲染
         });
 
         function renderMenuPermissions() {
@@ -690,6 +689,12 @@
         }
 
         function showCreateUserModal() {
+            // 延迟渲染权限选项（只在需要时渲染）
+            if ($('#menuPermissions').children().length === 0) {
+                renderMenuPermissions();
+                renderDataPermissions();
+            }
+
             $('#userModalTitle').html('<i class="fas fa-user-plus me-2"></i> 新建用户');
             $('#userForm')[0].reset();
             $('#userId').val('');
@@ -704,6 +709,12 @@
         }
 
         function editUser(userId) {
+            // 延迟渲染权限选项（只在需要时渲染）
+            if ($('#menuPermissions').children().length === 0) {
+                renderMenuPermissions();
+                renderDataPermissions();
+            }
+
             $.get(`/api/user-permission/${userId}`, function (response) {
                 if (response.code === 200) {
                     const user = response.data;
