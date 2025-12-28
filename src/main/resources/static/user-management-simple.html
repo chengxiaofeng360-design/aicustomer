@@ -240,7 +240,6 @@
                         <thead>
                             <tr>
                                 <th>用户</th>
-                                <th>姓名</th>
                                 <th>邮箱</th>
                                 <th>手机</th>
                                 <th>状态</th>
@@ -287,15 +286,11 @@
                                     <input type="password" class="form-control" id="password" required>
                                     <small class="text-muted">编辑时留空表示不修改</small>
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">真实姓名 <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="realName" required>
-                                </div>
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="form-label">邮箱</label>
                                     <input type="email" class="form-control" id="email">
                                 </div>
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="form-label">手机</label>
                                     <input type="tel" class="form-control" id="phone">
                                 </div>
@@ -427,7 +422,6 @@
                             <strong>${u.username}</strong>
                         </div>
                     </td>
-                    <td>${u.realName || '-'}</td>
                     <td>${u.email || '-'}</td>
                     <td>${u.phone || '-'}</td>
                     <td>
@@ -464,7 +458,6 @@
                     $('#userId').val(u.id);
                     $('#username').val(u.username).prop('readonly', true);
                     $('#password').val('').prop('required', false);
-                    $('#realName').val(u.realName);
                     $('#email').val(u.email);
                     $('#phone').val(u.phone);
 
@@ -490,9 +483,8 @@
             const id = $('#userId').val();
             const username = $('#username').val();
             const password = $('#password').val();
-            const realName = $('#realName').val();
 
-            if (!username || !realName) {
+            if (!username) {
                 alert('请填写必填项');
                 return;
             }
@@ -512,7 +504,6 @@
                 id: id || null,
                 username,
                 password: password || null,
-                realName,
                 email: $('#email').val(),
                 phone: $('#phone').val(),
                 status: 1,
