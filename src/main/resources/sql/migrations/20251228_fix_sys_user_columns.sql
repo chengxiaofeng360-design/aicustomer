@@ -107,3 +107,18 @@ SET @sql = IF(@col_exists = 0,
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- 添加 permission_settings 字段（如果不存在）
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists 
+FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = 'zqgl' 
+AND TABLE_NAME = 'sys_user' 
+AND COLUMN_NAME = 'permission_settings';
+
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE sys_user ADD COLUMN permission_settings TEXT COMMENT ''权限设置JSON'' AFTER last_login_time',
+    'SELECT ''permission_settings column already exists'' AS message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

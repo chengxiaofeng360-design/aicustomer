@@ -22,50 +22,65 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+        @Autowired
+        private CustomUserDetailsService userDetailsService;
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth, @Lazy PasswordEncoder passwordEncoder)
-            throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
-    }
+        @Autowired
+        public void configureGlobal(AuthenticationManagerBuilder auth, @Lazy PasswordEncoder passwordEncoder)
+                        throws Exception {
+                auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/register", "/lib/**", "/css/**", "/js/**", "/api/customer/login",
-                                "/api/user/login")
-                        .permitAll()
-                        .requestMatchers("/index.html", "/").authenticated()
-                        .anyRequest().authenticated())
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/api/user/login")
-                        .successHandler((request, response, authentication) -> {
-                            response.setContentType("application/json;charset=UTF-8");
-                            response.getWriter()
-                                    .write("{\"code\": 200, \"message\": \"登录成功\", \"data\": {\"username\": \""
-                                            + authentication.getName() + "\"}}");
-                        })
-                        .failureHandler((request, response, exception) -> {
-                            response.setContentType("application/json;charset=UTF-8");
-                            response.setStatus(401);
-                            response.getWriter().write("{\"code\": 401, \"message\": \"用户名或密码错误\"}");
-                        })
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/api/user/logout")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setContentType("application/json;charset=UTF-8");
-                            response.getWriter().write("{\"code\": 200, \"message\": \"退出成功\"}");
-                        })
-                        .permitAll())
-                .csrf(csrf -> csrf.disable())
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                .cors(cors -> cors.disable());
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .authorizeHttpRequests(authorize -> authorize
+                                                .requestMatchers("/login", "/register", "/lib/**", "/css/**", "/js/**",
+                                                                "/api/customer/login",
+                                                                "/api/user/login")
+                                                .permitAll()
+                                                .requestMatchers("/index.html", "/").authenticated()
+                                                .anyRequest().authenticated())
+                                .formLogin(form -> form
+                                                .loginPage("/login")
+                                                .loginProcessingUrl("/api/user/login")
+                                                .successHandler((request, response, authentication) -> {
+                                                        System.out.println("Login success for user: "
+                                                                        + authentication.getName());
+                                                        response.setContentType("application/json;charset=UTF-8");
+                                                        response.setStatus(200);
+                                                        String json = "{\"code\": 200, \"message\": \"登录成功\", \"data\": {\"username\": \""
+                                                                        + authentication.getName() + "\"}}";
+                                                        response.getWriter().write(json);
+                                                        response.getWriter().flush();
+                                                        response.getWriter().close();
+                                                })
+                                                .failureHandler((request, response, exception) -> {
+                                                        System.out.println("Login failure: " + exception.getMessage());
+                                                        response.setContentType("application/json;charset=UTF-8");
+                                                        response.setStatus(200);
+                                                        String json = "{\"code\": 401, \"message\": \"用户名或密码错误: "
+                                                                        + exception.getMessage() + "\"}";
+                                                        response.getWriter().write(json);
+                                                        response.getWriter().flush();
+                                                        response.getWriter().close();
+                                                })
+                                                .permitAll())
+                                .logout(logout -> logout
+                                                .logoutUrl("/api/user/logout")
+                                                .logoutSuccessHandler((request, response, authentication) -> {
+                                                        response.setContentType("application/json;charset=UTF-8");
+                                                        response.setStatus(200);
+                                                        response.getWriter().write(
+                                                                        "{\"code\": 200, \"message\": \"退出成功\"}");
+                                                        response.getWriter().flush();
+                                                        response.getWriter().close();
+                                                })
+                                                .permitAll())
+                                .csrf(csrf -> csrf.disable())
+                                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                                .cors(cors -> cors.disable());
 
-        return http.build();
-    }
+                return http.build();
+        }
 }

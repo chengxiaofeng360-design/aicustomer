@@ -13,6 +13,7 @@ INSERT INTO system_config (config_key, config_value, config_type, description, c
 ('business.type.6', '图书出版客户', 'STRING', '业务类型 - 图书出版', '业务管理');
 
 -- 2. 初始化一些示例客户 (customer)
+TRUNCATE TABLE customer;
 INSERT INTO customer (customer_code, customer_name, contact_person, customer_type, phone, region, business_type, status) VALUES
 ('C001', '北京林业大学', '张教授', 2, '13800000001', '北京', 1, 1),
 ('C002', '中国农业科学院', '李研究员', 2, '13800000002', '北京', 1, 1),
@@ -27,16 +28,19 @@ INSERT INTO customer (customer_code, customer_name, contact_person, customer_typ
 
 -- 3. 初始化知识库文档 (knowledge_document & kb_document)
 -- 注意：这些数据对应 uploads/knowledge/ 目录下的文件
+TRUNCATE TABLE knowledge_document;
 INSERT INTO knowledge_document (title, content, file_name, file_type, file_path, category, status) VALUES
 ('植物新品种保护条例（2024版）', '这是条例的全文内容...', '12b744af-e439-4576-aa5b-f412f50502e4.docx', 'docx', 'uploads/knowledge/12b744af-e439-4576-aa5b-f412f50502e4.docx', '法律法规', 1),
 ('DUS测试技术指南 - 蔷薇属', '这是DUS测试的详细指南...', '52c32190-605c-4672-8685-5fd978c48189.docx', 'docx', 'uploads/knowledge/52c32190-605c-4672-8685-5fd978c48189.docx', '技术规范', 1);
 
+TRUNCATE TABLE kb_document;
 INSERT INTO kb_document (title, content, file_name, file_type, file_path, category_id, is_active) VALUES
 ('品种权申请操作流程', '第一步：准备材料... 第二步：在线申请...', 'dcbbc63a-aae2-46e8-a7ca-4a322caec14e.txt', 'txt', 'uploads/knowledge/dcbbc63a-aae2-46e8-a7ca-4a322caec14e.txt', 1, 1),
 ('品种权转让协议模板', '甲方、乙方...', 'e5abf78e-9490-47b6-98d1-cf7594fce753.txt', 'txt', 'uploads/knowledge/e5abf78e-9490-47b6-98d1-cf7594fce753.txt', 1, 1),
 ('常见侵权案例分析', '案例一：某育种者诉某公司...', 'e6dc5341-f948-4bd1-8cb5-4295a381e1ca.txt', 'txt', 'uploads/knowledge/e6dc5341-f948-4bd1-8cb5-4295a381e1ca.txt', 5, 1);
 
 -- 4. 初始化 FAQ 数据 (部分摘自 import_faq_data.sql)
+TRUNCATE TABLE faq_qa;
 INSERT INTO faq_qa (question, answer, keywords, category, status) VALUES
 ('什么是植物新品种？', '植物新品种指经过人工培育或对发现的野生植物加以开发，具备新颖性、特异性、一致性、稳定性，并有适当命名的植物品种。', '植物新品种,新品种', '名词解释', 1),
 ('什么是DUS测试？', 'DUS测试是授予植物新品种权的实质性条件，指对申请品种的特异性(D)、一致性(U)、稳定性(S)进行的栽培鉴定试验。', 'DUS测试,特异性', '名词解释', 1),

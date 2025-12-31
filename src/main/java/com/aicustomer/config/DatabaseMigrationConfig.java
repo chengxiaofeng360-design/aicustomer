@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * 用于在应用启动时自动执行数据库结构更新
  * 使用 InitializingBean 确保在其他 bean 初始化之前执行
  */
-@Component
+@Component("databaseMigrationConfig")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class DatabaseMigrationConfig implements InitializingBean {
 
@@ -37,10 +37,36 @@ public class DatabaseMigrationConfig implements InitializingBean {
             // 添加 sys_user 表的 last_login_time 字段（如果不存在）
             addLastLoginTimeColumn();
 
+            // 添加 sys_user 表的 permission_settings 字段（如果不存在）
+            addPermissionSettingsColumn();
+
             logger.info("数据库迁移完成！");
         } catch (Exception e) {
             logger.error("数据库迁移失败", e);
             // 不抛出异常，允许应用继续启动
+        }
+    }
+
+    private void addPermissionSettingsColumn() {
+        try {
+            String checkSql = "SELECT COUNT(*) FROM information_schema.COLUMNS " +
+                    "WHERE TABLE_SCHEMA = 'zqgl' " +
+                    "AND TABLE_NAME = 'sys_user' " +
+                    "AND COLUMN_NAME = 'permission_settings'";
+
+            Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class);
+
+            if (count == null || count == 0) {
+                logger.info("添加 sys_user.permission_settings 字段...");
+                String alterSql = "ALTER TABLE sys_user " +
+                        "ADD COLUMN permission_settings TEXT COMMENT '权限设置JSON'";
+                jdbcTemplate.execute(alterSql);
+                logger.info("成功添加 sys_user.permission_settings 字段");
+            } else {
+                logger.info("sys_user.permission_settings 字段已存在，跳过");
+            }
+        } catch (Exception e) {
+            logger.warn("添加 permission_settings 字段时出错: " + e.getMessage());
         }
     }
 

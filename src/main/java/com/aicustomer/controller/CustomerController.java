@@ -9,6 +9,7 @@ import com.aicustomer.service.ImportService;
 import com.aicustomer.service.SensitiveDataService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.aicustomer.service.UserPermissionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +33,13 @@ import java.util.Map;
 @RequestMapping("/api/customer")
 @RequiredArgsConstructor
 public class CustomerController {
-    
+
     private final CustomerService customerService;
     private final SensitiveDataService sensitiveDataService;
     private final ExportService exportService;
     private final ImportService importService;
-    
+    private final UserPermissionService userPermissionService;
+
     /**
      * 下载Excel导入模版
      */
@@ -46,38 +48,41 @@ public class CustomerController {
         try {
             ByteArrayOutputStream outputStream = exportService.generateCustomerTemplate();
             byte[] data = outputStream.toByteArray();
-            
+
             String fileName = "客户档案批量导入模板_" + LocalDate.now() + ".xlsx";
             // 使用UTF-8编码文件名，兼容不同浏览器
             String encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8").replace("+", "%20");
-            
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             // 同时设置标准格式和UTF-8格式，确保兼容性
-            headers.add("Content-Disposition", "attachment; filename=\"" + fileName + "\"; filename*=UTF-8''" + encodedFileName);
+            headers.add("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"; filename*=UTF-8''" + encodedFileName);
             headers.setCacheControl("no-cache, no-store, must-revalidate");
             headers.setPragma("no-cache");
             headers.setExpires(0);
-            
+
             return ResponseEntity.ok()
-                .headers(headers)
-                .body(data);
-                
+                    .headers(headers)
+                    .body(data);
+
         } catch (Exception e) {
             log.error("下载模版失败", e);
             HttpHeaders errorHeaders = new HttpHeaders();
             errorHeaders.setContentType(MediaType.APPLICATION_JSON);
             return ResponseEntity.status(500)
-                .headers(errorHeaders)
-                .body(("{\"error\":\"下载模版失败: " + e.getMessage().replace("\"", "\\\"") + "\"}").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    .headers(errorHeaders)
+                    .body(("{\"error\":\"下载模版失败: " + e.getMessage().replace("\"", "\\\"") + "\"}")
+                            .getBytes(java.nio.charset.StandardCharsets.UTF_8));
         }
     }
-    
+
     /**
      * 导出客户数据
      * 注意：此路由必须在 /{id} 之前，避免路由冲突
      */
-    @GetMapping(value = "/export", produces = {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv;charset=UTF-8", MediaType.APPLICATION_OCTET_STREAM_VALUE})
+    @GetMapping(value = "/export", produces = { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "text/csv;charset=UTF-8", MediaType.APPLICATION_OCTET_STREAM_VALUE })
     public ResponseEntity<byte[]> exportCustomers(
             @RequestParam(required = false) String customerName,
             @RequestParam(required = false) String customerType,
@@ -107,11 +112,11 @@ public class CustomerController {
             if (region != null && !region.trim().isEmpty()) {
                 queryCustomer.setRegion(region);
             }
-            
+
             ByteArrayOutputStream outputStream;
             String fileName;
             String contentType;
-            
+
             if ("csv".equalsIgnoreCase(format)) {
                 outputStream = exportService.exportCustomersToCSV(queryCustomer);
                 fileName = "客户数据_" + LocalDate.now() + ".csv";
@@ -121,56 +126,71 @@ public class CustomerController {
                 fileName = "客户数据_" + LocalDate.now() + ".xlsx";
                 contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             }
-            
+
             byte[] data = outputStream.toByteArray();
-            
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(contentType));
             // 使用UTF-8编码文件名，兼容不同浏览器
             String encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8").replace("+", "%20");
             // 同时设置标准格式和UTF-8格式，确保兼容性
-            headers.add("Content-Disposition", "attachment; filename=\"" + fileName + "\"; filename*=UTF-8''" + encodedFileName);
+            headers.add("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"; filename*=UTF-8''" + encodedFileName);
             headers.setCacheControl("no-cache, no-store, must-revalidate");
             headers.setPragma("no-cache");
             headers.setExpires(0);
-            
+
             return ResponseEntity.ok()
-                .headers(headers)
-                .body(data);
-                
+                    .headers(headers)
+                    .body(data);
+
         } catch (Exception e) {
             log.error("导出客户数据失败，格式: {}", format, e);
             HttpHeaders errorHeaders = new HttpHeaders();
             errorHeaders.setContentType(MediaType.APPLICATION_JSON);
             return ResponseEntity.status(500)
-                .headers(errorHeaders)
-                .body(("{\"error\":\"导出失败: " + e.getMessage() + "\"}").getBytes());
+                    .headers(errorHeaders)
+                    .body(("{\"error\":\"导出失败: " + e.getMessage() + "\"}").getBytes());
         }
     }
-    
+
     /**
      * 导入客户数据（支持Excel和CSV）
      */
     @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
     public Result<Map<String, Object>> importCustomers(@RequestParam("file") MultipartFile file) {
+        // 权限校验
+        try {
+            String username = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                    .getAuthentication().getName();
+            com.aicustomer.dto.UserPermissionDTO permission = userPermissionService
+                    .getUserPermissionByUsername(username);
+            if (permission == null || permission.getDataPermission() == null
+                    || !Boolean.TRUE.equals(permission.getDataPermission().getCanImport())) {
+                return Result.error("权限不足：您没有导入客户的权限");
+            }
+        } catch (Exception e) {
+            log.error("鉴权异常", e);
+            return Result.error("服务器内部错误：鉴权失败");
+        }
         String fileName = null;
         try {
             log.info("开始导入客户数据，文件名: {}", file.getOriginalFilename());
-            
+
             if (file.isEmpty()) {
                 log.warn("导入失败：文件为空");
                 return Result.error("请选择要上传的文件");
             }
-            
+
             fileName = file.getOriginalFilename();
             if (fileName == null) {
                 log.warn("导入失败：文件名为空");
                 return Result.error("文件名不能为空");
             }
-            
+
             log.info("解析文件: {}, 文件大小: {} bytes", fileName, file.getSize());
             ImportService.ImportResult parseResult;
-            
+
             // 根据文件扩展名选择解析方式
             if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
                 log.info("使用Excel解析方式");
@@ -182,7 +202,7 @@ public class CustomerController {
                 log.warn("不支持的文件格式: {}", fileName);
                 return Result.error("不支持的文件格式，请上传Excel（.xlsx, .xls）或CSV（.csv）文件");
             }
-            
+
             if (!parseResult.isSuccess()) {
                 log.error("文件解析失败: {}, 错误信息: {}", fileName, parseResult.getMessage());
                 if (parseResult.getErrors() != null && !parseResult.getErrors().isEmpty()) {
@@ -190,13 +210,15 @@ public class CustomerController {
                 }
                 return Result.error(parseResult.getMessage());
             }
-            
+
             log.info("文件解析成功，共解析 {} 条数据", parseResult.getCustomers() != null ? parseResult.getCustomers().size() : 0);
-            
+
             // 验证数据
-            ImportService.ValidationResult validationResult = importService.validateCustomers(parseResult.getCustomers());
+            ImportService.ValidationResult validationResult = importService
+                    .validateCustomers(parseResult.getCustomers());
             if (!validationResult.isValid()) {
-                String errorMsg = "数据验证失败（必填项：客户名称、电话）: " + String.join("; ", validationResult.getErrors().subList(0, Math.min(5, validationResult.getErrors().size())));
+                String errorMsg = "数据验证失败（必填项：客户名称、电话）: " + String.join("; ",
+                        validationResult.getErrors().subList(0, Math.min(5, validationResult.getErrors().size())));
                 if (validationResult.getErrors().size() > 5) {
                     errorMsg += "...还有" + (validationResult.getErrors().size() - 5) + "条错误";
                 }
@@ -204,16 +226,16 @@ public class CustomerController {
                 log.error("验证错误详情: {}", String.join("; ", validationResult.getErrors()));
                 return Result.error(errorMsg);
             }
-            
+
             log.info("数据验证通过，开始保存数据");
             // 保存数据
             ImportService.SaveResult saveResult = importService.saveCustomers(parseResult.getCustomers());
-            
+
             log.info("数据保存完成: 成功 {} 条, 失败 {} 条", saveResult.getSuccessCount(), saveResult.getFailureCount());
             if (saveResult.getErrors() != null && !saveResult.getErrors().isEmpty()) {
                 log.error("保存错误详情: {}", String.join("; ", saveResult.getErrors()));
             }
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("successCount", saveResult.getSuccessCount());
             response.put("failureCount", saveResult.getFailureCount());
@@ -221,16 +243,16 @@ public class CustomerController {
             if (saveResult.getErrors() != null && !saveResult.getErrors().isEmpty()) {
                 response.put("errors", saveResult.getErrors());
             }
-            
+
             return Result.success(response);
-            
+
         } catch (Exception e) {
             log.error("导入客户数据异常，文件名: {}", fileName, e);
             log.error("异常堆栈信息:", e);
             return Result.error("导入失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 查询客户列表
      */
@@ -243,18 +265,18 @@ public class CustomerController {
                 .collect(java.util.stream.Collectors.toList());
         return Result.success(maskedList);
     }
-    
+
     /**
      * 分页查询客户
      */
     @GetMapping("/page")
     public Result<PageResult<Customer>> page(@RequestParam(defaultValue = "1") Integer pageNum,
-                                           @RequestParam(defaultValue = "10") Integer pageSize,
-                                           @RequestParam(required = false) String customerName,
-                                           @RequestParam(required = false) String customerType,
-                                           @RequestParam(required = false) String customerLevel,
-                                           @RequestParam(required = false) String region,
-                                           @RequestParam(required = false) List<String> businessType) {
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String customerName,
+            @RequestParam(required = false) String customerType,
+            @RequestParam(required = false) String customerLevel,
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) List<String> businessType) {
         try {
             // 构建查询条件
             Customer queryCustomer = new Customer();
@@ -278,7 +300,7 @@ public class CustomerController {
             if (region != null && !region.trim().isEmpty()) {
                 queryCustomer.setRegion(region);
             }
-            
+
             // 处理业务类型参数（支持多个businessType，用于IN查询）
             List<Integer> businessTypeList = null;
             if (businessType != null && !businessType.isEmpty()) {
@@ -296,23 +318,24 @@ public class CustomerController {
                     log.info("设置业务类型筛选条件: businessTypeList={}", businessTypeList);
                 }
             }
-            
-            log.info("查询客户列表 - 页码: {}, 每页大小: {}, 查询条件: customerName={}, customerType={}, customerLevel={}, region={}, businessTypeList={}", 
+
+            log.info(
+                    "查询客户列表 - 页码: {}, 每页大小: {}, 查询条件: customerName={}, customerType={}, customerLevel={}, region={}, businessTypeList={}",
                     pageNum, pageSize, customerName, customerType, customerLevel, region, businessTypeList);
-            
+
             PageResult<Customer> pageResult = customerService.page(pageNum, pageSize, queryCustomer, businessTypeList);
             log.info("查询结果 - 总数: {}, 当前页数据量: {}", pageResult.getTotal(), pageResult.getList().size());
-            
+
             // 如果查询结果为空，记录更详细的信息用于调试
             if (pageResult.getTotal() == 0) {
                 log.warn("⚠️ 查询结果为空！查询条件: businessTypeList={}, 请检查数据库中是否有匹配的记录", businessTypeList);
             }
-        // 对敏感数据进行脱敏处理
-        List<Customer> maskedList = pageResult.getList().stream()
-                .map(sensitiveDataService::maskSensitiveData)
-                .collect(java.util.stream.Collectors.toList());
-        pageResult.setList(maskedList);
-        return Result.success(pageResult);
+            // 对敏感数据进行脱敏处理
+            List<Customer> maskedList = pageResult.getList().stream()
+                    .map(sensitiveDataService::maskSensitiveData)
+                    .collect(java.util.stream.Collectors.toList());
+            pageResult.setList(maskedList);
+            return Result.success(pageResult);
         } catch (Exception e) {
             // 如果数据库连接失败或其他异常，返回空结果而不是抛出异常
             log.error("操作异常", e);
@@ -320,7 +343,7 @@ public class CustomerController {
             return Result.success(emptyResult);
         }
     }
-    
+
     /**
      * 获取客户统计数据
      */
@@ -344,7 +367,7 @@ public class CustomerController {
                     log.info("统计业务类型筛选条件: businessTypeList={}", businessTypeList);
                 }
             }
-            
+
             Map<String, Object> statistics = customerService.getCustomerStatistics(businessTypeList);
             return Result.success(statistics);
         } catch (Exception e) {
@@ -352,7 +375,7 @@ public class CustomerController {
             return Result.error("获取统计数据失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 根据客户编号查询客户
      */
@@ -364,7 +387,7 @@ public class CustomerController {
         }
         return Result.error("客户不存在");
     }
-    
+
     /**
      * 根据ID查询客户
      */
@@ -378,7 +401,7 @@ public class CustomerController {
         }
         return Result.error("客户不存在");
     }
-    
+
     /**
      * 保存客户
      */
@@ -389,17 +412,17 @@ public class CustomerController {
             if (customer.getCustomerName() == null || customer.getCustomerName().trim().isEmpty()) {
                 return Result.error("客户姓名/企业名称不能为空");
             }
-            
+
             // 确保客户编号存在
             if (customer.getCustomerCode() == null || customer.getCustomerCode().trim().isEmpty()) {
-                customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int)(Math.random() * 1000));
+                customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int) (Math.random() * 1000));
             }
-            
-        // 检查客户编号是否已存在
-        if (customerService.existsByCustomerCode(customer.getCustomerCode())) {
-            return Result.error("客户编号已存在");
-        }
-            
+
+            // 检查客户编号是否已存在
+            if (customerService.existsByCustomerCode(customer.getCustomerCode())) {
+                return Result.error("客户编号已存在");
+            }
+
             // 设置默认值
             if (customer.getCustomerType() == null) {
                 customer.setCustomerType(1); // 默认个人客户
@@ -413,20 +436,21 @@ public class CustomerController {
             if (customer.getCustomerLevel() == null) {
                 customer.setCustomerLevel(1); // 默认普通
             }
-            
-            log.info("保存客户数据: 名称={}, 类型={}, 编号={}", customer.getCustomerName(), customer.getCustomerType(), customer.getCustomerCode());
-        
-        boolean success = customerService.save(customer);
-        if (success) {
-            return Result.success("客户保存成功");
-        }
-        return Result.error("客户保存失败");
+
+            log.info("保存客户数据: 名称={}, 类型={}, 编号={}", customer.getCustomerName(), customer.getCustomerType(),
+                    customer.getCustomerCode());
+
+            boolean success = customerService.save(customer);
+            if (success) {
+                return Result.success("客户保存成功");
+            }
+            return Result.error("客户保存失败");
         } catch (Exception e) {
             log.error("保存客户异常: {}", e.getMessage(), e);
             return Result.error("客户保存失败: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
         }
     }
-    
+
     /**
      * 更新客户
      */
@@ -437,31 +461,31 @@ public class CustomerController {
             if (customer.getId() == null) {
                 return Result.error("客户ID不能为空");
             }
-            
+
             Customer existingCustomer = customerService.getById(customer.getId());
             if (existingCustomer == null) {
                 return Result.error("客户不存在");
             }
-            
+
             // 如果修改了客户编号，检查新编号是否已被其他客户使用
-            if (customer.getCustomerCode() != null && 
-                !customer.getCustomerCode().equals(existingCustomer.getCustomerCode())) {
+            if (customer.getCustomerCode() != null &&
+                    !customer.getCustomerCode().equals(existingCustomer.getCustomerCode())) {
                 if (customerService.existsByCustomerCode(customer.getCustomerCode())) {
                     return Result.error("客户编号已被使用");
                 }
             }
-            
-        boolean success = customerService.update(customer);
-        if (success) {
-            return Result.success("客户更新成功");
-        }
-        return Result.error("客户更新失败");
+
+            boolean success = customerService.update(customer);
+            if (success) {
+                return Result.success("客户更新成功");
+            }
+            return Result.error("客户更新失败");
         } catch (Exception e) {
             log.error("操作异常", e);
             return Result.error("客户更新失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 根据ID删除客户
      */
@@ -473,18 +497,18 @@ public class CustomerController {
             if (customer == null) {
                 return Result.error("客户不存在");
             }
-            
-        boolean success = customerService.deleteById(id);
-        if (success) {
-            return Result.success("客户删除成功");
-        }
-        return Result.error("客户删除失败");
+
+            boolean success = customerService.deleteById(id);
+            if (success) {
+                return Result.success("客户删除成功");
+            }
+            return Result.error("客户删除失败");
         } catch (Exception e) {
             log.error("操作异常", e);
             return Result.error("客户删除失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 批量删除客户
      */
@@ -496,7 +520,7 @@ public class CustomerController {
         }
         return Result.error("客户批量删除失败");
     }
-    
+
     /**
      * 验证敏感数据保护密码
      */
@@ -509,7 +533,7 @@ public class CustomerController {
             return Result.error("密码验证失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 获取完整的敏感客户数据（需要密码验证）
      */

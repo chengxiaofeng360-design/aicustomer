@@ -375,15 +375,11 @@
             `).join('');
             $('#menuList').html(menuHtml);
 
-            // 渲染列表数据权限
+            // 渲染列表数据权限 - 简化为用户核心关注的3项
             const permissions = [
-                { id: 'canViewSensitive', label: '敏感数据处理', desc: '允许查看敏感字段' },
-                { id: 'canExport', label: '导出权限', desc: '允许在各功能中导出数据' },
-                { id: 'canDelete', label: '删除权限', desc: '允许删除核心业务记录' },
-                { id: 'canAccessVip', label: 'VIP客户访问', desc: '允许查看VIP等级客户数据' },
-                { id: 'canAccessDiamond', label: '钻石客户访问', desc: '允许查看钻石等级客户数据' },
-                { id: 'canViewAllData', label: '查看全部数据', desc: '跨部门/跨业务查看全部数据' },
-                { id: 'canViewDepartmentData', label: '本部门数据', desc: '查看所属部门下的数据' }
+                { id: 'canViewSensitive', label: '敏感处理', desc: '允许查看和操作非普通用户(VIP/钻石)' },
+                { id: 'canImport', label: '导入功能', desc: '允许批量导入客户数据' },
+                { id: 'canDelete', label: '删除功能', desc: '允许删除和批量删除数据' }
             ];
 
             const dataHtml = permissions.map(p => `
@@ -488,12 +484,8 @@
                     if (u.dataPermission) {
                         const dp = u.dataPermission;
                         $('#data_canViewSensitive').prop('checked', dp.canViewSensitive);
-                        $('#data_canExport').prop('checked', dp.canExport);
+                        $('#data_canImport').prop('checked', dp.canImport);
                         $('#data_canDelete').prop('checked', dp.canDelete);
-                        $('#data_canAccessVip').prop('checked', dp.canAccessVip);
-                        $('#data_canAccessDiamond').prop('checked', dp.canAccessDiamond);
-                        $('#data_canViewAllData').prop('checked', dp.canViewAllData);
-                        $('#data_canViewDepartmentData').prop('checked', dp.canViewDepartmentData);
                     }
 
                     modal.show();
@@ -532,12 +524,13 @@
                 menuPermissions,
                 dataPermission: {
                     canViewSensitive: $('#data_canViewSensitive').is(':checked'),
-                    canExport: $('#data_canExport').is(':checked'),
+                    canImport: $('#data_canImport').is(':checked'),
                     canDelete: $('#data_canDelete').is(':checked'),
-                    canAccessVip: $('#data_canAccessVip').is(':checked'),
-                    canAccessDiamond: $('#data_canAccessDiamond').is(':checked'),
-                    canViewAllData: $('#data_canViewAllData').is(':checked'),
-                    canViewDepartmentData: $('#data_canViewDepartmentData').is(':checked')
+                    // 为了兼容后端可能存在的旧字段，默认给true或保持一致
+                    canAccessVip: $('#data_canViewSensitive').is(':checked'),
+                    canAccessDiamond: $('#data_canViewSensitive').is(':checked'),
+                    canExport: $('#data_canImport').is(':checked'), // 导出和导入通常成对
+                    canViewAllData: true
                 }
             };
 

@@ -87,6 +87,11 @@ public class UserPermissionDTO {
         private Boolean canDelete;
 
         /**
+         * 是否可以导入数据
+         */
+        private Boolean canImport;
+
+        /**
          * 是否可以查看所有数据
          */
         private Boolean canViewAllData;

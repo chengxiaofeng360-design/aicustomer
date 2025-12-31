@@ -199,10 +199,13 @@
                 const result = await response.json();
 
                 if (result.code === 200) {
-                    // 保存用户信息到localStorage
+                    console.log('Login success:', result.data);
                     localStorage.setItem('currentUser', JSON.stringify(result.data));
-                    window.location.href = '/index.html';
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 300);
                 } else {
+                    console.error('Login failed:', result.message);
                     showAlert('登录失败: ' + result.message, 'danger');
                     loginBtn.disabled = false;
                     loginBtn.innerHTML = originalBtnHtml;
@@ -223,12 +226,10 @@
             `;
         }
 
-        // 检查是否已经登录
+        // 检查是否已经登录 - 已简化，不再在加载时自动跳，避免循环重定向
         window.addEventListener('load', function () {
             const currentUser = localStorage.getItem('currentUser');
-            if (currentUser) {
-                window.location.href = 'index.html';
-            }
+            console.log('Login page loaded. Current cached user:', currentUser);
         });
     </script>
 </body>

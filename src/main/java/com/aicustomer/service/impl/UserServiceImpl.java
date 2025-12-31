@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@org.springframework.context.annotation.DependsOn("databaseInitializer")
+@org.springframework.context.annotation.DependsOn({ "databaseInitializer", "databaseMigrationConfig" })
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
@@ -197,7 +197,7 @@ public class UserServiceImpl implements UserService {
 
             // 为 staff 账号设置默认权限 (消息中心, 客户管理, AI聊天, 知识库)
             newStaff.setPermissionSettings(
-                    "{\"menuPermissions\":[\"customer\",\"message\",\"ai-chat\",\"knowledge\"],\"dataPermission\":{\"canViewSensitive\":false,\"canExport\":false,\"canDelete\":false,\"canAccessVip\":false,\"canAccessDiamond\":false,\"canViewAllData\":false,\"canViewDepartmentData\":true}}");
+                    "{\"menuPermissions\":[\"customer\",\"message\",\"ai-chat\",\"knowledge\"],\"dataPermission\":{\"canViewSensitive\":false,\"canImport\":false,\"canDelete\":false}}");
 
             userMapper.insert(newStaff);
             log.info("演示业务员初始化完成: staff / 123456");
@@ -209,6 +209,14 @@ public class UserServiceImpl implements UserService {
                 staff.setUpdateTime(LocalDateTime.now());
                 userMapper.updateById(staff);
                 log.info("staff 密码重置完成");
+            }
+            // 确保现有 staff 账号也有正确的权限配置
+            if (staff.getPermissionSettings() == null || !staff.getPermissionSettings().contains("canImport")) {
+                log.info("检测到 staff 权限配置缺失或版本过旧，正在更新...");
+                staff.setPermissionSettings(
+                        "{\"menuPermissions\":[\"customer\",\"message\",\"ai-chat\",\"knowledge\"],\"dataPermission\":{\"canViewSensitive\":false,\"canImport\":false,\"canDelete\":false}}");
+                staff.setUpdateTime(LocalDateTime.now());
+                userMapper.updateById(staff);
             }
         }
     }

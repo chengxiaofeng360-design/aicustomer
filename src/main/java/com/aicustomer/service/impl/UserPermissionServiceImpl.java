@@ -202,6 +202,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                     config.setCanViewSensitive(getBoolean(dataMap, "canViewSensitive"));
                     config.setCanExport(getBoolean(dataMap, "canExport"));
                     config.setCanDelete(getBoolean(dataMap, "canDelete"));
+                    config.setCanImport(getBoolean(dataMap, "canImport"));
                     config.setCanAccessVip(getBoolean(dataMap, "canAccessVip"));
                     config.setCanAccessDiamond(getBoolean(dataMap, "canAccessDiamond"));
                     config.setCanViewAllData(getBoolean(dataMap, "canViewAllData"));

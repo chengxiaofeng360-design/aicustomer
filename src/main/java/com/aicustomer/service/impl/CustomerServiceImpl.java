@@ -40,22 +40,37 @@ public class CustomerServiceImpl implements CustomerService {
         try {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
             UserPermissionDTO permission = userPermissionService.getUserPermissionByUsername(username);
-            if (permission == null || permission.getDataPermission() == null) {
-                return java.util.Arrays.asList(1); // 默认只能看普通
-            }
 
             List<Integer> levels = new java.util.ArrayList<>();
             levels.add(1); // 普通等级始终允许
 
-            if (permission.getDataPermission().getCanAccessVip()) {
-                levels.add(2);
-            }
-            if (permission.getDataPermission().getCanAccessDiamond()) {
-                levels.add(3);
+            if (permission != null && permission.getDataPermission() != null) {
+                // 如果勾选了"敏感数据处理"，则允许访问 VIP(2) 和 钻石(3)
+                if (Boolean.TRUE.equals(permission.getDataPermission().getCanViewSensitive())) {
+                    levels.add(2);
+                    levels.add(3);
+                }
             }
             return levels;
         } catch (Exception e) {
-            return java.util.Arrays.asList(1);
+            return java.util.Arrays.asList(1); // 发生异常保底只看普通
+        }
+    }
+
+    /**
+     * 校验当前用户是否有特定数据权限
+     */
+    private boolean hasDataPermission(
+            java.util.function.Function<UserPermissionDTO.DataPermissionConfig, Boolean> extractor) {
+        try {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            UserPermissionDTO permission = userPermissionService.getUserPermissionByUsername(username);
+            if (permission == null || permission.getDataPermission() == null) {
+                return false;
+            }
+            return Boolean.TRUE.equals(extractor.apply(permission.getDataPermission()));
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -113,12 +128,18 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteById(Long id) {
+        if (!hasDataPermission(UserPermissionDTO.DataPermissionConfig::getCanDelete)) {
+            throw new RuntimeException("权限不足：您没有删除客户的权限");
+        }
         return customerMapper.deleteById(id) > 0;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteByIds(List<Long> ids) {
+        if (!hasDataPermission(UserPermissionDTO.DataPermissionConfig::getCanDelete)) {
+            throw new RuntimeException("权限不足：您没有批量删除客户的权限");
+        }
         return customerMapper.deleteByIds(ids) > 0;
     }
 
