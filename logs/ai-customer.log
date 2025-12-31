@@ -661,3 +661,476 @@
 2025-12-31 09:14:01 [http-nio-8085-exec-3] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
 2025-12-31 09:14:01 [http-nio-8085-exec-3] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
 2025-12-31 09:14:03 [http-nio-8085-exec-3] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话生成回复成功，长度: 72
+2025-12-31 09:14:28 [http-nio-8085-exec-6] INFO  c.a.c.SystemConfigController - 查询配置分组: 业务类型
+2025-12-31 09:14:28 [http-nio-8085-exec-6] INFO  c.a.c.SystemConfigController - 查询到 1 条配置
+2025-12-31 09:14:29 [http-nio-8085-exec-9] INFO  c.a.c.SystemConfigController - 查询配置分组: 业务类型
+2025-12-31 09:14:29 [http-nio-8085-exec-4] INFO  c.a.controller.CustomerController - 设置业务类型筛选条件: businessTypeList=[1, 2]
+2025-12-31 09:14:29 [http-nio-8085-exec-4] INFO  c.a.controller.CustomerController - 查询客户列表 - 页码: 1, 每页大小: 10, 查询条件: customerName=null, customerType=null, customerLevel=null, region=null, businessTypeList=[1, 2]
+2025-12-31 09:14:29 [http-nio-8085-exec-5] INFO  c.a.controller.CustomerController - 统计业务类型筛选条件: businessTypeList=[1, 2]
+2025-12-31 09:14:29 [http-nio-8085-exec-9] INFO  c.a.c.SystemConfigController - 查询到 1 条配置
+2025-12-31 09:14:29 [http-nio-8085-exec-4] INFO  c.a.controller.CustomerController - 查询结果 - 总数: 18, 当前页数据量: 10
+2025-12-31 09:14:58 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 是企业的多少人
+2025-12-31 09:14:59 [http-nio-8085-exec-2] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索完成，查询: 是企业的多少人, 结果数: 3
+2025-12-31 09:14:59 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】已执行主动干预，注入数据: 系统知识库中目前共有 151 份上传的资料。
+2025-12-31 09:14:59 [http-nio-8085-exec-2] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
+2025-12-31 09:14:59 [http-nio-8085-exec-2] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
+2025-12-31 09:14:59 [http-nio-8085-exec-2] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
+2025-12-31 09:14:59 [http-nio-8085-exec-2] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
+2025-12-31 09:14:59 [http-nio-8085-exec-2] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
+
+您的DeepSeek API账户余额已用完，无法继续使用AI服务。
+
+**解决方案：**
+1. 登录DeepSeek平台（https://platform.deepseek.com）
+2. 为账户充值
+3. 充值后即可恢复正常使用
+
+如有疑问，请联系系统管理员。
+2025-12-31 09:14:59 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
+2025-12-31 09:14:59 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
+2025-12-31 09:14:59 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=22
+2025-12-31 09:15:02 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 123
+2025-12-31 09:15:02 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: {
+  "tool": "dynamic_sql_query",
+  "parameters": {
+    "sql": "SELECT COUNT(*) FROM customer WHERE customer_type = 2"
+  }
+}
+2025-12-31 09:15:02 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: {
+  "tool": "dynamic_sql_query",
+  "parameters": {
+    "sql": "SELECT COUNT(*) FROM customer WHERE customer_type = 2"
+  }
+}
+2025-12-31 09:15:02 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: dynamic_sql_query
+2025-12-31 09:15:02 [http-nio-8085-exec-2] INFO  c.a.service.CustomerQueryService - 【数据查询服务】正在执行动态 SQL: SELECT COUNT(*) FROM customer WHERE customer_type = 2
+2025-12-31 09:15:02 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: 查询到 1 条记录：
+- COUNT(*): 19
+
+2025-12-31 09:15:02 [http-nio-8085-exec-2] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (doubao)，进行二次生成...
+2025-12-31 09:15:02 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
+2025-12-31 09:15:02 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
+2025-12-31 09:15:03 [http-nio-8085-exec-2] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话生成回复成功，长度: 15
+2025-12-31 09:15:10 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 个人多少人
+2025-12-31 09:15:11 [http-nio-8085-exec-10] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索完成，查询: 个人多少人, 结果数: 3
+2025-12-31 09:15:11 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】已执行主动干预，注入数据: 系统知识库中目前共有 151 份上传的资料。
+2025-12-31 09:15:11 [http-nio-8085-exec-10] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
+2025-12-31 09:15:11 [http-nio-8085-exec-10] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
+2025-12-31 09:15:11 [http-nio-8085-exec-10] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
+2025-12-31 09:15:11 [http-nio-8085-exec-10] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
+2025-12-31 09:15:11 [http-nio-8085-exec-10] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
+
+您的DeepSeek API账户余额已用完，无法继续使用AI服务。
+
+**解决方案：**
+1. 登录DeepSeek平台（https://platform.deepseek.com）
+2. 为账户充值
+3. 充值后即可恢复正常使用
+
+如有疑问，请联系系统管理员。
+2025-12-31 09:15:11 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
+2025-12-31 09:15:11 [http-nio-8085-exec-10] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
+2025-12-31 09:15:11 [http-nio-8085-exec-10] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=22
+2025-12-31 09:15:13 [http-nio-8085-exec-10] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 123
+2025-12-31 09:15:13 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: {
+  "tool": "dynamic_sql_query",
+  "parameters": {
+    "sql": "SELECT COUNT(*) FROM customer WHERE customer_type = 1"
+  }
+}
+2025-12-31 09:15:13 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: {
+  "tool": "dynamic_sql_query",
+  "parameters": {
+    "sql": "SELECT COUNT(*) FROM customer WHERE customer_type = 1"
+  }
+}
+2025-12-31 09:15:13 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: dynamic_sql_query
+2025-12-31 09:15:13 [http-nio-8085-exec-10] INFO  c.a.service.CustomerQueryService - 【数据查询服务】正在执行动态 SQL: SELECT COUNT(*) FROM customer WHERE customer_type = 1
+2025-12-31 09:15:13 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: 查询到 1 条记录：
+- COUNT(*): 3
+
+2025-12-31 09:15:13 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (doubao)，进行二次生成...
+2025-12-31 09:15:13 [http-nio-8085-exec-10] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
+2025-12-31 09:15:13 [http-nio-8085-exec-10] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
+2025-12-31 09:15:14 [http-nio-8085-exec-10] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话生成回复成功，长度: 10
+2025-12-31 09:15:17 [http-nio-8085-exec-6] INFO  c.a.c.SystemConfigController - 查询配置分组: 业务类型
+2025-12-31 09:15:17 [http-nio-8085-exec-6] INFO  c.a.c.SystemConfigController - 查询到 1 条配置
+2025-12-31 09:15:18 [http-nio-8085-exec-10] INFO  c.a.c.SystemConfigController - 查询配置分组: 业务类型
+2025-12-31 09:15:18 [http-nio-8085-exec-5] INFO  c.a.controller.CustomerController - 统计业务类型筛选条件: businessTypeList=[1, 2]
+2025-12-31 09:15:18 [http-nio-8085-exec-1] INFO  c.a.controller.CustomerController - 设置业务类型筛选条件: businessTypeList=[1, 2]
+2025-12-31 09:15:18 [http-nio-8085-exec-1] INFO  c.a.controller.CustomerController - 查询客户列表 - 页码: 1, 每页大小: 10, 查询条件: customerName=null, customerType=null, customerLevel=null, region=null, businessTypeList=[1, 2]
+2025-12-31 09:15:18 [http-nio-8085-exec-10] INFO  c.a.c.SystemConfigController - 查询到 1 条配置
+2025-12-31 09:15:18 [http-nio-8085-exec-1] INFO  c.a.controller.CustomerController - 查询结果 - 总数: 18, 当前页数据量: 10
+2025-12-31 09:15:35 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: vip客户有几人
+2025-12-31 09:15:35 [http-nio-8085-exec-6] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索完成，查询: vip客户有几人, 结果数: 3
+2025-12-31 09:15:35 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
+2025-12-31 09:15:35 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
+2025-12-31 09:15:35 [http-nio-8085-exec-6] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
+2025-12-31 09:15:35 [http-nio-8085-exec-6] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
+2025-12-31 09:15:35 [http-nio-8085-exec-6] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
+
+您的DeepSeek API账户余额已用完，无法继续使用AI服务。
+
+**解决方案：**
+1. 登录DeepSeek平台（https://platform.deepseek.com）
+2. 为账户充值
+3. 充值后即可恢复正常使用
+
+如有疑问，请联系系统管理员。
+2025-12-31 09:15:35 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
+2025-12-31 09:15:35 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
+2025-12-31 09:15:35 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=21
+2025-12-31 09:15:38 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】生成回复成功，长度: 124
+2025-12-31 09:15:38 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的原始回复: {
+  "tool": "dynamic_sql_query",
+  "parameters": {
+    "sql": "SELECT COUNT(*) FROM customer WHERE customer_level = 2"
+  }
+}
+2025-12-31 09:15:38 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: {
+  "tool": "dynamic_sql_query",
+  "parameters": {
+    "sql": "SELECT COUNT(*) FROM customer WHERE customer_level = 2"
+  }
+}
+2025-12-31 09:15:38 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: dynamic_sql_query
+2025-12-31 09:15:38 [http-nio-8085-exec-6] INFO  c.a.service.CustomerQueryService - 【数据查询服务】正在执行动态 SQL: SELECT COUNT(*) FROM customer WHERE customer_level = 2
+2025-12-31 09:15:38 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 doubao 的工具执行结果: 查询到 1 条记录：
+- COUNT(*): 4
+
+2025-12-31 09:15:38 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (doubao)，进行二次生成...
+2025-12-31 09:15:38 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】单轮对话 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
+2025-12-31 09:15:38 [http-nio-8085-exec-6] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起单轮对话请求 | model=doubao-1-5-pro-32k-250115, messages=2
+2025-12-31 09:15:41 [http-nio-8085-exec-6] ERROR c.aicustomer.service.ArkChatService - 【Ark】单轮对话调用失败: ArkHttpException{statusCode=429, message='Your account [2110602004] has reached the set inference limit for the [doubao-1-5-pro-32k] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the "Safe Experience Mode". Request id: 0217671437452662a6cb7a1f1c1c436d3b8cfa3e9830125af6b50', code='SetLimitExceeded', param='', type='TooManyRequests', requestId='20251231091538VowZFLmX3KWPMb5JT0qz'}
+com.volcengine.ark.runtime.exception.ArkHttpException: ArkHttpException{statusCode=429, message='Your account [2110602004] has reached the set inference limit for the [doubao-1-5-pro-32k] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the "Safe Experience Mode". Request id: 0217671437452662a6cb7a1f1c1c436d3b8cfa3e9830125af6b50', code='SetLimitExceeded', param='', type='TooManyRequests', requestId='20251231091538VowZFLmX3KWPMb5JT0qz'}
+	at com.volcengine.ark.runtime.service.ArkService.execute(ArkService.java:166)
+	at com.volcengine.ark.runtime.service.ArkService.createChatCompletion(ArkService.java:186)
+	at com.aicustomer.service.ArkChatService.chat(ArkChatService.java:85)
+	at com.aicustomer.config.SpringAiConfig$DoubaoChatModel.call(SpringAiConfig.java:107)
+	at com.aicustomer.service.impl.AiChatServiceImpl.processPotentialToolCall(AiChatServiceImpl.java:373)
+	at com.aicustomer.service.impl.AiChatServiceImpl.finalizeResponse(AiChatServiceImpl.java:348)
+	at com.aicustomer.service.impl.AiChatServiceImpl.generateAiResponse(AiChatServiceImpl.java:314)
+	at com.aicustomer.service.impl.AiChatServiceImpl.sendMessage(AiChatServiceImpl.java:134)
+	at com.aicustomer.controller.AiChatController.sendMessage(AiChatController.java:49)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:254)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:182)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:917)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:829)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:205)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:479)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:340)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:82)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:128)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:227)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:221)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:352)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:268)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:109)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:340)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1744)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: retrofit2.adapter.rxjava2.HttpException: HTTP 429 
+	at retrofit2.adapter.rxjava2.BodyObservable$BodyObserver.onNext(BodyObservable.java:57)
+	at retrofit2.adapter.rxjava2.BodyObservable$BodyObserver.onNext(BodyObservable.java:38)
+	at retrofit2.adapter.rxjava2.CallExecuteObservable.subscribeActual(CallExecuteObservable.java:48)
+	at io.reactivex.Observable.subscribe(Observable.java:10151)
+	at retrofit2.adapter.rxjava2.BodyObservable.subscribeActual(BodyObservable.java:35)
+	at io.reactivex.Observable.subscribe(Observable.java:10151)
+	at io.reactivex.internal.operators.observable.ObservableSingleSingle.subscribeActual(ObservableSingleSingle.java:35)
+	at io.reactivex.Single.subscribe(Single.java:2517)
+	at io.reactivex.Single.blockingGet(Single.java:2001)
+	at com.volcengine.ark.runtime.service.ArkService.execute(ArkService.java:149)
+	... 126 common frames omitted
+2025-12-31 09:15:41 [http-nio-8085-exec-6] INFO  c.a.service.ZhipuChatService - 调用智谱AI API: https://open.bigmodel.cn/api/paas/v4/chat/completions
+2025-12-31 09:15:43 [http-nio-8085-exec-6] INFO  c.a.service.ZhipuChatService - 智谱AI响应成功，内容长度: 122
+2025-12-31 09:15:43 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 zhipu 的原始回复: ```json
+{"tool": "dynamic_sql_query", "parameters": {"sql": "SELECT COUNT(*) FROM customer WHERE customer_level = 2"}}
+```
+2025-12-31 09:15:43 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】解析到工具调用字符串: {"tool": "dynamic_sql_query", "parameters": {"sql": "SELECT COUNT(*) FROM customer WHERE customer_level = 2"}}
+2025-12-31 09:15:43 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】正在执行工具查询: dynamic_sql_query
+2025-12-31 09:15:43 [http-nio-8085-exec-6] INFO  c.a.service.CustomerQueryService - 【数据查询服务】正在执行动态 SQL: SELECT COUNT(*) FROM customer WHERE customer_level = 2
+2025-12-31 09:15:43 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 zhipu 的工具执行结果: 查询到 1 条记录：
+- COUNT(*): 4
+
+2025-12-31 09:15:43 [http-nio-8085-exec-6] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】工具结果获取成功 (zhipu)，进行二次生成...
+2025-12-31 09:15:43 [http-nio-8085-exec-6] INFO  c.a.service.ZhipuChatService - 调用智谱AI API: https://open.bigmodel.cn/api/paas/v4/chat/completions
+2025-12-31 09:15:43 [http-nio-8085-exec-6] INFO  c.a.service.ZhipuChatService - 智谱AI响应成功，内容长度: 10
+2025-12-31 09:15:56 [http-nio-8085-exec-7] INFO  c.a.controller.CustomerController - 设置业务类型筛选条件: businessTypeList=[1, 2]
+2025-12-31 09:15:56 [http-nio-8085-exec-7] INFO  c.a.controller.CustomerController - 查询客户列表 - 页码: 1, 每页大小: 10, 查询条件: customerName=null, customerType=null, customerLevel=2, region=null, businessTypeList=[1, 2]
+2025-12-31 09:15:56 [http-nio-8085-exec-7] INFO  c.a.controller.CustomerController - 查询结果 - 总数: 4, 当前页数据量: 4
+2025-12-31 09:16:21 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】开始处理查询: 目前有那些文件
+2025-12-31 09:16:21 [http-nio-8085-exec-10] INFO  c.a.s.impl.VectorSearchServiceImpl - 向量搜索完成，查询: 目前有那些文件, 结果数: 3
+2025-12-31 09:16:21 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】已执行主动干预，注入数据: 系统知识库中目前共有 151 份上传的资料。
+2025-12-31 09:16:21 [http-nio-8085-exec-10] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】开始调用API，URL: https://api.deepseek.com/v1/chat/completions
+2025-12-31 09:16:21 [http-nio-8085-exec-10] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】请求参数 - 模型: deepseek-chat, 消息数: 12, max_tokens: 2000, temperature: 0.7
+2025-12-31 09:16:21 [http-nio-8085-exec-10] INFO  c.aicustomer.service.DeepSeekService - 【DeepSeek】发送HTTP请求...
+2025-12-31 09:16:21 [http-nio-8085-exec-10] ERROR c.aicustomer.service.DeepSeekService - 【DeepSeek】API调用HTTP错误，状态码: 402, 响应: {"error":{"message":"Insufficient Balance","type":"unknown_error","param":null,"code":"invalid_request_error"}}
+2025-12-31 09:16:21 [http-nio-8085-exec-10] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: ⚠️ **DeepSeek账户余额不足**
+
+您的DeepSeek API账户余额已用完，无法继续使用AI服务。
+
+**解决方案：**
+1. 登录DeepSeek平台（https://platform.deepseek.com）
+2. 为账户充值
+3. 充值后即可恢复正常使用
+
+如有疑问，请联系系统管理员。
+2025-12-31 09:16:21 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】尝试豆包模型
+2025-12-31 09:16:21 [http-nio-8085-exec-10] INFO  c.aicustomer.service.ArkChatService - 【Ark】准备调用 | model=doubao-1-5-pro-32k-250115, baseUrl=https://ark.cn-beijing.volces.com/api/v3, apiKey=0ed***e6f
+2025-12-31 09:16:21 [http-nio-8085-exec-10] INFO  c.aicustomer.service.ArkChatService - 【Ark】发起请求 | model=doubao-1-5-pro-32k-250115, messages=22
+2025-12-31 09:16:24 [http-nio-8085-exec-10] ERROR c.aicustomer.service.ArkChatService - 【Ark】调用失败: ArkHttpException{statusCode=429, message='Your account [2110602004] has reached the set inference limit for the [doubao-1-5-pro-32k] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the "Safe Experience Mode". Request id: 021767143788667e70bd5cd8ac63a2aabaf92639e3ab2c3659bb6', code='SetLimitExceeded', param='', type='TooManyRequests', requestId='20251231091621H8cQJoBumapLM3KjlGeV'}
+com.volcengine.ark.runtime.exception.ArkHttpException: ArkHttpException{statusCode=429, message='Your account [2110602004] has reached the set inference limit for the [doubao-1-5-pro-32k] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the "Safe Experience Mode". Request id: 021767143788667e70bd5cd8ac63a2aabaf92639e3ab2c3659bb6', code='SetLimitExceeded', param='', type='TooManyRequests', requestId='20251231091621H8cQJoBumapLM3KjlGeV'}
+	at com.volcengine.ark.runtime.service.ArkService.execute(ArkService.java:166)
+	at com.volcengine.ark.runtime.service.ArkService.createChatCompletion(ArkService.java:186)
+	at com.aicustomer.service.ArkChatService.chatWithHistory(ArkChatService.java:299)
+	at com.aicustomer.config.SpringAiConfig$DoubaoChatModel.call(SpringAiConfig.java:104)
+	at com.aicustomer.service.impl.AiChatServiceImpl.generateAiResponse(AiChatServiceImpl.java:311)
+	at com.aicustomer.service.impl.AiChatServiceImpl.sendMessage(AiChatServiceImpl.java:134)
+	at com.aicustomer.controller.AiChatController.sendMessage(AiChatController.java:49)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:254)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:182)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:917)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:829)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:205)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:479)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:340)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:82)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:128)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:227)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:221)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:352)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:268)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:109)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:340)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1744)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: retrofit2.adapter.rxjava2.HttpException: HTTP 429 
+	at retrofit2.adapter.rxjava2.BodyObservable$BodyObserver.onNext(BodyObservable.java:57)
+	at retrofit2.adapter.rxjava2.BodyObservable$BodyObserver.onNext(BodyObservable.java:38)
+	at retrofit2.adapter.rxjava2.CallExecuteObservable.subscribeActual(CallExecuteObservable.java:48)
+	at io.reactivex.Observable.subscribe(Observable.java:10151)
+	at retrofit2.adapter.rxjava2.BodyObservable.subscribeActual(BodyObservable.java:35)
+	at io.reactivex.Observable.subscribe(Observable.java:10151)
+	at io.reactivex.internal.operators.observable.ObservableSingleSingle.subscribeActual(ObservableSingleSingle.java:35)
+	at io.reactivex.Single.subscribe(Single.java:2517)
+	at io.reactivex.Single.blockingGet(Single.java:2001)
+	at com.volcengine.ark.runtime.service.ArkService.execute(ArkService.java:149)
+	... 124 common frames omitted
+2025-12-31 09:16:24 [http-nio-8085-exec-10] WARN  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】豆包返回了错误状态，准备回退: ⚠️ Ark服务调用异常: ArkHttpException{statusCode=429, message='Your account [2110602004] has reached the set inference limit for the [doubao-1-5-pro-32k] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the "Safe Experience Mode". Request id: 021767143788667e70bd5cd8ac63a2aabaf92639e3ab2c3659bb6', code='SetLimitExceeded', param='', type='TooManyRequests', requestId='20251231091621H8cQJoBumapLM3KjlGeV'}
+2025-12-31 09:16:24 [http-nio-8085-exec-10] INFO  c.a.service.ZhipuChatService - 调用智谱AI API: https://open.bigmodel.cn/api/paas/v4/chat/completions
+2025-12-31 09:16:32 [http-nio-8085-exec-10] INFO  c.a.service.ZhipuChatService - 智谱AI响应成功，内容长度: 329
+2025-12-31 09:16:32 [http-nio-8085-exec-10] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】模型 zhipu 的原始回复: 目前有如下文件：
+1. DUS测试技术指南 - 蔷薇属 (类型: docx)
+2. 植物新品种保护条例（2024版）(类型: docx)
+3. DUS测试技术指南 - 蔷薇属 (类型: docx)
+4. 植物新品种保护条例（2024版）(类型: docx)
+5. DUS测试技术指南 - 蔷薇属 (类型: docx)
+6. 植物新品种保护条例（2024版）(类型: docx)
+7. DUS测试技术指南 - 蔷薇属 (类型: docx)
+8. 植物新品种保护条例（2024版）(类型: docx)
+9. DUS测试技术指南 - 蔷薇属 (类型: docx)
+10. 植物新品种保护条例（2024版）(类型: docx)
+
+... 以及更多共 151 份文件。

@@ -181,11 +181,80 @@ function renderSessionList(activeId = activeSessionId) {
                 <span class="history-title">${escapeHtml(title)}</span>
                 <span class="history-meta">${escapeHtml(meta)}</span>
             </div>
+            <div class="delete-session-btn" title="删除会话" onclick="event.stopPropagation(); deleteSession('${session.sessionId}')">
+                <i class="bi bi-trash"></i>
+            </div>
         `;
 
         item.addEventListener('click', () => selectSession(session.sessionId));
         historyList.appendChild(item);
     });
+}
+
+/**
+ * 删除会话
+ */
+async function deleteSession(sessionId) {
+    if (!sessionId) return;
+
+    if (!confirm('确定要删除这段对话历史吗？该操作不可撤销。')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/ai-chat/sessions/${encodeURIComponent(sessionId)}`, {
+            method: 'DELETE'
+        });
+        const result = await response.json();
+
+        if (response.ok && result.code === 200) {
+            // 从内存列表中移除
+            sessionList = sessionList.filter(s => s.sessionId !== sessionId);
+
+            // 如果删除的是当前会话，清除界面
+            if (activeSessionId === sessionId) {
+                activeSessionId = null;
+                currentChatId = null;
+                chatHistory = [];
+                conversationHistory = [];
+                renderWelcomeMessage();
+                setCurrentSessionSummary('请选择或新建会话', '等待开始新的对话');
+            }
+
+            // 重新渲染列表
+            renderSessionList(activeSessionId);
+
+            // 显示成功提示
+            showDeleteSuccess();
+        } else {
+            alert('删除失败: ' + (result.message || '未知错误'));
+        }
+    } catch (error) {
+        console.error('删除会话异常:', error);
+        alert('删除失败，请稍后重试');
+    }
+}
+
+/**
+ * 显示删除成功提示
+ */
+function showDeleteSuccess() {
+    const toast = document.createElement('div');
+    toast.className = 'toast show position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+    toast.innerHTML = `
+        <div class="toast-header">
+            <i class="bi bi-check-circle text-success me-2"></i>
+            <strong class="me-auto">删除成功</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            对话历史已成功删除
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
 }
 
 async function selectSession(sessionId) {

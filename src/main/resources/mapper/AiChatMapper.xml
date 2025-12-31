@@ -214,4 +214,10 @@
         ORDER BY create_time ASC
     </select>
 
+    <update id="deleteBySessionId">
+        UPDATE ai_chat
+        SET deleted = 1, update_time = NOW()
+        WHERE session_id = #{sessionId} AND deleted = 0
+    </update>
+
 </mapper>

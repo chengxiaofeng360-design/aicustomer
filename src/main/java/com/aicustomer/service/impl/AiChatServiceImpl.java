@@ -441,6 +441,14 @@ public class AiChatServiceImpl implements AiChatService {
         return newSessionId;
     }
 
+    @Override
+    public boolean deleteSession(String sessionId) {
+        log.info("删除会话: sessionId={}", sessionId);
+        int rows = aiChatMapper.deleteBySessionId(sessionId);
+        return rows >= 0; // rows might be 0 if session has no messages or already deleted, but we
+                          // consider the operation successful
+    }
+
     private String executeTool(String aiReply) {
         try {
             // 提取 JSON 部分 - 寻找最外层的 { } 或 [ ]

@@ -89,20 +89,24 @@ public interface AiChatMapper {
     /**
      * 获取AI聊天统计
      */
-    java.util.Map<String, Object> selectStatistics(@Param("userId") Long userId, 
-                                                     @Param("customerId") Long customerId,
-                                                     @Param("startTime") java.time.LocalDateTime startTime,
-                                                     @Param("endTime") java.time.LocalDateTime endTime);
-    
+    java.util.Map<String, Object> selectStatistics(@Param("userId") Long userId,
+            @Param("customerId") Long customerId,
+            @Param("startTime") java.time.LocalDateTime startTime,
+            @Param("endTime") java.time.LocalDateTime endTime);
+
     /**
      * 获取会话列表（按sessionId分组，返回每个会话的第一条消息）
      */
-    List<Map<String, Object>> selectSessionList(@Param("userId") Long userId, 
-                                                 @Param("limit") Integer limit);
-    
+    List<Map<String, Object>> selectSessionList(@Param("userId") Long userId,
+            @Param("limit") Integer limit);
+
     /**
      * 根据会话ID获取消息列表
      */
     List<AiChat> selectMessagesBySessionId(@Param("sessionId") String sessionId);
-}
 
+    /**
+     * 根据会话ID删除聊天记录（软删除）
+     */
+    int deleteBySessionId(@Param("sessionId") String sessionId);
+}

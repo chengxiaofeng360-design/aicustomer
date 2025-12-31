@@ -20,9 +20,9 @@ import java.util.Map;
 @RequestMapping("/api/ai-chat")
 @RequiredArgsConstructor
 public class AiChatController {
-    
+
     private final AiChatService aiChatService;
-    
+
     /**
      * 发送消息（支持多轮对话）
      */
@@ -31,25 +31,29 @@ public class AiChatController {
         try {
             System.out.println("【AI聊天】收到发送消息请求");
             System.out.println("【AI聊天】请求参数: " + request);
-            
+
             String sessionId = request.get("sessionId").toString();
             String userMessage = request.get("message").toString();
-            Long customerId = request.get("customerId") != null ? 
-                Long.valueOf(request.get("customerId").toString()) : null;
-            
+            Long customerId = request.get("customerId") != null ? Long.valueOf(request.get("customerId").toString())
+                    : null;
+
             System.out.println("【AI聊天】会话ID: " + sessionId);
             System.out.println("【AI聊天】用户消息: " + userMessage);
             System.out.println("【AI聊天】客户ID: " + customerId);
-            
+
             // 支持传递对话历史（用于多轮对话）
             @SuppressWarnings("unchecked")
             List<Map<String, String>> history = (List<Map<String, String>>) request.get("history");
             System.out.println("【AI聊天】对话历史条数: " + (history != null ? history.size() : 0));
-            
+
             AiChat response = aiChatService.sendMessage(sessionId, userMessage, customerId, history);
-            
-            System.out.println("【AI聊天】AI回复内容: " + (response.getReplyContent() != null ? response.getReplyContent().substring(0, Math.min(100, response.getReplyContent().length())) + "..." : "null"));
-            
+
+            System.out.println("【AI聊天】AI回复内容: "
+                    + (response.getReplyContent() != null
+                            ? response.getReplyContent().substring(0,
+                                    Math.min(100, response.getReplyContent().length())) + "..."
+                            : "null"));
+
             // 构建返回结果
             Map<String, Object> result = new HashMap<>();
             result.put("id", response.getId());
@@ -58,7 +62,7 @@ public class AiChatController {
             result.put("replyContent", response.getReplyContent());
             result.put("content", response.getContent());
             result.put("createTime", response.getCreateTime());
-            
+
             System.out.println("【AI聊天】返回成功");
             return Result.success(result);
         } catch (Exception e) {
@@ -68,7 +72,7 @@ public class AiChatController {
             return Result.error("发送消息失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 获取聊天历史
      */
@@ -83,7 +87,7 @@ public class AiChatController {
             return Result.error("获取聊天历史失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 获取聊天统计
      */
@@ -96,7 +100,7 @@ public class AiChatController {
             return Result.error("获取聊天统计失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 获取会话列表
      */
@@ -111,7 +115,7 @@ public class AiChatController {
             return Result.error("获取会话列表失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 根据会话ID获取消息列表
      */
@@ -124,25 +128,37 @@ public class AiChatController {
             return Result.error("获取消息列表失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 创建新会话
      */
     @PostMapping("/sessions/new")
     public Result<Map<String, Object>> createNewSession(@RequestBody Map<String, Object> request) {
         try {
-            Long userId = request.get("userId") != null ? 
-                Long.valueOf(request.get("userId").toString()) : null;
-            Long customerId = request.get("customerId") != null ? 
-                Long.valueOf(request.get("customerId").toString()) : null;
-            
+            Long userId = request.get("userId") != null ? Long.valueOf(request.get("userId").toString()) : null;
+            Long customerId = request.get("customerId") != null ? Long.valueOf(request.get("customerId").toString())
+                    : null;
+
             String sessionId = aiChatService.createNewSession(userId, customerId);
-            
+
             Map<String, Object> result = new HashMap<>();
             result.put("sessionId", sessionId);
             return Result.success(result);
         } catch (Exception e) {
             return Result.error("创建新会话失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除会话
+     */
+    @DeleteMapping("/sessions/{sessionId}")
+    public Result<Void> deleteSession(@PathVariable String sessionId) {
+        try {
+            aiChatService.deleteSession(sessionId);
+            return Result.success();
+        } catch (Exception e) {
+            return Result.error("删除会话失败: " + e.getMessage());
         }
     }
 }
