@@ -35,11 +35,36 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().permitAll() // 允许所有请求
-                )
+                        .requestMatchers("/login", "/register", "/lib/**", "/css/**", "/js/**", "/api/customer/login",
+                                "/api/user/login")
+                        .permitAll()
+                        .requestMatchers("/index.html", "/").authenticated()
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/api/user/login")
+                        .successHandler((request, response, authentication) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter()
+                                    .write("{\"code\": 200, \"message\": \"登录成功\", \"data\": {\"username\": \""
+                                            + authentication.getName() + "\"}}");
+                        })
+                        .failureHandler((request, response, exception) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(401);
+                            response.getWriter().write("{\"code\": 401, \"message\": \"用户名或密码错误\"}");
+                        })
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/api/user/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"code\": 200, \"message\": \"退出成功\"}");
+                        })
+                        .permitAll())
                 .csrf(csrf -> csrf.disable())
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)) // 允许iframe
-                .cors(cors -> cors.disable()); // 禁用CORS
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                .cors(cors -> cors.disable());
 
         return http.build();
     }

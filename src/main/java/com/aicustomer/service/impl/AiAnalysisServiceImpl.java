@@ -415,9 +415,9 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
             // 统计重要客户数量
             Customer queryCustomer = new Customer();
             queryCustomer.setCustomerLevel(2); // VIP
-            Long vipCount = customerMapper.selectCount(queryCustomer, null);
+            Long vipCount = customerMapper.selectCount(queryCustomer, null, null);
             queryCustomer.setCustomerLevel(3); // 钻石
-            Long diamondCount = customerMapper.selectCount(queryCustomer, null);
+            Long diamondCount = customerMapper.selectCount(queryCustomer, null, null);
             reminders.put("importantCustomerCount",
                     (vipCount != null ? vipCount : 0) + (diamondCount != null ? diamondCount : 0));
 

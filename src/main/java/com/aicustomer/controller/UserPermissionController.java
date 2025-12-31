@@ -57,14 +57,46 @@ public class UserPermissionController {
     }
 
     /**
+     * 获取所有可用菜单
+     */
+    @GetMapping("/menus")
+    public Result<Object> getAllMenus() {
+        return Result.success(userPermissionService.getAllMenus());
+    }
+
+    /**
+     * 获取所有角色模板
+     */
+    @GetMapping("/role-templates")
+    public Result<Object> getRoleTemplates() {
+        return Result.success(userPermissionService.getRoleTemplates());
+    }
+
+    /**
+     * 获取角色模板对应的默认菜单ID
+     */
+    @GetMapping("/role-template/{template}/menus")
+    public Result<Object> getRoleTemplateMenus(@PathVariable String template) {
+        return Result.success(userPermissionService.getRoleTemplateMenus(template));
+    }
+
+    /**
+     * 获取客户等级定义
+     */
+    @GetMapping("/customer-levels")
+    public Result<Object> getCustomerLevels() {
+        return Result.success(userPermissionService.getCustomerLevels());
+    }
+
+    /**
      * 获取当前登录用户的权限配置
      */
     @GetMapping("/me")
     public Result<UserPermissionDTO> getCurrentUserPermission() {
         try {
-            // 目前还没有真正的登录态管理，暂时模拟当前用户为 admin
-            // 后续可以通过 SecurityContextHolder.getContext().getAuthentication().getName() 获取
-            return Result.success(userPermissionService.getUserPermissionByUsername("admin"));
+            String username = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                    .getAuthentication().getName();
+            return Result.success(userPermissionService.getUserPermissionByUsername(username));
         } catch (Exception e) {
             return Result.error("获取当前权限失败: " + e.getMessage());
         }

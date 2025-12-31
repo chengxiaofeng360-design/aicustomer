@@ -310,8 +310,10 @@
 
                         <!-- 菜单权限 -->
                         <div class="form-section">
-                            <div class="form-section-title">
-                                <i class="fas fa-sitemap me-2"></i> 菜单权限
+                            <div class="form-section-title d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-sitemap me-2"></i> 菜单权限</span>
+                                <button type="button" class="btn btn-sm btn-link text-decoration-none"
+                                    onclick="toggleAllMenus(true)">全选</button>
                             </div>
                             <div class="permission-list" id="menuList">
                                 <!-- 动态加载 -->
@@ -320,8 +322,10 @@
 
                         <!-- 数据权限 -->
                         <div class="form-section">
-                            <div class="form-section-title">
-                                <i class="fas fa-database me-2"></i> 数据权限
+                            <div class="form-section-title d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-database me-2"></i> 数据权限</span>
+                                <button type="button" class="btn btn-sm btn-link text-decoration-none"
+                                    onclick="toggleAllData(true)">全选</button>
                             </div>
                             <div class="data-permission-box" id="dataPermissionBox">
                                 <!-- 动态加载 -->
@@ -344,58 +348,62 @@
     <script>
         let modal;
 
-        // 菜单权限 (已精简为核心模块)
-        const menus = [
-            { id: 'home', name: '首页与消息' },
-            { id: 'customer', name: '客户管理' },
-            { id: 'ai', name: '智能AI' },
-            { id: 'team', name: '团队协作' },
-            { id: 'knowledge', name: '知识库管理' },
-            { id: 'system', name: '系统管理' }
-        ];
-
-        // 这里的映射逻辑用于兼容旧的权限数据，防止编辑时丢失
-        const menuIdMap = {
-            'home': 'home', 'message': 'home',
-            'customer-list': 'customer', 'customer-add': 'customer', 'customer-import': 'customer', 'customer-pool': 'customer', 'contact-record': 'customer', 'communication-list': 'customer', 'communication-add': 'customer', 'report-customer': 'customer',
-            'ai-chat': 'ai', 'ai-analysis': 'ai', 'report-business': 'ai',
-            'team-task': 'team', 'team-report': 'team',
-            'knowledge-doc': 'knowledge', 'knowledge-faq': 'knowledge',
-            'system-user': 'system', 'system-config': 'system'
-        };
-
-        // 数据权限 (已整合为单项)
-        const dataPermissions = [
-            { id: 'viewSensitive', name: '敏感数据处理', desc: '包含除普通用户外的查看、导出、编辑和删除' }
-        ];
+        let menus = [];
 
         $(document).ready(function () {
             modal = new bootstrap.Modal($('#userModal')[0]);
             loadUsers();
-            initPermissions();
+            loadMenus();
         });
 
-        function initPermissions() {
+        function loadMenus() {
+            $.get('/api/user-permission/menus', function (res) {
+                if (res.code === 200) {
+                    menus = res.data;
+                    renderMenuCheckboxes();
+                }
+            });
+        }
+
+        function renderMenuCheckboxes() {
             // 渲染菜单权限
             const menuHtml = menus.map(menu => `
                 <div class="permission-item">
-                    <input type="checkbox" id="menu_${menu.id}" value="${menu.id}">
-                    <label for="menu_${menu.id}">${menu.name}</label>
+                    <input type="checkbox" id="menu_${menu.id}" value="${menu.id}" class="menu-checkbox">
+                    <label for="menu_${menu.id}">${menu.icon} ${menu.name}</label>
                 </div>
             `).join('');
             $('#menuList').html(menuHtml);
 
-            // 渲染数据权限 (单项渲染)
-            const dataHtml = dataPermissions.map(p => `
-                <div class="permission-item align-items-start">
-                    <input type="checkbox" id="data_${p.id}" value="${p.id}" style="margin-top: 5px">
+            // 渲染列表数据权限
+            const permissions = [
+                { id: 'canViewSensitive', label: '敏感数据处理', desc: '允许查看敏感字段' },
+                { id: 'canExport', label: '导出权限', desc: '允许在各功能中导出数据' },
+                { id: 'canDelete', label: '删除权限', desc: '允许删除核心业务记录' },
+                { id: 'canAccessVip', label: 'VIP客户访问', desc: '允许查看VIP等级客户数据' },
+                { id: 'canAccessDiamond', label: '钻石客户访问', desc: '允许查看钻石等级客户数据' },
+                { id: 'canViewAllData', label: '查看全部数据', desc: '跨部门/跨业务查看全部数据' },
+                { id: 'canViewDepartmentData', label: '本部门数据', desc: '查看所属部门下的数据' }
+            ];
+
+            const dataHtml = permissions.map(p => `
+                <div class="permission-item align-items-start mb-2">
+                    <input type="checkbox" id="data_${p.id}" value="${p.id}" class="data-checkbox" style="margin-top: 5px">
                     <label for="data_${p.id}">
-                        <strong style="font-size: 0.95rem">${p.name}</strong>
-                        <div class="text-muted" style="font-size: 0.8rem">${p.desc}</div>
+                        <strong style="font-size: 0.9rem">${p.label}</strong>
+                        <div class="text-muted" style="font-size: 0.75rem">${p.desc}</div>
                     </label>
                 </div>
             `).join('');
-            $('#dataPermissionBox').html(dataHtml);
+            $('#dataPermissionBox').html(`<div class="permission-list" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">${dataHtml}</div>`);
+        }
+
+        function toggleAllMenus(checked) {
+            $('.menu-checkbox').prop('checked', checked);
+        }
+
+        function toggleAllData(checked) {
+            $('.data-checkbox').prop('checked', checked);
         }
 
         function loadUsers() {
@@ -473,21 +481,19 @@
                     // 设置权限
                     $('input[type="checkbox"]').prop('checked', false);
                     if (u.menuPermissions) {
-                        u.menuPermissions.forEach(m => {
-                            // 先尝试匹配当前 ID
-                            let checkbox = $(`#menuList input[value="${m}"]`);
-                            if (checkbox.length === 0) {
-                                // 尝试映射旧 ID
-                                const newId = menuIdMap[m];
-                                if (newId) {
-                                    checkbox = $(`#menuList input[value="${newId}"]`);
-                                }
-                            }
-                            checkbox.prop('checked', true);
+                        u.menuPermissions.forEach(p => {
+                            $(`#menu_${p}`).prop('checked', true);
                         });
                     }
                     if (u.dataPermission) {
-                        if (u.dataPermission.canViewSensitive) $('#data_viewSensitive').prop('checked', true);
+                        const dp = u.dataPermission;
+                        $('#data_canViewSensitive').prop('checked', dp.canViewSensitive);
+                        $('#data_canExport').prop('checked', dp.canExport);
+                        $('#data_canDelete').prop('checked', dp.canDelete);
+                        $('#data_canAccessVip').prop('checked', dp.canAccessVip);
+                        $('#data_canAccessDiamond').prop('checked', dp.canAccessDiamond);
+                        $('#data_canViewAllData').prop('checked', dp.canViewAllData);
+                        $('#data_canViewDepartmentData').prop('checked', dp.canViewDepartmentData);
                     }
 
                     modal.show();
@@ -525,13 +531,13 @@
                 status: parseInt($('#status').val()) || 1,
                 menuPermissions,
                 dataPermission: {
-                    canViewSensitive: $('#data_viewSensitive').is(':checked'),
-                    canExport: $('#data_viewSensitive').is(':checked'),
-                    canDelete: $('#data_viewSensitive').is(':checked'),
-                    canAccessVip: $('#data_viewSensitive').is(':checked'),
-                    canAccessDiamond: $('#data_viewSensitive').is(':checked'),
-                    canViewAllData: $('#data_viewSensitive').is(':checked'),
-                    canViewDepartmentData: $('#data_viewSensitive').is(':checked')
+                    canViewSensitive: $('#data_canViewSensitive').is(':checked'),
+                    canExport: $('#data_canExport').is(':checked'),
+                    canDelete: $('#data_canDelete').is(':checked'),
+                    canAccessVip: $('#data_canAccessVip').is(':checked'),
+                    canAccessDiamond: $('#data_canAccessDiamond').is(':checked'),
+                    canViewAllData: $('#data_canViewAllData').is(':checked'),
+                    canViewDepartmentData: $('#data_canViewDepartmentData').is(':checked')
                 }
             };
 

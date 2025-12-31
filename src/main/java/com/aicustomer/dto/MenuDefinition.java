@@ -53,57 +53,43 @@ public class MenuDefinition {
     public static List<MenuDefinition> getAllMenus() {
         List<MenuDefinition> menus = new ArrayList<>();
 
-        // 首页
-        menus.add(new MenuDefinition("home", "首页", "🏠", null, null, true));
-
-        // 客户管理
-        MenuDefinition customerMenu = new MenuDefinition("customer", "客户管理", "👥", null, new ArrayList<>(), true);
+        // 1. 客户业务管理 (ID: customer)
+        MenuDefinition customerMenu = new MenuDefinition("customer", "客户业务管理", "👥", null, new ArrayList<>(), true);
         customerMenu.getChildren().add(new MenuDefinition("customer-list", "客户列表", "📋", "customer", null, true));
-        customerMenu.getChildren().add(new MenuDefinition("customer-add", "新增客户", "➕", "customer", null, true));
-        customerMenu.getChildren().add(new MenuDefinition("customer-import", "批量导入", "📥", "customer", null, false));
+        customerMenu.getChildren()
+                .add(new MenuDefinition("customer-categories", "业务分类", "🗂️", "customer", null, true));
+        customerMenu.getChildren().add(new MenuDefinition("customer-import", "数据导入", "📥", "customer", null, false));
         customerMenu.getChildren().add(new MenuDefinition("customer-export", "数据导出", "📤", "customer", null, false));
         menus.add(customerMenu);
 
-        // 沟通记录
-        MenuDefinition communicationMenu = new MenuDefinition("communication", "沟通记录", "💬", null, new ArrayList<>(),
-                true);
-        communicationMenu.getChildren()
-                .add(new MenuDefinition("communication-list", "记录列表", "📝", "communication", null, true));
-        communicationMenu.getChildren()
-                .add(new MenuDefinition("communication-add", "新增记录", "✍️", "communication", null, true));
-        menus.add(communicationMenu);
+        // 2. 消息中心 (ID: message) - 对应首页与消息
+        menus.add(new MenuDefinition("message", "消息中心", "📬", null, null, true));
 
-        // AI功能
-        MenuDefinition aiMenu = new MenuDefinition("ai", "AI功能", "🤖", null, new ArrayList<>(), true);
-        aiMenu.getChildren().add(new MenuDefinition("ai-chat", "AI对话", "💭", "ai", null, true));
-        aiMenu.getChildren().add(new MenuDefinition("ai-analysis", "智能分析", "📊", "ai", null, false));
-        menus.add(aiMenu);
-
-        // 团队协作
+        // 3. 团队协作 (ID: team)
         MenuDefinition teamMenu = new MenuDefinition("team", "团队协作", "👨‍👩‍👧‍👦", null, new ArrayList<>(), true);
         teamMenu.getChildren().add(new MenuDefinition("team-task", "任务管理", "✅", "team", null, true));
         teamMenu.getChildren().add(new MenuDefinition("team-report", "进度汇报", "📈", "team", null, true));
         menus.add(teamMenu);
 
-        // 知识库
-        MenuDefinition knowledgeMenu = new MenuDefinition("knowledge", "知识库", "📚", null, new ArrayList<>(), true);
+        // 4. AI智能分析 (ID: ai-analysis)
+        menus.add(new MenuDefinition("ai-analysis", "AI智能分析", "📊", null, null, true));
+
+        // 5. AI智能推荐 (ID: ai-recommendations)
+        menus.add(new MenuDefinition("ai-recommendations", "AI智能推荐", "💡", null, null, true));
+
+        // 6. 知识库管理 (ID: knowledge)
+        MenuDefinition knowledgeMenu = new MenuDefinition("knowledge", "知识库管理", "📚", null, new ArrayList<>(), true);
         knowledgeMenu.getChildren().add(new MenuDefinition("knowledge-doc", "文档管理", "📄", "knowledge", null, true));
         knowledgeMenu.getChildren().add(new MenuDefinition("knowledge-faq", "常见问题", "❓", "knowledge", null, true));
         menus.add(knowledgeMenu);
 
-        // 消息中心
-        menus.add(new MenuDefinition("message", "消息中心", "📬", null, null, true));
+        // 7. AI智能聊天 (ID: ai-chat)
+        menus.add(new MenuDefinition("ai-chat", "AI智能聊天", "💭", null, null, true));
 
-        // 数据报表
-        MenuDefinition reportMenu = new MenuDefinition("report", "数据报表", "📊", null, new ArrayList<>(), false);
-        reportMenu.getChildren().add(new MenuDefinition("report-customer", "客户统计", "📈", "report", null, false));
-        reportMenu.getChildren().add(new MenuDefinition("report-business", "业务分析", "💼", "report", null, false));
-        menus.add(reportMenu);
-
-        // 系统管理（仅管理员）
-        MenuDefinition systemMenu = new MenuDefinition("system", "系统管理", "⚙️", null, new ArrayList<>(), false);
-        systemMenu.getChildren().add(new MenuDefinition("system-user", "用户管理", "👤", "system", null, false));
-        systemMenu.getChildren().add(new MenuDefinition("system-config", "系统配置", "🔧", "system", null, false));
+        // 8. 系统配置管理 (ID: system)
+        MenuDefinition systemMenu = new MenuDefinition("system", "系统配置管理", "⚙️", null, new ArrayList<>(), false);
+        systemMenu.getChildren().add(new MenuDefinition("system-user", "账户管理", "👤", "system", null, false));
+        systemMenu.getChildren().add(new MenuDefinition("system-config", "基础配置", "🔧", "system", null, false));
         menus.add(systemMenu);
 
         return menus;
@@ -121,39 +107,36 @@ public class MenuDefinition {
                 return getAllMenuIds();
 
             case "manager":
-                // 经理：除了系统管理的所有菜单
+                // 经理：大部分功能，除了系统管理核心
                 menuIds.addAll(Arrays.asList(
-                        "home", "customer", "customer-list", "customer-add", "customer-import", "customer-export",
-                        "communication", "communication-list", "communication-add",
-                        "ai", "ai-chat", "ai-analysis",
-                        "team", "team-task", "team-report",
-                        "knowledge", "knowledge-doc", "knowledge-faq",
+                        "customer", "customer-list", "customer-categories", "customer-import", "customer-export",
                         "message",
-                        "report", "report-customer", "report-business"));
+                        "team", "team-task", "team-report",
+                        "ai-analysis",
+                        "ai-recommendations",
+                        "knowledge", "knowledge-doc", "knowledge-faq",
+                        "ai-chat"));
                 break;
 
             case "employee":
-                // 普通员工：基础功能
+                // 普通员工：常用业务功能
                 menuIds.addAll(Arrays.asList(
-                        "home", "customer", "customer-list", "customer-add",
-                        "communication", "communication-list", "communication-add",
-                        "ai", "ai-chat",
-                        "team", "team-task", "team-report",
-                        "knowledge", "knowledge-doc", "knowledge-faq",
-                        "message"));
+                        "customer", "customer-list", "customer-categories",
+                        "message",
+                        "team", "team-task",
+                        "knowledge", "knowledge-doc",
+                        "ai-chat"));
                 break;
 
             case "readonly":
                 // 只读用户：只能查看
                 menuIds.addAll(Arrays.asList(
-                        "home", "customer", "customer-list",
-                        "communication", "communication-list",
-                        "knowledge", "knowledge-doc", "knowledge-faq",
-                        "message"));
+                        "customer", "customer-list",
+                        "message",
+                        "knowledge", "knowledge-doc", "knowledge-faq"));
                 break;
 
             default:
-                // 自定义：返回空，需要手动选择
                 break;
         }
 

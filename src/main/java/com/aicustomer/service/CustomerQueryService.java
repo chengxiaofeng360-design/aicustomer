@@ -26,7 +26,7 @@ public class CustomerQueryService {
      */
     public String getTotalCustomerCount() {
         try {
-            Long count = customerMapper.selectCount(new Customer(), null);
+            Long count = customerMapper.selectCount(new Customer(), null, null);
             return "系统目前共有 " + count + " 位客户。";
         } catch (Exception e) {
             log.error("查询客户总数失败", e);
@@ -44,7 +44,7 @@ public class CustomerQueryService {
         try {
             Customer criteria = new Customer();
             criteria.setRegion(region);
-            List<Customer> customers = customerMapper.selectPage(criteria, null, 0, 50);
+            List<Customer> customers = customerMapper.selectPage(criteria, null, null, 0, 50);
 
             if (customers == null || customers.isEmpty()) {
                 return "在地区 [" + region + "] 未找到相关客户信息。";

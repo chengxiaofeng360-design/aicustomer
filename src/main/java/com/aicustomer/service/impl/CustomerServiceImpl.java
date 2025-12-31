@@ -7,8 +7,11 @@ import com.aicustomer.entity.CustomerTag;
 import com.aicustomer.mapper.CustomerMapper;
 import com.aicustomer.mapper.CustomerDetailMapper;
 import com.aicustomer.mapper.CustomerTagMapper;
+import com.aicustomer.dto.UserPermissionDTO;
 import com.aicustomer.service.CustomerService;
+import com.aicustomer.service.UserPermissionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,34 +27,63 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
-    
+
     private final CustomerMapper customerMapper;
     private final CustomerTagMapper customerTagMapper;
     private final CustomerDetailMapper customerDetailMapper;
-    
+    private final UserPermissionService userPermissionService;
+
+    /**
+     * 获取当前用户允许访问的客户等级列表
+     */
+    private List<Integer> getAllowedLevels() {
+        try {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            UserPermissionDTO permission = userPermissionService.getUserPermissionByUsername(username);
+            if (permission == null || permission.getDataPermission() == null) {
+                return java.util.Arrays.asList(1); // 默认只能看普通
+            }
+
+            List<Integer> levels = new java.util.ArrayList<>();
+            levels.add(1); // 普通等级始终允许
+
+            if (permission.getDataPermission().getCanAccessVip()) {
+                levels.add(2);
+            }
+            if (permission.getDataPermission().getCanAccessDiamond()) {
+                levels.add(3);
+            }
+            return levels;
+        } catch (Exception e) {
+            return java.util.Arrays.asList(1);
+        }
+    }
+
     @Override
     public Customer getById(Long id) {
         return customerMapper.selectById(id);
     }
-    
+
     @Override
     public Customer getByCustomerCode(String customerCode) {
         return customerMapper.selectByCustomerCode(customerCode);
     }
-    
+
     @Override
     public List<Customer> list(Customer customer) {
         return customerMapper.selectList(customer);
     }
-    
+
     @Override
-    public PageResult<Customer> page(Integer pageNum, Integer pageSize, Customer customer, List<Integer> businessTypeList) {
+    public PageResult<Customer> page(Integer pageNum, Integer pageSize, Customer customer,
+            List<Integer> businessTypeList) {
         int offset = (pageNum - 1) * pageSize;
-        List<Customer> list = customerMapper.selectPage(customer, businessTypeList, offset, pageSize);
-        Long total = customerMapper.selectCount(customer, businessTypeList);
+        List<Integer> allowedLevels = getAllowedLevels();
+        List<Customer> list = customerMapper.selectPage(customer, businessTypeList, allowedLevels, offset, pageSize);
+        Long total = customerMapper.selectCount(customer, businessTypeList, allowedLevels);
         return new PageResult<>(pageNum, pageSize, total, list);
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean save(Customer customer) {
@@ -60,48 +92,49 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setUpdateTime(LocalDateTime.now());
         customer.setDeleted(0);
         customer.setVersion(1);
-        
+
         // 设置默认业务类型（第一种类型：品种权申请客户）
         if (customer.getBusinessType() == null) {
             customer.setBusinessType(1);
         }
-        
+
         return customerMapper.insert(customer) > 0;
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean update(Customer customer) {
         // 设置更新时间
         customer.setUpdateTime(LocalDateTime.now());
-        
+
         return customerMapper.updateById(customer) > 0;
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteById(Long id) {
         return customerMapper.deleteById(id) > 0;
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteByIds(List<Long> ids) {
         return customerMapper.deleteByIds(ids) > 0;
     }
-    
+
     @Override
     public boolean existsByCustomerCode(String customerCode) {
         return customerMapper.selectByCustomerCode(customerCode) != null;
     }
-    
+
     // 新增的客户档案管理方法实现
-    
+
     @Override
-    public PageResult<Customer> getCustomerList(int pageNum, int pageSize, String keyword, String customerLevel, String status) {
+    public PageResult<Customer> getCustomerList(int pageNum, int pageSize, String keyword, String customerLevel,
+            String status) {
         // 使用真实数据库查询
         Customer queryCustomer = new Customer();
-        
+
         // 设置查询条件
         if (keyword != null && !keyword.trim().isEmpty()) {
             queryCustomer.setCustomerName(keyword);
@@ -120,22 +153,22 @@ public class CustomerServiceImpl implements CustomerService {
                 // 忽略无效的状态参数
             }
         }
-        
+
         // 使用page方法进行真实数据库查询
         return page(pageNum, pageSize, queryCustomer, null);
     }
-    
+
     @Override
     public Customer getCustomerById(Long id) {
         // 使用真实数据库查询
         return customerMapper.selectById(id);
     }
-    
+
     @Override
     public void addCustomer(Customer customer) {
         // 确保客户编号存在
         if (customer.getCustomerCode() == null || customer.getCustomerCode().trim().isEmpty()) {
-            customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int)(Math.random() * 1000));
+            customer.setCustomerCode("CUST" + System.currentTimeMillis() + (int) (Math.random() * 1000));
         }
         // 设置默认值
         if (customer.getStatus() == null) {
@@ -149,28 +182,28 @@ public class CustomerServiceImpl implements CustomerService {
         }
         save(customer);
     }
-    
+
     @Override
     public void updateCustomer(Customer customer) {
         update(customer);
     }
-    
+
     @Override
     public void deleteCustomer(Long id) {
         deleteById(id);
     }
-    
+
     @Override
     public void deleteCustomers(List<Long> ids) {
         deleteByIds(ids);
     }
-    
+
     @Override
     public List<CustomerTag> getCustomerTags(Long customerId) {
         // 从数据库查询客户标签
         return customerTagMapper.selectByCustomerId(customerId);
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addCustomerTag(CustomerTag tag) {
@@ -196,17 +229,17 @@ public class CustomerServiceImpl implements CustomerService {
         if (tag.getWeight() == null) {
             tag.setWeight(0); // 默认权重
         }
-        
+
         customerTagMapper.insert(tag);
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteCustomerTag(Long tagId) {
         // 逻辑删除客户标签
         customerTagMapper.deleteById(tagId);
     }
-    
+
     @Override
     public CustomerDetail getCustomerDetail(Long customerId) {
         // 从数据库查询客户详细信息
@@ -214,7 +247,7 @@ public class CustomerServiceImpl implements CustomerService {
         // 如果不存在，返回null而不是创建新对象
         return detail;
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateCustomerDetail(CustomerDetail detail) {
@@ -242,7 +275,7 @@ public class CustomerServiceImpl implements CustomerService {
             customerDetailMapper.updateByCustomerId(detail);
         }
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateCustomerLifecycle(Long customerId, String lifecycleStage) {
@@ -278,7 +311,7 @@ public class CustomerServiceImpl implements CustomerService {
                     }
             }
         }
-        
+
         if (stage != null) {
             // 获取或创建客户详细信息
             CustomerDetail detail = customerDetailMapper.selectByCustomerId(customerId);
@@ -291,7 +324,7 @@ public class CustomerServiceImpl implements CustomerService {
             }
             detail.setLifecycleStage(stage);
             detail.setUpdateTime(LocalDateTime.now());
-            
+
             if (detail.getId() == null) {
                 customerDetailMapper.insert(detail);
             } else {
@@ -300,79 +333,88 @@ public class CustomerServiceImpl implements CustomerService {
             }
         }
     }
-    
+
     @Override
     public java.util.Map<String, Object> getCustomerStatistics() {
         return getCustomerStatistics(null);
     }
-    
+
     @Override
     public java.util.Map<String, Object> getCustomerStatistics(List<Integer> businessTypeList) {
         java.util.Map<String, Object> stats = new java.util.HashMap<>();
-        
+
         // 客户总数
         Customer emptyQuery = new Customer();
-        Long totalCustomers = customerMapper.selectCount(emptyQuery, businessTypeList);
+        List<Integer> allowedLevels = getAllowedLevels();
+        Long totalCustomers = customerMapper.selectCount(emptyQuery, businessTypeList, allowedLevels);
         stats.put("totalCustomers", totalCustomers != null ? totalCustomers : 0L);
-        
+
         // 按客户类型统计
         Customer personalQuery = new Customer();
         personalQuery.setCustomerType(1); // 个人
-        Long personalCount = customerMapper.selectCount(personalQuery, businessTypeList);
+        Long personalCount = customerMapper.selectCount(personalQuery, businessTypeList, allowedLevels);
         stats.put("personalCount", personalCount != null ? personalCount : 0L);
-        
+
         Customer enterpriseQuery = new Customer();
         enterpriseQuery.setCustomerType(2); // 企业
-        Long enterpriseCount = customerMapper.selectCount(enterpriseQuery, businessTypeList);
+        Long enterpriseCount = customerMapper.selectCount(enterpriseQuery, businessTypeList, allowedLevels);
         stats.put("enterpriseCount", enterpriseCount != null ? enterpriseCount : 0L);
-        
+
         Customer researchQuery = new Customer();
         researchQuery.setCustomerType(3); // 科研院所
-        Long researchCount = customerMapper.selectCount(researchQuery, businessTypeList);
+        Long researchCount = customerMapper.selectCount(researchQuery, businessTypeList, allowedLevels);
         stats.put("researchCount", researchCount != null ? researchCount : 0L);
-        
+
         // 按客户等级统计
         Customer normalQuery = new Customer();
         normalQuery.setCustomerLevel(1); // 普通
-        Long normalCount = customerMapper.selectCount(normalQuery, businessTypeList);
+        Long normalCount = customerMapper.selectCount(normalQuery, businessTypeList, allowedLevels);
         stats.put("normalCount", normalCount != null ? normalCount : 0L);
-        
+
         Customer vipQuery = new Customer();
         vipQuery.setCustomerLevel(2); // VIP
-        Long vipCount = customerMapper.selectCount(vipQuery, businessTypeList);
+        Long vipCount = customerMapper.selectCount(vipQuery, businessTypeList, allowedLevels);
         stats.put("vipCount", vipCount != null ? vipCount : 0L);
-        
+
         Customer diamondQuery = new Customer();
         diamondQuery.setCustomerLevel(3); // 钻石
-        Long diamondCount = customerMapper.selectCount(diamondQuery, businessTypeList);
+        Long diamondCount = customerMapper.selectCount(diamondQuery, businessTypeList, allowedLevels);
         stats.put("diamondCount", diamondCount != null ? diamondCount : 0L);
-        
+
         // 本月新增客户数（需要查询本月创建的客户）
         // 由于selectCount不支持日期范围，我们需要使用selectList然后过滤
         // 或者添加新的查询方法，这里先用简单方式：查询所有客户，然后在Service层过滤
         List<Customer> allCustomers = customerMapper.selectList(emptyQuery);
         // 如果指定了业务类型，需要过滤
-        if (businessTypeList != null && !businessTypeList.isEmpty()) {
+        if ((businessTypeList != null && !businessTypeList.isEmpty())
+                || (allowedLevels != null && !allowedLevels.isEmpty())) {
             allCustomers = allCustomers.stream()
-                .filter(c -> {
-                    Integer businessType = c.getBusinessType() != null ? c.getBusinessType() : 1;
-                    return businessTypeList.contains(businessType);
-                })
-                .collect(java.util.stream.Collectors.toList());
+                    .filter(c -> {
+                        Integer bType = c.getBusinessType() != null ? c.getBusinessType() : 1;
+                        boolean bMatch = businessTypeList == null || businessTypeList.isEmpty()
+                                || businessTypeList.contains(bType);
+
+                        Integer cLevel = c.getCustomerLevel() != null ? c.getCustomerLevel() : 1;
+                        boolean lMatch = allowedLevels == null || allowedLevels.isEmpty()
+                                || allowedLevels.contains(cLevel);
+
+                        return bMatch && lMatch;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
         }
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         long newThisMonth = allCustomers.stream()
-            .filter(c -> c.getCreateTime() != null && c.getCreateTime().isAfter(startOfMonth))
-            .count();
+                .filter(c -> c.getCreateTime() != null && c.getCreateTime().isAfter(startOfMonth))
+                .count();
         stats.put("newThisMonth", newThisMonth);
-        
+
         // 潜在客户数（status=0或特定条件）
         Customer potentialQuery = new Customer();
         potentialQuery.setStatus(0); // 假设0表示潜在客户
-        Long potentialCount = customerMapper.selectCount(potentialQuery, businessTypeList);
+        Long potentialCount = customerMapper.selectCount(potentialQuery, businessTypeList, allowedLevels);
         stats.put("potentialCount", potentialCount != null ? potentialCount : 0L);
-        
+
         return stats;
     }
 }

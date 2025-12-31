@@ -165,6 +165,51 @@ public class UserServiceImpl implements UserService {
 
             userMapper.insert(newAdmin);
             log.info("超级管理员初始化完成: admin / 123456");
+        } else {
+            // 检查现有管理员密码是否为有效的 BCrypt 格式
+            String currentPwd = admin.getPassword();
+            if (currentPwd == null || !currentPwd.startsWith("$2a$")) {
+                log.info("检测到管理员账号存在但密码未加密，正在重置密码为 123456...");
+                admin.setPassword(passwordEncoder.encode("123456"));
+                admin.setUpdateTime(LocalDateTime.now());
+                userMapper.updateById(admin);
+                log.info("管理员密码重置完成");
+            }
+        }
+
+        // 初始化 staff 账号
+        String staffUsername = "staff";
+        User staff = userMapper.findByUsername(staffUsername);
+        if (staff == null) {
+            log.info("正在初始化演示业务员账号...");
+            User newStaff = new User();
+            newStaff.setUsername(staffUsername);
+            newStaff.setPassword(passwordEncoder.encode("123456"));
+            newStaff.setRealName("演示业务员");
+            newStaff.setStatus(1);
+            newStaff.setUserType(2); // 2:业务员
+            newStaff.setCreateTime(LocalDateTime.now());
+            newStaff.setUpdateTime(LocalDateTime.now());
+            newStaff.setCreateBy("system");
+            newStaff.setUpdateBy("system");
+            newStaff.setDeleted(0);
+            newStaff.setVersion(1);
+
+            // 为 staff 账号设置默认权限 (消息中心, 客户管理, AI聊天, 知识库)
+            newStaff.setPermissionSettings(
+                    "{\"menuPermissions\":[\"customer\",\"message\",\"ai-chat\",\"knowledge\"],\"dataPermission\":{\"canViewSensitive\":false,\"canExport\":false,\"canDelete\":false,\"canAccessVip\":false,\"canAccessDiamond\":false,\"canViewAllData\":false,\"canViewDepartmentData\":true}}");
+
+            userMapper.insert(newStaff);
+            log.info("演示业务员初始化完成: staff / 123456");
+        } else {
+            String currentPwd = staff.getPassword();
+            if (currentPwd == null || !currentPwd.startsWith("$2a$")) {
+                log.info("检测到 staff 账号存在但密码未加密，正在重置密码为 123456...");
+                staff.setPassword(passwordEncoder.encode("123456"));
+                staff.setUpdateTime(LocalDateTime.now());
+                userMapper.updateById(staff);
+                log.info("staff 密码重置完成");
+            }
         }
     }
 }

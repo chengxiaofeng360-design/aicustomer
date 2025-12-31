@@ -212,6 +212,31 @@
             font-size: 0.8rem;
         }
 
+        .user-info-badge {
+            background: rgba(255, 255, 255, 1);
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .logout-link {
+            color: #e53e3e;
+            cursor: pointer;
+            padding-left: 8px;
+            border-left: 1px solid #e2e8f0;
+            transition: color 0.2s;
+        }
+
+        .logout-link:hover {
+            color: #c53030;
+        }
+
         .modern-header h1 {
             font-size: 3.5rem;
             font-weight: 700;
@@ -438,12 +463,13 @@
     <div class="modern-container">
         <!-- 右上角导图按钮 -->
         <div class="top-buttons">
-            <a href="system-navigation.html" class="nav-btn">
-                <i class="bi bi-grid-3x3-gap"></i>系统导航
-            </a>
-            <a href="feature-mindmap.html" class="mindmap-btn">
-                <i class="bi bi-diagram-3"></i>导图
-            </a>
+            <div id="userInfo" class="user-info-badge" style="display: none;">
+                <i class="bi bi-person-circle"></i>
+                <span id="usernameDisplay"></span>
+                <span id="logoutBtn" class="logout-link" title="登出">
+                    <i class="bi bi-box-arrow-right"></i>
+                </span>
+            </div>
         </div>
 
         <!-- 现代化头部 -->
@@ -522,7 +548,7 @@
                 <div class="modern-card-desc">管理客户业务分类和客户档案</div>
             </div>
 
-            <div class="modern-card" onclick="navigateTo('messages')" data-permission="home">
+            <div class="modern-card" onclick="navigateTo('messages')" data-permission="message">
                 <div class="modern-card-icon">
                     <i class="bi bi-bell-fill"></i>
                 </div>
@@ -539,7 +565,7 @@
             </div>
 
             <!-- AI智能分析 -->
-            <div class="modern-card" onclick="navigateTo('ai-analysis')" data-permission="ai">
+            <div class="modern-card" onclick="navigateTo('ai-analysis')" data-permission="ai-analysis">
                 <div class="modern-card-icon">
                     <i class="bi bi-graph-up"></i>
                 </div>
@@ -548,12 +574,12 @@
             </div>
 
             <!-- AI智能推荐 -->
-            <div class="modern-card" onclick="navigateTo('ai-recommendations')" data-permission="ai">
+            <div class="modern-card" onclick="navigateTo('ai-recommendations')" data-permission="ai-recommendations">
                 <div class="modern-card-icon">
                     <i class="bi bi-lightbulb"></i>
                 </div>
                 <div class="modern-card-title">AI智能推荐</div>
-                <div class="modern-card-desc">个性化方案推荐，精准识别商机</div>
+                <div class="modern-card-desc">个性化方案推荐，精准识别商商机</div>
             </div>
 
             <!-- 知识库管理 -->
@@ -566,7 +592,7 @@
             </div>
 
             <!-- AI智能聊天 -->
-            <div class="modern-card" onclick="navigateTo('ai-chat')" data-permission="ai">
+            <div class="modern-card" onclick="navigateTo('ai-chat')" data-permission="ai-chat">
                 <div class="modern-card-icon">
                     <i class="bi bi-chat-square-text"></i>
                 </div>
@@ -608,12 +634,40 @@
 
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function () {
+            initUserInfo();
             initPermissions();
+            initLogout();
         });
+
+        function initUserInfo() {
+            const userStr = localStorage.getItem('currentUser');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('usernameDisplay').textContent = user.username || user.nickname || 'Admin';
+                document.getElementById('userInfo').style.display = 'flex';
+            }
+        }
+
+        function initLogout() {
+            document.getElementById('logoutBtn').addEventListener('click', async function () {
+                if (confirm('确定要退出登录吗？')) {
+                    try {
+                        const response = await fetch('/api/user/logout', { method: 'POST' });
+                        localStorage.removeItem('currentUser');
+                        localStorage.removeItem('userPermissions');
+                        window.location.href = '/login';
+                    } catch (error) {
+                        console.error('登出失败:', error);
+                        localStorage.removeItem('currentUser');
+                        window.location.href = '/login';
+                    }
+                }
+            });
+        }
 
         async function initPermissions() {
             try {
-                const response = await fetch('/api/user-permission/me');
+                const response = await fetch(`/api/user-permission/me?t=${new Date().getTime()}`);
                 const result = await response.json();
 
                 if (result.code === 200 && result.data) {

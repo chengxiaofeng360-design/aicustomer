@@ -219,7 +219,8 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         if (dto.getMenuPermissions() == null) {
             if ("admin".equals(user.getUsername())) {
                 dto.setMenuPermissions(
-                        java.util.Arrays.asList("home", "customer", "ai", "team", "knowledge", "system"));
+                        java.util.Arrays.asList("customer", "message", "team", "ai-analysis", "ai-recommendations",
+                                "knowledge", "ai-chat", "system"));
                 UserPermissionDTO.DataPermissionConfig adminConfig = new UserPermissionDTO.DataPermissionConfig();
                 adminConfig.setCanViewSensitive(true);
                 adminConfig.setCanExport(true);
@@ -250,12 +251,87 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         return false;
     }
 
+    @Override
+    public Object getAllMenus() {
+        return com.aicustomer.dto.MenuDefinition.getAllMenus();
+    }
+
+    @Override
+    public Object getRoleTemplates() {
+        List<Map<String, String>> templates = new ArrayList<>();
+
+        Map<String, String> admin = new HashMap<>();
+        admin.put("label", "管理员");
+        admin.put("value", "admin");
+        admin.put("description", "拥有系统所有功能权限");
+        templates.add(admin);
+
+        Map<String, String> manager = new HashMap<>();
+        manager.put("label", "经理");
+        manager.put("value", "manager");
+        manager.put("description", "拥有业务管理权限，无系统配置权限");
+        templates.add(manager);
+
+        Map<String, String> employee = new HashMap<>();
+        employee.put("label", "普通员工");
+        employee.put("value", "employee");
+        employee.put("description", "拥有基础业务操作权限");
+        templates.add(employee);
+
+        Map<String, String> readonly = new HashMap<>();
+        readonly.put("label", "只读用户");
+        readonly.put("value", "readonly");
+        readonly.put("description", "仅拥有数据查看权限");
+        templates.add(readonly);
+
+        Map<String, String> custom = new HashMap<>();
+        custom.put("label", "自定义");
+        custom.put("value", "custom");
+        custom.put("description", "手动配置详细权限");
+        templates.add(custom);
+
+        return templates;
+    }
+
+    @Override
+    public Object getRoleTemplateMenus(String template) {
+        return com.aicustomer.dto.MenuDefinition.getMenuIdsByRoleTemplate(template);
+    }
+
+    @Override
+    public Object getCustomerLevels() {
+        List<Map<String, Object>> levels = new ArrayList<>();
+
+        Map<String, Object> l1 = new HashMap<>(); // 1=普通
+        l1.put("label", "普通客户");
+        l1.put("value", 1);
+        l1.put("description", "基础等级");
+        levels.add(l1);
+
+        Map<String, Object> l2 = new HashMap<>(); // 2=VIP
+        l2.put("label", "VIP客户");
+        l2.put("value", 2);
+        l2.put("description", "中级等级");
+        levels.add(l2);
+
+        Map<String, Object> l3 = new HashMap<>(); // 3=钻石
+        l3.put("label", "钻石客户");
+        l3.put("value", 3);
+        l3.put("description", "高级等级");
+        levels.add(l3);
+
+        return levels;
+    }
+
     /**
      * 获取默认菜单权限
      */
     private List<String> getDefaultMenuPermissions() {
         List<String> permissions = new ArrayList<>();
-        permissions.add("home");
+        permissions.add("customer");
+        permissions.add("message");
+        permissions.add("knowledge");
+        permissions.add("ai-chat");
         return permissions;
     }
 }
