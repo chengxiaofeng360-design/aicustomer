@@ -174,8 +174,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const loginBtn = document.querySelector('.btn-login');
+        const originalBtnHtml = loginBtn.innerHTML;
+
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
+
+            // 防止重复点击
+            if (loginBtn.disabled) return;
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 正在登录...';
 
             const formData = new FormData(this);
             const params = new URLSearchParams();
@@ -195,15 +203,16 @@
 
                 if (result.code === 200) {
                     localStorage.setItem('currentUser', JSON.stringify(result.data));
-                    showAlert('登录成功！正在跳转...', 'success');
-                    setTimeout(() => {
-                        window.location.href = '/index.html';
-                    }, 1500);
+                    window.location.href = '/index.html';
                 } else {
                     showAlert('登录失败: ' + result.message, 'danger');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = originalBtnHtml;
                 }
             } catch (error) {
                 showAlert('登录失败: ' + error.message, 'danger');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalBtnHtml;
             }
         });
 
