@@ -101,17 +101,19 @@
 
     <update id="updateById" parameterType="com.aicustomer.entity.User">
         UPDATE sys_user
-        SET username = #{username},
-            password = #{password},
-            real_name = #{realName},
-            email = #{email},
-            phone = #{phone},
-            status = #{status},
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="realName != null">real_name = #{realName},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="status != null">status = #{status},</if>
             update_time = #{updateTime},
-            update_by = #{updateBy},
+            <if test="updateBy != null">update_by = #{updateBy},</if>
             version = version + 1,
-            user_type = #{userType},
-            permission_settings = #{permissionSettings}
+            <if test="userType != null">user_type = #{userType},</if>
+            <if test="permissionSettings != null">permission_settings = #{permissionSettings}</if>
+        </set>
         WHERE id = #{id} AND deleted = 0
     </update>
 
