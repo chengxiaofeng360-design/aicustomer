@@ -70,9 +70,22 @@ public class TeamTaskController {
             }
 
             StringBuilder prompt = new StringBuilder();
-            prompt.append("请作为一位专业的敏捷项目经理，分析以下团队任务数据。请找出潜在的风险、进度瓶颈，并给出具体的改进建议。请使用Markdown格式输出。\n\n");
-            prompt.append("| 任务名称 | 负责人 | 优先级 | 状态 | 截止日期 | 进度 |\n");
-            prompt.append("|---|---|---|---|---|---|\n");
+            prompt.append("你是一位资深的敏捷项目经理和团队效能专家。请深入分析以下团队任务数据，生成一份专业的【团队协作效能分析报告】。\n\n");
+            prompt.append("请严格按照以下格式输出（通过Markdown）：\n\n");
+            prompt.append("### 📊 团队效能概览\n");
+            prompt.append("- 简要总结当前团队的任务进度和整体状态。\n");
+            prompt.append("- 计算任务按期完成率的预估。\n\n");
+            prompt.append("### ⚠️ 风险预警\n");
+            prompt.append("- 识别即将超期或已超期的任务。\n");
+            prompt.append("- 指出进度滞后于时间进度的风险任务。\n\n");
+            prompt.append("### ⚖️ 成员负载分析\n");
+            prompt.append("- 分析各成员的任务分配是否均衡。\n");
+            prompt.append("- 指出谁可能工作过载，谁还有余力。\n\n");
+            prompt.append("### 💡 改进建议\n");
+            prompt.append("- 给出3-5条具体的、可执行的调整建议（如“建议将任务A转交给成员B”）。\n\n");
+            prompt.append("--- 数据如下 ---\n\n");
+            prompt.append("| 任务名称 | 负责人 | 优先级 | 状态 | 截止日期 | 进度 | 预计工时 |\n");
+            prompt.append("|---|---|---|---|---|---|---|\n");
 
             for (TeamTask task : tasks) {
                 prompt.append("| ").append(task.getName())
@@ -81,7 +94,9 @@ public class TeamTaskController {
                         .append(" | ").append(getStatusText(task.getStatus()))
                         .append(" | ")
                         .append(task.getDeadline() != null ? task.getDeadline().toString().split(" ")[0] : "无")
-                        .append(" | ").append(task.getProgress()).append("% |\n");
+                        .append(" | ").append(task.getProgress()).append("%")
+                        .append(" | ").append(task.getWorkDuration() != null ? task.getWorkDuration() + "分" : "-")
+                        .append(" |\n");
             }
 
             // 创建会话并发送消息

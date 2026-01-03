@@ -111,7 +111,11 @@ public class AiChatServiceImpl implements AiChatService {
             "7. **重要**：查询地区时必须使用 `region` 字段，不要使用 `location`。\n" +
             "8. **模糊指令处理**：如果用户仅发送“全部信息”、“所有资料”、“查看清单”等模糊指令，且上下文中未明确提及“文件”或“知识库”，**必须优先假设这是在查询客户列表**，请使用 `{\"tool\": \"dynamic_sql_query\", \"parameters\": {\"sql\": \"SELECT * FROM customer LIMIT 20\"}}`。\n"
             +
-            "9. 只有当工具返回数据后，才整合为自然语言回复。";
+            "9. **多轮对话与指代消解 (Context Awareness)**：\n" +
+            "   - 如果用户问“哪五位”、“是谁”、“列出来”、“看看详情”等追问（特别是在刚才讨论过数量之后），**必须**理解为查询具体的客户列表。\n" +
+            "   - 请直接生成 SQL：`SELECT customer_name, contact_person, phone, customer_level FROM customer LIMIT 10`。\n" +
+            "   - **绝对不要**反问用户“你想查哪五位”，直接给出数据。\n" +
+            "10. 只有当工具返回数据后，才整合为自然语言回复。";
 
     @Override
     public AiChat sendMessage(String sessionId, String userMessage, Long customerId) {
@@ -234,14 +238,61 @@ public class AiChatServiceImpl implements AiChatService {
 
         // 避免误判：如果要查询“客户”、“人员”相关信息，不要注入文件/资料的统计数据
         boolean isCustomerQuery = lowerMsg.contains("客户") || lowerMsg.contains("客源") || lowerMsg.contains("人员")
-                || lowerMsg.contains("用户");
+                || lowerMsg.contains("用户") || lowerMsg.contains("人"); // 增加"人"以覆盖"都是那些人"
 
         boolean isKnowledgeQuery = hasKeywords && !isCustomerQuery;
 
         String finalSystemPrompt = SYSTEM_PROMPT;
         String enhancedUserMessage = userMessage;
 
-        // 【核心干预】
+        // Context Awareness: Check for follow-up questions
+        if (history != null && !history.isEmpty()) {
+            try {
+                Map<String, String> lastResult = history.get(history.size() - 1);
+                String lastContent = lastResult.get("content");
+                // Check if last message was from assistant and contained numbers
+                if (lastContent != null && (lastContent.matches(".*\\d+.*") || lastContent.contains("位")
+                        || lastContent.contains("个"))) {
+                    // Check if current user message is asking for identity/details
+                    // 改动：扩大匹配范围，包含 "那些" (those), "所有", "名字" 等
+                    if (userMessage.contains("哪") || userMessage.contains("谁") || userMessage.contains("名单")
+                            || userMessage.contains("哪些") || userMessage.contains("那些") || userMessage.contains("看看")
+                            || userMessage.contains("列出")) {
+                        String contextHint = "【上下文强关联】上轮AI回复提到了数量或统计（\""
+                                + lastContent.substring(0, Math.min(lastContent.length(), 50)) + "...\"）。用户现在问\""
+                                + userMessage
+                                + "\"，这是在要求**列出具体名单**。请立刻构造 SQL 查询（如 `SELECT customer_name, contact_person FROM customer ...`）来获取详情。禁止反问！";
+                        enhancedUserMessage = contextHint + "\n\n" + enhancedUserMessage;
+                        log.info("【AI聊天服务】检测到追问模式，已注入上下文提示");
+
+                        // 强制标记为非知识库查询，防止干扰
+                        isKnowledgeQuery = false;
+                        isCustomerQuery = true;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("上下文分析出错", e);
+            }
+        }
+
+        // 【核心干预 - 客户信息】（防止 AI 把"用户"误认为"文档"）
+        if (isCustomerQuery) {
+            String customerCountStr = "查询失败";
+            try {
+                // 直接获取总数（null 表示不限权限，或者根据实际 logic 传）
+                customerCountStr = customerQueryService.getTotalCustomerCount(null);
+            } catch (Exception e) {
+                log.warn("获取客户总数失败", e);
+            }
+
+            // 注入到 Prompt，强制 AI 面对现实
+            enhancedUserMessage = String.format(
+                    "### 当前系统客户数据 (实时) ###\n%s\n\n用户的问题是：\"%s\"\n(请直接根据上面的数据回答，不要胡编乱造，也不要查询知识库)",
+                    customerCountStr, userMessage);
+            log.info("【AI聊天服务】已执行客户数据主动注入: {}", customerCountStr);
+        }
+
+        // 【核心干预 - 知识库】
         if (isKnowledgeQuery) {
             String realTimeCount = knowledgeQueryService.getKnowledgeCount();
             String realTimeList = knowledgeQueryService.getKnowledgeList(10);
@@ -256,7 +307,7 @@ public class AiChatServiceImpl implements AiChatService {
             }
 
             // 将绝对真实的系统状态注入用户消息首部，确保 AI 无法回避
-            enhancedUserMessage = String.format("### 当前系统实时状态 (极高优先级) ###\n%s\n- 详细清单：%s\n\n请根据上述真实数据回答：\n%s",
+            enhancedUserMessage = String.format("### 当前系统知识库状态 (极高优先级) ###\n%s\n- 详细清单：%s\n\n请根据上述真实数据回答：\n%s",
                     realTimeCount, realTimeList, userMessage);
 
             log.info("【AI聊天服务】已执行主动干预，注入数据: {}", realTimeCount);

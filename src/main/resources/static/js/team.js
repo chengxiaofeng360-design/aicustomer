@@ -1045,7 +1045,7 @@ async function deleteReport(reportId) {
 function showAiAnalysisModal() {
     const modal = new bootstrap.Modal(document.getElementById('aiAnalysisModal'));
     modal.show();
-    
+
     // 如果没有内容，自动加载
     const content = document.getElementById('aiAnalysisContent');
     if (!content.innerHTML.trim()) {
@@ -1057,16 +1057,16 @@ function showAiAnalysisModal() {
 async function refreshAiAnalysis() {
     const loading = document.getElementById('aiAnalysisLoading');
     const content = document.getElementById('aiAnalysisContent');
-    
+
     loading.style.display = 'block';
     content.innerHTML = '';
-    
+
     try {
         const response = await fetch('/api/team-task/analyze', {
             method: 'POST'
         });
         const result = await response.json();
-        
+
         if (result.code === 200) {
             // 简单的 Markdown 渲染
             content.innerHTML = renderMarkdown(result.data);
@@ -1084,31 +1084,28 @@ async function refreshAiAnalysis() {
 // 简单的 Markdown 渲染函数
 function renderMarkdown(text) {
     if (!text) return '';
-    
+
     // 转义 HTML
     let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    
-    // 处理标题
-    html = html.replace(/^### (.*$)/gim, '<h5></h5>');
-    html = html.replace(/^## (.*$)/gim, '<h4></h4>');
-    html = html.replace(/^# (.*$)/gim, '<h3></h3>');
-    
-    // 处理加粗
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong></strong>');
-    
-    // 处理列表
-    html = html.replace(/^\- (.*$)/gim, '<li></li>');
-    
+
+    // 处理标题 - 使用更精美的样式
+    html = html.replace(/^### (.*$)/gim, '<h5 class="text-primary mt-3 mb-2 fw-bold">$1</h5>');
+    html = html.replace(/^## (.*$)/gim, '<h4 class="text-dark mt-4 mb-3 fw-bold border-bottom pb-2">$1</h4>');
+    html = html.replace(/^# (.*$)/gim, '<h3 class="text-primary mt-4 mb-3">$1</h3>');
+
+    // 处理加粗 - 增加颜色
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-dark">$1</strong>');
+
+    // 处理列表 - 增加间距
+    html = html.replace(/^\- (.*$)/gim, '<li class="mb-1 ms-3">$1</li>');
+
     // 处理换行 (将剩余的换行符转换为 <br>)
     html = html.replace(/\n/g, '<br>');
-    
-    // 简单的表格处理 (将Markdown表格转换为Bootstrap表格)
-    // 这是一个非常简化的转换，可能无法处理所有情况
+
+    // 简单的表格处理
     if (html.includes('|')) {
-         // 这里比较复杂，暂时只保留文本格式，或者包裹在 pre 标签中，
-         // 但为了排版好看，我们用一个简单容器包裹
-         return '<div style="white-space: pre-wrap; font-family: monospace;">' + text + '</div>';
+        return '<div class="alert alert-light border p-3 font-monospace small text-muted" style="white-space: pre-wrap;">' + text + '</div>';
     }
 
-    return '<div style="line-height: 1.6;">' + html + '</div>';
+    return '<div style="line-height: 1.6; font-size: 0.95rem;">' + html + '</div>';
 }
