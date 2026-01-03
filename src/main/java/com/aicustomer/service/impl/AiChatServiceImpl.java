@@ -109,7 +109,9 @@ public class AiChatServiceImpl implements AiChatService {
             "6. **Important Terminology**: `用户` (User) and `客户` (Customer) are often used interchangeably. If the user asks about '用户' (users), assume they mean '客户' (customers) and query the `customer` table, unless they explicitly ask for 'system accounts' or 'admins'.\n"
             +
             "7. **重要**：查询地区时必须使用 `region` 字段，不要使用 `location`。\n" +
-            "8. 只有当工具返回数据后，才整合为自然语言回复。";
+            "8. **模糊指令处理**：如果用户仅发送“全部信息”、“所有资料”、“查看清单”等模糊指令，且上下文中未明确提及“文件”或“知识库”，**必须优先假设这是在查询客户列表**，请使用 `{\"tool\": \"dynamic_sql_query\", \"parameters\": {\"sql\": \"SELECT * FROM customer LIMIT 20\"}}`。\n"
+            +
+            "9. 只有当工具返回数据后，才整合为自然语言回复。";
 
     @Override
     public AiChat sendMessage(String sessionId, String userMessage, Long customerId) {
