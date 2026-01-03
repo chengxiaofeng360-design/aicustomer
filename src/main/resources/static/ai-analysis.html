@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,47 +15,59 @@
             margin-bottom: 15px;
             transition: all 0.3s;
         }
+
         .opportunity-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
         }
+
         .opportunity-card.high-priority {
             border-left-color: #dc3545;
         }
+
         .opportunity-card.medium-priority {
             border-left-color: #ffc107;
         }
+
         .opportunity-card.low-priority {
             border-left-color: #28a745;
         }
+
         .reminder-card {
             border-left: 4px solid #17a2b8;
             margin-bottom: 15px;
         }
+
         .reminder-card.birthday {
             border-left-color: #e83e8c;
         }
+
         .reminder-card.no-contact {
             border-left-color: #fd7e14;
         }
+
         .priority-badge {
             font-size: 0.75rem;
             padding: 0.25rem 0.5rem;
         }
+
         .customer-link {
             color: #007bff;
             text-decoration: none;
             cursor: pointer;
         }
+
         .customer-link:hover {
             text-decoration: underline;
         }
+
         .opportunity-keywords {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
             margin-top: 10px;
         }
+
         .keyword-tag {
             background-color: #e9ecef;
             padding: 2px 8px;
@@ -62,38 +75,46 @@
             font-size: 0.85rem;
             color: #495057;
         }
+
         .cooperation-score {
             font-size: 1.5rem;
             font-weight: bold;
             color: #28a745;
         }
+
         .cooperation-score.medium {
             color: #ffc107;
         }
+
         .cooperation-score.low {
             color: #dc3545;
         }
+
         .insight-card {
             border-radius: 18px;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 25px rgba(15,23,42,0.05);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
             margin-bottom: 2rem;
         }
+
         .insight-list {
             margin: 0;
             padding-left: 1.2rem;
             color: #4a5568;
             font-size: 0.95rem;
         }
-        .insight-item + .insight-item {
+
+        .insight-item+.insight-item {
             margin-top: 0.35rem;
         }
+
         .insight-item strong {
             color: #1a202c;
             font-weight: 600;
         }
     </style>
 </head>
+
 <body>
     <div class="main-container">
         <!-- 页面头部 -->
@@ -105,28 +126,22 @@
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
-        
+
         <!-- 统计卡片 -->
         <div class="row mb-4">
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="stats-card">
                     <div class="stats-number" id="opportunityCount">0</div>
                     <div class="stats-label">业务机会</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number" id="birthdayCount">0</div>
-                    <div class="stats-label">生日提醒</div>
-                </div>
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="stats-card">
                     <div class="stats-number" id="noContactCount">0</div>
                     <div class="stats-label">待跟进客户</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="stats-card">
                     <div class="stats-number" id="importantCustomerCount">0</div>
                     <div class="stats-label">重要客户</div>
@@ -149,7 +164,7 @@
         <div class="row">
             <!-- 左侧：业务机会 -->
             <div class="col-md-8">
-        <div class="card mb-4">
+                <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
                             <i class="bi bi-lightbulb"></i> 业务机会
@@ -157,8 +172,8 @@
                         <button class="btn btn-sm btn-primary" onclick="refreshOpportunities()">
                             <i class="bi bi-arrow-clockwise"></i> 刷新
                         </button>
-            </div>
-            <div class="card-body">
+                    </div>
+                    <div class="card-body">
                         <div id="opportunitiesList">
                             <div class="text-center text-muted py-4">
                                 <i class="bi bi-hourglass-split" style="font-size: 2rem;"></i>
@@ -166,65 +181,13 @@
                             </div>
                         </div>
                     </div>
-                        </div>
-
-                <!-- 合作潜力分析 -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-graph-up-arrow"></i> 合作潜力分析
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">选择客户</label>
-                            <select class="form-select" id="customerSelect" onchange="analyzeCooperationPotential()">
-                                <option value="">-- 请选择客户 --</option>
-                            </select>
-                        </div>
-                        <div id="cooperationAnalysis" style="display: none;">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h6>合作潜力评分</h6>
-                                    <div class="cooperation-score" id="cooperationScore">-</div>
-                                    <p class="text-muted small mt-2" id="cooperationScoreDesc">基于客户规模、行业匹配度、沟通频率等因素综合评估</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6>分析维度</h6>
-                                    <div id="cooperationDimensions"></div>
-                        </div>
-                    </div>
-                            <div class="mt-3">
-                                <h6>合作建议</h6>
-                                <div id="cooperationSuggestions"></div>
-                    </div>
                 </div>
-            </div>
-        </div>
-            </div>
 
-            <!-- 右侧：客户维护提醒 -->
+
+
+                <!-- 右侧：客户维护提醒 -->
+            </div>
             <div class="col-md-4">
-                <!-- 生日提醒 -->
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-gift"></i> 生日提醒
-                        </h5>
-                        <button class="btn btn-sm btn-outline-primary" onclick="refreshReminders()">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div id="birthdayReminders">
-                            <div class="text-center text-muted py-3">
-                                <i class="bi bi-hourglass-split"></i>
-                                <p class="mt-2 small">正在查询客户生日信息...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- 长时间未沟通提醒 -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -240,9 +203,45 @@
                             <div class="text-center text-muted py-3">
                                 <i class="bi bi-hourglass-split"></i>
                                 <p class="mt-2 small">正在分析客户沟通记录...</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                <!-- 合作潜力分析 -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up-arrow"></i> 合作潜力分析
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">选择客户</label>
+                            <select class="form-select" id="customerSelect" onchange="analyzeCooperationPotential()">
+                                <option value="">-- 请选择客户 --</option>
+                            </select>
+                        </div>
+                        <div id="cooperationAnalysis" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h6>合作潜力评分</h6>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="cooperation-score me-3" id="cooperationScore">-</div>
+                                        <p class="text-muted small mb-0" id="cooperationScoreDesc">综合评估评分</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <h6>分析维度</h6>
+                                    <div id="cooperationDimensions"></div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <h6>AI 个性化方案推荐</h6>
+                                <div id="cooperationSuggestions"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -268,7 +267,6 @@
     <script>
         const opportunityStore = {};
         let latestOpportunities = [];
-        let latestBirthdays = [];
         let latestNoContacts = [];
 
         // 模拟数据（用于页面展示）
@@ -279,6 +277,7 @@
                 customerName: 'ABC科技有限公司',
                 description: '客户在最近沟通中提到了合作、项目、方案相关需求，最近5次沟通显示有合作意向。',
                 keywords: ['合作', '项目', '方案', '技术'],
+                recommendation: '建议制定专属技术解决方案，并预约线下会议进行详细演示',
                 priority: 'high',
                 detectedTime: '2024-01-25T10:30:00',
                 communicationCount: 5
@@ -305,29 +304,7 @@
             }
         ];
 
-        const mockBirthdays = [
-            {
-                customerId: 1,
-                customerName: '张伟',
-                birthday: '1990-02-15',
-                interests: '旅游、摄影、美食',
-                daysUntil: 21
-            },
-            {
-                customerId: 2,
-                customerName: '李娜',
-                birthday: '1985-01-28',
-                interests: '设计、艺术、音乐',
-                daysUntil: 3
-            },
-            {
-                customerId: 3,
-                customerName: '张三',
-                birthday: '1992-01-26',
-                interests: '创业、投资、运动',
-                daysUntil: 1
-            }
-        ];
+
 
         const mockNoContacts = [
             {
@@ -345,13 +322,12 @@
         ];
 
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializeAnalysisPage();
         });
 
         async function initializeAnalysisPage() {
             setSectionLoading('opportunitiesList', '正在分析数据库中的沟通记录...');
-            setSectionLoading('birthdayReminders', '正在查询客户生日信息...');
             setSectionLoading('noContactReminders', '正在分析客户沟通记录...');
             setInsightsLoading();
             await Promise.all([loadOpportunities(), loadReminders()]);
@@ -359,12 +335,9 @@
         }
 
         // 更新统计数据
-        function updateStats(opportunities, birthdays, noContacts, importantCount) {
+        function updateStats(opportunities, noContacts, importantCount) {
             if (opportunities !== undefined) {
                 document.getElementById('opportunityCount').textContent = opportunities.length;
-            }
-            if (birthdays !== undefined) {
-                document.getElementById('birthdayCount').textContent = birthdays.length;
             }
             if (noContacts !== undefined) {
                 document.getElementById('noContactCount').textContent = noContacts.length;
@@ -399,15 +372,16 @@
             try {
                 const response = await fetch('/api/ai-analysis/business-opportunities');
                 const result = await response.json();
-                
-                if (response.ok && result.code === 200 && Array.isArray(result.data)) {
+
+                if (response.ok && result.code === 200 && Array.isArray(result.data) && result.data.length > 0) {
                     latestOpportunities = result.data;
                     displayOpportunities(latestOpportunities);
-                    updateStats(latestOpportunities, undefined, undefined, undefined);
+                    updateStats(latestOpportunities, undefined, undefined);
                 } else {
+                    // 如果没有真实数据，使用模拟数据显示效果
                     latestOpportunities = mockOpportunities;
                     displayOpportunities(mockOpportunities);
-                    updateStats(mockOpportunities, undefined, undefined, undefined);
+                    updateStats(mockOpportunities, undefined, undefined);
                 }
             } catch (error) {
                 console.error('加载业务机会失败:', error);
@@ -422,7 +396,7 @@
         // 显示业务机会
         function displayOpportunities(opportunities) {
             const container = document.getElementById('opportunitiesList');
-            
+
             if (!opportunities || opportunities.length === 0) {
                 container.innerHTML = '<div class="text-center text-muted py-4"><p>暂无业务机会</p></div>';
                 return;
@@ -432,12 +406,12 @@
                 if (opp && opp.id !== undefined) {
                     opportunityStore[opp.id] = opp;
                 }
-                const priorityClass = opp.priority === 'high' ? 'high-priority' : 
-                                     opp.priority === 'low' ? 'low-priority' : '';
-                const priorityText = opp.priority === 'high' ? '高优先级' : 
-                                    opp.priority === 'low' ? '低优先级' : '';
-                const priorityBadge = opp.priority === 'high' ? 'danger' : 
-                                      opp.priority === 'low' ? 'success' : 'warning';
+                const priorityClass = opp.priority === 'high' ? 'high-priority' :
+                    opp.priority === 'low' ? 'low-priority' : '';
+                const priorityText = opp.priority === 'high' ? '高优先级' :
+                    opp.priority === 'low' ? '低优先级' : '';
+                const priorityBadge = opp.priority === 'high' ? 'danger' :
+                    opp.priority === 'low' ? 'success' : 'warning';
 
                 return `
                     <div class="card opportunity-card ${priorityClass}" onclick="viewOpportunityDetail(${opp.id})">
@@ -454,6 +428,12 @@
                             ${opp.keywords && opp.keywords.length > 0 ? `
                                 <div class="opportunity-keywords">
                                     ${opp.keywords.map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            ${opp.recommendation ? `
+                                <div class="alert alert-light border border-primary border-opacity-25 mt-2 mb-0 p-2 d-flex align-items-start small text-primary">
+                                    <i class="bi bi-lightbulb-fill me-2 mt-1"></i>
+                                    <div>AI 建议：${escapeHtml(opp.recommendation)}</div>
                                 </div>
                             ` : ''}
                             <div class="mt-2">
@@ -473,87 +453,33 @@
             try {
                 const response = await fetch('/api/ai-analysis/customer-reminders');
                 const result = await response.json();
-                
-                if (response.ok && result.code === 200 && result.data) {
-                    latestBirthdays = Array.isArray(result.data.birthdays) ? result.data.birthdays : [];
-                    latestNoContacts = Array.isArray(result.data.noContacts) ? result.data.noContacts : [];
+
+                if (response.ok && result.code === 200 && result.data &&
+                    Array.isArray(result.data.noContacts) && result.data.noContacts.length > 0) {
+                    latestNoContacts = result.data.noContacts;
                     const importantCount = result.data.importantCustomerCount || 0;
-                    displayBirthdayReminders(latestBirthdays);
                     displayNoContactReminders(latestNoContacts);
-                    updateStats(undefined, latestBirthdays, latestNoContacts, importantCount);
+                    updateStats(undefined, latestNoContacts, importantCount);
                 } else {
-                    latestBirthdays = mockBirthdays;
+                    // 如果没有真实数据，使用模拟数据显示效果
                     latestNoContacts = mockNoContacts;
-                    displayBirthdayReminders(mockBirthdays);
                     displayNoContactReminders(mockNoContacts);
-                    updateStats(undefined, mockBirthdays, mockNoContacts, 3);
+                    updateStats(undefined, mockNoContacts, 3);
                 }
             } catch (error) {
                 console.error('加载提醒失败:', error);
-                latestBirthdays = mockBirthdays;
                 latestNoContacts = mockNoContacts;
-                displayBirthdayReminders(mockBirthdays);
                 displayNoContactReminders(mockNoContacts);
-                updateStats(undefined, mockBirthdays, mockNoContacts, 3);
+                updateStats(undefined, mockNoContacts, 3);
             } finally {
                 renderInsights();
             }
         }
 
-        // 显示生日提醒
-        function displayBirthdayReminders(birthdays) {
-            const container = document.getElementById('birthdayReminders');
-            
-            if (!birthdays || birthdays.length === 0) {
-                container.innerHTML = '<div class="text-center text-muted py-3"><p class="small">暂无生日提醒</p></div>';
-                return;
-            }
-
-            container.innerHTML = birthdays.map(item => {
-                // 处理daysUntil，可能是数字或需要计算
-                let daysUntil = item.daysUntil;
-                if (daysUntil === undefined && item.birthday) {
-                    // 计算距离生日的天数
-                    const today = new Date();
-                    const birthday = new Date(item.birthday);
-                    birthday.setFullYear(today.getFullYear());
-                    if (birthday < today) {
-                        birthday.setFullYear(today.getFullYear() + 1);
-                    }
-                    daysUntil = Math.ceil((birthday - today) / (1000 * 60 * 60 * 24));
-                }
-                
-                const urgencyClass = daysUntil <= 1 ? 'text-danger' : daysUntil <= 3 ? 'text-warning' : '';
-                const birthdayStr = item.birthday ? formatBirthday(item.birthday) : '';
-                
-                return `
-                    <div class="card reminder-card birthday mb-2">
-                        <div class="card-body p-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>
-                                        <a href="#" class="customer-link" onclick="goToCustomerDetail(${item.customerId})">
-                                            ${escapeHtml(item.customerName)}
-                                        </a>
-                                    </strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        ${birthdayStr} 
-                                        <span class="${urgencyClass}">(${daysUntil === 0 ? '今天' : daysUntil === 1 ? '明天' : `${daysUntil}天后`})</span>
-                                    </small>
-                                </div>
-                                ${item.interests ? `<small class="text-muted">${escapeHtml(item.interests)}</small>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
         // 显示长时间未沟通提醒
         function displayNoContactReminders(noContacts) {
             const container = document.getElementById('noContactReminders');
-            
+
             if (!noContacts || noContacts.length === 0) {
                 container.innerHTML = '<div class="text-center text-muted py-3"><p class="small">暂无待跟进客户</p></div>';
                 return;
@@ -586,7 +512,7 @@
             try {
                 const response = await fetch('/api/customer/list?page=1&size=1000');
                 const result = await response.json();
-                
+
                 if (response.ok && result.code === 200 && result.data && result.data.list) {
                     const select = document.getElementById('customerSelect');
                     result.data.list.forEach(customer => {
@@ -632,7 +558,7 @@
             try {
                 const response = await fetch(`/api/ai-analysis/cooperation-potential/${customerId}`);
                 const result = await response.json();
-                
+
                 if (response.ok && result.code === 200 && result.data) {
                     displayCooperationAnalysis(result.data);
                     document.getElementById('cooperationAnalysis').style.display = 'block';
@@ -651,7 +577,7 @@
         function displayCooperationAnalysis(data) {
             const score = data.score || 0;
             const scoreClass = score >= 70 ? '' : score >= 50 ? 'medium' : 'low';
-            
+
             document.getElementById('cooperationScore').textContent = score;
             document.getElementById('cooperationScore').className = `cooperation-score ${scoreClass}`;
             document.getElementById('cooperationScoreDesc').textContent = data.description || '';
@@ -747,6 +673,17 @@
                         </div>
                     </div>
                 </div>
+                ${opportunity.recommendation ? `
+                <div class="mb-3">
+                    <h6>AI 智能推荐动作</h6>
+                    <div class="alert alert-primary d-flex align-items-center">
+                        <i class="bi bi-stars fs-4 me-3"></i>
+                        <div>
+                            <strong>${escapeHtml(opportunity.recommendation)}</strong>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
                 <div class="mb-3">
                     <h6>分析要点</h6>
                     ${insightsHtml}
@@ -837,7 +774,6 @@
         }
 
         function refreshReminders() {
-            setSectionLoading('birthdayReminders', '正在刷新生日提醒...');
             setSectionLoading('noContactReminders', '正在刷新待跟进客户...');
             loadReminders();
         }
@@ -853,20 +789,16 @@
         function formatDate(dateStr) {
             if (!dateStr) return '';
             const date = new Date(dateStr);
-            return date.toLocaleString('zh-CN', { 
-                year: 'numeric', 
-                month: '2-digit', 
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
                 day: '2-digit',
                 hour: '2-digit',
                 minute: '2-digit'
             });
         }
 
-        function formatBirthday(dateStr) {
-            if (!dateStr) return '';
-            const date = new Date(dateStr);
-            return (date.getMonth() + 1) + '月' + date.getDate() + '日';
-        }
+
 
         function setSectionLoading(targetId, message) {
             const container = document.getElementById(targetId);
@@ -905,14 +837,6 @@
                 insights.push('近期暂未发现新的业务机会，建议继续保持客户沟通。');
             }
 
-            if (latestBirthdays.length > 0) {
-                const upcoming = latestBirthdays[0];
-                const days = typeof upcoming.daysUntil === 'number' ? upcoming.daysUntil : '-';
-                insights.push(`未来7天内有 <strong>${latestBirthdays.length}</strong> 位客户生日，最近的是 <strong>${escapeHtml(upcoming.customerName || '客户')}</strong>，距离 ${days === 0 ? '今天' : days + '天'}。`);
-            } else {
-                insights.push('未来7天暂无客户生日，可将精力放在深度跟进。');
-            }
-
             if (latestNoContacts.length > 0) {
                 const longest = latestNoContacts[0];
                 insights.push(`共有 <strong>${latestNoContacts.length}</strong> 位客户超过30天未沟通，最长未联系客户为 <strong>${escapeHtml(longest.customerName || '客户')}</strong>，已 ${longest.daysSinceLastContact || '--'} 天未联络。`);
@@ -938,4 +862,5 @@
         }
     </script>
 </body>
+
 </html>

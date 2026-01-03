@@ -354,6 +354,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
                         opportunity.put("description", generateOpportunityDescription(keywords, records.size()));
                         opportunity.put("keywords", new ArrayList<>(keywords));
                         opportunity.put("priority", determinePriority(keywords, records.size()));
+                        opportunity.put("recommendation", generateRecommendation(keywords));
                         opportunity.put("detectedTime", latestRecord.getCommunicationTime());
                         opportunity.put("communicationCount", records.size());
 
@@ -395,7 +396,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         try {
             // 查询未来7天内的生日
             // 隐私保护：不再主动提醒客户生日
-            reminders.put("birthdays", new ArrayList<>());
+            // 隐私保护：不再主动提醒客户生日 (已移除相关代码)
 
             // 查询超过30天未沟通的客户
             List<Map<String, Object>> noContacts = communicationMapper.selectCustomersNoContact(30);
@@ -486,8 +487,14 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
             analysis.put("score", totalScore);
             analysis.put("dimensions", dimensions);
             analysis.put("description", generateCooperationDescription(totalScore));
-            analysis.put("suggestions",
-                    generateCooperationSuggestions(totalScore, customer, recentCommunications.size()));
+
+            // 使用AI生成个性化方案推荐 (如果有DeepSeek服务)
+            if (deepSeekService.isAvailable()) {
+                analysis.put("suggestions", generateAiCooperationSuggestions(customer, recentCommunications));
+            } else {
+                analysis.put("suggestions",
+                        generateCooperationSuggestions(totalScore, customer, recentCommunications.size()));
+            }
 
             log.info("客户 {} 合作潜力分析完成，评分: {}", customerId, totalScore);
 
@@ -498,6 +505,58 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         }
 
         return analysis;
+    }
+
+    private List<String> generateAiCooperationSuggestions(Customer customer, List<CommunicationRecord> records) {
+        StringBuilder context = new StringBuilder();
+        context.append("客户信息: ").append(customer.getCustomerName())
+                .append(" (行业未知), ");
+
+        // 提取最近沟通摘要
+        List<String> recentSummaries = records.stream()
+                .limit(5)
+                .map(r -> r.getContent() != null ? r.getContent() : "")
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+
+        if (!recentSummaries.isEmpty()) {
+            context.append("最近沟通内容: ").append(String.join("; ", recentSummaries));
+        }
+
+        String prompt = String.format("基于以下客户信息和沟通记录，生成3条具体的、个性化的下一步销售跟进建议或解决方案。请直接列出建议，每条建议不超过20字，不要编号。\n上下文: %s",
+                context.toString());
+
+        try {
+            String aiResult = deepSeekService.chat(prompt, "你是一个资深的销售顾问。");
+            if (aiResult != null && !aiResult.isEmpty()) {
+                // 简单的后处理，按行分割
+                return Arrays.stream(aiResult.split("\n"))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .map(s -> s.replaceAll("^\\d+[.、]\\s*", "")) // 去除序号
+                        .limit(3)
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            log.error("AI建议生成失败", e);
+        }
+
+        // 失败回退
+        return generateCooperationSuggestions(80, customer, records.size());
+    }
+
+    private String generateRecommendation(Set<String> keywords) {
+        if (keywords.contains("方案") || keywords.contains("定制")) {
+            return "建议制定专属解决方案，并在下次沟通中展示";
+        } else if (keywords.contains("价格") || keywords.contains("预算")) {
+            return "建议准备详细报价单，并提供灵活的付款选项";
+        } else if (keywords.contains("合同") || keywords.contains("签约")) {
+            return "建议起草合同草案，并确认法务审核流程";
+        } else if (keywords.contains("演示") || keywords.contains("试用")) {
+            return "建议安排产品演示会议，邀请关键决策人参加";
+        } else {
+            return "建议保持定期回访，关注客户最新动态";
+        }
     }
 
     // 辅助方法
