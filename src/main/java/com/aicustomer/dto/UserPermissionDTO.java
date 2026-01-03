@@ -99,6 +99,19 @@ public class UserPermissionDTO {
         /**
          * 是否可以查看本部门数据
          */
+        /**
+         * 是否可以查看本部门数据
+         */
         private Boolean canViewDepartmentData;
+
+        /**
+         * 是否可以新增数据
+         */
+        private Boolean canAdd;
+
+        /**
+         * 是否可以编辑数据
+         */
+        private Boolean canEdit;
     }
 }

@@ -440,6 +440,32 @@ public class CustomerController {
             log.info("保存客户数据: 名称={}, 类型={}, 编号={}", customer.getCustomerName(), customer.getCustomerType(),
                     customer.getCustomerCode());
 
+            // 权限校验
+            String username = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                    .getAuthentication().getName();
+            // 管理员直接放行
+            if (!"admin".equals(username)) {
+                com.aicustomer.dto.UserPermissionDTO permission = userPermissionService
+                        .getUserPermissionByUsername(username);
+
+                // 1. 检查是否有新增权限
+                if (permission == null || permission.getDataPermission() == null
+                        || !Boolean.TRUE.equals(permission.getDataPermission().getCanAdd())) {
+                    return Result.error("权限不足：您没有新增客户的权限");
+                }
+
+                // 2. 检查是否有权限添加该等级的客户
+                Integer level = customer.getCustomerLevel();
+                if (level != null) {
+                    if (level == 2 && !Boolean.TRUE.equals(permission.getDataPermission().getCanAccessVip())) {
+                        return Result.error("权限不足：您没有权限添加VIP客户");
+                    }
+                    if (level == 3 && !Boolean.TRUE.equals(permission.getDataPermission().getCanAccessDiamond())) {
+                        return Result.error("权限不足：您没有权限添加钻石客户");
+                    }
+                }
+            }
+
             boolean success = customerService.save(customer);
             if (success) {
                 return Result.success("客户保存成功");
@@ -472,6 +498,43 @@ public class CustomerController {
                     !customer.getCustomerCode().equals(existingCustomer.getCustomerCode())) {
                 if (customerService.existsByCustomerCode(customer.getCustomerCode())) {
                     return Result.error("客户编号已被使用");
+                }
+            }
+
+            // 权限校验
+            String username = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                    .getAuthentication().getName();
+            // 管理员直接放行
+            if (!"admin".equals(username)) {
+                com.aicustomer.dto.UserPermissionDTO permission = userPermissionService
+                        .getUserPermissionByUsername(username);
+
+                // 1. 检查是否有编辑权限
+                if (permission == null || permission.getDataPermission() == null
+                        || !Boolean.TRUE.equals(permission.getDataPermission().getCanEdit())) {
+                    return Result.error("权限不足：您没有编辑客户的权限");
+                }
+
+                // 2. 检查是否有权限操作该等级的客户（原等级）
+                Integer oldLevel = existingCustomer.getCustomerLevel();
+                if (oldLevel != null) {
+                    if (oldLevel == 2 && !Boolean.TRUE.equals(permission.getDataPermission().getCanAccessVip())) {
+                        return Result.error("权限不足：您没有权限编辑VIP客户");
+                    }
+                    if (oldLevel == 3 && !Boolean.TRUE.equals(permission.getDataPermission().getCanAccessDiamond())) {
+                        return Result.error("权限不足：您没有权限编辑钻石客户");
+                    }
+                }
+
+                // 3. 检查是否有权限修改为新等级（如果有修改）
+                Integer newLevel = customer.getCustomerLevel();
+                if (newLevel != null && !newLevel.equals(oldLevel)) {
+                    if (newLevel == 2 && !Boolean.TRUE.equals(permission.getDataPermission().getCanAccessVip())) {
+                        return Result.error("权限不足：您没有权限将客户升级为VIP");
+                    }
+                    if (newLevel == 3 && !Boolean.TRUE.equals(permission.getDataPermission().getCanAccessDiamond())) {
+                        return Result.error("权限不足：您没有权限将客户升级为钻石会员");
+                    }
                 }
             }
 

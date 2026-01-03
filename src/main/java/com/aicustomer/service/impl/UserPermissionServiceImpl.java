@@ -207,6 +207,8 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                     config.setCanAccessDiamond(getBoolean(dataMap, "canAccessDiamond"));
                     config.setCanViewAllData(getBoolean(dataMap, "canViewAllData"));
                     config.setCanViewDepartmentData(getBoolean(dataMap, "canViewDepartmentData"));
+                    config.setCanAdd(getBoolean(dataMap, "canAdd"));
+                    config.setCanEdit(getBoolean(dataMap, "canEdit"));
 
                     dto.setDataPermission(config);
                 }
@@ -230,6 +232,8 @@ public class UserPermissionServiceImpl implements UserPermissionService {
                 adminConfig.setCanAccessDiamond(true);
                 adminConfig.setCanViewAllData(true);
                 adminConfig.setCanViewDepartmentData(true);
+                adminConfig.setCanAdd(true);
+                adminConfig.setCanEdit(true);
                 dto.setDataPermission(adminConfig);
             } else {
                 dto.setMenuPermissions(getDefaultMenuPermissions());
