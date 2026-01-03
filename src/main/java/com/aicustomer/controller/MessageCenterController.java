@@ -64,8 +64,7 @@ public class MessageCenterController {
             map.put("id", task.getId());
             map.put("taskType", getTaskTypeName(task.getTaskType()));
             map.put("title", task.getTitle());
-            map.put("customerName", task.getCustomerName());
-            map.put("customerId", task.getCustomerId());
+
             map.put("priorityLevel", task.getPriority());
             map.put("deadline", task.getDeadline());
             map.put("assigneeName", task.getAssigneeName());
