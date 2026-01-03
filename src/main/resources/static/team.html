@@ -60,6 +60,9 @@
                     <button class="btn btn-outline-primary" onclick="filterTasks('all')">全部</button>
                     <button class="btn btn-outline-warning" onclick="filterTasks('pending')">进行中</button>
                     <button class="btn btn-outline-success" onclick="filterTasks('completed')">已完成</button>
+                    <button class="btn btn-outline-info" onclick="showAiAnalysisModal()">
+                        <i class="bi bi-robot"></i> AI 智能分析
+                    </button>
                     <button class="btn btn-primary" onclick="showAddTaskModal()">
                         <i class="bi bi-plus"></i> 新建任务
                     </button>
@@ -235,29 +238,16 @@
                 <div class="modal-body">
                     <form id="taskForm">
                         <input type="hidden" id="taskId" name="id">
+                        <div class="mb-3">
+                            <label class="form-label">任务名称 *</label>
+                            <input type="text" class="form-control" id="taskName" name="name" required>
+                        </div>
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">任务名称 *</label>
-                                    <input type="text" class="form-control" id="taskName" name="name" required>
-                                </div>
-                            </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">负责人 *</label>
                                     <select class="form-select" id="taskAssignee" name="assignee" required>
                                         <option value="">请选择负责人</option>
-                                        <!-- 选项将通过JavaScript动态加载 -->
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">关联客户</label>
-                                    <select class="form-select" id="taskCustomerId" name="customerId">
-                                        <option value="">请选择客户</option>
                                         <!-- 选项将通过JavaScript动态加载 -->
                                     </select>
                                 </div>
@@ -282,15 +272,17 @@
                                     <input type="date" class="form-control" id="taskDueDate" name="dueDate" required>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">进度 (%)</label>
+                                    <input type="number" class="form-control" id="taskProgress" name="progress" min="0"
+                                        max="100" value="0">
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">任务描述</label>
                             <textarea class="form-control" id="taskDescription" name="description" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">进度 (%)</label>
-                            <input type="number" class="form-control" id="taskProgress" name="progress" min="0"
-                                max="100" value="0">
                         </div>
                     </form>
                 </div>
@@ -312,25 +304,15 @@
                 </div>
                 <div class="modal-body">
                     <form id="taskDetailForm">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><strong>任务名称：</strong></label>
-                                    <p id="detailTaskName" class="mb-0"></p>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><strong>负责人：</strong></label>
-                                    <p id="detailAssignee" class="mb-0"></p>
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label"><strong>任务名称：</strong></label>
+                            <p id="detailTaskName" class="mb-0"></p>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label"><strong>关联客户：</strong></label>
-                                    <p id="detailCustomer" class="mb-0"></p>
+                                    <label class="form-label"><strong>负责人：</strong></label>
+                                    <p id="detailAssignee" class="mb-0"></p>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -347,23 +329,55 @@
                                     <p id="detailDeadline" class="mb-0"></p>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>进度：</strong></label>
+                                    <div class="progress mt-2" style="height: 25px;">
+                                        <div class="progress-bar" id="detailProgressBar" role="progressbar"
+                                            style="width: 0%">
+                                            <span id="detailProgressText">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label"><strong>任务描述：</strong></label>
                             <p id="detailDescription" class="mb-0 text-muted"></p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label"><strong>进度 (%)：</strong></label>
-                            <div class="progress mt-2" style="height: 25px;">
-                                <div class="progress-bar" id="detailProgressBar" role="progressbar" style="width: 0%">
-                                    <span id="detailProgressText">0%</span>
-                                </div>
-                            </div>
-                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI智能分析模态框 -->
+    <div class="modal fade" id="aiAnalysisModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-robot"></i> AI 团队效能分析</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4" id="aiAnalysisLoading" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">AI 正在分析团队任务数据，请稍候...</p>
+                    </div>
+                    <div id="aiAnalysisContent" class="markdown-body">
+                        <!-- AI分析内容将在这里显示 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="refreshAiAnalysis()">
+                        <i class="bi bi-arrow-clockwise"></i> 重新分析
+                    </button>
                 </div>
             </div>
         </div>

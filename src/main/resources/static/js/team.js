@@ -10,7 +10,7 @@ const taskPageSize = 10;
 // ========== 团队协作功能 ==========
 
 // 页面加载时初始化
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     loadTasks();
     loadReportData();
     // 延迟更新统计数据，确保任务数据已加载
@@ -23,17 +23,17 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadTasks() {
     try {
         let url = `/api/team-task/tasks?page=${currentTaskPage}&size=${taskPageSize}`;
-        
+
         // 根据筛选条件添加status参数
         if (currentTaskFilter === 'pending') {
             url += '&status=2'; // 进行中
         } else if (currentTaskFilter === 'completed') {
             url += '&status=4'; // 已完成
         }
-        
+
         const response = await fetch(url);
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data) {
             tasks = result.data.list || [];
             renderTaskTable();
@@ -63,12 +63,12 @@ async function updateStats() {
         console.error('获取用户数量失败:', error);
         totalMembers = teamMembers.length; // 使用缓存的teamMembers作为备用
     }
-    
+
     // 从API获取真实的任务统计数据
     try {
         const response = await fetch('/api/team-task/tasks?page=1&size=1000');
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data && result.data.list) {
             const allTasks = result.data.list;
             // 进行中任务（status = 2）
@@ -77,9 +77,9 @@ async function updateStats() {
             const completedTasks = allTasks.filter(t => t.status === 4).length;
             // 重要任务（priority = 3 高 或 priority = 4 紧急）
             const importantTasks = allTasks.filter(t => t.priority === 3 || t.priority === 4).length;
-            
-    document.getElementById('activeTasks').textContent = activeTasks;
-    document.getElementById('completedTasks').textContent = completedTasks;
+
+            document.getElementById('activeTasks').textContent = activeTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
             document.getElementById('importantTasks').textContent = importantTasks;
         } else {
             // 如果API失败，使用本地数据
@@ -100,7 +100,7 @@ async function updateStats() {
         document.getElementById('completedTasks').textContent = completedTasks;
         document.getElementById('importantTasks').textContent = importantTasks;
     }
-    
+
     document.getElementById('totalMembers').textContent = totalMembers;
 }
 
@@ -111,7 +111,7 @@ function renderTaskTable() {
         console.error('找不到任务表格tbody元素');
         return;
     }
-    
+
     tbody.innerHTML = '';
 
     if (tasks.length === 0) {
@@ -125,7 +125,7 @@ function renderTaskTable() {
         const row = document.createElement('tr');
         const priorityClass = getPriorityClass(task.priority);
         const statusClass = getStatusClass(task.status);
-        
+
         // 获取任务名称（title或name）
         const taskName = task.title || task.name || '未命名任务';
         // 获取负责人
@@ -134,7 +134,7 @@ function renderTaskTable() {
         const deadline = task.deadline ? formatDate(task.deadline) : (task.endDate ? formatDate(task.endDate) : '-');
         // 获取进度
         const progress = task.progress || 0;
-        
+
         row.innerHTML = `
             <td>${escapeHtml(taskName)}</td>
             <td>${escapeHtml(assignee)}</td>
@@ -189,10 +189,10 @@ function formatDate(dateString) {
 function getPriorityClass(priority) {
     if (typeof priority === 'string') {
         // 兼容旧的前端字符串格式
-    switch (priority) {
-        case 'high': return 'bg-danger';
-        case 'medium': return 'bg-warning';
-        case 'low': return 'bg-success';
+        switch (priority) {
+            case 'high': return 'bg-danger';
+            case 'medium': return 'bg-warning';
+            case 'low': return 'bg-success';
             default: return 'bg-secondary';
         }
     }
@@ -210,10 +210,10 @@ function getPriorityClass(priority) {
 function getPriorityText(priority) {
     if (typeof priority === 'string') {
         // 兼容旧的前端字符串格式
-    switch (priority) {
-        case 'high': return '高';
-        case 'medium': return '中';
-        case 'low': return '低';
+        switch (priority) {
+            case 'high': return '高';
+            case 'medium': return '中';
+            case 'low': return '低';
             default: return '未知';
         }
     }
@@ -231,10 +231,10 @@ function getPriorityText(priority) {
 function getStatusClass(status) {
     if (typeof status === 'string') {
         // 兼容旧的前端字符串格式
-    switch (status) {
-        case 'pending': return 'bg-warning';
-        case 'completed': return 'bg-success';
-        case 'cancelled': return 'bg-danger';
+        switch (status) {
+            case 'pending': return 'bg-warning';
+            case 'completed': return 'bg-success';
+            case 'cancelled': return 'bg-danger';
             default: return 'bg-secondary';
         }
     }
@@ -253,10 +253,10 @@ function getStatusClass(status) {
 function getStatusText(status) {
     if (typeof status === 'string') {
         // 兼容旧的前端字符串格式
-    switch (status) {
-        case 'pending': return '进行中';
-        case 'completed': return '已完成';
-        case 'cancelled': return '已取消';
+        switch (status) {
+            case 'pending': return '进行中';
+            case 'completed': return '已完成';
+            case 'cancelled': return '已取消';
             default: return '未知';
         }
     }
@@ -284,7 +284,7 @@ function showAddTaskModal() {
     document.getElementById('taskForm').reset();
     document.getElementById('taskId').value = '';
     loadAssigneeOptions();
-    loadCustomerOptions();
+
     new bootstrap.Modal(document.getElementById('taskModal')).show();
 }
 
@@ -292,13 +292,13 @@ function showAddTaskModal() {
 async function loadAssigneeOptions() {
     const select = document.getElementById('taskAssignee');
     if (!select) return;
-    
+
     select.innerHTML = '<option value="">请选择负责人</option>';
-    
+
     try {
         const response = await fetch('/api/user/list');
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data) {
             // 更新teamMembers数组（用于其他地方使用）
             teamMembers = result.data.map(user => ({
@@ -312,15 +312,15 @@ async function loadAssigneeOptions() {
                 departmentId: user.departmentId,
                 status: user.status
             }));
-            
+
             // 填充下拉选项
-    teamMembers.forEach(member => {
-        const option = document.createElement('option');
-        option.value = member.name;
-        option.textContent = member.name;
+            teamMembers.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.name;
+                option.textContent = member.name;
                 option.setAttribute('data-assignee-id', member.id);
-        select.appendChild(option);
-    });
+                select.appendChild(option);
+            });
         } else {
             console.warn('加载用户列表失败:', result.message || '未知错误');
         }
@@ -329,51 +329,24 @@ async function loadAssigneeOptions() {
     }
 }
 
-// 加载客户选项（从数据库获取真实数据）
-async function loadCustomerOptions() {
-    const select = document.getElementById('taskCustomerId');
-    if (!select) return;
-    
-    select.innerHTML = '<option value="">请选择客户</option>';
-    
-    try {
-        const response = await fetch('/api/customer/list?page=1&size=1000');
-        const result = await response.json();
-        
-        if (result.code === 200 && result.data && result.data.list) {
-            result.data.list.forEach(customer => {
-                const option = document.createElement('option');
-                option.value = customer.id;
-                option.textContent = customer.customerName || `客户${customer.id}`;
-                option.setAttribute('data-customer-name', customer.customerName || '');
-                select.appendChild(option);
-            });
-        } else {
-            console.warn('加载客户列表失败:', result.message || '未知错误');
-        }
-    } catch (error) {
-        console.error('加载客户列表失败:', error);
-    }
-}
+
 
 // 查看任务详情
 async function viewTaskDetail(taskId) {
     try {
         const response = await fetch(`/api/team-task/tasks/${taskId}`);
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data) {
             const task = result.data;
-            
+
             // 填充详情信息（只显示编辑表单中的字段）
             document.getElementById('detailTaskName').textContent = task.title || task.name || '未命名任务';
             document.getElementById('detailAssignee').textContent = task.assigneeName || task.assignee || '未分配';
             document.getElementById('detailPriority').innerHTML = `<span class="badge ${getPriorityClass(task.priority)}">${getPriorityText(task.priority)}</span>`;
-            
-            // 显示关联客户
-            const customerText = task.customerName || (task.customerId ? `客户ID: ${task.customerId}` : '未关联');
-            document.getElementById('detailCustomer').textContent = customerText;
-            
+
+
+
             // 处理截止日期（与编辑表单一致，只显示日期）
             let deadline = '-';
             if (task.deadline) {
@@ -383,15 +356,15 @@ async function viewTaskDetail(taskId) {
                 deadline = task.endDate;
             }
             document.getElementById('detailDeadline').textContent = deadline;
-            
+
             // 处理描述
             document.getElementById('detailDescription').textContent = task.description || '无描述';
-            
+
             // 处理进度
             const progress = task.progress || 0;
             document.getElementById('detailProgressBar').style.width = progress + '%';
             document.getElementById('detailProgressText').textContent = progress + '%';
-            
+
             // 显示模态框
             new bootstrap.Modal(document.getElementById('taskDetailModal')).show();
         } else {
@@ -438,14 +411,14 @@ async function editTask(taskId) {
     try {
         const response = await fetch(`/api/team-task/tasks/${taskId}`);
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data) {
             const task = result.data;
-        document.getElementById('taskModalTitle').textContent = '编辑任务';
-        document.getElementById('taskId').value = task.id;
+            document.getElementById('taskModalTitle').textContent = '编辑任务';
+            document.getElementById('taskId').value = task.id;
             document.getElementById('taskName').value = task.title || task.name || '';
             document.getElementById('taskPriority').value = task.priority || 2;
-            
+
             // 处理截止日期
             let deadline = '';
             if (task.deadline) {
@@ -455,30 +428,22 @@ async function editTask(taskId) {
                 deadline = task.endDate;
             }
             document.getElementById('taskDueDate').value = deadline;
-            
+
             document.getElementById('taskDescription').value = task.description || '';
             document.getElementById('taskProgress').value = task.progress || 0;
-            
+
             // 保存assignee信息，等待选项加载完成后再设置
             const assigneeName = task.assigneeName || task.assignee || '';
             const assigneeId = task.assigneeId;
-            
-            // 设置客户选择
-            const customerId = task.customerId;
-            
+
             // 加载选项
             await loadAssigneeOptions();
-            await loadCustomerOptions();
-            
+
             // 等待选项加载完成后再设置选中值
             if (assigneeName) {
                 document.getElementById('taskAssignee').value = assigneeName;
             }
-            
-            if (customerId) {
-                document.getElementById('taskCustomerId').value = customerId;
-            }
-        new bootstrap.Modal(document.getElementById('taskModal')).show();
+            new bootstrap.Modal(document.getElementById('taskModal')).show();
         } else {
             alert('获取任务详情失败: ' + (result.message || '未知错误'));
         }
@@ -495,22 +460,17 @@ async function saveTask() {
         alert('表单不存在');
         return;
     }
-    
+
     const formData = new FormData(form);
     const taskId = document.getElementById('taskId').value;
-    
-    // 获取客户ID和客户名称
-    const customerId = formData.get('customerId');
-    const customerSelect = document.getElementById('taskCustomerId');
-    const customerName = customerSelect ? customerSelect.options[customerSelect.selectedIndex]?.getAttribute('data-customer-name') || '' : '';
-    
+
     // 获取负责人ID和名称
     const assigneeSelect = document.getElementById('taskAssignee');
     const assigneeName = formData.get('assignee') || '';
-    const assigneeId = assigneeSelect && assigneeSelect.selectedIndex > 0 
+    const assigneeId = assigneeSelect && assigneeSelect.selectedIndex > 0
         ? parseInt(assigneeSelect.options[assigneeSelect.selectedIndex]?.getAttribute('data-assignee-id') || '0')
         : null;
-    
+
     // 构建任务数据
     const taskData = {
         title: formData.get('name') || '',
@@ -520,34 +480,29 @@ async function saveTask() {
         description: formData.get('description') || '',
         progress: parseInt(formData.get('progress')) || 0
     };
-    
+
     // 如果有选择负责人，添加负责人ID
     if (assigneeId) {
         taskData.assigneeId = assigneeId;
     }
-    
-    // 如果有选择客户，添加客户信息
-    if (customerId) {
-        taskData.customerId = parseInt(customerId);
-        taskData.customerName = customerName;
-    }
-    
+
+
     // 如果没有设置状态，使用默认值
     if (!taskId) {
         taskData.status = 2; // 默认进行中
     }
-    
+
     try {
         let url = '/api/team-task/tasks';
         let method = 'POST';
-    
-    if (taskId) {
-        // 编辑模式
+
+        if (taskId) {
+            // 编辑模式
             url = `/api/team-task/tasks/${taskId}`;
             method = 'PUT';
             taskData.id = parseInt(taskId);
         }
-        
+
         const response = await fetch(url, {
             method: method,
             headers: {
@@ -555,12 +510,12 @@ async function saveTask() {
             },
             body: JSON.stringify(taskData)
         });
-        
+
         const result = await response.json();
-        
+
         if (result.code === 200) {
-    bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
-    alert('保存成功！');
+            bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
+            alert('保存成功！');
             loadTasks(); // 重新加载任务列表
         } else {
             alert('保存失败: ' + (result.message || '未知错误'));
@@ -576,24 +531,24 @@ async function deleteTask(taskId) {
     if (!confirm('确定要删除这个任务吗？')) {
         return;
     }
-    
+
     try {
         const response = await fetch(`/api/team-task/tasks/${taskId}`, {
             method: 'DELETE'
         });
-        
+
         const result = await response.json();
-        
+
         if (result.code === 200) {
-        alert('删除成功！');
+            alert('删除成功！');
             loadTasks(); // 重新加载任务列表
         } else {
             alert('删除失败: ' + (result.message || '未知错误'));
-    }
+        }
     } catch (error) {
         console.error('删除任务失败:', error);
         alert('删除任务失败，请重试');
-}
+    }
 }
 
 
@@ -609,14 +564,14 @@ async function loadReportData() {
     try {
         const response = await fetch('/api/task-progress-report/reports?page=' + currentReportPage + '&size=' + reportPageSize);
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data) {
             // 兼容处理：如果data是数组，说明后端返回格式有问题；如果是对象，说明是PageResult
             let pageResult;
             if (Array.isArray(result.data)) {
                 // 如果返回的是数组，手动构建PageResult
                 console.warn('API返回格式异常，data是数组而不是PageResult对象');
-            reportData = result.data;
+                reportData = result.data;
                 pageResult = {
                     list: result.data,
                     total: result.data.length,
@@ -647,17 +602,17 @@ async function loadReportData() {
 function renderReportPagination(pageResult) {
     const pagination = document.getElementById('reportPagination');
     if (!pagination) return;
-    
+
     pagination.innerHTML = '';
-    
+
     if (pageResult.pages <= 1) return;
-    
+
     // 上一页
     const prevLi = document.createElement('li');
     prevLi.className = 'page-item' + (pageResult.pageNum <= 1 ? ' disabled' : '');
     prevLi.innerHTML = `<a class="page-link" href="#" onclick="changeReportPage(${pageResult.pageNum - 1}); return false;">上一页</a>`;
     pagination.appendChild(prevLi);
-    
+
     // 页码
     for (let i = 1; i <= pageResult.pages; i++) {
         const li = document.createElement('li');
@@ -665,7 +620,7 @@ function renderReportPagination(pageResult) {
         li.innerHTML = `<a class="page-link" href="#" onclick="changeReportPage(${i}); return false;">${i}</a>`;
         pagination.appendChild(li);
     }
-    
+
     // 下一页
     const nextLi = document.createElement('li');
     nextLi.className = 'page-item' + (pageResult.pageNum >= pageResult.pages ? ' disabled' : '');
@@ -683,16 +638,16 @@ function changeReportPage(page) {
 function renderReportTable() {
     const tbody = document.getElementById('reportTableBody');
     if (!tbody) return;
-    
+
     tbody.innerHTML = '';
-    
+
     if (reportData.length === 0) {
         const row = document.createElement('tr');
         row.innerHTML = '<td colspan="8" class="text-center">暂无数据</td>';
         tbody.appendChild(row);
         return;
     }
-    
+
     reportData.forEach(report => {
         const row = document.createElement('tr');
         const reportTypeText = getReportTypeText(report.reportType);
@@ -701,7 +656,7 @@ function renderReportTable() {
         const deletedStatus = isDeleted ? '已删除' : '正常';
         const deletedClass = isDeleted ? 'bg-danger' : 'bg-success';
         const createTime = report.createTime ? formatDate(report.createTime) : '-';
-        
+
         row.innerHTML = `
             <td>${escapeHtml(report.taskName || (report.taskId ? '任务' + report.taskId : '-'))}</td>
             <td><span class="badge bg-info">${reportTypeText}</span></td>
@@ -775,10 +730,10 @@ async function viewReportDetail(reportId) {
     try {
         const response = await fetch(`/api/task-progress-report/reports/${reportId}`);
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data) {
             const report = result.data;
-            
+
             // 填充详情信息（只显示编辑表单中的字段）
             document.getElementById('reportDetailTaskName').textContent = report.taskName || '-';
             document.getElementById('reportDetailType').textContent = getReportTypeText(report.reportType);
@@ -786,7 +741,7 @@ async function viewReportDetail(reportId) {
             document.getElementById('reportDetailContent').textContent = report.reportContent || '-';
             document.getElementById('reportDetailEmployeeName').textContent = report.employeeName || '-';
             document.getElementById('reportDetailCreateTime').textContent = report.createTime ? formatDate(report.createTime) : '-';
-            
+
             // 显示模态框
             new bootstrap.Modal(document.getElementById('reportDetailModal')).show();
         } else {
@@ -820,15 +775,15 @@ function submitReview() {
     const qualityScore = document.getElementById('reviewQualityScore').value;
     const efficiencyScore = document.getElementById('reviewEfficiencyScore').value;
     const attitudeScore = document.getElementById('reviewAttitudeScore').value;
-    
+
     if (!reportStatus) {
         alert('请选择审核结果');
         return;
     }
-    
+
     // 这里可以调用API进行审核
     console.log('审核汇报:', reportId, reportStatus, reviewComment, qualityScore, efficiencyScore, attitudeScore);
-    
+
     // 更新本地数据
     const report = reportData.find(r => r.id == reportId);
     if (report) {
@@ -837,12 +792,12 @@ function submitReview() {
         report.qualityScore = qualityScore ? parseInt(qualityScore) : null;
         report.efficiencyScore = efficiencyScore ? parseInt(efficiencyScore) : null;
         report.attitudeScore = attitudeScore ? parseInt(attitudeScore) : null;
-        
+
         if (qualityScore && efficiencyScore && attitudeScore) {
             report.overallScore = (parseInt(qualityScore) + parseInt(efficiencyScore) + parseInt(attitudeScore)) / 3.0;
         }
     }
-    
+
     renderReportTable();
     bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
     alert('审核完成！');
@@ -873,20 +828,20 @@ async function showCreateReportModal() {
 async function loadTaskOptions() {
     const select = document.getElementById('reportTaskId');
     if (!select) return;
-    
+
     select.innerHTML = '<option value="">请选择任务</option>';
-    
+
     try {
         const response = await fetch('/api/team-task/tasks?page=1&size=1000');
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data && result.data.list) {
             result.data.list.forEach(task => {
-        const option = document.createElement('option');
-        option.value = task.id;
+                const option = document.createElement('option');
+                option.value = task.id;
                 option.textContent = task.title || task.name || `任务${task.id}`;
-        select.appendChild(option);
-    });
+                select.appendChild(option);
+            });
         }
     } catch (error) {
         console.error('加载任务列表失败:', error);
@@ -897,15 +852,15 @@ async function loadTaskOptions() {
 async function loadEmployeeOptions() {
     const select = document.getElementById('reportEmployeeName');
     if (!select) return;
-    
+
     select.innerHTML = '<option value="">请选择员工</option>';
-    
+
     try {
         // 如果teamMembers为空，从API加载
         if (!teamMembers || teamMembers.length === 0) {
             const response = await fetch('/api/user/list');
             const result = await response.json();
-            
+
             if (result.code === 200 && result.data) {
                 teamMembers = result.data.map(user => ({
                     id: user.id,
@@ -920,7 +875,7 @@ async function loadEmployeeOptions() {
                 }));
             }
         }
-        
+
         // 填充下拉选项
         if (teamMembers && teamMembers.length > 0) {
             teamMembers.forEach(member => {
@@ -942,26 +897,26 @@ async function editReport(reportId) {
     try {
         const response = await fetch(`/api/task-progress-report/reports/${reportId}`);
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data) {
             const report = result.data;
-        document.getElementById('reportModalTitle').textContent = '编辑任务进度汇报';
-        document.getElementById('reportId').value = report.id;
+            document.getElementById('reportModalTitle').textContent = '编辑任务进度汇报';
+            document.getElementById('reportId').value = report.id;
             document.getElementById('reportType').value = report.reportType || '';
             document.getElementById('reportTitle').value = report.reportTitle || '';
             document.getElementById('reportContent').value = report.reportContent || '';
-            
+
             // 先加载选项，然后设置值
             await loadTaskOptions();
             await loadEmployeeOptions();
-            
+
             // 延迟设置下拉框的值，确保选项已加载
             setTimeout(() => {
                 document.getElementById('reportTaskId').value = report.taskId || '';
                 document.getElementById('reportEmployeeName').value = report.employeeName || '';
             }, 200);
-            
-        new bootstrap.Modal(document.getElementById('reportModal')).show();
+
+            new bootstrap.Modal(document.getElementById('reportModal')).show();
         } else {
             alert('获取汇报信息失败: ' + (result.message || '未知错误'));
         }
@@ -978,10 +933,10 @@ async function saveReport() {
         form.reportValidity();
         return;
     }
-    
+
     const formData = new FormData(form);
     const reportId = document.getElementById('reportId').value;
-    
+
     const reportData = {
         taskId: formData.get('taskId') ? parseInt(formData.get('taskId')) : null,
         reportType: formData.get('reportType') ? parseInt(formData.get('reportType')) : null,
@@ -989,7 +944,7 @@ async function saveReport() {
         reportContent: formData.get('reportContent'),
         employeeName: formData.get('employeeName')
     };
-    
+
     // 验证必填字段
     if (!reportData.taskId) {
         alert('请选择任务');
@@ -1011,11 +966,11 @@ async function saveReport() {
         alert('请选择员工姓名');
         return;
     }
-    
+
     try {
         let response;
-    if (reportId) {
-        // 编辑模式
+        if (reportId) {
+            // 编辑模式
             response = await fetch(`/api/task-progress-report/reports/${reportId}`, {
                 method: 'PUT',
                 headers: {
@@ -1023,7 +978,7 @@ async function saveReport() {
                 },
                 body: JSON.stringify(reportData)
             });
-    } else {
+        } else {
             // 新建模式
             response = await fetch('/api/task-progress-report/reports', {
                 method: 'POST',
@@ -1033,12 +988,12 @@ async function saveReport() {
                 body: JSON.stringify(reportData)
             });
         }
-        
+
         const result = await response.json();
-        
+
         if (result.code === 200) {
-    bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
-    alert('保存成功！');
+            bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+            alert('保存成功！');
             // 如果是新建，重置到第一页；如果是编辑，保持当前页
             if (!reportId) {
                 currentReportPage = 1;
@@ -1061,14 +1016,14 @@ async function deleteReport(reportId) {
     if (!confirm('确定要删除这个汇报吗？')) {
         return;
     }
-    
+
     try {
         const response = await fetch(`/api/task-progress-report/reports/${reportId}`, {
             method: 'DELETE'
         });
-        
+
         const result = await response.json();
-        
+
         if (result.code === 200) {
             alert('删除成功！');
             // 删除后延迟一下再加载，确保后端数据已更新
@@ -1082,4 +1037,78 @@ async function deleteReport(reportId) {
         console.error('删除汇报失败:', error);
         alert('删除失败: ' + error.message);
     }
+}
+
+// ========== AI 智能分析功能 ==========
+
+// 显示 AI 分析模态框
+function showAiAnalysisModal() {
+    const modal = new bootstrap.Modal(document.getElementById('aiAnalysisModal'));
+    modal.show();
+    
+    // 如果没有内容，自动加载
+    const content = document.getElementById('aiAnalysisContent');
+    if (!content.innerHTML.trim()) {
+        refreshAiAnalysis();
+    }
+}
+
+// 刷新 AI 分析
+async function refreshAiAnalysis() {
+    const loading = document.getElementById('aiAnalysisLoading');
+    const content = document.getElementById('aiAnalysisContent');
+    
+    loading.style.display = 'block';
+    content.innerHTML = '';
+    
+    try {
+        const response = await fetch('/api/team-task/analyze', {
+            method: 'POST'
+        });
+        const result = await response.json();
+        
+        if (result.code === 200) {
+            // 简单的 Markdown 渲染
+            content.innerHTML = renderMarkdown(result.data);
+        } else {
+            content.innerHTML = '<div class="alert alert-danger">分析失败: ' + (result.message || '未知错误') + '</div>';
+        }
+    } catch (error) {
+        console.error('AI分析失败:', error);
+        content.innerHTML = '<div class="alert alert-danger">分析请求失败，请检查网络或重试。</div>';
+    } finally {
+        loading.style.display = 'none';
+    }
+}
+
+// 简单的 Markdown 渲染函数
+function renderMarkdown(text) {
+    if (!text) return '';
+    
+    // 转义 HTML
+    let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    // 处理标题
+    html = html.replace(/^### (.*$)/gim, '<h5></h5>');
+    html = html.replace(/^## (.*$)/gim, '<h4></h4>');
+    html = html.replace(/^# (.*$)/gim, '<h3></h3>');
+    
+    // 处理加粗
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong></strong>');
+    
+    // 处理列表
+    html = html.replace(/^\- (.*$)/gim, '<li></li>');
+    
+    // 处理换行 (将剩余的换行符转换为 <br>)
+    html = html.replace(/\n/g, '<br>');
+    
+    // 简单的表格处理 (将Markdown表格转换为Bootstrap表格)
+    // 这是一个非常简化的转换，可能无法处理所有情况
+    if (html.includes('|')) {
+         // 这里比较复杂，暂时只保留文本格式，或者包裹在 pre 标签中，
+         // 但为了排版好看，我们用一个简单容器包裹
+         return '<div style="white-space: pre-wrap; font-family: monospace;">' + text + '</div>';
+    }
+
+    return '<div style="line-height: 1.6;">' + html + '</div>';
 }

@@ -26,15 +26,113 @@ public class TeamTaskController {
     @Autowired
     private TeamTaskMapper taskMapper;
 
+    @Autowired
+    private com.aicustomer.service.AiChatService aiChatService;
+
+    @Autowired
+    private com.aicustomer.service.UserService userService;
+
+    /**
+     * AI 分析团队任务
+     */
+    @PostMapping("/analyze")
+    public Result<String> analyzeTasks() {
+        try {
+            // 获取当前用户ID
+            Long userId = 1L; // 默认为 admin
+            try {
+                org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                        .getContext().getAuthentication();
+                if (auth != null) {
+                    String username;
+                    if (auth.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails) {
+                        username = ((org.springframework.security.core.userdetails.UserDetails) auth.getPrincipal())
+                                .getUsername();
+                    } else {
+                        username = auth.getPrincipal().toString();
+                    }
+                    if (!"anonymousUser".equals(username)) {
+                        com.aicustomer.entity.User user = userService.findByUsername(username);
+                        if (user != null) {
+                            userId = user.getId();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // 忽略认证错误，使用默认用户
+            }
+
+            // 获取所有未完成的任务（进行中、待分配、待审核）
+            List<TeamTask> tasks = taskService.getTasks(null, null, null, 1, 100);
+
+            if (tasks == null || tasks.isEmpty()) {
+                return Result.success("当前没有任务可分析。");
+            }
+
+            StringBuilder prompt = new StringBuilder();
+            prompt.append("请作为一位专业的敏捷项目经理，分析以下团队任务数据。请找出潜在的风险、进度瓶颈，并给出具体的改进建议。请使用Markdown格式输出。\n\n");
+            prompt.append("| 任务名称 | 负责人 | 优先级 | 状态 | 截止日期 | 进度 |\n");
+            prompt.append("|---|---|---|---|---|---|\n");
+
+            for (TeamTask task : tasks) {
+                prompt.append("| ").append(task.getName())
+                        .append(" | ").append(task.getAssigneeName() != null ? task.getAssigneeName() : "待定")
+                        .append(" | ").append(getPriorityText(task.getPriority()))
+                        .append(" | ").append(getStatusText(task.getStatus()))
+                        .append(" | ")
+                        .append(task.getDeadline() != null ? task.getDeadline().toString().split(" ")[0] : "无")
+                        .append(" | ").append(task.getProgress()).append("% |\n");
+            }
+
+            // 创建会话并发送消息
+            String sessionId = aiChatService.createNewSession(userId, null);
+            com.aicustomer.entity.AiChat response = aiChatService.sendMessage(sessionId, prompt.toString(), null);
+
+            // 可以选择删除会话以保持清洁，或者保留作为历史
+            // aiChatService.deleteSession(sessionId);
+
+            return Result.success(response.getReplyContent());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("AI分析失败: " + e.getMessage());
+        }
+    }
+
+    private String getPriorityText(Integer p) {
+        if (p == null)
+            return "未知";
+        return switch (p) {
+            case 1 -> "低";
+            case 2 -> "中";
+            case 3 -> "高";
+            case 4 -> "紧急";
+            default -> "未知";
+        };
+    }
+
+    private String getStatusText(Integer s) {
+        if (s == null)
+            return "未知";
+        return switch (s) {
+            case 1 -> "待分配";
+            case 2 -> "进行中";
+            case 3 -> "待审核";
+            case 4 -> "已完成";
+            case 5 -> "已取消";
+            default -> "未知";
+        };
+    }
+
     /**
      * 获取团队任务列表（分页）
      */
     @GetMapping("/tasks")
     public Result<PageResult<TeamTask>> getTasks(@RequestParam(required = false) Long assigneeId,
-                                           @RequestParam(required = false) Integer status,
-                                           @RequestParam(required = false) Integer priority,
-                                           @RequestParam(defaultValue = "1") Integer page,
-                                           @RequestParam(defaultValue = "10") Integer size) {
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Integer priority,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
         try {
             List<TeamTask> tasks = taskService.getTasks(assigneeId, status, priority, page, size);
             int total = taskMapper.countTasks(assigneeId, status, priority);
@@ -127,8 +225,8 @@ public class TeamTaskController {
      */
     @PostMapping("/tasks/{id}/progress")
     public Result<TeamTask> updateTaskProgress(@PathVariable Long id,
-                                               @RequestParam Integer progress,
-                                               @RequestParam(required = false) String workLog) {
+            @RequestParam Integer progress,
+            @RequestParam(required = false) String workLog) {
         try {
             TeamTask task = taskService.updateTaskProgress(id, progress, workLog);
             return Result.success(task);
@@ -142,8 +240,8 @@ public class TeamTaskController {
      */
     @PostMapping("/tasks/{id}/work-status")
     public Result<TeamTask> updateWorkStatus(@PathVariable Long id,
-                                             @RequestParam Integer workStatus,
-                                             @RequestParam(required = false) String workLocation) {
+            @RequestParam Integer workStatus,
+            @RequestParam(required = false) String workLocation) {
         try {
             TeamTask task = taskService.updateWorkStatus(id, workStatus, workLocation);
             return Result.success(task);
