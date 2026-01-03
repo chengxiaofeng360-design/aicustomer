@@ -59,6 +59,7 @@ public class AiChatServiceImpl implements AiChatService {
     private final KnowledgeQueryService knowledgeQueryService;
     private final ZhipuChatService zhipuChatService;
     private final KbDocumentService kbDocumentService;
+    private final com.aicustomer.service.UserService userService;
 
     @Qualifier("doubaoChatModel")
     private final ChatModel doubaoChatModel;
@@ -513,6 +514,15 @@ public class AiChatServiceImpl implements AiChatService {
                 params = json; // 如果没有 parameters 对象，则从根节点获取
             }
 
+            // --- 权限控制逻辑 ---
+            if (isCustomerTool(tool)) {
+                if (!canAccessCustomerData()) {
+                    log.warn("【AI聊天服务】拦截越权查询 - 工具: {}, 用户无客户查询权限", tool);
+                    return "❌ 权限拒绝：您当前的账号没有权限查询客户详细信息。请联系管理员开通[客户管理]权限。";
+                }
+            }
+            // -------------------
+
             return switch (tool) {
                 case "query_total_count" -> customerQueryService.getTotalCustomerCount();
                 case "query_by_region" -> customerQueryService.getCustomersByRegion(params.getString("region"));
@@ -529,6 +539,63 @@ public class AiChatServiceImpl implements AiChatService {
         } catch (Exception e) {
             log.error("【AI聊天服务】工具执行异常", e);
             return "服务暂时无法处理该查询：" + e.getMessage();
+        }
+    }
+
+    private boolean isCustomerTool(String toolName) {
+        return "query_total_count".equals(toolName) ||
+                "query_by_region".equals(toolName) ||
+                "query_customer_detail".equals(toolName) ||
+                "dynamic_sql_query".equals(toolName);
+    }
+
+    private boolean canAccessCustomerData() {
+        try {
+            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                    .getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                return false;
+            }
+
+            String username;
+            Object principal = auth.getPrincipal();
+            if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+                username = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+            } else {
+                username = principal.toString();
+            }
+
+            // 超级管理员直接放行
+            if ("admin".equals(username)) {
+                return true;
+            }
+
+            // 查询数据库获取详细权限配置
+            com.aicustomer.entity.User user = userService.findByUsername(username);
+            if (user == null) {
+                return false;
+            }
+
+            // 1. 检查用户类型 (1: 管理员)
+            if (user.getUserType() != null && user.getUserType() == 1) {
+                return true;
+            }
+
+            // 2. 检查具体的菜单权限配置 (permissionSettings JSON中包含 "customer")
+            String perms = user.getPermissionSettings();
+            if (perms != null && perms.contains("\"customer\"")) {
+                return true;
+            }
+
+            // 3. 检查数据权限 (可选: 如果有更细粒度的 "canViewSensitive" 配置)
+            if (perms != null && perms.contains("\"canViewSensitive\":true")) {
+                return true;
+            }
+
+            return false;
+        } catch (Exception e) {
+            log.error("权限检查过程发生异常", e);
+            return false; // 安全起见，异常时拒绝
         }
     }
 
