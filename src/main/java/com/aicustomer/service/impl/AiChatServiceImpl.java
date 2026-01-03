@@ -153,7 +153,267 @@ public class AiChatServiceImpl implements AiChatService {
         return aiRecord;
     }
 
-    // ...
+    @Override
+    public Map<String, Object> getChatStatistics() {
+        Map<String, Object> stats = aiChatMapper.selectStatistics(null, null, null, null);
+        if (stats == null) {
+            stats = new HashMap<>();
+            stats.put("totalChats", 0);
+            stats.put("userMessages", 0);
+            stats.put("aiReplies", 0);
+            stats.put("avgSatisfaction", 0);
+            stats.put("satisfiedCount", 0);
+        }
+        return stats;
+    }
+
+    /**
+     * 使用DeepSeek生成AI回复
+     * 如果DeepSeek服务不可用，则回退到规则匹配
+     * 
+     * @param userMessage 用户消息
+     * @param history     对话历史（可选，用于多轮对话）
+     */
+    private String generateAiResponse(String userMessage, List<Map<String, String>> history) {
+        log.info("【AI聊天服务】开始处理查询: {}", userMessage);
+
+        // 1. 第一层：FAQ匹配
+        try {
+            List<FaqQa> faqs = faqQaService.searchFaq(userMessage, 1);
+            if (faqs != null && !faqs.isEmpty()) {
+                FaqQa faq = faqs.get(0);
+                log.info("【AI聊天服务】命中FAQ: {}", faq.getQuestion());
+                faqQaService.incrementHitCount(faq.getId());
+                return faq.getAnswer() + "\n\n(来源: 常见问题库)";
+            }
+        } catch (Exception e) {
+            log.error("【AI聊天服务】FAQ匹配异常: {}", e.getMessage());
+        }
+
+        // 2. 知识库检索与主动干预准备
+        StringBuilder contextBuilder = new StringBuilder();
+        try {
+            // 语义/向量搜索 (如果可用)
+            if (vectorSearchService.isAvailable()) {
+                List<Map<String, Object>> vectorResults = vectorSearchService.searchByVector(userMessage, 3);
+                if (vectorResults != null && !vectorResults.isEmpty()) {
+                    for (Map<String, Object> res : vectorResults) {
+                        double score = (Double) res.getOrDefault("score", 0.0);
+                        if (score > 0.65) {
+                            contextBuilder.append("相关文档[").append(res.get("title")).append("]: ")
+                                    .append(res.get("content")).append("\n\n");
+                        }
+                    }
+                }
+            }
+            // 全文检索回退
+            List<KnowledgeDocument> documents = knowledgeDocumentService.searchDocuments(userMessage, 3);
+            List<com.aicustomer.entity.KbDocument> kbDocs = kbDocumentService.searchDocuments(userMessage, null, null,
+                    3);
+            if (documents != null) {
+                for (KnowledgeDocument d : documents)
+                    contextBuilder.append("资料[").append(d.getTitle()).append("]: ").append(d.getContent())
+                            .append("\n\n");
+            }
+            if (kbDocs != null) {
+                for (com.aicustomer.entity.KbDocument d : kbDocs)
+                    contextBuilder.append("上传资料[").append(d.getTitle()).append("]: ").append(d.getContent())
+                            .append("\n\n");
+            }
+        } catch (Exception e) {
+            log.warn("【AI聊天服务】检索过程异常: {}", e.getMessage());
+        }
+
+        String context = contextBuilder.toString();
+        String lowerMsg = userMessage.toLowerCase();
+        boolean hasKeywords = lowerMsg.contains("文件") || lowerMsg.contains("上传") || lowerMsg.contains("资料")
+                || lowerMsg.contains("清单") || lowerMsg.contains("多少") || lowerMsg.contains("统计")
+                || lowerMsg.contains("内容") || lowerMsg.contains("详情");
+
+        // 避免误判：如果要查询“客户”、“人员”相关信息，不要注入文件/资料的统计数据
+        boolean isCustomerQuery = lowerMsg.contains("客户") || lowerMsg.contains("客源") || lowerMsg.contains("人员")
+                || lowerMsg.contains("用户");
+
+        boolean isKnowledgeQuery = hasKeywords && !isCustomerQuery;
+
+        String finalSystemPrompt = SYSTEM_PROMPT;
+        String enhancedUserMessage = userMessage;
+
+        // 【核心干预】
+        if (isKnowledgeQuery) {
+            String realTimeCount = knowledgeQueryService.getKnowledgeCount();
+            String realTimeList = knowledgeQueryService.getKnowledgeList(10);
+
+            // 调试日志记录
+            try {
+                Path debugPath = Paths.get("/Users/zuozuo/Downloads/cxf/aicustomer/ai_debug.log");
+                String logMsg = String.format("[%s] User: %s | Result: %s\n", LocalDateTime.now(), userMessage,
+                        realTimeCount);
+                Files.write(debugPath, logMsg.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (Exception ignore) {
+            }
+
+            // 将绝对真实的系统状态注入用户消息首部，确保 AI 无法回避
+            enhancedUserMessage = String.format("### 当前系统实时状态 (极高优先级) ###\n%s\n- 详细清单：%s\n\n请根据上述真实数据回答：\n%s",
+                    realTimeCount, realTimeList, userMessage);
+
+            log.info("【AI聊天服务】已执行主动干预，注入数据: {}", realTimeCount);
+        }
+
+        if (!context.isEmpty()) {
+            finalSystemPrompt += "\n\n### 检索到的背景资料 ###\n"
+                    + (context.length() > 3000 ? context.substring(0, 3000) : context);
+        }
+
+        // 3. AI 调用
+        // A. DeepSeek
+        if (deepSeekService.isAvailable()) {
+            try {
+                String aiReply;
+                if (history != null && !history.isEmpty()) {
+                    List<Map<String, String>> messages = new ArrayList<>();
+                    Map<String, String> systemMsg = new HashMap<>();
+                    systemMsg.put("role", "system");
+                    systemMsg.put("content", finalSystemPrompt);
+                    messages.add(systemMsg);
+
+                    int startIdx = Math.max(0, history.size() - 10); // 最近10轮
+                    for (int i = startIdx; i < history.size(); i++) {
+                        messages.add(history.get(i));
+                    }
+
+                    Map<String, String> userMsg = new HashMap<>();
+                    userMsg.put("role", "user");
+                    userMsg.put("content", enhancedUserMessage);
+                    messages.add(userMsg);
+                    aiReply = deepSeekService.chatWithHistory(messages);
+                } else {
+                    aiReply = deepSeekService.chat(enhancedUserMessage, finalSystemPrompt);
+                }
+
+                if (aiReply != null && !aiReply.trim().isEmpty() && !aiReply.startsWith("⚠️")) {
+                    String finalReply = finalizeResponse(aiReply, userMessage, finalSystemPrompt, "deepseek", context);
+                    if (finalReply != null && !finalReply.startsWith("⚠️")) {
+                        return finalReply;
+                    }
+                    log.warn("【AI聊天服务】DeepSeek 的最终回复（含工具调用）包含错误，尝试下一个模型");
+                } else if (aiReply != null && aiReply.startsWith("⚠️")) {
+                    log.warn("【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: {}", aiReply);
+                }
+            } catch (Exception e) {
+                log.warn("【DeepSeek失败】: {}", e.getMessage());
+            }
+        }
+
+        // B. 豆包 (Doubao)
+        try {
+            log.info("【AI聊天服务】尝试豆包模型");
+            List<org.springframework.ai.chat.messages.Message> springMessages = new ArrayList<>();
+            springMessages.add(new org.springframework.ai.chat.messages.SystemMessage(finalSystemPrompt));
+            if (history != null) {
+                for (Map<String, String> h : history) {
+                    if ("user".equals(h.get("role")))
+                        springMessages.add(new org.springframework.ai.chat.messages.UserMessage(h.get("content")));
+                    else
+                        springMessages.add(new org.springframework.ai.chat.messages.AssistantMessage(h.get("content")));
+                }
+            }
+            springMessages.add(new org.springframework.ai.chat.messages.UserMessage(enhancedUserMessage));
+
+            ChatResponse chatResponse = doubaoChatModel.call(new Prompt(springMessages));
+            String aiReply = chatResponse.getResult().getOutput().getContent();
+            if (aiReply != null && !aiReply.trim().isEmpty() && !aiReply.startsWith("⚠️")) {
+                String finalReply = finalizeResponse(aiReply, userMessage, finalSystemPrompt, "doubao", context);
+                if (finalReply != null && !finalReply.startsWith("⚠️")) {
+                    return finalReply;
+                }
+            } else if (aiReply != null && aiReply.startsWith("⚠️")) {
+                log.warn("【AI聊天服务】豆包返回了错误状态，准备回退: {}", aiReply);
+            }
+        } catch (Exception e) {
+            log.warn("【豆包失败】: {}", e.getMessage());
+        }
+
+        // C. 智谱 (Zhipu)
+        if (zhipuChatService.isAvailable()) {
+            try {
+                String aiReply = zhipuChatService.chat(enhancedUserMessage, finalSystemPrompt);
+                if (aiReply != null && !aiReply.trim().isEmpty() && !aiReply.startsWith("⚠️")) {
+                    String finalReply = finalizeResponse(aiReply, userMessage, finalSystemPrompt, "zhipu", context);
+                    if (finalReply != null && !finalReply.startsWith("⚠️")) {
+                        return finalReply;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("【AI聊天服务】智谱调用失败: {}", e.getMessage());
+            }
+        }
+
+        return generateFallbackResponse(userMessage);
+    }
+
+    /**
+     * 统一处理 AI 回复的后置逻辑
+     */
+    private String finalizeResponse(String aiReply, String userMessage, String systemPrompt, String modelType,
+            String context) {
+        String processed = processPotentialToolCall(aiReply, userMessage, systemPrompt, modelType);
+        if (!context.isEmpty() && !processed.contains("(来源:")) {
+            processed += "\n\n(来源: 知识库检索 - " + modelType + ")";
+        }
+        return processed;
+    }
+
+    /**
+     * 检查并处理 AI 回复中可能存在的工具调用
+     */
+    private String processPotentialToolCall(String aiReply, String userMessage, String systemPrompt, String modelType) {
+        log.info("【AI聊天服务】模型 {} 的原始回复: {}", modelType, aiReply);
+        if (aiReply.contains("{") && aiReply.contains("}")) {
+            String toolResult = executeTool(aiReply);
+            log.info("【AI聊天服务】模型 {} 的工具执行结果: {}", modelType, toolResult);
+            if (toolResult != null) {
+                log.info("【AI聊天服务】工具结果获取成功 ({})，进行二次生成...", modelType);
+                String followUpMessage = userMessage + "\n\n(工具查询结果: " + toolResult + ", 请整合并回复)";
+
+                return switch (modelType) {
+                    case "deepseek" -> deepSeekService.chat(followUpMessage, systemPrompt);
+                    case "doubao" -> {
+                        List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
+                        messages.add(new org.springframework.ai.chat.messages.SystemMessage(systemPrompt));
+                        messages.add(new org.springframework.ai.chat.messages.UserMessage(followUpMessage));
+                        ChatResponse resp = doubaoChatModel.call(new Prompt(messages));
+                        yield resp.getResult().getOutput().getContent();
+                    }
+                    case "zhipu" -> zhipuChatService.chat(followUpMessage, systemPrompt);
+                    default -> aiReply;
+                };
+            } else {
+                log.warn("【AI聊天服务】工具 {} 执行结果为空", aiReply);
+            }
+        }
+        return aiReply;
+    }
+
+    /**
+     * 规则匹配回退方案（当DeepSeek不可用时使用）
+     */
+
+    private String generateFallbackResponse(String userMessage) {
+        String lowerMessage = userMessage.toLowerCase();
+
+        if (lowerMessage.contains("产品") || lowerMessage.contains("服务")) {
+            return "感谢您的咨询！我们提供多种产品和服务，包括智能管理系统、数据分析工具等。请问您对哪个方面比较感兴趣？";
+        } else if (lowerMessage.contains("价格") || lowerMessage.contains("费用")) {
+            return "我们的产品价格根据具体需求而定。建议您联系我们的销售团队，他们会为您提供详细的报价方案。";
+        } else if (lowerMessage.contains("技术支持") || lowerMessage.contains("帮助")) {
+            return "我们提供7x24小时技术支持服务。您可以通过电话、邮件或在线客服联系我们，我们会尽快为您解决问题。";
+        } else if (lowerMessage.contains("合同") || lowerMessage.contains("协议")) {
+            return "关于合同和协议的具体条款，建议您与我们的法务部门联系。我们会确保所有条款都符合相关法律法规。";
+        } else {
+            return "感谢您的咨询！我是AI助手，可以为您解答关于产品、服务、技术支持等方面的问题。请告诉我您需要了解什么？";
+        }
+    }
 
     @Override
     public Map<String, Object> getChatHistory(int pageNum, int pageSize, Long userId) {

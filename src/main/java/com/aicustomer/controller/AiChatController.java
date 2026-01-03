@@ -27,28 +27,6 @@ public class AiChatController {
     /**
      * 发送消息（支持多轮对话）
      */
-    @PostMapping("/send")
-    private Long getCurrentUserId() {
-        try {
-            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
-                    .getContext().getAuthentication();
-            if (auth == null || !auth.isAuthenticated()) {
-                return null;
-            }
-            Object principal = auth.getPrincipal();
-            if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-                // Return real ID if available from UserDetails impl or lookup
-                // Since this controller doesn't have direct access to User repo, we rely on
-                // service or assume session management
-                // Simplified: Return -1 if unable to resolve, or modify service to look up by
-                // name
-                return null; // Let service handle lookup by name
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        return null;
-    }
 
     private String getCurrentUsername() {
         try {
