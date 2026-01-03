@@ -515,19 +515,41 @@ public class AiChatServiceImpl implements AiChatService {
             }
 
             // --- 权限控制逻辑 ---
+            List<Integer> allowedLevels = null;
             if (isCustomerTool(tool)) {
                 if (!canAccessCustomerData()) {
                     log.warn("【AI聊天服务】拦截越权查询 - 工具: {}, 用户无客户查询权限", tool);
                     return "❌ 权限拒绝：您当前的账号没有权限查询客户详细信息。请联系管理员开通[客户管理]权限。";
                 }
+
+                // 获取当前用户的权限等级
+                try {
+                    org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                            .getContext().getAuthentication();
+                    String currentUsername;
+                    Object principal = auth.getPrincipal();
+                    if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+                        currentUsername = ((org.springframework.security.core.userdetails.UserDetails) principal)
+                                .getUsername();
+                    } else {
+                        currentUsername = principal.toString();
+                    }
+                    allowedLevels = getCustomerLevelPermission(currentUsername);
+                } catch (Exception e) {
+                    log.warn("获取用户权限失败，默认拒绝所有: {}", e.getMessage());
+                    return "❌ 权限验证失败";
+                }
             }
             // -------------------
 
             return switch (tool) {
-                case "query_total_count" -> customerQueryService.getTotalCustomerCount();
-                case "query_by_region" -> customerQueryService.getCustomersByRegion(params.getString("region"));
-                case "query_customer_detail" -> customerQueryService.getCustomerDetail(params.getString("name"));
-                case "dynamic_sql_query" -> customerQueryService.executeDynamicQuery(params.getString("sql"));
+                case "query_total_count" -> customerQueryService.getTotalCustomerCount(allowedLevels);
+                case "query_by_region" ->
+                    customerQueryService.getCustomersByRegion(params.getString("region"), allowedLevels);
+                case "query_customer_detail" ->
+                    customerQueryService.getCustomerDetail(params.getString("name"), allowedLevels);
+                case "dynamic_sql_query" ->
+                    customerQueryService.executeDynamicQuery(params.getString("sql"), allowedLevels);
                 case "query_knowledge_count" -> knowledgeQueryService.getKnowledgeCount();
                 case "query_knowledge_list" -> knowledgeQueryService
                         .getKnowledgeList(params.getInteger("limit") != null ? params.getInteger("limit") : 20);
@@ -540,6 +562,23 @@ public class AiChatServiceImpl implements AiChatService {
             log.error("【AI聊天服务】工具执行异常", e);
             return "服务暂时无法处理该查询：" + e.getMessage();
         }
+    }
+
+    private List<Integer> getCustomerLevelPermission(String username) {
+        if ("admin".equals(username)) {
+            return null; // All
+        }
+        com.aicustomer.entity.User user = userService.findByUsername(username);
+        if (user == null)
+            return java.util.Collections.emptyList();
+
+        // 管理员看所有
+        if (user.getUserType() != null && user.getUserType() == 1) {
+            return null;
+        }
+        // 普通用户/业务员看普通客户(等级1)
+        // TODO: 如果有更复杂的配置，可以从 permissionSettings 解析
+        return java.util.Collections.singletonList(1);
     }
 
     private boolean isCustomerTool(String toolName) {

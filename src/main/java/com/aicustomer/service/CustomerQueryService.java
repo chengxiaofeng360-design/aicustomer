@@ -24,10 +24,17 @@ public class CustomerQueryService {
      * 
      * @return 客户统计摘要
      */
-    public String getTotalCustomerCount() {
+    /**
+     * 获取客户总数
+     * 
+     * @param allowedLevels 允许访问的客户等级列表 (null表示无限制)
+     * @return 客户统计摘要
+     */
+    public String getTotalCustomerCount(List<Integer> allowedLevels) {
         try {
-            Long count = customerMapper.selectCount(new Customer(), null, null);
-            return "系统目前共有 " + count + " 位客户。";
+            Customer criteria = new Customer();
+            Long count = customerMapper.selectCount(criteria, null, allowedLevels);
+            return "系统目前共有 " + count + " 位客户" + (allowedLevels != null ? " (您权限范围内)" : "") + "。";
         } catch (Exception e) {
             log.error("查询客户总数失败", e);
             return "查询失败：" + e.getMessage();
@@ -37,17 +44,19 @@ public class CustomerQueryService {
     /**
      * 根据地区查询客户信息
      * 
-     * @param region 地区名称（如“北京”、“上海”）
-     * @return 客户信息列表字符串
+     * @param region        地区名称
+     * @param allowedLevels 允许访问的客户等级列表
+     * @return 客户信息列表
      */
-    public String getCustomersByRegion(String region) {
+    public String getCustomersByRegion(String region, List<Integer> allowedLevels) {
         try {
             Customer criteria = new Customer();
             criteria.setRegion(region);
-            List<Customer> customers = customerMapper.selectPage(criteria, null, null, 0, 50);
+            // CustomerMapper.selectPage already supports allowedLevels via XML modification
+            List<Customer> customers = customerMapper.selectPage(criteria, null, allowedLevels, 0, 50);
 
             if (customers == null || customers.isEmpty()) {
-                return "在地区 [" + region + "] 未找到相关客户信息。";
+                return "在地区 [" + region + "] 未找到相关客户信息" + (allowedLevels != null ? " (或无权访问)" : "") + "。";
             }
 
             StringBuilder sb = new StringBuilder();
@@ -56,6 +65,7 @@ public class CustomerQueryService {
                 Customer c = customers.get(i);
                 sb.append(i + 1).append(". **").append(c.getCustomerName()).append("**")
                         .append(" (联系人: ").append(c.getContactPerson() != null ? c.getContactPerson() : "无")
+                        .append(", 等级: ").append(getCustomerLevelName(c.getCustomerLevel()))
                         .append(")\n");
             }
             return sb.toString();
@@ -68,17 +78,19 @@ public class CustomerQueryService {
     /**
      * 查询指定客户的详细信息
      * 
-     * @param customerName 客户名称
+     * @param customerName  客户名称
+     * @param allowedLevels 允许访问的客户等级列表
      * @return 客户详情
      */
-    public String getCustomerDetail(String customerName) {
+    public String getCustomerDetail(String customerName, List<Integer> allowedLevels) {
         try {
             Customer criteria = new Customer();
             criteria.setCustomerName(customerName);
-            List<Customer> customers = customerMapper.selectList(criteria);
+            // Use selectPage logic to leverage dynamic filtering, or filter manually
+            List<Customer> customers = customerMapper.selectPage(criteria, null, allowedLevels, 0, 10);
 
             if (customers == null || customers.isEmpty()) {
-                return "未找到名为 [" + customerName + "] 的客户信息。";
+                return "未找到名为 [" + customerName + "] 的客户信息" + (allowedLevels != null ? " (或无权访问)" : "") + "。";
             }
 
             Customer c = customers.get(0);
@@ -104,10 +116,11 @@ public class CustomerQueryService {
     /**
      * 执行动态 SQL 查询（Text-to-SQL）
      * 
-     * @param sql AI 生成的 SQL 语句
-     * @return 查询结果格式化字符串
+     * @param sql           AI 生成的 SQL 语句
+     * @param allowedLevels 允许访问的客户等级列表
+     * @return 查询结果
      */
-    public String executeDynamicQuery(String sql) {
+    public String executeDynamicQuery(String sql, List<Integer> allowedLevels) {
         if (sql == null || sql.trim().isEmpty()) {
             return "SQL 语句为空。";
         }
@@ -118,12 +131,10 @@ public class CustomerQueryService {
             return "出于安全考虑，仅支持 SELECT 查询语句。";
         }
 
-        // 危险关键词过滤 (使用更精确的匹配，避免误伤 create_time 等字段)
+        // 危险关键词过滤
         String[] forbidden = { "DROP", "UPDATE", "DELETE", "TRUNCATE", "ALTER", "INSERT", "CREATE", "GRANT", "EXEC" };
         for (String word : forbidden) {
-            // 使用正则匹配独立单词
             if (upperSql.matches(".*\\b" + word + "\\b.*")) {
-                // 特殊处理：如果关键词是 CREATE，且后面紧跟着 _TIME (如 CREATE_TIME)，则允许
                 if ("CREATE".equals(word) && upperSql.matches(".*\\bCREATE_TIME\\b.*")
                         && !upperSql.matches(".*\\bCREATE\\b(?!_TIME).*")) {
                     continue;
@@ -132,9 +143,24 @@ public class CustomerQueryService {
             }
         }
 
+        // --- 核心权限注入逻辑 ---
+        if (allowedLevels != null && !allowedLevels.isEmpty()) {
+            String levelsStr = allowedLevels.toString().replace("[", "(").replace("]", ")"); // e.g., (1, 2)
+
+            // 使用正则强制将 "customer" 表替换为带过滤条件的子查询
+            // 匹配不区分大小写的全字匹配 "customer"
+            // 替换为: (SELECT * FROM customer WHERE customer_level IN (1,2)) customer
+            String scopedTable = "(SELECT * FROM customer WHERE customer_level IN " + levelsStr + ") customer";
+
+            // 简单处理：仅替换 FROM customer
+            sql = sql.replaceAll("(?i)\\bFROM\\s+customer\\b", "FROM " + scopedTable);
+
+            log.info("【权限控制】动态SQL已重写: {}", sql);
+        }
+        // -----------------------
+
         try {
             log.info("【数据查询服务】正在执行动态 SQL: {}", sql);
-            // 结果限制：如果 SQL 包含 LIMIT，则不处理，否则追加 LIMIT 50
             if (!upperSql.contains("LIMIT")) {
                 sql = sql.trim();
                 if (sql.endsWith(";")) {
@@ -143,19 +169,17 @@ public class CustomerQueryService {
                 sql += " LIMIT 50";
             }
 
-            // 使用 Mapper 执行查询
             List<Map<String, Object>> results = customerMapper.selectDynamic(sql);
             if (results == null || results.isEmpty()) {
                 return "未查询到相关结果。";
             }
 
-            // 格式化结果为字符串
             StringBuilder sb = new StringBuilder();
-            sb.append("查询到 ").append(results.size()).append(" 条记录：\n");
+            sb.append("查询到 ").append(results.size()).append(" 条记录 (权限范围内)：\n");
             for (Map<String, Object> row : results) {
                 sb.append("- ");
                 row.forEach((k, v) -> sb.append(k).append(": ").append(v).append(", "));
-                sb.setLength(sb.length() - 2); // 移除最后的逗号
+                sb.setLength(sb.length() - 2);
                 sb.append("\n");
             }
             return sb.toString();
