@@ -19,10 +19,11 @@ import java.util.List;
 public class TaskReminderServiceImpl implements TaskReminderService {
 
     @Override
-    public PageResult<TaskReminder> getTaskReminderList(int pageNum, int pageSize, String taskType, String priority, String status) {
+    public PageResult<TaskReminder> getTaskReminderList(int pageNum, int pageSize, String taskType, String priority,
+            String status) {
         // 模拟数据，实际项目中应该从数据库查询
         List<TaskReminder> reminders = new ArrayList<>();
-        
+
         // 创建模拟数据
         TaskReminder reminder1 = new TaskReminder();
         reminder1.setId(1L);
@@ -32,9 +33,9 @@ public class TaskReminderServiceImpl implements TaskReminderService {
         reminder1.setPriority(priority != null ? 3 : 3); // 3:高
         reminder1.setStatus(status != null ? 1 : 1); // 1:待提醒
         reminder1.setDeadline(LocalDateTime.now().plusDays(5));
-        reminder1.setCustomerId(1L);
+
         reminders.add(reminder1);
-        
+
         TaskReminder reminder2 = new TaskReminder();
         reminder2.setId(2L);
         reminder2.setReminderType(1); // 1:关键日期
@@ -43,15 +44,15 @@ public class TaskReminderServiceImpl implements TaskReminderService {
         reminder2.setPriority(2); // 2:中
         reminder2.setStatus(1); // 1:待提醒
         reminder2.setDeadline(LocalDateTime.now().plusDays(10));
-        reminder2.setCustomerId(2L);
+
         reminders.add(reminder2);
-        
+
         PageResult<TaskReminder> result = new PageResult<>();
         result.setList(reminders);
         result.setTotal((long) reminders.size());
         result.setPageNum(pageNum);
         result.setPageSize(pageSize);
-        
+
         return result;
     }
 
@@ -66,7 +67,7 @@ public class TaskReminderServiceImpl implements TaskReminderService {
         reminder.setPriority(3); // 3:高
         reminder.setStatus(1); // 1:待提醒
         reminder.setDeadline(LocalDateTime.now().plusDays(5));
-        reminder.setCustomerId(1L);
+
         return reminder;
     }
 
@@ -92,7 +93,7 @@ public class TaskReminderServiceImpl implements TaskReminderService {
     public List<TaskReminder> getTodayReminders() {
         // 模拟今日提醒数据
         List<TaskReminder> reminders = new ArrayList<>();
-        
+
         TaskReminder reminder = new TaskReminder();
         reminder.setId(1L);
         reminder.setReminderType(2); // 2:跟进提醒
@@ -101,9 +102,9 @@ public class TaskReminderServiceImpl implements TaskReminderService {
         reminder.setPriority(3); // 3:高
         reminder.setStatus(1); // 1:待提醒
         reminder.setDeadline(LocalDateTime.now());
-        reminder.setCustomerId(1L);
+
         reminders.add(reminder);
-        
+
         return reminders;
     }
 
@@ -111,7 +112,7 @@ public class TaskReminderServiceImpl implements TaskReminderService {
     public List<TaskReminder> getUpcomingReminders(int days) {
         // 模拟即将到期提醒数据
         List<TaskReminder> reminders = new ArrayList<>();
-        
+
         TaskReminder reminder = new TaskReminder();
         reminder.setId(2L);
         reminder.setReminderType(1); // 1:关键日期
@@ -120,9 +121,9 @@ public class TaskReminderServiceImpl implements TaskReminderService {
         reminder.setPriority(2); // 2:中
         reminder.setStatus(1); // 1:待提醒
         reminder.setDeadline(LocalDateTime.now().plusDays(5));
-        reminder.setCustomerId(2L);
+
         reminders.add(reminder);
-        
+
         return reminders;
     }
 
@@ -138,22 +139,4 @@ public class TaskReminderServiceImpl implements TaskReminderService {
         System.out.println("延期任务: " + id + " -> " + newDueDate);
     }
 
-    @Override
-    public List<TaskReminder> getCustomerReminders(Long customerId) {
-        // 模拟客户相关提醒数据
-        List<TaskReminder> reminders = new ArrayList<>();
-        
-        TaskReminder reminder = new TaskReminder();
-        reminder.setId(1L);
-        reminder.setReminderType(2); // 2:跟进提醒
-        reminder.setTitle("客户回访");
-        reminder.setContent("需要回访客户");
-        reminder.setPriority(3); // 3:高
-        reminder.setStatus(1); // 1:待提醒
-        reminder.setDeadline(LocalDateTime.now().plusDays(5));
-        reminder.setCustomerId(customerId);
-        reminders.add(reminder);
-        
-        return reminders;
-    }
 }

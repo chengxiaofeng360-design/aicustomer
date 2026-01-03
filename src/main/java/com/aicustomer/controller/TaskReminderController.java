@@ -151,19 +151,6 @@ public class TaskReminderController {
     }
 
     /**
-     * 获取客户相关提醒
-     */
-    @GetMapping("/customer/{customerId}")
-    public Result<List<TaskReminder>> getCustomerReminders(@PathVariable Long customerId) {
-        try {
-            List<TaskReminder> reminders = taskReminderService.getCustomerReminders(customerId);
-            return Result.success(reminders);
-        } catch (Exception e) {
-            return Result.error("获取客户提醒失败: " + e.getMessage());
-        }
-    }
-
-    /**
      * 创建关键日期提醒
      */
     @PostMapping("/key-date")

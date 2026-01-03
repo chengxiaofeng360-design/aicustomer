@@ -7,8 +7,7 @@
         <result column="title" property="title" jdbcType="VARCHAR"/>
         <result column="content" property="content" jdbcType="VARCHAR"/>
         <result column="reminder_type" property="reminderType" jdbcType="INTEGER"/>
-        <result column="customer_id" property="customerId" jdbcType="BIGINT"/>
-        <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
+
         <result column="reminder_time" property="reminderTime" jdbcType="TIMESTAMP"/>
         <result column="deadline" property="deadline" jdbcType="TIMESTAMP"/>
         <result column="priority" property="priority" jdbcType="INTEGER"/>
@@ -39,7 +38,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, title, content, reminder_type, customer_id, customer_name, reminder_time, deadline,
+        id, title, content, reminder_type, reminder_time, deadline,
         priority, status, assigned_user_id, assigned_user_name, reminder_method, frequency,
         repeat_count, repeated_count, next_reminder_time, completed_time, completion_result,
         customer_response_time, customer_response, effectiveness_score, business_id, business_type,
@@ -106,14 +105,14 @@
 
     <insert id="insert" parameterType="com.aicustomer.entity.TaskReminder" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO task_reminder (
-            title, content, reminder_type, customer_id, customer_name, reminder_time, deadline,
+            title, content, reminder_type, reminder_time, deadline,
             priority, status, assigned_user_id, assigned_user_name, reminder_method, frequency,
             repeat_count, repeated_count, next_reminder_time, completed_time, completion_result,
             customer_response_time, customer_response, effectiveness_score, business_id, business_type,
             rule_id, is_auto_generated, generated_from, create_time, update_time, create_by, update_by,
             deleted, version
         ) VALUES (
-            #{title}, #{content}, #{reminderType}, #{customerId}, #{customerName}, #{reminderTime}, #{deadline},
+            #{title}, #{content}, #{reminderType}, #{reminderTime}, #{deadline},
             #{priority}, #{status}, #{assignedUserId}, #{assignedUserName}, #{reminderMethod}, #{frequency},
             #{repeatCount}, #{repeatedCount}, #{nextReminderTime}, #{completedTime}, #{completionResult},
             #{customerResponseTime}, #{customerResponse}, #{effectivenessScore}, #{businessId}, #{businessType},
@@ -127,8 +126,7 @@
         SET title = #{title},
             content = #{content},
             reminder_type = #{reminderType},
-            customer_id = #{customerId},
-            customer_name = #{customerName},
+
             reminder_time = #{reminderTime},
             deadline = #{deadline},
             priority = #{priority},
@@ -178,13 +176,7 @@
         ORDER BY deadline ASC
     </select>
 
-    <select id="selectByCustomerId" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM task_reminder
-        WHERE customer_id = #{customerId} AND deleted = 0
-        ORDER BY create_time DESC
-    </select>
+
 
     <update id="completeTask">
         UPDATE task_reminder

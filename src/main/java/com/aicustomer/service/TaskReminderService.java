@@ -16,7 +16,8 @@ public interface TaskReminderService {
     /**
      * 获取任务提醒列表（分页）
      */
-    PageResult<TaskReminder> getTaskReminderList(int pageNum, int pageSize, String taskType, String priority, String status);
+    PageResult<TaskReminder> getTaskReminderList(int pageNum, int pageSize, String taskType, String priority,
+            String status);
 
     /**
      * 根据ID获取任务提醒
@@ -58,12 +59,4 @@ public interface TaskReminderService {
      */
     void postponeTask(Long id, String newDueDate);
 
-    /**
-     * 获取客户相关提醒
-     */
-    List<TaskReminder> getCustomerReminders(Long customerId);
 }
-
-
-
-
