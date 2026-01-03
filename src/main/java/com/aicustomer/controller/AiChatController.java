@@ -22,6 +22,48 @@ import java.util.Map;
 public class AiChatController {
 
     private final AiChatService aiChatService;
+    private final com.aicustomer.service.UserService userService;
+
+    /**
+     * 发送消息（支持多轮对话）
+     */
+    @PostMapping("/send")
+    private Long getCurrentUserId() {
+        try {
+            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                    .getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) {
+                return null;
+            }
+            Object principal = auth.getPrincipal();
+            if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+                // Return real ID if available from UserDetails impl or lookup
+                // Since this controller doesn't have direct access to User repo, we rely on
+                // service or assume session management
+                // Simplified: Return -1 if unable to resolve, or modify service to look up by
+                // name
+                return null; // Let service handle lookup by name
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return null;
+    }
+
+    private String getCurrentUsername() {
+        try {
+            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                    .getContext().getAuthentication();
+            if (auth != null
+                    && auth.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails) {
+                return ((org.springframework.security.core.userdetails.UserDetails) auth.getPrincipal()).getUsername();
+            } else if (auth != null) {
+                return auth.getPrincipal().toString();
+            }
+        } catch (Exception e) {
+        }
+        return "anonymous";
+    }
 
     /**
      * 发送消息（支持多轮对话）
@@ -30,31 +72,31 @@ public class AiChatController {
     public Result<Map<String, Object>> sendMessage(@RequestBody Map<String, Object> request) {
         try {
             System.out.println("【AI聊天】收到发送消息请求");
-            System.out.println("【AI聊天】请求参数: " + request);
-
             String sessionId = request.get("sessionId").toString();
             String userMessage = request.get("message").toString();
             Long customerId = request.get("customerId") != null ? Long.valueOf(request.get("customerId").toString())
                     : null;
 
-            System.out.println("【AI聊天】会话ID: " + sessionId);
-            System.out.println("【AI聊天】用户消息: " + userMessage);
-            System.out.println("【AI聊天】客户ID: " + customerId);
+            // 获取当前登录用户
+            String username = getCurrentUsername();
+            Long userId = 0L;
+            if (!"anonymous".equals(username)) {
+                com.aicustomer.entity.User user = userService.findByUsername(username);
+                if (user != null) {
+                    userId = user.getId();
+                }
+            }
 
             // 支持传递对话历史（用于多轮对话）
             @SuppressWarnings("unchecked")
             List<Map<String, String>> history = (List<Map<String, String>>) request.get("history");
-            System.out.println("【AI聊天】对话历史条数: " + (history != null ? history.size() : 0));
 
-            AiChat response = aiChatService.sendMessage(sessionId, userMessage, customerId, history);
+            // 传递 userId 到 Service (需要修改 Service 接口)
+            // 这里为了不修改 Service 太多签名，我们暂时将 userId 放入 history 或者 threadLocal，或者重载方法
+            // 最佳实践：重载 sendMessage 方法接受 userId
+            AiChat response = aiChatService.sendMessage(sessionId, userMessage, customerId, history, userId);
 
-            System.out.println("【AI聊天】AI回复内容: "
-                    + (response.getReplyContent() != null
-                            ? response.getReplyContent().substring(0,
-                                    Math.min(100, response.getReplyContent().length())) + "..."
-                            : "null"));
-
-            // 构建返回结果
+            // ... (rest of method)
             Map<String, Object> result = new HashMap<>();
             result.put("id", response.getId());
             result.put("sessionId", sessionId);
@@ -63,11 +105,8 @@ public class AiChatController {
             result.put("content", response.getContent());
             result.put("createTime", response.getCreateTime());
 
-            System.out.println("【AI聊天】返回成功");
             return Result.success(result);
         } catch (Exception e) {
-            System.out.println("【AI聊天】异常: " + e.getMessage());
-            System.out.println("【AI聊天】异常类型: " + e.getClass().getName());
             e.printStackTrace();
             return Result.error("发送消息失败: " + e.getMessage());
         }
@@ -81,25 +120,23 @@ public class AiChatController {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "50") int pageSize) {
         try {
-            Map<String, Object> history = aiChatService.getChatHistory(pageNum, pageSize);
+            String username = getCurrentUsername();
+            Long userId = null;
+            if (!"anonymous".equals(username)) {
+                com.aicustomer.entity.User user = userService.findByUsername(username);
+                if (user != null) {
+                    userId = user.getId();
+                }
+            }
+            // Pass userId to service
+            Map<String, Object> history = aiChatService.getChatHistory(pageNum, pageSize, userId);
             return Result.success(history);
         } catch (Exception e) {
             return Result.error("获取聊天历史失败: " + e.getMessage());
         }
     }
 
-    /**
-     * 获取聊天统计
-     */
-    @GetMapping("/statistics")
-    public Result<Map<String, Object>> getStatistics() {
-        try {
-            Map<String, Object> stats = aiChatService.getChatStatistics();
-            return Result.success(stats);
-        } catch (Exception e) {
-            return Result.error("获取聊天统计失败: " + e.getMessage());
-        }
-    }
+    // ... (other methods)
 
     /**
      * 获取会话列表
@@ -109,6 +146,16 @@ public class AiChatController {
             @RequestParam(required = false) Long userId,
             @RequestParam(defaultValue = "50") Integer limit) {
         try {
+            // 如果未传userId，则使用当前登录用户Id
+            if (userId == null) {
+                String username = getCurrentUsername();
+                if (!"anonymous".equals(username)) {
+                    com.aicustomer.entity.User user = userService.findByUsername(username);
+                    if (user != null) {
+                        userId = user.getId();
+                    }
+                }
+            }
             List<Map<String, Object>> sessions = aiChatService.getSessionList(userId, limit);
             return Result.success(sessions);
         } catch (Exception e) {

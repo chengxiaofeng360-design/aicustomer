@@ -21,7 +21,8 @@ public interface AiChatService {
     /**
      * 发送消息（支持多轮对话历史）
      */
-    AiChat sendMessage(String sessionId, String userMessage, Long customerId, List<Map<String, String>> history);
+    AiChat sendMessage(String sessionId, String userMessage, Long customerId, List<Map<String, String>> history,
+            Long userId);
 
     /**
      * 获取聊天统计
@@ -31,7 +32,7 @@ public interface AiChatService {
     /**
      * 获取聊天历史
      */
-    Map<String, Object> getChatHistory(int pageNum, int pageSize);
+    Map<String, Object> getChatHistory(int pageNum, int pageSize, Long userId);
 
     /**
      * 获取会话列表
