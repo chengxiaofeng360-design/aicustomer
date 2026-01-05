@@ -1,7 +1,6 @@
 package com.aicustomer.service.impl;
 
 import com.aicustomer.entity.User;
-import com.aicustomer.mapper.RoleMapper;
 import com.aicustomer.mapper.UserMapper;
 import com.aicustomer.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +23,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@org.springframework.context.annotation.DependsOn({ "databaseInitializer", "databaseMigrationConfig" })
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
-    private final RoleMapper roleMapper; // Injected RoleMapper
+    private final com.aicustomer.mapper.RoleMapper roleMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -165,17 +163,20 @@ public class UserServiceImpl implements UserService {
 
             userMapper.insert(newAdmin);
             log.info("超级管理员初始化完成: admin / 123456");
-        } else {
-            // 检查现有管理员密码是否为有效的 BCrypt 格式
-            String currentPwd = admin.getPassword();
-            if (currentPwd == null || !currentPwd.startsWith("$2a$")) {
-                log.info("检测到管理员账号存在但密码未加密，正在重置密码为 123456...");
-                admin.setPassword(passwordEncoder.encode("123456"));
-                admin.setUpdateTime(LocalDateTime.now());
-                userMapper.updateById(admin);
-                log.info("管理员密码重置完成");
-            }
         }
+        // 移除自动重置密码的逻辑，尊重用户现有数据
+        /*
+         * else {
+         * String currentPwd = admin.getPassword();
+         * if (currentPwd == null || !currentPwd.startsWith("$2a$")) {
+         * log.info("检测到管理员账号存在但密码未加密，正在重置密码为 123456...");
+         * admin.setPassword(passwordEncoder.encode("123456"));
+         * admin.setUpdateTime(LocalDateTime.now());
+         * userMapper.updateById(admin);
+         * log.info("管理员密码重置完成");
+         * }
+         * }
+         */
 
         // 初始化 staff 账号
         String staffUsername = "staff";
@@ -195,29 +196,18 @@ public class UserServiceImpl implements UserService {
             newStaff.setDeleted(0);
             newStaff.setVersion(1);
 
-            // 为 staff 账号设置默认权限 (消息中心, 客户管理, AI聊天, 知识库)
+            // 为 staff 账号设置默认权限
             newStaff.setPermissionSettings(
                     "{\"menuPermissions\":[\"customer\",\"message\",\"ai-chat\",\"knowledge\"],\"dataPermission\":{\"canViewSensitive\":false,\"canImport\":false,\"canDelete\":false}}");
 
             userMapper.insert(newStaff);
             log.info("演示业务员初始化完成: staff / 123456");
-        } else {
-            String currentPwd = staff.getPassword();
-            if (currentPwd == null || !currentPwd.startsWith("$2a$")) {
-                log.info("检测到 staff 账号存在但密码未加密，正在重置密码为 123456...");
-                staff.setPassword(passwordEncoder.encode("123456"));
-                staff.setUpdateTime(LocalDateTime.now());
-                userMapper.updateById(staff);
-                log.info("staff 密码重置完成");
-            }
-            // 确保现有 staff 账号也有正确的权限配置
-            if (staff.getPermissionSettings() == null || !staff.getPermissionSettings().contains("canImport")) {
-                log.info("检测到 staff 权限配置缺失或版本过旧，正在更新...");
-                staff.setPermissionSettings(
-                        "{\"menuPermissions\":[\"customer\",\"message\",\"ai-chat\",\"knowledge\"],\"dataPermission\":{\"canViewSensitive\":false,\"canImport\":false,\"canDelete\":false}}");
-                staff.setUpdateTime(LocalDateTime.now());
-                userMapper.updateById(staff);
-            }
         }
+        // 移除自动重置密码的逻辑
+        /*
+         * else {
+         * // ...
+         * }
+         */
     }
 }

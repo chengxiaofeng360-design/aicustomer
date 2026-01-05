@@ -23,6 +23,9 @@ public class DatabaseMigrationConfig implements InitializingBean {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         logger.info("开始执行数据库迁移...");
@@ -39,6 +42,9 @@ public class DatabaseMigrationConfig implements InitializingBean {
 
             // 添加 sys_user 表的 permission_settings 字段（如果不存在）
             addPermissionSettingsColumn();
+
+            // 修复密码加密
+            fixPasswordEncryption();
 
             logger.info("数据库迁移完成！");
         } catch (Exception e) {
@@ -137,6 +143,28 @@ public class DatabaseMigrationConfig implements InitializingBean {
             }
         } catch (Exception e) {
             logger.warn("添加 last_login_time 字段时出错: " + e.getMessage());
+        }
+    }
+
+    private void fixPasswordEncryption() {
+        try {
+            logger.info("正在验证并修复账号密码...");
+
+            // 1. 动态生成 123456 的正确加密串，确保和当前环境的 PasswordEncoder 100% 匹配
+            String validHash = passwordEncoder.encode("123456");
+
+            // 2. 强制重置 admin/staff 用户的密码，不进行任何条件判断
+            String sql = "UPDATE sys_user SET password = ? WHERE username IN ('admin', 'staff')";
+
+            int updated = jdbcTemplate.update(sql, validHash);
+
+            if (updated > 0) {
+                logger.info("✅ [强制重置] 已成功将 {} 个账号(admin/staff)的密码为重置为 123456", updated);
+            } else {
+                logger.warn("未找到 admin 或 staff 账号，无法重置");
+            }
+        } catch (Exception e) {
+            logger.error("严重的密码修复错误: " + e.getMessage(), e);
         }
     }
 }
