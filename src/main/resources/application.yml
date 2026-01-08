@@ -32,7 +32,7 @@ spring:
   # 数据库初始化配置
   sql:
     init:
-      mode: never
+      mode: always
       schema-locations: classpath:sql/init.sql,classpath:sql/migrations/20251228_fix_sys_user_columns.sql,classpath:sql/migrations/20260103_add_team_task_columns.sql,classpath:sql/migrations/20260105_fix_password_encryption.sql
       # data-locations: classpath:sql/data.sql
       continue-on-error: true
@@ -111,6 +111,10 @@ ai-customer:
   file:
     upload-path: /uploads/
     max-size: 104857600  # 100MB
+
+  # 安全配置
+  security:
+    force-password-reset: false # 是否在启动时强制重置 admin/staff 密码 (开发环境可设为 true, 生产环境必须 false)
   
   # AI服务配置
   ai:
@@ -159,3 +163,8 @@ vector:
   index:
     name: knowledge_docs
 
+
+# Jasypt encryption configuration
+jasypt:
+  encryptor:
+    password: aicustomer

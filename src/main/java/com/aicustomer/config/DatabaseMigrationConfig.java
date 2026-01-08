@@ -26,6 +26,9 @@ public class DatabaseMigrationConfig implements InitializingBean {
     @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @org.springframework.beans.factory.annotation.Value("${ai-customer.security.force-password-reset:false}")
+    private boolean forcePasswordReset;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         logger.info("开始执行数据库迁移...");
@@ -43,8 +46,8 @@ public class DatabaseMigrationConfig implements InitializingBean {
             // 添加 sys_user 表的 permission_settings 字段（如果不存在）
             addPermissionSettingsColumn();
 
-            // 修复密码加密
-            fixPasswordEncryption();
+            // 修复密码加密 (已禁用，防止重置用户密码)
+            // fixPasswordEncryption();
 
             logger.info("数据库迁移完成！");
         } catch (Exception e) {
@@ -149,6 +152,11 @@ public class DatabaseMigrationConfig implements InitializingBean {
     private void fixPasswordEncryption() {
         try {
             logger.info("正在验证并修复账号密码...");
+
+            if (!forcePasswordReset) {
+                logger.info("配置项 ai-customer.security.force-password-reset 为 false，跳过强制密码重置");
+                return;
+            }
 
             // 1. 动态生成 123456 的正确加密串，确保和当前环境的 PasswordEncoder 100% 匹配
             String validHash = passwordEncoder.encode("123456");

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="/css/common.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="main-container">
         <!-- 页面头部 -->
@@ -20,43 +22,51 @@
                 <a href="/customer-categories.html" class="back-home-btn" style="text-decoration: none;">
                     <i class="bi bi-folder2-open"></i> 返回分类
                 </a>
-            <a href="/" class="back-home-btn">
-                <i class="bi bi-house-fill"></i> 返回首页
-            </a>
+                <a href="/" class="back-home-btn">
+                    <i class="bi bi-house-fill"></i> 返回首页
+                </a>
             </div>
         </div>
-        
+
         <!-- 统计卡片 -->
         <div class="row mb-3">
             <div class="col-md-3">
-                <div class="stats-card" style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                <div class="stats-card"
+                    style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
                     <div>
                         <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">客户总数</div>
-                        <div id="statsTotalCustomers" class="stats-number" style="font-size: 1.5rem; font-weight: bold;">0</div>
+                        <div id="statsTotalCustomers" class="stats-number"
+                            style="font-size: 1.5rem; font-weight: bold;">0</div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stats-card" style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                <div class="stats-card"
+                    style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
                     <div>
                         <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">重要用户</div>
-                        <div id="statsSatisfaction" class="stats-number" style="font-size: 1.5rem; font-weight: bold;">-</div>
+                        <div id="statsSatisfaction" class="stats-number" style="font-size: 1.5rem; font-weight: bold;">-
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stats-card" style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                <div class="stats-card"
+                    style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
                     <div>
                         <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">本月新增</div>
-                        <div id="statsNewThisMonth" class="stats-number" style="font-size: 1.5rem; font-weight: bold;">0</div>
+                        <div id="statsNewThisMonth" class="stats-number" style="font-size: 1.5rem; font-weight: bold;">0
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stats-card" style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                <div class="stats-card"
+                    style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
                     <div>
                         <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">潜在客户</div>
-                        <div id="statsPotentialCustomers" class="stats-number" style="font-size: 1.5rem; font-weight: bold;">0</div>
+                        <div id="statsPotentialCustomers" class="stats-number"
+                            style="font-size: 1.5rem; font-weight: bold;">0</div>
                     </div>
                 </div>
             </div>
@@ -66,101 +76,104 @@
         <div class="card mb-3">
             <div class="card-body" style="position: relative;">
                 <!-- 可点击的标题区域（点击整个区域可展开/折叠） -->
-                <div onclick="toggleSearchPanel()" style="cursor: pointer; padding: 0.5rem 0; margin-bottom: 0.5rem; user-select: none; display: flex; align-items: center; gap: 0.5rem;" id="searchToggleArea">
-                    <i class="bi bi-chevron-down" id="toggleIcon" style="font-size: 0.8rem; color: #495057; transition: transform 0.3s;"></i>
+                <div onclick="toggleSearchPanel()"
+                    style="cursor: pointer; padding: 0.5rem 0; margin-bottom: 0.5rem; user-select: none; display: flex; align-items: center; gap: 0.5rem;"
+                    id="searchToggleArea">
+                    <i class="bi bi-chevron-down" id="toggleIcon"
+                        style="font-size: 0.8rem; color: #495057; transition: transform 0.3s;"></i>
                     <span style="font-weight: 500; color: #495057;">搜索和筛选</span>
                 </div>
-                
+
                 <!-- 搜索和操作按钮区域（初始隐藏） -->
                 <div id="searchPanel" style="display: none;" onclick="event.stopPropagation();">
-                <!-- 第一排：搜索条件 -->
-                <div class="row g-3 mb-3">
-                    <div class="col-md-3">
-                        <label class="form-label">客户名称</label>
-                        <input type="text" class="form-control" id="customerName" placeholder="请输入客户名称...">
+                    <!-- 第一排：搜索条件 -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label">客户名称</label>
+                            <input type="text" class="form-control" id="customerName" placeholder="请输入客户名称...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">客户类型</label>
+                            <select class="form-select" id="customerType">
+                                <option value="">全部</option>
+                                <option value="个人">个人</option>
+                                <option value="企业">企业</option>
+                                <option value="科研院所">科研院所</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">客户等级</label>
+                            <select class="form-select" id="customerLevel">
+                                <option value="">全部</option>
+                                <option value="普通">普通</option>
+                                <option value="VIP">VIP</option>
+                                <option value="钻石">钻石</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">地区</label>
+                            <select class="form-select" id="region">
+                                <option value="">全部</option>
+                                <option value="北京">北京</option>
+                                <option value="上海">上海</option>
+                                <option value="广东">广东</option>
+                                <option value="江苏">江苏</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">客户类型</label>
-                        <select class="form-select" id="customerType">
-                            <option value="">全部</option>
-                            <option value="个人">个人</option>
-                            <option value="企业">企业</option>
-                            <option value="科研院所">科研院所</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">客户等级</label>
-                        <select class="form-select" id="customerLevel">
-                            <option value="">全部</option>
-                            <option value="普通">普通</option>
-                            <option value="VIP">VIP</option>
-                            <option value="钻石">钻石</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">地区</label>
-                        <select class="form-select" id="region">
-                            <option value="">全部</option>
-                            <option value="北京">北京</option>
-                            <option value="上海">上海</option>
-                            <option value="广东">广东</option>
-                            <option value="江苏">江苏</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- 第二排：操作按钮 -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="d-flex flex-wrap gap-2 justify-content-between">
-                            <div class="operation-buttons">
-                                <button class="btn btn-success" onclick="showAddCustomerModal()">
-                                <i class="bi bi-plus-circle"></i> 新增客户
-                                </button>
-                            <!-- AI识别按钮 -->
-                            <button class="btn btn-info" onclick="showAIRecognition()">
-                                <i class="bi bi-robot"></i> AI识别
-                            </button>
-                            <button class="btn btn-success" onclick="showFileUpload()">
-                                <i class="bi bi-upload"></i> 批量导入
-                            </button>
-                            <button class="btn btn-info" onclick="downloadTemplate()">
-                                <i class="bi bi-file-earmark-arrow-down"></i> 下载模版
-                            </button>
-                                <button class="btn btn-warning" onclick="exportCustomers()">
-                                    <i class="bi bi-download"></i> 导出数据
-                                </button>
-                            </div>
-                            <div class="operation-buttons">
-                                <button class="btn btn-primary" onclick="searchCustomers()">
-                                    <i class="bi bi-search"></i> 搜索
-                                </button>
-                                <button class="btn btn-secondary" onclick="resetFilters()">
-                                    <i class="bi bi-arrow-clockwise"></i> 重置
-                                </button>
+
+                    <!-- 第二排：操作按钮 -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex flex-wrap gap-2 justify-content-between">
+                                <div class="operation-buttons">
+                                    <button class="btn btn-success" onclick="showAddCustomerModal()">
+                                        <i class="bi bi-plus-circle"></i> 新增客户
+                                    </button>
+                                    <!-- AI识别按钮 -->
+                                    <button class="btn btn-info" onclick="showAIRecognition()">
+                                        <i class="bi bi-robot"></i> AI识别
+                                    </button>
+                                    <button class="btn btn-success" onclick="showFileUpload()">
+                                        <i class="bi bi-upload"></i> 批量导入
+                                    </button>
+                                    <button class="btn btn-info" onclick="downloadTemplate()">
+                                        <i class="bi bi-file-earmark-arrow-down"></i> 下载模版
+                                    </button>
+                                    <button class="btn btn-warning" onclick="exportCustomers()">
+                                        <i class="bi bi-download"></i> 导出数据
+                                    </button>
+                                </div>
+                                <div class="operation-buttons">
+                                    <button class="btn btn-primary" onclick="searchCustomers()">
+                                        <i class="bi bi-search"></i> 搜索
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="resetFilters()">
+                                        <i class="bi bi-arrow-clockwise"></i> 重置
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 </div> <!-- 结束搜索面板容器 -->
-                
+
                 <!-- JavaScript 切换逻辑 -->
                 <script>
-                function toggleSearchPanel() {
-                    const panel = document.getElementById('searchPanel');
-                    const toggleIcon = document.getElementById('toggleIcon');
-                    if (panel.style.display === 'none' || panel.style.display === '') {
-                        panel.style.display = 'block';
-                        toggleIcon.classList.remove('bi-chevron-down');
-                        toggleIcon.classList.add('bi-chevron-up');
-                        toggleIcon.style.transform = 'rotate(180deg)';
-                    } else {
-                        panel.style.display = 'none';
-                        toggleIcon.classList.remove('bi-chevron-up');
-                        toggleIcon.classList.add('bi-chevron-down');
-                        toggleIcon.style.transform = 'rotate(0deg)';
+                    function toggleSearchPanel() {
+                        const panel = document.getElementById('searchPanel');
+                        const toggleIcon = document.getElementById('toggleIcon');
+                        if (panel.style.display === 'none' || panel.style.display === '') {
+                            panel.style.display = 'block';
+                            toggleIcon.classList.remove('bi-chevron-down');
+                            toggleIcon.classList.add('bi-chevron-up');
+                            toggleIcon.style.transform = 'rotate(180deg)';
+                        } else {
+                            panel.style.display = 'none';
+                            toggleIcon.classList.remove('bi-chevron-up');
+                            toggleIcon.classList.add('bi-chevron-down');
+                            toggleIcon.style.transform = 'rotate(0deg)';
+                        }
                     }
-                }
                 </script>
             </div>
         </div>
@@ -222,13 +235,15 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="customerNameInput">客户名称</label>
-                                    <input type="text" class="form-control" id="customerNameInput" name="customerName" required placeholder="请输入客户名称">
+                                    <input type="text" class="form-control" id="customerNameInput" name="customerName"
+                                        required placeholder="请输入客户名称">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="contactPerson">联系人</label>
-                                    <input type="text" class="form-control" id="contactPerson" name="contactPerson" required placeholder="请输入联系人姓名">
+                                    <input type="text" class="form-control" id="contactPerson" name="contactPerson"
+                                        required placeholder="请输入联系人姓名">
                                 </div>
                             </div>
                         </div>
@@ -236,13 +251,15 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="phone">电话</label>
-                                    <input type="tel" class="form-control" id="phone" name="phone" required placeholder="请输入联系电话">
+                                    <input type="tel" class="form-control" id="phone" name="phone" required
+                                        placeholder="请输入联系电话">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="email">邮箱</label>
-                                    <input type="email" class="form-control" id="email" name="email" placeholder="请输入邮箱地址">
+                                    <input type="email" class="form-control" id="email" name="email"
+                                        placeholder="请输入邮箱地址">
                                 </div>
                             </div>
                         </div>
@@ -273,10 +290,16 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label" for="businessTypeSelect">业务类型 <span class="text-danger">*</span></label>
+                                    <label class="form-label" for="businessTypeSelect">业务类型 <span
+                                            class="text-danger">*</span></label>
                                     <select class="form-select" id="businessTypeSelect" name="businessType" required>
                                         <option value="">请选择业务类型</option>
-                                        <!-- 选项将通过JavaScript从系统配置动态加载 -->
+                                        <option value="1">品种权申请客户</option>
+                                        <option value="2">品种权转化推广客户</option>
+                                        <option value="3">知识产权协作客户</option>
+                                        <option value="4">科普教育合作客户</option>
+                                        <option value="5">景观设计服务客户</option>
+                                        <option value="6">图书出版客户</option>
                                     </select>
                                 </div>
                             </div>
@@ -284,17 +307,43 @@
                                 <div class="mb-3">
                                     <label class="form-label" for="regionSelect">地区</label>
                                     <select class="form-select" id="regionSelect" name="region" required>
+
                                         <option value="">请选择地区</option>
                                         <option value="北京">北京</option>
+                                        <option value="天津">天津</option>
+                                        <option value="河北">河北</option>
+                                        <option value="山西">山西</option>
+                                        <option value="内蒙古">内蒙古</option>
+                                        <option value="辽宁">辽宁</option>
+                                        <option value="吉林">吉林</option>
+                                        <option value="黑龙江">黑龙江</option>
                                         <option value="上海">上海</option>
-                                        <option value="广东">广东</option>
                                         <option value="江苏">江苏</option>
                                         <option value="浙江">浙江</option>
+                                        <option value="安徽">安徽</option>
+                                        <option value="福建">福建</option>
+                                        <option value="江西">江西</option>
                                         <option value="山东">山东</option>
                                         <option value="河南">河南</option>
-                                        <option value="四川">四川</option>
                                         <option value="湖北">湖北</option>
                                         <option value="湖南">湖南</option>
+                                        <option value="广东">广东</option>
+                                        <option value="广西">广西</option>
+                                        <option value="海南">海南</option>
+                                        <option value="重庆">重庆</option>
+                                        <option value="四川">四川</option>
+                                        <option value="贵州">贵州</option>
+                                        <option value="云南">云南</option>
+                                        <option value="西藏">西藏</option>
+                                        <option value="陕西">陕西</option>
+                                        <option value="甘肃">甘肃</option>
+                                        <option value="青海">青海</option>
+                                        <option value="宁夏">宁夏</option>
+                                        <option value="新疆">新疆</option>
+                                        <option value="香港">香港</option>
+                                        <option value="澳门">澳门</option>
+                                        <option value="台湾">台湾</option>
+                                        <option value="海外">海外</option>
                                     </select>
                                 </div>
                             </div>
@@ -317,39 +366,44 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="position">职务</label>
-                                    <input type="text" class="form-control" id="position" name="position" placeholder="请输入职务">
+                                    <input type="text" class="form-control" id="position" name="position"
+                                        placeholder="请输入职务">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="qqWeixin">QQ/微信</label>
-                                    <input type="text" class="form-control" id="qqWeixin" name="qqWeixin" placeholder="请输入QQ号或微信号">
+                                    <input type="text" class="form-control" id="qqWeixin" name="qqWeixin"
+                                        placeholder="请输入QQ号或微信号">
                                 </div>
                             </div>
                         </div>
-                                <div class="row">
+                        <div class="row">
                             <div class="col-md-12">
-                                        <div class="mb-3">
+                                <div class="mb-3">
                                     <label class="form-label" for="cooperationContent">合作内容</label>
-                                    <textarea class="form-control" id="cooperationContent" name="cooperationContent" rows="3" placeholder="请输入合作内容"></textarea>
-                                        </div>
-                                    </div>
-                                        </div>
-                                <div class="row">
+                                    <textarea class="form-control" id="cooperationContent" name="cooperationContent"
+                                        rows="3" placeholder="请输入合作内容"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-12">
-                                        <div class="mb-3">
+                                <div class="mb-3">
                                     <label class="form-label" for="address">详细地址</label>
-                                    <textarea class="form-control" id="address" name="address" rows="2" placeholder="请输入详细地址"></textarea>
-                                        </div>
-                                    </div>
-                                        </div>
-                                <div class="row">
+                                    <textarea class="form-control" id="address" name="address" rows="2"
+                                        placeholder="请输入详细地址"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-12">
-                                        <div class="mb-3">
+                                <div class="mb-3">
                                     <label class="form-label" for="remarks">备注</label>
-                                    <textarea class="form-control" id="remarks" name="remarks" rows="3" placeholder="请输入备注信息"></textarea>
-                                        </div>
-                                    </div>
+                                    <textarea class="form-control" id="remarks" name="remarks" rows="3"
+                                        placeholder="请输入备注信息"></textarea>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -377,12 +431,13 @@
                     <!-- 标签页导航 -->
                     <ul class="nav nav-tabs mb-3" id="customerDetailTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="basicInfoTab" data-bs-toggle="tab" data-bs-target="#basicInfo" type="button" role="tab">
+                            <button class="nav-link active" id="basicInfoTab" data-bs-toggle="tab"
+                                data-bs-target="#basicInfo" type="button" role="tab">
                                 <i class="bi bi-info-circle me-1"></i>基本信息
                             </button>
                         </li>
                     </ul>
-                    
+
                     <!-- 标签页内容 -->
                     <div class="tab-content" id="customerDetailTabContent">
                         <!-- 基本信息标签页 -->
@@ -412,16 +467,18 @@
                     <!-- 卡片切换导航 -->
                     <ul class="nav nav-pills nav-fill mb-3" id="aiRecognitionTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="text-tab" data-bs-toggle="tab" data-bs-target="#textInputCard" type="button" role="tab">
+                            <button class="nav-link active" id="text-tab" data-bs-toggle="tab"
+                                data-bs-target="#textInputCard" type="button" role="tab">
                                 <i class="bi bi-pencil-square me-2"></i>文本数据录入
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#imageRecognitionCard" type="button" role="tab">
+                            <button class="nav-link" id="image-tab" data-bs-toggle="tab"
+                                data-bs-target="#imageRecognitionCard" type="button" role="tab">
                                 <i class="bi bi-image me-2"></i>名片图片识别
                             </button>
                         </li>
-                        </ul>
+                    </ul>
 
                     <!-- 卡片内容（只切换上部分） -->
                     <div class="tab-content" id="aiRecognitionTabContent">
@@ -433,18 +490,21 @@
                                     <div class="accordion mb-3" id="aiHelpAccordion">
                                         <div class="accordion-item">
                                             <h2 class="accordion-header">
-                                                <button class="accordion-button py-2" type="button" data-bs-toggle="collapse" data-bs-target="#aiHelpCollapse" style="font-size: 0.9rem;">
+                                                <button class="accordion-button py-2" type="button"
+                                                    data-bs-toggle="collapse" data-bs-target="#aiHelpCollapse"
+                                                    style="font-size: 0.9rem;">
                                                     <i class="bi bi-info-circle me-2"></i> 使用说明和格式示例
                                                 </button>
                                             </h2>
-                                            <div id="aiHelpCollapse" class="accordion-collapse collapse show" data-bs-parent="#aiHelpAccordion">
+                                            <div id="aiHelpCollapse" class="accordion-collapse collapse show"
+                                                data-bs-parent="#aiHelpAccordion">
                                                 <div class="accordion-body p-2" style="font-size: 0.85rem;">
                                                     <div class="mb-2">
                                                         <strong>必填字段：</strong>客户名称 | 联系人 | 电话 | 客户类型 | 地区<br>
                                                         <strong>可选字段：</strong>职务 | QQ/微信 | 合作内容 | 邮箱 | 地址 | 备注
                                                     </div>
                                                     <div class="bg-light p-2 rounded" style="font-size: 0.8rem;">
-                            <code>
+                                                        <code>
                                                             <strong>示例1（完整信息）：</strong><br>
                                                             张三公司 | 李四 | 13800138000 | 企业 | 北京 | 经理 | 微信123 | 新业务申请 | zhangsan@example.com | 北京市朝阳区 | 重要客户<br><br>
                                                             <strong>示例2（仅必填字段）：</strong><br>
@@ -455,53 +515,55 @@
                                                     </div>
                                                 </div>
                                             </div>
-                        </div>
-                    </div>
+                                        </div>
+                                    </div>
 
                                     <!-- 客户数据录入 -->
-                    <div class="mb-3">
+                                    <div class="mb-3">
                                         <label class="form-label mb-2" style="font-size: 0.95rem; font-weight: 500;">
                                             <i class="bi bi-file-text me-1"></i>客户数据录入
                                         </label>
-                        <div class="input-group">
-                                            <textarea class="form-control" id="batchImportData" rows="12" 
-                                                      placeholder="请在此处粘贴客户数据，或使用语音录入功能...&#10;每行一个客户，字段用制表符或逗号分隔"></textarea>
-                            <div class="input-group-append">
-                                                <button class="btn btn-outline-success" type="button" onclick="startVoiceInput()" id="voiceInputBtn" title="语音录入">
-                                    <i class="bi bi-mic"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="mt-2">
+                                        <div class="input-group">
+                                            <textarea class="form-control" id="batchImportData" rows="12"
+                                                placeholder="请在此处粘贴客户数据，或使用语音录入功能...&#10;每行一个客户，字段用制表符或逗号分隔"></textarea>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-success" type="button"
+                                                    onclick="startVoiceInput()" id="voiceInputBtn" title="语音录入">
+                                                    <i class="bi bi-mic"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
                                             <small class="text-muted" style="font-size: 0.8rem;">
                                                 <i class="bi bi-mic"></i> 语音录入：说"木木"开始录音，停顿5秒自动结束
-                            </small>
-                        </div>
-                    </div>
+                                            </small>
+                                        </div>
+                                    </div>
 
                                     <!-- 操作按钮 -->
-                        <div class="d-flex gap-2">
+                                    <div class="d-flex gap-2">
                                         <button class="btn btn-primary btn-sm" onclick="parseImportData()">
-                                <i class="bi bi-gear"></i> 解析数据
-                            </button>
+                                            <i class="bi bi-gear"></i> 解析数据
+                                        </button>
                                         <button class="btn btn-outline-secondary btn-sm" onclick="clearImportData()">
-                                <i class="bi bi-trash"></i> 清空
-                            </button>
+                                            <i class="bi bi-trash"></i> 清空
+                                        </button>
                                         <button class="btn btn-outline-info btn-sm" onclick="showVoiceHelp()">
                                             <i class="bi bi-question-circle"></i> 帮助
-                            </button>
-                    </div>
+                                        </button>
+                                    </div>
 
-                    <!-- 语音录入状态显示 -->
-                                    <div id="voiceStatus" class="alert alert-info py-2 mt-3" style="display: none; font-size: 0.85rem;">
-                        <div class="d-flex align-items-center">
+                                    <!-- 语音录入状态显示 -->
+                                    <div id="voiceStatus" class="alert alert-info py-2 mt-3"
+                                        style="display: none; font-size: 0.85rem;">
+                                        <div class="d-flex align-items-center">
                                             <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                            <span id="voiceStatusText">正在听取语音...</span>
+                                            <span id="voiceStatusText">正在听取语音...</span>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
                         </div>
-                    </div>
 
                         <!-- 名片图片识别卡片 -->
                         <div class="tab-pane fade" id="imageRecognitionCard" role="tabpanel">
@@ -509,12 +571,13 @@
                                 <div class="card-body">
                                     <!-- 上传区域（未上传时显示） -->
                                     <div id="businessCardUploadArea" class="business-card-upload-area">
-                                        <input type="file" id="businessCardImage" accept="image/*" style="display: none;" onchange="handleBusinessCardUpload(event)">
-                                        <div class="upload-zone" id="businessCardUploadZone" 
-                                             ondrop="handleBusinessCardDrop(event)" 
-                                             ondragover="handleBusinessCardDragOver(event)" 
-                                             ondragleave="handleBusinessCardDragLeave(event)"
-                                             onclick="document.getElementById('businessCardImage').click()">
+                                        <input type="file" id="businessCardImage" accept="image/*"
+                                            style="display: none;" onchange="handleBusinessCardUpload(event)">
+                                        <div class="upload-zone" id="businessCardUploadZone"
+                                            ondrop="handleBusinessCardDrop(event)"
+                                            ondragover="handleBusinessCardDragOver(event)"
+                                            ondragleave="handleBusinessCardDragLeave(event)"
+                                            onclick="document.getElementById('businessCardImage').click()">
                                             <div class="upload-content">
                                                 <i class="bi bi-cloud-upload upload-icon"></i>
                                                 <h6 class="upload-title">拖拽名片图片到此处</h6>
@@ -531,12 +594,15 @@
                                     </div>
 
                                     <!-- 预览区域（上传后显示） -->
-                                    <div id="businessCardPreview" style="display: none;" class="business-card-preview-area">
-                                        <div class="preview-header d-flex justify-content-between align-items-center mb-3">
+                                    <div id="businessCardPreview" style="display: none;"
+                                        class="business-card-preview-area">
+                                        <div
+                                            class="preview-header d-flex justify-content-between align-items-center mb-3">
                                             <h6 class="mb-0">
                                                 <i class="bi bi-image me-2"></i>名片预览
                                             </h6>
-                                            <button class="btn btn-outline-danger btn-sm" onclick="clearBusinessCardPreview()">
+                                            <button class="btn btn-outline-danger btn-sm"
+                                                onclick="clearBusinessCardPreview()">
                                                 <i class="bi bi-x-circle me-1"></i> 重新选择
                                             </button>
                                         </div>
@@ -549,7 +615,8 @@
                                     </div>
 
                                     <!-- 识别状态 -->
-                                    <div id="businessCardRecognizing" style="display: none;" class="alert alert-info py-3 mb-3">
+                                    <div id="businessCardRecognizing" style="display: none;"
+                                        class="alert alert-info py-3 mb-3">
                                         <div class="d-flex align-items-center justify-content-center">
                                             <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                                             <span>正在识别名片信息，请稍候...</span>
@@ -585,19 +652,20 @@
                                                 <th style="padding: 0.4rem;">客户类型</th>
                                                 <th style="padding: 0.4rem;">地区</th>
                                                 <th style="padding: 0.4rem;">状态</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="importPreviewBody">
-                                </tbody>
-                            </table>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="importPreviewBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
                     </div>
                 </div>
                 <div class="modal-footer py-2">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveBatchImport()" id="saveImportBtn" disabled>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveBatchImport()" id="saveImportBtn"
+                        disabled>
                         <i class="bi bi-save"></i> 保存到数据库
                     </button>
                 </div>
@@ -649,16 +717,21 @@
                             <div class="file-upload-content">
                                 <i class="bi bi-cloud-upload file-upload-icon"></i>
                                 <h6 class="import-dropzone-title">拖拽文件到此处或点击下方按钮选择文件</h6>
-                                <p class="import-dropzone-desc">支持 Excel（.xlsx、.xls）与 CSV（.csv，UTF-8）格式文件，可同时选择多个文件批量导入。</p>
+                                <p class="import-dropzone-desc">支持 Excel（.xlsx、.xls）与 CSV（.csv，UTF-8）格式文件，可同时选择多个文件批量导入。
+                                </p>
                                 <div class="import-dropzone-actions">
-                                    <label for="fileInput" class="btn btn-primary" id="selectFileBtn" style="pointer-events: auto; position: relative; z-index: 10; cursor: pointer; margin: 0;">
-                                    <i class="bi bi-folder2-open"></i> 选择文件
-                                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" multiple style="position: absolute; opacity: 0; width: 0; height: 0; overflow: hidden;">
+                                    <label for="fileInput" class="btn btn-primary" id="selectFileBtn"
+                                        style="pointer-events: auto; position: relative; z-index: 10; cursor: pointer; margin: 0;">
+                                        <i class="bi bi-folder2-open"></i> 选择文件
+                                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" multiple
+                                            style="position: absolute; opacity: 0; width: 0; height: 0; overflow: hidden;">
                                     </label>
-                                    <button class="btn btn-outline-secondary" type="button" onclick="resetImportFileSelection(); return false;" style="pointer-events: auto; position: relative; z-index: 10;">
+                                    <button class="btn btn-outline-secondary" type="button"
+                                        onclick="resetImportFileSelection(); return false;"
+                                        style="pointer-events: auto; position: relative; z-index: 10;">
                                         <i class="bi bi-arrow-counterclockwise"></i> 清空选择
-                                </button>
-                            </div>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="import-upload-hint">
@@ -673,49 +746,49 @@
                                 <h6 class="mb-0">文件预览</h6>
                                 <span class="text-muted small">支持多文件导入，您可以在下方列表中替换或移除文件</span>
                             </div>
-                        <div class="table-responsive">
+                            <div class="table-responsive">
                                 <table class="table table-sm table-hover align-middle mb-0">
                                     <thead>
-                                    <tr>
-                                        <th>文件名</th>
-                                        <th>文件类型</th>
-                                        <th>文件大小</th>
-                                        <th>状态</th>
+                                        <tr>
+                                            <th>文件名</th>
+                                            <th>文件类型</th>
+                                            <th>文件大小</th>
+                                            <th>状态</th>
                                             <th class="text-center">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="filePreviewBody">
-                                </tbody>
-                            </table>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="filePreviewBody">
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
 
                         <div id="dataPreview" class="import-preview-card" style="display: none;">
                             <div class="import-preview-card-header">
                                 <h6 class="mb-0">数据预览</h6>
                                 <span class="text-muted small">仅展示前10行预览，导入时将对全部数据进行完整校验</span>
                             </div>
-                        <div class="table-responsive">
+                            <div class="table-responsive">
                                 <table class="table table-sm table-hover align-middle mb-0">
                                     <thead>
-                                    <tr>
-                                        <th>客户名称</th>
-                                        <th>联系人</th>
-                                        <th>电话</th>
-                                        <th>客户类型</th>
+                                        <tr>
+                                            <th>客户名称</th>
+                                            <th>联系人</th>
+                                            <th>电话</th>
+                                            <th>客户类型</th>
                                             <th>职务</th>
                                             <th>QQ/微信</th>
                                             <th>合作内容</th>
-                                        <th>地区</th>
-                                        <th>状态</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="dataPreviewBody">
-                                </tbody>
-                            </table>
+                                            <th>地区</th>
+                                            <th>状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dataPreviewBody">
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
                 </div>
                 <div class="modal-footer justify-content-end">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
@@ -730,6 +803,9 @@
     <script src="/js/customers.js"></script>
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
+
 </html>
+
 </html>

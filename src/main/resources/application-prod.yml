@@ -1,0 +1,30 @@
+# 生产环境配置文件 (Linux)
+# 启动命令: java -jar -Dspring.profiles.active=prod ai-customer-management-1.0.0.jar
+
+server:
+  port: 8085
+
+logging:
+  file:
+    name: /var/log/ai-customer/app.log  # Linux 标准日志路径
+  level:
+    root: INFO
+    com.aicustomer: INFO  # 生产环境减少日志输出
+
+file:
+  upload:
+    path: /data/uploads/  # Linux 文件存储路径
+
+ai-customer:
+  security:
+    force-password-reset: false  # 生产环境严禁强制重置密码
+  file:
+    upload-path: /data/uploads/
+
+spring:
+  datasource:
+    # 生产环境建议使用专用的数据库用户
+    # username: prod_user
+    # password: prod_password
+    hikari:
+      maximum-pool-size: 50  # 生产环境可以适当增加连接池

@@ -55,9 +55,9 @@ const progressClassMap = {
 
 // 业务类型映射（具体业务类型1-6，从系统配置动态加载，这里是默认值）
 let businessTypeMap = {
-    '1': '客户业务申请客户',
-    '2': '客户业务转化推广客户',
-    '3': '知识产权互补协作客户',
+    '1': '品种权申请客户',
+    '2': '品种权转化推广客户',
+    '3': '知识产权协作客户',
     '4': '科普教育合作客户',
     '5': '景观设计服务客户',
     '6': '图书出版客户'
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // 从系统配置加载业务类型和分类
-    loadBusinessTypesFromConfig();
+    // loadBusinessTypesFromConfig(); // 禁用动态加载，防止清空默认选项
     loadBusinessCategoriesFromConfig();
 
     loadStatistics();
