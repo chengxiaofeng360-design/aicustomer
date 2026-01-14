@@ -4,6 +4,8 @@ import com.aicustomer.entity.AiChat;
 import com.aicustomer.entity.FaqQa;
 import com.aicustomer.entity.KnowledgeDocument;
 import com.aicustomer.mapper.AiChatMapper;
+import com.aicustomer.model.FunctionCallRequest;
+import com.aicustomer.model.FunctionCallResponse;
 import com.aicustomer.service.AiChatService;
 import com.aicustomer.service.DeepSeekService;
 import com.aicustomer.service.FaqQaService;
@@ -60,62 +62,30 @@ public class AiChatServiceImpl implements AiChatService {
     private final ZhipuChatService zhipuChatService;
     private final KbDocumentService kbDocumentService;
     private final com.aicustomer.service.UserService userService;
+    private final com.aicustomer.service.FunctionCallingService functionCallingService;
+    private final com.aicustomer.adapter.AiModelAdapterManager adapterManager;
 
     @Qualifier("doubaoChatModel")
     private final ChatModel doubaoChatModel;
 
     // 系统提示词，定义AI助手的角色和行为
-    private static final String SYSTEM_PROMPT = "你是一个专业的AI客户管理助手。" +
-            "\n\n### 极其重要的回复原则 ###\n" +
-            "1. **强制工具调用 (核心指令)**：你本身并不了解系统的任何实时数据。只要用户的问题涉及“有多少文件”、“有哪些资料”、“查看文件内容”、“查找客户”、“统计数据”等，你**必须且仅能**通过调用下方定义的 JSON 工具指令来获取。**严禁凭猜测回答。**\n"
+    private static final String SYSTEM_PROMPT = "你是AI客户管理助手。" +
+            "\n\n### 最高优先级规则（必须遵守！）###\n" +
+            "**当用户提到任何文件名（如\"常见侵权案例分析\"、\"品种权申请操作流程\"等），你必须立即调用get_file_detail获取内容。不要问\"需要我获取吗\"，不要说\"请问您需要\"，直接调用工具！**\n"
             +
-            "2. **严禁解释过程**：你的回复中不要提到“我在查表”、“调用接口”等。用户只需要答案。\n" +
-            "3. **先查后说**：对于任何关于“资料/清单/详情”的问题，必须先输出 JSON 工具指令。\n" +
-            "\n\n### 数据库查询工具说明 ###\n" +
-            "**可用资料信息 (知识库)：**\n" +
-            "- `query_knowledge_count`: 用于统计当前上传的文件总数。\n" +
-            "- `query_knowledge_list`: 用于获取已上传文件的列表。\n" +
-            "- `query_knowledge_detail`: 用于获取特定文件的详细全文内容。参数: {\"fileName\": \"文件名或标题\"}\n" +
-            "- `query_knowledge_word_count`: 用于统计特定文件的字数/字符数。参数: {\"fileName\": \"文件名或标题\"}\n" +
-            "\n**可用客户信息：**\n" +
-            "- `dynamic_sql_query`: **仅用于查询客户数据** (数据源是 customer 表)。禁止用于查询知识库文档内容。\n" +
-            "\n**客户表 (customer) 字段说明：**\n" +
-            "- `customer_name`: 客户名称\n" +
-            "- `region`: 地区（如\"北京\"、\"上海\"、\"广东\"等）\n" +
-            "- `contact_person`: 联系人\n" +
-            "- `phone`: 电话\n" +
-            "- `customer_type`: 客户类型 (1=个人, 2=企业, 3=科研院所)\n" +
-            "- `customer_level`: 客户等级 (1=普通, 2=VIP, 3=钻石)\n" +
-            "- `business_type`: 业务类型 (1-6)\n" +
-            "- `progress`: 进度 (0=未开始, 1=进行中, 2=暂停, 3=已成功, 4=放弃)\n" +
-            "\n**SQL 查询示例：**\n" +
-            "- 查询北京客户数量: `SELECT COUNT(*) FROM customer WHERE region = '北京'`\n" +
-            "- 查询VIP客户: `SELECT customer_name, contact_person FROM customer WHERE customer_level = 2`\n" +
-            "- 查询进行中的项目: `SELECT customer_name, region FROM customer WHERE progress = 1`\n" +
-            "\n**工具调用格式：**\n" +
-            "{\n" +
-            "  \"tool\": \"工具名\",\n" +
-            "  \"parameters\": { \"key\": \"value\" }\n" +
-            "}\n" +
-            "\n**操作原则：**\n" +
-            "1. 用户问“有哪些资料”、“上传了什么”，用 `{\"tool\": \"query_knowledge_list\"}`。\n" +
-            "2. 用户问“有多少个文件”，用 `{\"tool\": \"query_knowledge_count\"}`。\n" +
-            "3. 用户问“某某文件的内容是什么”、“查看某某文件”，用 `{\"tool\": \"query_knowledge_detail\", \"parameters\": {\"fileName\": \"xxx\"}}`。\n"
-            +
-            "4. 用户问“某某文件有多少字”，用 `{\"tool\": \"query_knowledge_word_count\", \"parameters\": {\"fileName\": \"xxx\"}}`。\n"
-            +
-            "5. 用户问客户相关问题（如“北京客户有几个”、“VIP客户有哪些”），用 `{\"tool\": \"dynamic_sql_query\", \"parameters\": {\"sql\": \"SELECT COUNT(*) FROM customer WHERE region = '北京'\"}}`。\n"
-            +
-            "6. **Important Terminology**: `用户` (User) and `客户` (Customer) are often used interchangeably. If the user asks about '用户' (users), assume they mean '客户' (customers) and query the `customer` table, unless they explicitly ask for 'system accounts' or 'admins'.\n"
-            +
-            "7. **重要**：查询地区时必须使用 `region` 字段，不要使用 `location`。\n" +
-            "8. **模糊指令处理**：如果用户仅发送“全部信息”、“所有资料”、“查看清单”等模糊指令，且上下文中未明确提及“文件”或“知识库”，**必须优先假设这是在查询客户列表**，请使用 `{\"tool\": \"dynamic_sql_query\", \"parameters\": {\"sql\": \"SELECT * FROM customer LIMIT 20\"}}`。\n"
-            +
-            "9. **多轮对话与指代消解 (Context Awareness)**：\n" +
-            "   - 如果用户问“哪五位”、“是谁”、“列出来”、“看看详情”等追问（特别是在刚才讨论过数量之后），**必须**理解为查询具体的客户列表。\n" +
-            "   - 请直接生成 SQL：`SELECT customer_name, contact_person, phone, customer_level FROM customer LIMIT 10`。\n" +
-            "   - **绝对不要**反问用户“你想查哪五位”，直接给出数据。\n" +
-            "10. 只有当工具返回数据后，才整合为自然语言回复。";
+            "\n### 可用工具 ###\n" +
+            "- get_file_count: 文件总数\n" +
+            "- get_file_list: 文件列表。格式: {\"tool\":\"get_file_list\"}\n" +
+            "- get_file_detail: 获取文件内容。格式: {\"tool\":\"get_file_detail\",\"parameters\":{\"fileName\":\"文件名\"}}\n" +
+            "- get_customer_count: 客户总数\n" +
+            "- get_customer_list: 客户列表\n" +
+            "\n### 必须遵守的规则 ###\n" +
+            "1. 用户问\"XXX是什么/是啥/内容\" → 立刻调用 get_file_detail，文件名=XXX\n" +
+            "2. 用户说\"好/对/是/OK/查看\" → 根据上一轮对话执行相应工具\n" +
+            "3. 获取到文件内容后，完整输出，禁止摘要\n" +
+            "4. 禁止回复：\"请问您需要吗\"、\"我可以帮您获取\"、\"您是否要查看\"\n" +
+            "5. 禁止返回初始问候语，必须基于上下文回复\n" +
+            "\n**记住：用户提到文件名 → 立即调用工具 → 输出完整结果**";
 
     @Override
     public AiChat sendMessage(String sessionId, String userMessage, Long customerId) {
@@ -180,10 +150,19 @@ public class AiChatServiceImpl implements AiChatService {
      * @param userMessage 用户消息
      * @param history     对话历史（可选，用于多轮对话）
      */
+    /**
+     * 使用统一的AI适配器生成回复
+     * 
+     * 新架构：使用适配器模式，任何AI模型都能平等使用Function Calling
+     * 
+     * @param userMessage 用户消息
+     * @param history     对话历史（可选，用于多轮对话）
+     * @return AI回复
+     */
     private String generateAiResponse(String userMessage, List<Map<String, String>> history) {
-        log.info("【AI聊天服务】开始处理查询: {}", userMessage);
+        log.info("【AI聊天服务 - 统一架构】开始处理查询: {}", userMessage);
 
-        // 1. 第一层：FAQ匹配
+        // 1. FAQ快速响应层
         try {
             List<FaqQa> faqs = faqQaService.searchFaq(userMessage, 1);
             if (faqs != null && !faqs.isEmpty()) {
@@ -196,261 +175,97 @@ public class AiChatServiceImpl implements AiChatService {
             log.error("【AI聊天服务】FAQ匹配异常: {}", e.getMessage());
         }
 
-        // 2. 知识库检索与主动干预准备
-        StringBuilder contextBuilder = new StringBuilder();
-        try {
-            // 语义/向量搜索 (如果可用)
-            if (vectorSearchService.isAvailable()) {
-                List<Map<String, Object>> vectorResults = vectorSearchService.searchByVector(userMessage, 3);
-                if (vectorResults != null && !vectorResults.isEmpty()) {
-                    for (Map<String, Object> res : vectorResults) {
-                        double score = (Double) res.getOrDefault("score", 0.0);
-                        if (score > 0.65) {
-                            contextBuilder.append("相关文档[").append(res.get("title")).append("]: ")
-                                    .append(res.get("content")).append("\n\n");
-                        }
-                    }
-                }
-            }
-            // 全文检索回退
-            List<KnowledgeDocument> documents = knowledgeDocumentService.searchDocuments(userMessage, 3);
-            List<com.aicustomer.entity.KbDocument> kbDocs = kbDocumentService.searchDocuments(userMessage, null, null,
-                    3);
-            if (documents != null) {
-                for (KnowledgeDocument d : documents)
-                    contextBuilder.append("资料[").append(d.getTitle()).append("]: ").append(d.getContent())
-                            .append("\n\n");
-            }
-            if (kbDocs != null) {
-                for (com.aicustomer.entity.KbDocument d : kbDocs)
-                    contextBuilder.append("上传资料[").append(d.getTitle()).append("]: ").append(d.getContent())
-                            .append("\n\n");
-            }
-        } catch (Exception e) {
-            log.warn("【AI聊天服务】检索过程异常: {}", e.getMessage());
+        // 2. 构建统一的Function Calling请求
+        FunctionCallRequest request = FunctionCallRequest.builder()
+                .systemPrompt(SYSTEM_PROMPT)
+                .userMessage(userMessage)
+                .history(history)
+                .functions(functionCallingService.getAvailableFunctions())
+                .build();
+
+        // 3. 调用适配器管理器（自动选择模型和回退）
+        FunctionCallResponse response = adapterManager.chatWithFallback(request);
+
+        // 4. 处理响应
+        if (response.hasError()) {
+            log.error("【AI聊天服务】所有AI模型都失败: {}", response.getError());
+            return generateFallbackResponse(userMessage);
         }
 
-        String context = contextBuilder.toString();
-        String lowerMsg = userMessage.toLowerCase();
-        boolean hasKeywords = lowerMsg.contains("文件") || lowerMsg.contains("上传") || lowerMsg.contains("资料")
-                || lowerMsg.contains("清单") || lowerMsg.contains("多少") || lowerMsg.contains("统计")
-                || lowerMsg.contains("内容") || lowerMsg.contains("详情");
-
-        // 避免误判：如果要查询“客户”、“人员”相关信息，不要注入文件/资料的统计数据
-        boolean isCustomerQuery = lowerMsg.contains("客户") || lowerMsg.contains("客源") || lowerMsg.contains("人员")
-                || lowerMsg.contains("用户") || lowerMsg.contains("人"); // 增加"人"以覆盖"都是那些人"
-
-        boolean isKnowledgeQuery = hasKeywords && !isCustomerQuery;
-
-        String finalSystemPrompt = SYSTEM_PROMPT;
-        String enhancedUserMessage = userMessage;
-
-        // Context Awareness: Check for follow-up questions
-        if (history != null && !history.isEmpty()) {
-            try {
-                Map<String, String> lastResult = history.get(history.size() - 1);
-                String lastContent = lastResult.get("content");
-                // Check if last message was from assistant and contained numbers
-                if (lastContent != null && (lastContent.matches(".*\\d+.*") || lastContent.contains("位")
-                        || lastContent.contains("个"))) {
-                    // Check if current user message is asking for identity/details
-                    // 改动：扩大匹配范围，包含 "那些" (those), "所有", "名字" 等
-                    if (userMessage.contains("哪") || userMessage.contains("谁") || userMessage.contains("名单")
-                            || userMessage.contains("哪些") || userMessage.contains("那些") || userMessage.contains("看看")
-                            || userMessage.contains("列出")) {
-                        String contextHint = "【上下文强关联】上轮AI回复提到了数量或统计（\""
-                                + lastContent.substring(0, Math.min(lastContent.length(), 50)) + "...\"）。用户现在问\""
-                                + userMessage
-                                + "\"，这是在要求**列出具体名单**。请立刻构造 SQL 查询（如 `SELECT customer_name, contact_person FROM customer ...`）来获取详情。禁止反问！";
-                        enhancedUserMessage = contextHint + "\n\n" + enhancedUserMessage;
-                        log.info("【AI聊天服务】检测到追问模式，已注入上下文提示");
-
-                        // 强制标记为非知识库查询，防止干扰
-                        isKnowledgeQuery = false;
-                        isCustomerQuery = true;
-                    }
-                }
-            } catch (Exception e) {
-                log.warn("上下文分析出错", e);
-            }
+        // 5. 处理函数调用
+        if (response.hasToolCalls()) {
+            log.info("【AI聊天服务】AI请求调用{}个函数", response.getToolCalls().size());
+            return handleToolCalls(response, request);
         }
 
-        // 【核心干预 - 客户信息】（防止 AI 把"用户"误认为"文档"）
-        if (isCustomerQuery) {
-            String customerCountStr = "查询失败";
-            try {
-                // 直接获取总数（null 表示不限权限，或者根据实际 logic 传）
-                customerCountStr = customerQueryService.getTotalCustomerCount(null);
-            } catch (Exception e) {
-                log.warn("获取客户总数失败", e);
-            }
-
-            // 注入到 Prompt，强制 AI 面对现实
-            enhancedUserMessage = String.format(
-                    "### 当前系统客户数据 (实时) ###\n%s\n\n用户的问题是：\"%s\"\n(请直接根据上面的数据回答，不要胡编乱造，也不要查询知识库)",
-                    customerCountStr, userMessage);
-            log.info("【AI聊天服务】已执行客户数据主动注入: {}", customerCountStr);
+        // 6. 直接回复
+        if (response.getContent() != null && !response.getContent().trim().isEmpty()) {
+            log.info("【AI聊天服务】使用模型: {}", response.getModelName());
+            return response.getContent();
         }
 
-        // 【核心干预 - 知识库】
-        if (isKnowledgeQuery) {
-            String realTimeCount = knowledgeQueryService.getKnowledgeCount();
-            String realTimeList = knowledgeQueryService.getKnowledgeList(10);
-
-            // 调试日志记录
-            try {
-                Path debugPath = Paths.get("/Users/zuozuo/Downloads/cxf/aicustomer/ai_debug.log");
-                String logMsg = String.format("[%s] User: %s | Result: %s\n", LocalDateTime.now(), userMessage,
-                        realTimeCount);
-                Files.write(debugPath, logMsg.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            } catch (Exception ignore) {
-            }
-
-            // 将绝对真实的系统状态注入用户消息首部，确保 AI 无法回避
-            enhancedUserMessage = String.format("### 当前系统知识库状态 (极高优先级) ###\n%s\n- 详细清单：%s\n\n请根据上述真实数据回答：\n%s",
-                    realTimeCount, realTimeList, userMessage);
-
-            log.info("【AI聊天服务】已执行主动干预，注入数据: {}", realTimeCount);
-        }
-
-        if (!context.isEmpty()) {
-            finalSystemPrompt += "\n\n### 检索到的背景资料 ###\n"
-                    + (context.length() > 3000 ? context.substring(0, 3000) : context);
-        }
-
-        // 3. AI 调用
-        // A. DeepSeek
-        if (deepSeekService.isAvailable()) {
-            try {
-                String aiReply;
-                if (history != null && !history.isEmpty()) {
-                    List<Map<String, String>> messages = new ArrayList<>();
-                    Map<String, String> systemMsg = new HashMap<>();
-                    systemMsg.put("role", "system");
-                    systemMsg.put("content", finalSystemPrompt);
-                    messages.add(systemMsg);
-
-                    int startIdx = Math.max(0, history.size() - 10); // 最近10轮
-                    for (int i = startIdx; i < history.size(); i++) {
-                        messages.add(history.get(i));
-                    }
-
-                    Map<String, String> userMsg = new HashMap<>();
-                    userMsg.put("role", "user");
-                    userMsg.put("content", enhancedUserMessage);
-                    messages.add(userMsg);
-                    aiReply = deepSeekService.chatWithHistory(messages);
-                } else {
-                    aiReply = deepSeekService.chat(enhancedUserMessage, finalSystemPrompt);
-                }
-
-                if (aiReply != null && !aiReply.trim().isEmpty() && !aiReply.startsWith("⚠️")) {
-                    String finalReply = finalizeResponse(aiReply, userMessage, finalSystemPrompt, "deepseek", context);
-                    if (finalReply != null && !finalReply.startsWith("⚠️")) {
-                        return finalReply;
-                    }
-                    log.warn("【AI聊天服务】DeepSeek 的最终回复（含工具调用）包含错误，尝试下一个模型");
-                } else if (aiReply != null && aiReply.startsWith("⚠️")) {
-                    log.warn("【AI聊天服务】DeepSeek 初始回复包含错误，准备回退: {}", aiReply);
-                }
-            } catch (Exception e) {
-                log.warn("【DeepSeek失败】: {}", e.getMessage());
-            }
-        }
-
-        // B. 豆包 (Doubao)
-        try {
-            log.info("【AI聊天服务】尝试豆包模型");
-            List<org.springframework.ai.chat.messages.Message> springMessages = new ArrayList<>();
-            springMessages.add(new org.springframework.ai.chat.messages.SystemMessage(finalSystemPrompt));
-            if (history != null) {
-                for (Map<String, String> h : history) {
-                    if ("user".equals(h.get("role")))
-                        springMessages.add(new org.springframework.ai.chat.messages.UserMessage(h.get("content")));
-                    else
-                        springMessages.add(new org.springframework.ai.chat.messages.AssistantMessage(h.get("content")));
-                }
-            }
-            springMessages.add(new org.springframework.ai.chat.messages.UserMessage(enhancedUserMessage));
-
-            ChatResponse chatResponse = doubaoChatModel.call(new Prompt(springMessages));
-            String aiReply = chatResponse.getResult().getOutput().getContent();
-            if (aiReply != null && !aiReply.trim().isEmpty() && !aiReply.startsWith("⚠️")) {
-                String finalReply = finalizeResponse(aiReply, userMessage, finalSystemPrompt, "doubao", context);
-                if (finalReply != null && !finalReply.startsWith("⚠️")) {
-                    return finalReply;
-                }
-            } else if (aiReply != null && aiReply.startsWith("⚠️")) {
-                log.warn("【AI聊天服务】豆包返回了错误状态，准备回退: {}", aiReply);
-            }
-        } catch (Exception e) {
-            log.warn("【豆包失败】: {}", e.getMessage());
-        }
-
-        // C. 智谱 (Zhipu)
-        if (zhipuChatService.isAvailable()) {
-            try {
-                String aiReply = zhipuChatService.chat(enhancedUserMessage, finalSystemPrompt);
-                if (aiReply != null && !aiReply.trim().isEmpty() && !aiReply.startsWith("⚠️")) {
-                    String finalReply = finalizeResponse(aiReply, userMessage, finalSystemPrompt, "zhipu", context);
-                    if (finalReply != null && !finalReply.startsWith("⚠️")) {
-                        return finalReply;
-                    }
-                }
-            } catch (Exception e) {
-                log.warn("【AI聊天服务】智谱调用失败: {}", e.getMessage());
-            }
-        }
-
+        // 7. 未知情况，使用fallback
+        log.warn("【AI聊天服务】AI返回了空响应，使用fallback");
         return generateFallbackResponse(userMessage);
     }
 
     /**
-     * 统一处理 AI 回复的后置逻辑
+     * 处理函数调用
+     * 执行函数并让AI整合结果
      */
-    private String finalizeResponse(String aiReply, String userMessage, String systemPrompt, String modelType,
-            String context) {
-        String processed = processPotentialToolCall(aiReply, userMessage, systemPrompt, modelType);
-        if (!context.isEmpty() && !processed.contains("(来源:")) {
-            processed += "\n\n(来源: 知识库检索 - " + modelType + ")";
-        }
-        return processed;
-    }
+    private String handleToolCalls(FunctionCallResponse response, FunctionCallRequest originalRequest) {
+        log.info("【AI聊天服务】开始执行函数调用");
 
-    /**
-     * 检查并处理 AI 回复中可能存在的工具调用
-     */
-    private String processPotentialToolCall(String aiReply, String userMessage, String systemPrompt, String modelType) {
-        log.info("【AI聊天服务】模型 {} 的原始回复: {}", modelType, aiReply);
-        if (aiReply.contains("{") && aiReply.contains("}")) {
-            String toolResult = executeTool(aiReply);
-            log.info("【AI聊天服务】模型 {} 的工具执行结果: {}", modelType, toolResult);
-            if (toolResult != null) {
-                log.info("【AI聊天服务】工具结果获取成功 ({})，进行二次生成...", modelType);
-                String followUpMessage = userMessage + "\n\n(工具查询结果: " + toolResult + ", 请整合并回复)";
+        try {
+            // 获取当前用户权限
+            List<Integer> allowedLevels = getCurrentUserAllowedLevels();
+            log.info("【AI聊天服务】当前用户权限等级: {}", allowedLevels);
 
-                return switch (modelType) {
-                    case "deepseek" -> deepSeekService.chat(followUpMessage, systemPrompt);
-                    case "doubao" -> {
-                        List<org.springframework.ai.chat.messages.Message> messages = new ArrayList<>();
-                        messages.add(new org.springframework.ai.chat.messages.SystemMessage(systemPrompt));
-                        messages.add(new org.springframework.ai.chat.messages.UserMessage(followUpMessage));
-                        ChatResponse resp = doubaoChatModel.call(new Prompt(messages));
-                        yield resp.getResult().getOutput().getContent();
-                    }
-                    case "zhipu" -> zhipuChatService.chat(followUpMessage, systemPrompt);
-                    default -> aiReply;
-                };
-            } else {
-                log.warn("【AI聊天服务】工具 {} 执行结果为空", aiReply);
+            // 1. 执行所有函数
+            List<String> results = new ArrayList<>();
+            for (FunctionCallResponse.ToolCall toolCall : response.getToolCalls()) {
+                log.info("【AI聊天服务】执行函数: {}", toolCall.getFunctionName());
+
+                // 执行函数（传递用户权限）
+                String result = functionCallingService.executeFunction(
+                        toolCall.getFunctionName(),
+                        toolCall.getArguments(),
+                        allowedLevels);
+
+                results.add(result);
+                log.info("【AI聊天服务】函数执行完成，结果长度: {}", result.length());
             }
-        }
-        return aiReply;
-    }
 
-    /**
-     * 规则匹配回退方案（当DeepSeek不可用时使用）
-     */
+            // 2. 合并结果
+            String combinedResult = String.join("\n\n", results);
+
+            // 3. 让AI整合结果生成用户友好的回复
+            String followUpMessage = originalRequest.getUserMessage() +
+                    "\n\n【系统查询结果】\n" + combinedResult +
+                    "\n\n请根据上述查询结果，用自然语言回答用户的问题。";
+
+            FunctionCallRequest followUpRequest = FunctionCallRequest.builder()
+                    .systemPrompt(originalRequest.getSystemPrompt())
+                    .userMessage(followUpMessage)
+                    .history(originalRequest.getHistory())
+                    .functions(List.of()) // 不再需要函数调用
+                    .build();
+
+            FunctionCallResponse finalResponse = adapterManager.chatWithFallback(followUpRequest);
+
+            if (finalResponse.isSuccess() && finalResponse.getContent() != null) {
+                return finalResponse.getContent();
+            }
+
+            // 降级：直接返回查询结果
+            log.warn("【AI聊天服务】AI整合失败，直接返回查询结果");
+            return combinedResult;
+
+        } catch (Exception e) {
+            log.error("【AI聊天服务】处理函数调用异常", e);
+            return "抱歉，处理您的请求时出现错误: " + e.getMessage();
+        }
+    }
 
     private String generateFallbackResponse(String userMessage) {
         String lowerMessage = userMessage.toLowerCase();
@@ -648,6 +463,37 @@ public class AiChatServiceImpl implements AiChatService {
         // 普通用户/业务员看普通客户(等级1)
         // TODO: 如果有更复杂的配置，可以从 permissionSettings 解析
         return java.util.Collections.singletonList(1);
+    }
+
+    /**
+     * 获取当前登录用户的客户等级权限
+     * 用于AI聊天时的数据权限控制
+     */
+    private List<Integer> getCurrentUserAllowedLevels() {
+        try {
+            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                    .getContext().getAuthentication();
+
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                log.warn("【权限控制】未认证用户，返回最低权限");
+                return java.util.Collections.singletonList(1); // 只能看普通客户
+            }
+
+            String username;
+            Object principal = auth.getPrincipal();
+            if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+                username = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+            } else {
+                username = principal.toString();
+            }
+
+            log.info("【权限控制】当前用户: {}", username);
+            return getCustomerLevelPermission(username);
+
+        } catch (Exception e) {
+            log.error("【权限控制】获取用户权限异常", e);
+            return java.util.Collections.singletonList(1); // 异常时返回最低权限
+        }
     }
 
     private boolean isCustomerTool(String toolName) {

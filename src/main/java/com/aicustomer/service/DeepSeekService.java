@@ -24,18 +24,18 @@ import java.util.*;
 @Slf4j
 @Service
 public class DeepSeekService {
-    
+
     private final DeepSeekConfig deepSeekConfig;
     private final RestTemplate restTemplate;
     private final Gson gson;
-    
+
     @Autowired
     public DeepSeekService(DeepSeekConfig deepSeekConfig) {
         this.deepSeekConfig = deepSeekConfig;
         this.restTemplate = new RestTemplate();
         this.gson = new Gson();
     }
-    
+
     /**
      * 调用DeepSeek API生成回复
      * 
@@ -49,48 +49,48 @@ public class DeepSeekService {
             System.out.println("【DeepSeek】警告: API Key未配置");
             return "抱歉，AI服务暂未配置，请联系管理员。";
         }
-        
+
         try {
             String url = deepSeekConfig.getBaseUrl() + "/chat/completions";
             log.info("【DeepSeek】开始调用API，URL: {}", url);
             System.out.println("【DeepSeek】开始调用API，URL: " + url);
-            
+
             // 构建请求体
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", deepSeekConfig.getModel());
             requestBody.put("messages", messages);
             requestBody.put("max_tokens", deepSeekConfig.getMaxTokens());
             requestBody.put("temperature", deepSeekConfig.getTemperature());
-            
-            log.info("【DeepSeek】请求参数 - 模型: {}, 消息数: {}, max_tokens: {}, temperature: {}", 
-                deepSeekConfig.getModel(), messages.size(), deepSeekConfig.getMaxTokens(), deepSeekConfig.getTemperature());
-            System.out.println("【DeepSeek】请求参数 - 模型: " + deepSeekConfig.getModel() + 
-                ", 消息数: " + messages.size() + ", max_tokens: " + deepSeekConfig.getMaxTokens());
-            
+
+            log.info("【DeepSeek】请求参数 - 模型: {}, 消息数: {}, max_tokens: {}, temperature: {}",
+                    deepSeekConfig.getModel(), messages.size(), deepSeekConfig.getMaxTokens(),
+                    deepSeekConfig.getTemperature());
+            System.out.println("【DeepSeek】请求参数 - 模型: " + deepSeekConfig.getModel() +
+                    ", 消息数: " + messages.size() + ", max_tokens: " + deepSeekConfig.getMaxTokens());
+
             // 设置请求头
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(apiKey);
-            
+
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            
+
             // 发送请求
             log.info("【DeepSeek】发送HTTP请求...");
             System.out.println("【DeepSeek】发送HTTP请求...");
             ResponseEntity<String> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                request,
-                String.class
-            );
-            
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    String.class);
+
             log.info("【DeepSeek】收到响应，状态码: {}", response.getStatusCode());
             System.out.println("【DeepSeek】收到响应，状态码: " + response.getStatusCode());
-            
+
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 log.info("【DeepSeek】响应体长度: {}", response.getBody().length());
                 System.out.println("【DeepSeek】响应体长度: " + response.getBody().length());
-                
+
                 // 解析响应
                 JsonObject jsonResponse = gson.fromJson(response.getBody(), JsonObject.class);
                 if (jsonResponse.has("choices") && jsonResponse.getAsJsonArray("choices").size() > 0) {
@@ -111,19 +111,19 @@ public class DeepSeekService {
                 System.out.println("【DeepSeek】状态码: " + response.getStatusCode());
                 System.out.println("【DeepSeek】响应内容: " + response.getBody());
             }
-            
+
             return "抱歉，AI服务暂时无法响应，请稍后重试。";
-            
+
         } catch (HttpClientErrorException e) {
             // 处理HTTP错误响应（如402余额不足、401认证失败等）
             org.springframework.http.HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
             int statusValue = statusCode.value();
-            
+
             log.error("【DeepSeek】API调用HTTP错误，状态码: {}, 响应: {}", statusValue, responseBody);
             System.out.println("【DeepSeek】HTTP错误，状态码: " + statusValue);
             System.out.println("【DeepSeek】响应内容: " + responseBody);
-            
+
             // 特别处理402余额不足错误
             if (statusValue == 402) {
                 try {
@@ -132,31 +132,31 @@ public class DeepSeekService {
                     if (errorResponse.has("error")) {
                         JsonObject error = errorResponse.getAsJsonObject("error");
                         String errorMessage = error.has("message") ? error.get("message").getAsString() : "余额不足";
-                        
+
                         if (errorMessage.contains("Insufficient Balance") || errorMessage.contains("余额不足")) {
                             return "⚠️ **DeepSeek账户余额不足**\n\n" +
-                                   "您的DeepSeek API账户余额已用完，无法继续使用AI服务。\n\n" +
-                                   "**解决方案：**\n" +
-                                   "1. 登录DeepSeek平台（https://platform.deepseek.com）\n" +
-                                   "2. 为账户充值\n" +
-                                   "3. 充值后即可恢复正常使用\n\n" +
-                                   "如有疑问，请联系系统管理员。";
+                                    "您的DeepSeek API账户余额已用完，无法继续使用AI服务。\n\n" +
+                                    "**解决方案：**\n" +
+                                    "1. 登录DeepSeek平台（https://platform.deepseek.com）\n" +
+                                    "2. 为账户充值\n" +
+                                    "3. 充值后即可恢复正常使用\n\n" +
+                                    "如有疑问，请联系系统管理员。";
                         }
                     }
                 } catch (Exception parseException) {
                     // 解析失败，使用默认提示
                 }
                 return "⚠️ **DeepSeek账户余额不足**\n\n" +
-                       "您的DeepSeek API账户余额已用完，请登录DeepSeek平台充值后继续使用。\n\n" +
-                       "如需帮助，请联系系统管理员。";
+                        "您的DeepSeek API账户余额已用完，请登录DeepSeek平台充值后继续使用。\n\n" +
+                        "如需帮助，请联系系统管理员。";
             }
-            
+
             // 处理其他HTTP错误
             if (statusValue == 401) {
                 return "⚠️ **API认证失败**\n\n" +
-                       "DeepSeek API密钥无效或已过期，请联系系统管理员更新API密钥。";
+                        "DeepSeek API密钥无效或已过期，请联系系统管理员更新API密钥。";
             }
-            
+
             // 通用的HTTP错误提示
             String errorMsg = "DeepSeek API调用失败（状态码: " + statusValue + "）";
             try {
@@ -171,51 +171,51 @@ public class DeepSeekService {
                 // 解析失败，使用默认提示
             }
             return "⚠️ **AI服务调用失败**\n\n" + errorMsg + "\n\n请稍后重试或联系系统管理员。";
-            
+
         } catch (RestClientException e) {
             // 处理网络连接错误等
             log.error("【DeepSeek】网络连接错误: {}", e.getMessage(), e);
             System.out.println("【DeepSeek】网络连接错误: " + e.getMessage());
             return "⚠️ **网络连接失败**\n\n" +
-                   "无法连接到DeepSeek API服务，请检查网络连接后重试。\n\n" +
-                   "错误信息: " + e.getMessage();
-                   
+                    "无法连接到DeepSeek API服务，请检查网络连接后重试。\n\n" +
+                    "错误信息: " + e.getMessage();
+
         } catch (Exception e) {
             log.error("【DeepSeek】调用API异常: {}", e.getMessage(), e);
             System.out.println("【DeepSeek】异常: " + e.getMessage());
             System.out.println("【DeepSeek】异常类型: " + e.getClass().getName());
             e.printStackTrace();
             return "⚠️ **AI服务调用异常**\n\n" +
-                   "抱歉，AI服务调用时发生未知错误，请稍后重试。\n\n" +
-                   "错误信息: " + e.getMessage();
+                    "抱歉，AI服务调用时发生未知错误，请稍后重试。\n\n" +
+                    "错误信息: " + e.getMessage();
         }
     }
-    
+
     /**
      * 单轮对话
      * 
-     * @param userMessage 用户消息
+     * @param userMessage  用户消息
      * @param systemPrompt 系统提示词（可选）
      * @return AI回复
      */
     public String chat(String userMessage, String systemPrompt) {
         List<Map<String, String>> messages = new ArrayList<>();
-        
+
         if (systemPrompt != null && !systemPrompt.trim().isEmpty()) {
             Map<String, String> systemMsg = new HashMap<>();
             systemMsg.put("role", "system");
             systemMsg.put("content", systemPrompt);
             messages.add(systemMsg);
         }
-        
+
         Map<String, String> userMsg = new HashMap<>();
         userMsg.put("role", "user");
         userMsg.put("content", userMessage);
         messages.add(userMsg);
-        
+
         return generateResponse(messages);
     }
-    
+
     /**
      * 多轮对话（带历史上下文）
      * 
@@ -225,14 +225,14 @@ public class DeepSeekService {
     public String chatWithHistory(List<Map<String, String>> messages) {
         return generateResponse(messages);
     }
-    
+
     /**
      * 获取API Key（用于检查配置）
      */
     public String getApiKey() {
         return deepSeekConfig.getApiKey();
     }
-    
+
     /**
      * 检查服务是否可用
      */
@@ -240,5 +240,107 @@ public class DeepSeekService {
         String apiKey = deepSeekConfig.getApiKey();
         return apiKey != null && !apiKey.trim().isEmpty();
     }
-}
 
+    /**
+     * 使用Function Calling调用DeepSeek API
+     * 
+     * @param messages  对话消息列表
+     * @param functions 可用的函数定义列表
+     * @return 包含AI回复和可能的函数调用的完整响应
+     */
+    public Map<String, Object> generateResponseWithFunctions(
+            List<Map<String, String>> messages,
+            List<com.aicustomer.model.FunctionDefinition> functions) {
+
+        String apiKey = deepSeekConfig.getApiKey();
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            log.warn("【DeepSeek Function Calling】API Key未配置");
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "API Key未配置");
+            return errorResponse;
+        }
+
+        try {
+            String url = deepSeekConfig.getBaseUrl() + "/chat/completions";
+            log.info("【DeepSeek Function Calling】开始调用API，URL: {}", url);
+
+            // 构建请求体，添加tools参数
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", deepSeekConfig.getModel());
+            requestBody.put("messages", messages);
+            requestBody.put("max_tokens", deepSeekConfig.getMaxTokens());
+            requestBody.put("temperature", deepSeekConfig.getTemperature());
+
+            // 添加函数定义
+            if (functions != null && !functions.isEmpty()) {
+                requestBody.put("tools", functions);
+                requestBody.put("tool_choice", "auto"); // 让AI自动决定是否调用函数
+            }
+
+            log.info("【DeepSeek Function Calling】请求参数 - 模型: {}, 消息数: {}, 函数数: {}",
+                    deepSeekConfig.getModel(), messages.size(), functions != null ? functions.size() : 0);
+
+            // 设置请求头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+            // 发送请求
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                // 解析响应
+                JsonObject jsonResponse = gson.fromJson(response.getBody(), JsonObject.class);
+
+                if (jsonResponse.has("choices") && jsonResponse.getAsJsonArray("choices").size() > 0) {
+                    JsonObject choice = jsonResponse.getAsJsonArray("choices").get(0).getAsJsonObject();
+                    JsonObject message = choice.getAsJsonObject("message");
+
+                    Map<String, Object> result = new HashMap<>();
+
+                    // 提取消息内容
+                    if (message.has("content") && !message.get("content").isJsonNull()) {
+                        result.put("content", message.get("content").getAsString());
+                    }
+
+                    // 提取函数调用（如果有）
+                    if (message.has("tool_calls") && !message.get("tool_calls").isJsonNull()) {
+                        result.put("tool_calls", gson.fromJson(message.get("tool_calls"), List.class));
+                        log.info("【DeepSeek Function Calling】AI请求调用函数");
+                    }
+
+                    // 提取finish_reason
+                    if (choice.has("finish_reason")) {
+                        result.put("finish_reason", choice.get("finish_reason").getAsString());
+                    }
+
+                    log.info("【DeepSeek Function Calling】API调用成功");
+                    return result;
+                }
+            }
+
+            log.error("【DeepSeek Function Calling】API调用失败");
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "API调用失败");
+            return errorResponse;
+
+        } catch (HttpClientErrorException e) {
+            log.error("【DeepSeek Function Calling】HTTP错误: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "HTTP错误: " + e.getStatusCode());
+            return errorResponse;
+
+        } catch (Exception e) {
+            log.error("【DeepSeek Function Calling】调用异常", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "调用异常: " + e.getMessage());
+            return errorResponse;
+        }
+    }
+}

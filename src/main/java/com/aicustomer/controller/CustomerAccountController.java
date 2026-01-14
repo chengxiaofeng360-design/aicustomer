@@ -37,7 +37,7 @@ public class CustomerAccountController {
      */
     @PostMapping("/login")
     public Result<CustomerAccount> login(@RequestParam String username,
-                                        @RequestParam String password) {
+            @RequestParam String password) {
         try {
             CustomerAccount result = customerAccountService.login(username, password);
             if (result != null) {
@@ -46,7 +46,7 @@ public class CustomerAccountController {
                 return Result.error("用户名或密码错误");
             }
         } catch (Exception e) {
-            return Result.error("登录失败: " + e.getMessage());
+            return Result.error("登录失败，请稍后重试");
         }
     }
 
@@ -72,7 +72,7 @@ public class CustomerAccountController {
      */
     @PutMapping("/account/{id}")
     public Result<CustomerAccount> updateAccount(@PathVariable Long id,
-                                               @RequestBody CustomerAccount customerAccount) {
+            @RequestBody CustomerAccount customerAccount) {
         try {
             customerAccount.setId(id);
             CustomerAccount result = customerAccountService.update(customerAccount);

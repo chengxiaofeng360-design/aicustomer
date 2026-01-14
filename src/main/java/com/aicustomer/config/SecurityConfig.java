@@ -59,8 +59,7 @@ public class SecurityConfig {
                                                         System.out.println("Login failure: " + exception.getMessage());
                                                         response.setContentType("application/json;charset=UTF-8");
                                                         response.setStatus(200);
-                                                        String json = "{\"code\": 401, \"message\": \"用户名或密码错误: "
-                                                                        + exception.getMessage() + "\"}";
+                                                        String json = "{\"code\": 401, \"message\": \"用户名或密码错误\"}";
                                                         response.getWriter().write(json);
                                                         response.getWriter().flush();
                                                         response.getWriter().close();

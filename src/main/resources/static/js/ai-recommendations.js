@@ -2922,6 +2922,241 @@ function sendToCustomers() {
     }
 }
 
+// ========== 模板管理功能 ==========
+
+// 获取已保存的模板列表
+function getSavedTemplates() {
+    try {
+        const templates = localStorage.getItem('aiRecommendationTemplates');
+        return templates ? JSON.parse(templates) : [];
+    } catch (error) {
+        console.error('获取模板列表失败:', error);
+        return [];
+    }
+}
+
+// 保存模板列表
+function saveTemplates(templates) {
+    try {
+        localStorage.setItem('aiRecommendationTemplates', JSON.stringify(templates));
+        return true;
+    } catch (error) {
+        console.error('保存模板列表失败:', error);
+        alert('保存失败：' + error.message);
+        return false;
+    }
+}
+
+// 渲染模板列表
+function renderTemplateList(containerId = 'templateListContainer') {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.warn('模板列表容器未找到:', containerId);
+        return;
+    }
+
+    const templates = getSavedTemplates();
+
+    if (templates.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted p-4">
+                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                <p class="mt-2 mb-0">暂无保存的模板</p>
+                <small>生成内容后点击"保存模板"即可创建</small>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '<div class="list-group">';
+    templates.forEach((template, index) => {
+        const date = new Date(template.createTime).toLocaleString('zh-CN');
+        const preview = template.content.replace(/<[^>]*>/g, '').substring(0, 100);
+
+        html += `
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                            <i class="bi bi-file-earmark-text"></i> ${escapeHtml(template.name)}
+                        </h6>
+                        <p class="mb-1 small text-muted">${escapeHtml(preview)}...</p>
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> ${date}
+                            <span class="ms-3"><i class="bi bi-tag"></i> ${escapeHtml(template.type)}</span>
+                        </small>
+                    </div>
+                    <div class="btn-group-vertical btn-group-sm ms-3">
+                        <button class="btn btn-outline-primary" onclick="applyTemplate(${index})" title="应用此模板">
+                            <i class="bi bi-check-circle"></i> 应用
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="deleteTemplate(${index})" title="删除模板">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    container.innerHTML = html;
+}
+
+// 应用模板
+function applyTemplate(templateIndex) {
+    const templates = getSavedTemplates();
+
+    if (templateIndex < 0 || templateIndex >= templates.length) {
+        alert('模板不存在');
+        return;
+    }
+
+    const template = templates[templateIndex];
+
+    // 根据当前内容类型应用模板
+    const reportContent = document.getElementById('reportContent');
+    const templateContent = document.getElementById('templateContent');
+    const reportEditor = document.getElementById('reportContentEditor');
+    const templateEditor = document.getElementById('templateContentEditor');
+
+    // 检查是否在编辑模式
+    if (reportEditor && reportEditor.parentElement.style.display !== 'none') {
+        // 应用到报告编辑器
+        reportEditor.value = template.content.replace(/<[^>]*>/g, '');
+        currentReportData = template.content;
+    } else if (templateEditor && templateEditor.parentElement.style.display !== 'none') {
+        // 应用到模板编辑器
+        templateEditor.value = template.content.replace(/<[^>]*>/g, '');
+        currentTemplateData = template.content;
+    } else if (reportContent && reportContent.style.display !== 'none') {
+        // 应用到报告预览
+        reportContent.innerHTML = template.content;
+        currentReportData = template.content;
+    } else if (templateContent) {
+        // 应用到模板预览
+        templateContent.innerHTML = template.content;
+        currentTemplateData = template.content;
+    }
+
+    // 更新当前内容类型
+    if (template.type) {
+        currentContentType = template.type;
+        const contentTypeSelect = document.getElementById('contentType');
+        if (contentTypeSelect) {
+            contentTypeSelect.value = template.type;
+        }
+    }
+
+    alert('模板已应用：' + template.name);
+
+    // 如果在模态框中，关闭模态框
+    const templateModal = document.getElementById('templateListModal');
+    if (templateModal) {
+        const modal = bootstrap.Modal.getInstance(templateModal);
+        if (modal) {
+            modal.hide();
+        }
+    }
+}
+
+// 删除模板
+function deleteTemplate(templateIndex) {
+    const templates = getSavedTemplates();
+
+    if (templateIndex < 0 || templateIndex >= templates.length) {
+        alert('模板不存在');
+        return;
+    }
+
+    const template = templates[templateIndex];
+
+    if (!confirm('确定要删除模板"' + template.name + '"吗？')) {
+        return;
+    }
+
+    // 删除模板
+    templates.splice(templateIndex, 1);
+
+    if (saveTemplates(templates)) {
+        alert('模板已删除');
+        // 重新渲染列表
+        renderTemplateList();
+    }
+}
+
+// 保存当前模板
+function saveCurrentTemplate() {
+    // 获取当前内容
+    let content = '';
+    let contentType = currentContentType || 'recommendation';
+
+    const reportContent = document.getElementById('reportContent');
+    const templateContent = document.getElementById('templateContent');
+    const reportEditor = document.getElementById('reportContentEditor');
+    const templateEditor = document.getElementById('templateContentEditor');
+
+    // 检查各个可能的内容源
+    if (reportEditor && reportEditor.parentElement.style.display !== 'none') {
+        content = reportEditor.value;
+    } else if (templateEditor && templateEditor.parentElement.style.display !== 'none') {
+        content = templateEditor.value;
+    } else if (currentReportData) {
+        content = currentReportData;
+    } else if (currentTemplateData) {
+        content = currentTemplateData;
+    } else if (reportContent && reportContent.innerHTML.trim()) {
+        content = reportContent.innerHTML;
+    } else if (templateContent && templateContent.innerHTML.trim()) {
+        content = templateContent.innerHTML;
+    }
+
+    if (!content || content.trim() === '') {
+        alert('当前没有可保存的内容，请先生成内容');
+        return;
+    }
+
+    // 询问模板名称
+    const templateName = prompt('请输入模板名称：', '我的模板 ' + (new Date().toLocaleDateString('zh-CN')));
+
+    if (!templateName || templateName.trim() === '') {
+        return;
+    }
+
+    // 创建模板对象
+    const template = {
+        name: templateName.trim(),
+        content: content,
+        type: contentType,
+        createTime: new Date().toISOString()
+    };
+
+    // 获取现有模板
+    const templates = getSavedTemplates();
+
+    // 检查是否已存在同名模板
+    const existingIndex = templates.findIndex(t => t.name === template.name);
+    if (existingIndex >= 0) {
+        if (!confirm('已存在同名模板，是否覆盖？')) {
+            return;
+        }
+        templates[existingIndex] = template;
+    } else {
+        templates.push(template);
+    }
+
+    // 保存模板
+    if (saveTemplates(templates)) {
+        alert('模板保存成功：' + template.name);
+
+        // 如果存在模板列表，重新渲染
+        const templateListContainer = document.getElementById('templateListContainer');
+        if (templateListContainer) {
+            renderTemplateList();
+        }
+    }
+}
+
 // 将实际实现的函数立即赋值给window对象和全局变量
 // 这个赋值会在script标签执行时立即执行，确保函数可用
 if (typeof window !== 'undefined') {
