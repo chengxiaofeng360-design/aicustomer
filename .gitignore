@@ -28,4 +28,6 @@ Thumbs.db
 
 # Application specific
 application-local.properties
+create_initial_admin.sql
+src/main/resources/sql/create_initial_admin.sql
 

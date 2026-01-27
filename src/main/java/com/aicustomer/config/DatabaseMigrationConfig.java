@@ -23,11 +23,8 @@ public class DatabaseMigrationConfig implements InitializingBean {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
-
-    @org.springframework.beans.factory.annotation.Value("${ai-customer.security.force-password-reset:false}")
-    private boolean forcePasswordReset;
+    // passwordEncoder 和 forcePasswordReset 已被删除
+    // 原因：fixPasswordEncryption 方法已被永久删除，这些字段不再需要
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -46,8 +43,9 @@ public class DatabaseMigrationConfig implements InitializingBean {
             // 添加 sys_user 表的 permission_settings 字段（如果不存在）
             addPermissionSettingsColumn();
 
-            // 修复密码加密 (已禁用，防止重置用户密码)
-            // fixPasswordEncryption();
+            // 注意：fixPasswordEncryption 方法已被永久删除
+            // 原因：该方法会强制重置密码为明文 123456，存在严重安全隐患
+            // 如需初始化admin账号，请使用 src/main/resources/sql/create_initial_admin.sql
 
             logger.info("数据库迁移完成！");
         } catch (Exception e) {
@@ -149,30 +147,8 @@ public class DatabaseMigrationConfig implements InitializingBean {
         }
     }
 
-    private void fixPasswordEncryption() {
-        try {
-            logger.info("正在验证并修复账号密码...");
-
-            if (!forcePasswordReset) {
-                logger.info("配置项 ai-customer.security.force-password-reset 为 false，跳过强制密码重置");
-                return;
-            }
-
-            // 1. 动态生成 123456 的正确加密串，确保和当前环境的 PasswordEncoder 100% 匹配
-            String validHash = passwordEncoder.encode("123456");
-
-            // 2. 强制重置 admin/staff 用户的密码，不进行任何条件判断
-            String sql = "UPDATE sys_user SET password = ? WHERE username IN ('admin', 'staff')";
-
-            int updated = jdbcTemplate.update(sql, validHash);
-
-            if (updated > 0) {
-                logger.info("✅ [强制重置] 已成功将 {} 个账号(admin/staff)的密码为重置为 123456", updated);
-            } else {
-                logger.warn("未找到 admin 或 staff 账号，无法重置");
-            }
-        } catch (Exception e) {
-            logger.error("严重的密码修复错误: " + e.getMessage(), e);
-        }
-    }
+    // fixPasswordEncryption 方法已被永久删除
+    // 原因：该方法会强制重置密码为明文 123456，存在严重安全隐患
+    // 删除日期：2026-01-21
+    // 如需初始化admin账号，请使用 src/main/resources/sql/create_initial_admin.sql
 }

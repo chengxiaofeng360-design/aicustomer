@@ -75,8 +75,4 @@ public interface UserService {
      */
     boolean assignRoles(Long userId, List<Long> roleIds);
 
-    /**
-     * 初始化管理员账号
-     */
-    void initAdmin();
 }

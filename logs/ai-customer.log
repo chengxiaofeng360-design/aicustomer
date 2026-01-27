@@ -11399,3 +11399,12 @@ Caused by: retrofit2.adapter.rxjava2.HttpException: HTTP 429
 2026-01-14 12:53:00 [main] INFO  c.aicustomer.AiCustomerApplication - Started AiCustomerApplication in 7.89 seconds (process running for 8.148)
 2026-01-14 12:53:00 [main] INFO  c.a.s.impl.UserPermissionServiceImpl - 更新用户记录成功: userId=2, 影响行数=1
 2026-01-14 12:53:00 [main] INFO  c.a.c.StaffPermissionInitializer - 已更新 staff 用户权限：允许新增和编辑普通客户
+2026-01-14 13:34:55 [http-nio-8085-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-14 13:34:55 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-01-14 13:34:55 [http-nio-8085-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms
+2026-01-14 13:34:55 [http-nio-8085-exec-1] WARN  o.s.w.s.h.HandlerMappingIntrospector - Cache miss for REQUEST dispatch to '/' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+2026-01-14 13:35:21 [http-nio-8085-exec-7] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务 - 统一架构】开始处理查询: 什么是DUS测试
+2026-01-14 13:35:21 [http-nio-8085-exec-7] INFO  c.a.service.impl.AiChatServiceImpl - 【AI聊天服务】命中FAQ: 什么是DUS测试？
+2026-01-14 15:25:52 [AiCustomerHikariCP housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - AiCustomerHikariCP - Thread starvation or clock leap detected (housekeeper delta=49m56s107ms).
+2026-01-14 17:58:52 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown initiated...
+2026-01-14 17:58:52 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - AiCustomerHikariCP - Shutdown completed.

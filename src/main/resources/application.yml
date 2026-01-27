@@ -12,13 +12,17 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # 使用远程腾讯云 CynosDB 数据库
-    url: jdbc:mysql://bj-cynosdbmysql-grp-bbi2ygoo.sql.tencentcdb.com:26713/zqgl?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root  # 请修改为腾讯云数据库的实际用户名
-    password: 1q2w3e4R  # 请修改为腾讯云数据库的实际密码
+    # url: jdbc:mysql://bj-cynosdbmysql-grp-bbi2ygoo.sql.tencentcdb.com:26713/zqgl?useUnicode=true&autoReconnect=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
+    # username: root  # 请修改为腾讯云数据库的实际用户名
+    # password: 1q2w3e4R  # 请修改为腾讯云数据库的实际密码（实际值在application-secret.yml中）
     # 如果需要使用本地数据库，取消注释下面这行，注释掉上面那行
     # url: jdbc:mysql://127.0.0.1:3306/zqgl?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true&autoReconnect=true
     # username: root
-    # password: 12345678
+    # password: your_local_password
+     # 生产环境数据源 (百度云)
+    url: jdbc:mysql://106.12.33.232:3306/zqgl?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true&autoReconnect=true
+    username: root
+    password: Bjzk60166200
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -32,8 +36,8 @@ spring:
   # 数据库初始化配置
   sql:
     init:
-      mode: always
-      schema-locations: classpath:sql/init.sql,classpath:sql/migrations/20251228_fix_sys_user_columns.sql,classpath:sql/migrations/20260103_add_team_task_columns.sql,classpath:sql/migrations/20260105_fix_password_encryption.sql
+      mode: never  # 生产环境禁止自动执行SQL，防止数据被重置！
+      # schema-locations: classpath:sql/init.sql,classpath:sql/migrations/20251228_fix_sys_user_columns.sql,classpath:sql/migrations/20260103_add_team_task_columns.sql,classpath:sql/migrations/20260105_fix_password_encryption.sql
       # data-locations: classpath:sql/data.sql
       continue-on-error: true
 
@@ -47,8 +51,7 @@ spring:
 # 文件存储配置
 file:
   upload:
-    # Mac开发环境使用相对路径，Linux部署时改为绝对路径如: /data/uploads/knowledge
-    path: ${FILE_UPLOAD_PATH:uploads/knowledge}
+    path: /data/files/upload/
 
   # Jackson配置
   jackson:
@@ -93,7 +96,12 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: logs/ai-customer.log
+    name: /data/logs/app/ai-customer.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+      total-size-cap: 3GB
 
 # 管理端点配置
 management:
@@ -109,7 +117,7 @@ management:
 ai-customer:
   # 文件存储路径
   file:
-    upload-path: /uploads/
+    upload-path: /data/files/upload/
     max-size: 104857600  # 100MB
 
   # 安全配置
@@ -161,17 +169,11 @@ ai-customer:
     version: 1.0.0
     author: AI Customer Management Team
 
-# 向量搜索配置（免费方案）
-vector:
-  elasticsearch:
-    url: http://localhost:9200
-  embedding:
-    url: http://localhost:5001
-  index:
-    name: knowledge_docs
-
-
-# Jasypt encryption configuration
-jasypt:
-  encryptor:
-    password: aicustomer
+# 向量搜索配置（免费方案）- 如需使用请自行配置
+# vector:
+#   elasticsearch:
+#     url: http://localhost:9200
+#   embedding:
+#     url: http://localhost:5001
+#   index:
+#     name: knowledge_docs

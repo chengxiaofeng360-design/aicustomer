@@ -9,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,13 +69,11 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("用户名已存在");
         }
 
-        // 密码加密
-        if (user.getPassword() != null) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-        } else {
-            // 默认密码
-            user.setPassword(passwordEncoder.encode("123456"));
+        // 密码加密 - 必须提供密码
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("密码不能为空");
         }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         user.setCreateTime(LocalDateTime.now());
         user.setUpdateTime(LocalDateTime.now());
@@ -139,75 +136,8 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
-    @Override
-    @PostConstruct
-    @Transactional(rollbackFor = Exception.class)
-    public void initAdmin() {
-        String adminUsername = "admin";
-        User admin = userMapper.findByUsername(adminUsername);
+    // ⚠️ 已删除自动初始化 admin/staff 用户的方法
+    // 原因：该方法会在数据库清空时自动创建默认密码为 123456 的账号，存在安全隐患
+    // 如需创建初始管理员账号，请通过系统界面手动创建或使用SQL脚本
 
-        if (admin == null) {
-            log.info("正在初始化超级管理员账号...");
-            User newAdmin = new User();
-            newAdmin.setUsername(adminUsername);
-            newAdmin.setPassword(passwordEncoder.encode("123456"));
-            newAdmin.setRealName("超级管理员");
-            newAdmin.setStatus(1);
-            newAdmin.setUserType(1); // 1:管理员
-            newAdmin.setCreateTime(LocalDateTime.now());
-            newAdmin.setUpdateTime(LocalDateTime.now());
-            newAdmin.setCreateBy("system");
-            newAdmin.setUpdateBy("system");
-            newAdmin.setDeleted(0);
-            newAdmin.setVersion(1);
-
-            userMapper.insert(newAdmin);
-            log.info("超级管理员初始化完成: admin / 123456");
-        }
-        // 移除自动重置密码的逻辑，尊重用户现有数据
-        /*
-         * else {
-         * String currentPwd = admin.getPassword();
-         * if (currentPwd == null || !currentPwd.startsWith("$2a$")) {
-         * log.info("检测到管理员账号存在但密码未加密，正在重置密码为 123456...");
-         * admin.setPassword(passwordEncoder.encode("123456"));
-         * admin.setUpdateTime(LocalDateTime.now());
-         * userMapper.updateById(admin);
-         * log.info("管理员密码重置完成");
-         * }
-         * }
-         */
-
-        // 初始化 staff 账号
-        String staffUsername = "staff";
-        User staff = userMapper.findByUsername(staffUsername);
-        if (staff == null) {
-            log.info("正在初始化演示业务员账号...");
-            User newStaff = new User();
-            newStaff.setUsername(staffUsername);
-            newStaff.setPassword(passwordEncoder.encode("123456"));
-            newStaff.setRealName("演示业务员");
-            newStaff.setStatus(1);
-            newStaff.setUserType(2); // 2:业务员
-            newStaff.setCreateTime(LocalDateTime.now());
-            newStaff.setUpdateTime(LocalDateTime.now());
-            newStaff.setCreateBy("system");
-            newStaff.setUpdateBy("system");
-            newStaff.setDeleted(0);
-            newStaff.setVersion(1);
-
-            // 为 staff 账号设置默认权限
-            newStaff.setPermissionSettings(
-                    "{\"menuPermissions\":[\"customer\",\"message\",\"ai-chat\",\"knowledge\"],\"dataPermission\":{\"canViewSensitive\":false,\"canImport\":false,\"canDelete\":false}}");
-
-            userMapper.insert(newStaff);
-            log.info("演示业务员初始化完成: staff / 123456");
-        }
-        // 移除自动重置密码的逻辑
-        /*
-         * else {
-         * // ...
-         * }
-         */
-    }
 }

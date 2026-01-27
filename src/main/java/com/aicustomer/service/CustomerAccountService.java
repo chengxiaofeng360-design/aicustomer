@@ -10,44 +10,53 @@ import java.util.Map;
  * @version 1.0.0
  */
 public interface CustomerAccountService {
-    
+
     /**
      * 客户注册
      */
     CustomerAccount register(CustomerAccount customerAccount);
-    
+
     /**
      * 客户登录
      */
     CustomerAccount login(String username, String password);
-    
+
     /**
      * 根据ID获取客户账号
      */
     CustomerAccount getAccountById(Long id);
-    
+
     /**
      * 根据用户名查找客户账号
      */
     CustomerAccount findByUsername(String username);
-    
+
     /**
      * 根据ID查找客户账号
      */
     CustomerAccount findById(Long id);
-    
+
     /**
      * 保存客户账号
      */
     CustomerAccount save(CustomerAccount customerAccount);
-    
+
     /**
      * 更新客户账号
      */
     CustomerAccount update(CustomerAccount customerAccount);
-    
+
     /**
      * 获取用户统计信息
      */
     Map<String, Object> getUserStats(Long userId);
+
+    /**
+     * 验证密码是否正确
+     * 
+     * @param rawPassword     明文密码
+     * @param encodedPassword 加密后的密码
+     * @return true:密码正确, false:密码错误
+     */
+    boolean verifyPassword(String rawPassword, String encodedPassword);
 }

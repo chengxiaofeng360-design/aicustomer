@@ -77,33 +77,50 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
         if (customerAccount.getCustomerId() == null) {
             customerAccount.setCustomerId(1L);
         }
+        // 加密密码
+        if (customerAccount.getPassword() != null && !customerAccount.getPassword().isEmpty()) {
+            customerAccount.setPassword(passwordEncoder.encode(customerAccount.getPassword()));
+        }
         customerAccountMapper.insert(customerAccount);
         return customerAccount;
     }
 
     @Override
     public CustomerAccount update(CustomerAccount customerAccount) {
+        // 如果密码不为空且不是BCrypt格式，则加密
+        if (customerAccount.getPassword() != null &&
+                !customerAccount.getPassword().isEmpty() &&
+                !customerAccount.getPassword().startsWith("$2a$")) {
+            customerAccount.setPassword(passwordEncoder.encode(customerAccount.getPassword()));
+        }
         customerAccount.setUpdateTime(LocalDateTime.now());
         customerAccountMapper.update(customerAccount);
         return customerAccount;
     }
 
+    /**
+     * 验证密码
+     */
+    public boolean verifyPassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
     @Override
     public Map<String, Object> getUserStats(Long userId) {
         Map<String, Object> stats = new HashMap<>();
-        
+
         // 获取用户动态数
         Integer postCount = customerAccountMapper.getUserPostCount(userId);
         stats.put("postCount", postCount != null ? postCount : 0);
-        
+
         // 获取用户获赞数
         Integer likeCount = customerAccountMapper.getUserLikeCount(userId);
         stats.put("likeCount", likeCount != null ? likeCount : 0);
-        
+
         // 获取用户评论数
         Integer commentCount = customerAccountMapper.getUserCommentCount(userId);
         stats.put("commentCount", commentCount != null ? commentCount : 0);
-        
+
         return stats;
     }
 

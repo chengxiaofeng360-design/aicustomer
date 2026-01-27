@@ -40,7 +40,7 @@ public class CustomerAuthController {
             CustomerAccount newUser = new CustomerAccount();
             newUser.setCustomerId(1L); // 设置默认客户ID
             newUser.setUsername(username);
-            newUser.setPassword(password); // 在实际应用中应该加密
+            newUser.setPassword(password); // CustomerAccountService会自动加密密码
             newUser.setNickname(nickname);
             newUser.setEmail(email);
             newUser.setPhone(phone);
@@ -78,8 +78,8 @@ public class CustomerAuthController {
                 return Result.error("用户名或密码错误");
             }
 
-            // 验证密码（在实际应用中应该使用加密比较）
-            if (!password.equals(user.getPassword())) {
+            // 验证密码
+            if (!customerAccountService.verifyPassword(password, user.getPassword())) {
                 return Result.error("用户名或密码错误");
             }
 
@@ -187,11 +187,11 @@ public class CustomerAuthController {
             }
 
             // 验证当前密码
-            if (!currentPassword.equals(user.getPassword())) {
+            if (!customerAccountService.verifyPassword(currentPassword, user.getPassword())) {
                 return Result.error("当前密码错误");
             }
 
-            // 更新密码
+            // 更新密码（Service层会自动加密）
             user.setPassword(newPassword);
             user.setUpdateTime(LocalDateTime.now());
             customerAccountService.update(user);
