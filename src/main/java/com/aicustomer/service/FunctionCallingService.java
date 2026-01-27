@@ -21,6 +21,7 @@ public class FunctionCallingService {
 
     private final CustomerQueryService customerQueryService;
     private final KnowledgeQueryService knowledgeQueryService;
+    private final WebSearchService webSearchService;
 
     /**
      * 执行函数调用
@@ -47,6 +48,7 @@ public class FunctionCallingService {
                 case "get_file_count" -> getFileCount();
                 case "get_file_list" -> getFileList(params);
                 case "get_file_detail" -> getFileDetail(params);
+                case "search_web" -> searchWeb(params);
                 default -> {
                     log.warn("【Function Calling】未知函数: {}", functionName);
                     yield "{\"error\": \"未知函数: " + functionName + "\"}";
@@ -162,6 +164,23 @@ public class FunctionCallingService {
             return knowledgeQueryService.getKnowledgeDetail(fileName);
         } catch (Exception e) {
             log.error("获取文件详情失败", e);
+            return "{\"error\": \"" + e.getMessage() + "\"}";
+        }
+    }
+
+    /**
+     * Web搜索
+     */
+    private String searchWeb(JSONObject params) {
+        try {
+            String query = params.getString("query");
+            if (query == null || query.trim().isEmpty()) {
+                return "{\"error\": \"缺少必需参数: query\"}";
+            }
+
+            return webSearchService.searchAndFormat(query);
+        } catch (Exception e) {
+            log.error("Web搜索失败", e);
             return "{\"error\": \"" + e.getMessage() + "\"}";
         }
     }
