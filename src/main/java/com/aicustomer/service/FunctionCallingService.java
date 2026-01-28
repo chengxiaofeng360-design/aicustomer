@@ -48,7 +48,7 @@ public class FunctionCallingService {
                 case "get_file_count" -> getFileCount();
                 case "get_file_list" -> getFileList(params);
                 case "get_file_detail" -> getFileDetail(params);
-                case "search_web" -> searchWeb(params);
+                // search_web 已移除 - 改为fallback机制
                 default -> {
                     log.warn("【Function Calling】未知函数: {}", functionName);
                     yield "{\"error\": \"未知函数: " + functionName + "\"}";

@@ -64,19 +64,26 @@ public class AiChatServiceImpl implements AiChatService {
     private final com.aicustomer.service.UserService userService;
     private final com.aicustomer.service.FunctionCallingService functionCallingService;
     private final com.aicustomer.adapter.AiModelAdapterManager adapterManager;
+    private final com.aicustomer.service.WebSearchService webSearchService;
 
     @Qualifier("doubaoChatModel")
     private final ChatModel doubaoChatModel;
 
     // 系统提示词，定义AI助手的角色和行为
     private static final String SYSTEM_PROMPT = "你是AI客户管理助手。" +
-            "\n\n### 最高优先级规则（必须遵守！）###\n" +
-            "**当用户提到任何文件名（如\"常见侵权案例分析\"、\"品种权申请操作流程\"等），你必须立即调用get_file_detail获取内容。不要问\"需要我获取吗\"，不要说\"请问您需要\"，直接调用工具！**\n"
-            +
-            "\n### 可用工具 ###\n" +
+            "\n\n### 工具调用规则（必须严格遵守！）###\n" +
+            "**重要：你有Function Calling能力。当需要查询数据时，你必须调用工具函数，绝对不要在回复中返回JSON格式的字符串！**\n\n" +
+            "**错误示例❌：**\n" +
+            "- {\"tool\":\"get_file_detail\",\"parameters\":{\"fileName\":\"xxx\"}}\n" +
+            "- get_file_list {\"limit\": 20}\n\n" +
+            "**正确做法✅：**\n" +
+            "- 直接使用系统提供的Function Calling机制调用工具\n" +
+            "- 不要用文本形式告诉用户你要调用什么工具\n" +
+            "- 让系统自动执行工具并获取结果\n\n" +
+            "### 可用工具 ###\n" +
             "- get_file_count: 文件总数\n" +
-            "- get_file_list: 文件列表。格式: {\"tool\":\"get_file_list\"}\n" +
-            "- get_file_detail: 获取文件内容。格式: {\"tool\":\"get_file_detail\",\"parameters\":{\"fileName\":\"文件名\"}}\n" +
+            "- get_file_list: 文件列表\n" +
+            "- get_file_detail: 获取文件内容\n" +
             "- get_customer_count: 客户总数\n" +
             "- get_customer_list: 客户列表\n" +
             "\n### 必须遵守的规则 ###\n" +
@@ -85,6 +92,7 @@ public class AiChatServiceImpl implements AiChatService {
             "3. 获取到文件内容后，完整输出，禁止摘要\n" +
             "4. 禁止回复：\"请问您需要吗\"、\"我可以帮您获取\"、\"您是否要查看\"\n" +
             "5. 禁止返回初始问候语，必须基于上下文回复\n" +
+            "6. **再次强调：禁止返回JSON字符串，必须使用原生Function Calling！**\n" +
             "\n**记住：用户提到文件名 → 立即调用工具 → 输出完整结果**";
 
     @Override
@@ -201,7 +209,15 @@ public class AiChatServiceImpl implements AiChatService {
         // 6. 直接回复
         if (response.getContent() != null && !response.getContent().trim().isEmpty()) {
             log.info("【AI聊天服务】使用模型: {}", response.getModelName());
-            return response.getContent();
+
+            // 6.1 检测AI是否表示无法回答（Web Search fallback机制）
+            String aiReply = response.getContent();
+            if (shouldTriggerWebSearch(aiReply, userMessage)) {
+                log.info("【AI聊天服务】检测到AI无法回答，触发web search fallback");
+                return tryWebSearchFallback(userMessage, history, request);
+            }
+
+            return aiReply;
         }
 
         // 7. 未知情况，使用fallback
@@ -248,7 +264,7 @@ public class AiChatServiceImpl implements AiChatService {
                     .systemPrompt(originalRequest.getSystemPrompt())
                     .userMessage(followUpMessage)
                     .history(originalRequest.getHistory())
-                    .functions(List.of()) // 不再需要函数调用
+                    .functions(originalRequest.getFunctions()) // 修复：保持完整函数列表
                     .build();
 
             FunctionCallResponse finalResponse = adapterManager.chatWithFallback(followUpRequest);
@@ -571,5 +587,77 @@ public class AiChatServiceImpl implements AiChatService {
         record.setDeleted(0);
         record.setVersion(1);
         return record;
+    }
+
+    /**
+     * 判断是否应该触发Web Search fallback
+     * 检测AI回复中是否包含"无法回答"的关键词
+     */
+    private boolean shouldTriggerWebSearch(String aiReply, String userMessage) {
+        if (aiReply == null || aiReply.trim().isEmpty()) {
+            return false;
+        }
+
+        // 检测关键词
+        String[] keywords = {
+                "不知道", "无法", "没有相关信息", "抱歉", "无权访问",
+                "内部没有", "找不到", "不清楚", "无法提供"
+        };
+
+        String lowerReply = aiReply.toLowerCase();
+        for (String keyword : keywords) {
+            if (lowerReply.contains(keyword)) {
+                log.debug("【Web Search Fallback】检测到关键词: {}", keyword);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 执行Web Search fallback
+     * 搜索后将结果再次发给AI整合
+     */
+    private String tryWebSearchFallback(String userMessage,
+            List<Map<String, String>> history,
+            FunctionCallRequest originalRequest) {
+        try {
+            // 1. 执行联网搜索
+            log.info("【Web Search Fallback】开始搜索: {}", userMessage);
+            String searchResults = webSearchService.searchAndFormat(userMessage);
+
+            if (searchResults == null || searchResults.trim().isEmpty()) {
+                log.warn("【Web Search Fallback】搜索结果为空");
+                return "抱歉，我无法找到相关信息。";
+            }
+
+            // 2. 将搜索结果再次发给AI整合
+            String enhancedMessage = userMessage +
+                    "\n\n【联网搜索结果】\n" + searchResults +
+                    "\n\n请根据上述搜索结果用自然语言回答用户的问题。";
+
+            FunctionCallRequest fallbackRequest = FunctionCallRequest.builder()
+                    .systemPrompt(originalRequest.getSystemPrompt())
+                    .userMessage(enhancedMessage)
+                    .history(history)
+                    .functions(List.of()) // 不再需要函数调用
+                    .build();
+
+            FunctionCallResponse fallbackResponse = adapterManager.chatWithFallback(fallbackRequest);
+
+            if (fallbackResponse.isSuccess() && fallbackResponse.getContent() != null) {
+                log.info("【Web Search Fallback】AI成功整合搜索结果");
+                return fallbackResponse.getContent();
+            }
+
+            // 3. 如果AI整合失败，直接返回搜索结果
+            log.warn("【Web Search Fallback】AI整合失败，直接返回搜索结果");
+            return "根据联网搜索，我找到了以下信息：\n\n" + searchResults;
+
+        } catch (Exception e) {
+            log.error("【Web Search Fallback】异常", e);
+            return "抱歉，搜索过程中出现错误。";
+        }
     }
 }

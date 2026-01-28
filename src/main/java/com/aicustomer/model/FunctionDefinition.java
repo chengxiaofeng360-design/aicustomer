@@ -233,7 +233,6 @@ public class FunctionDefinition {
                                 getCustomerList(),
                                 getFileCount(),
                                 getFileList(),
-                                getFileDetail(),
-                                searchWeb());
+                                getFileDetail());
         }
 }

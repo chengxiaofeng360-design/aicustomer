@@ -44,7 +44,7 @@ public class DatabaseMigrationConfig implements InitializingBean {
             addPermissionSettingsColumn();
 
             // 注意：fixPasswordEncryption 方法已被永久删除
-            // 原因：该方法会强制重置密码为明文 123456，存在严重安全隐患
+            // 此方法已禁用 - 防止重置密码
             // 如需初始化admin账号，请使用 src/main/resources/sql/create_initial_admin.sql
 
             logger.info("数据库迁移完成！");

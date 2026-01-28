@@ -36,25 +36,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("用户不存在: " + username);
         }
 
-        // --- 自愈机制：检测并修复明文弱密码 ---
-        // 如果数据库被重置为明文 "123456"，自动将其加密修复，确保用户能正常登录
-        if ("123456".equals(user.getPassword())) {
-            System.out.println("⚠️ [安全自愈] 检测到用户 " + username + " 使用明文密码 '123456'，正在自动修复为加密存储...");
-            try {
-                // 1. 加密密码
-                String encodedPassword = passwordEncoder.encode("123456");
-                // 2. 更新内存对象
-                user.setPassword(encodedPassword);
-                // 3. 更新数据库 (UserService.update 会处理更新逻辑)
-                userService.update(user);
-                System.out.println("✅ [安全自愈] 用户 " + username + " 密码修复成功！");
-            } catch (Exception e) {
-                System.err.println("❌ [安全自愈] 密码自动修复失败: " + e.getMessage());
-                // 即使保存失败，也要在本次内存中让用户登录成功，所以不要抛出异常
-            }
-        }
-        // ------------------------------------
-
         // 构建权限列表
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));

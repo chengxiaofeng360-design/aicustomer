@@ -137,7 +137,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // ⚠️ 已删除自动初始化 admin/staff 用户的方法
-    // 原因：该方法会在数据库清空时自动创建默认密码为 123456 的账号，存在安全隐患
+    // 此方法已禁用 - 防止自动创建账号
     // 如需创建初始管理员账号，请通过系统界面手动创建或使用SQL脚本
 
 }
