@@ -99,8 +99,17 @@ public class UserServiceImpl implements UserService {
     public boolean update(User user) {
         // 如果修改了密码，需要加密
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            // 只有当密码字段不为空时才更新密码
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            // 检查密码是否已经是BCrypt hash格式
+            // BCrypt hash的格式：$2a$10$... 或 $2b$10$... 或 $2y$10$...，长度固定60
+            boolean isBCryptHash = user.getPassword().matches("^\\$2[aby]\\$\\d{2}\\$.{53}$");
+
+            if (!isBCryptHash) {
+                // 只有明文密码才需要加密
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+                System.out.println("✅ [密码更新] 明文密码已加密");
+            } else {
+                System.out.println("✅ [密码更新] 检测到BCrypt hash，跳过加密");
+            }
         } else {
             user.setPassword(null); // 防止将空密码更新到数据库
         }

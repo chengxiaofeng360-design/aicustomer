@@ -31,9 +31,25 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("🔍 [登录] 尝试加载用户: " + username);
+
         User user = userService.findByUsername(username);
         if (user == null) {
+            System.out.println("❌ [登录失败] 用户不存在: " + username);
             throw new UsernameNotFoundException("用户不存在: " + username);
+        }
+
+        System.out.println("✅ [登录] 找到用户: " + username);
+        System.out.println(
+                "   - 密码hash: " + user.getPassword().substring(0, Math.min(20, user.getPassword().length())) + "...");
+        System.out.println("   - 密码长度: " + user.getPassword().length());
+        System.out.println("   - 状态(status): " + user.getStatus());
+        System.out.println("   - 删除标记(deleted): " + user.getDeleted());
+
+        // 检查用户是否被删除
+        if (user.getDeleted() != null && user.getDeleted() != 0) {
+            System.out.println("❌ [登录失败] 用户已被删除: " + username);
+            throw new UsernameNotFoundException("用户已被删除: " + username);
         }
 
         // 构建权限列表
@@ -45,6 +61,10 @@ public class CustomUserDetailsService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
+        // 检查用户状态：1=正常，0=禁用
+        boolean isEnabled = (user.getStatus() != null && user.getStatus() == 1);
+        System.out.println("   - 账户启用状态: " + isEnabled);
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword()) // 此时已经是加密后的密码
@@ -52,7 +72,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)
-                .disabled(false)
+                .disabled(!isEnabled) // 根据status字段设置
                 .build();
     }
 }
