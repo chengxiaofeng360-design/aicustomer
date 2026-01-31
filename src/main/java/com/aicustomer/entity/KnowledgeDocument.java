@@ -68,4 +68,7 @@ public class KnowledgeDocument {
 
     /** 删除标志(0:未删除,1:已删除) */
     private Integer deleted;
+
+    /** Dify系统中的文档ID */
+    private String difyDocumentId;
 }

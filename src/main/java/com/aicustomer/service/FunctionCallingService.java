@@ -78,42 +78,24 @@ public class FunctionCallingService {
      */
     private String getCustomerList(JSONObject params, List<Integer> allowedLevels) {
         try {
-            String region = params.getString("region");
-            Integer level = params.getInteger("level");
             Integer limit = params.getInteger("limit");
 
-            if (limit == null || limit <= 0) {
-                limit = 10;
-            } else if (limit > 50) {
-                limit = 50;
-            }
+            // 构建查询实体
+            com.aicustomer.entity.Customer criteria = new com.aicustomer.entity.Customer();
 
-            // 构建SQL查询
-            StringBuilder sql = new StringBuilder(
-                    "SELECT customer_name, contact_person, phone, region, customer_level FROM customer WHERE 1=1");
-
+            String region = params.getString("region");
             if (region != null && !region.trim().isEmpty()) {
-                sql.append(" AND region = '").append(region.replace("'", "''")).append("'");
+                criteria.setRegion(region);
             }
 
+            Integer level = params.getInteger("level");
             if (level != null) {
-                sql.append(" AND customer_level = ").append(level);
+                criteria.setCustomerLevel(level);
             }
 
-            // 权限过滤
-            if (allowedLevels != null && !allowedLevels.isEmpty()) {
-                sql.append(" AND customer_level IN (");
-                for (int i = 0; i < allowedLevels.size(); i++) {
-                    if (i > 0)
-                        sql.append(",");
-                    sql.append(allowedLevels.get(i));
-                }
-                sql.append(")");
-            }
+            int limitVal = (limit != null && limit > 0) ? limit : 10;
 
-            sql.append(" LIMIT ").append(limit);
-
-            return customerQueryService.executeDynamicQuery(sql.toString(), allowedLevels);
+            return customerQueryService.queryCustomers(criteria, limitVal, allowedLevels);
         } catch (Exception e) {
             log.error("获取客户列表失败", e);
             return "{\"error\": \"" + e.getMessage() + "\"}";

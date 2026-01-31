@@ -47,4 +47,7 @@ public class FaqQa {
 
     /** 删除标志(0:未删除,1:已删除) */
     private Integer deleted;
+
+    /** Dify系统中的文档ID (用于QA片段关联) */
+    private String difyDocumentId;
 }

@@ -20,15 +20,17 @@
         <result column="status" property="status" />
         <result column="create_time" property="createTime" />
         <result column="update_time" property="updateTime" />
-        <result column="create_by" property="createBy" />
-        <result column="update_by" property="updateBy" />
-        <result column="deleted" property="deleted" />
+        <result property="createBy" column="create_by"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="deleted" column="deleted"/>
+        <result property="difyDocumentId" column="dify_document_id"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, title, content, file_name, file_type, file_size, file_path, document_type, 
-        tags, category, summary, keywords, view_count, download_count, status, 
-        create_time, update_time, create_by, update_by, deleted
+        id, title, content, file_name, file_type, file_size, file_path,
+        document_type, tags, category, summary, keywords,
+        view_count, download_count, status,
+        create_time, update_time, create_by, update_by, deleted, dify_document_id
     </sql>
 
     <insert id="insert" parameterType="com.aicustomer.entity.KnowledgeDocument" useGeneratedKeys="true" keyProperty="id">

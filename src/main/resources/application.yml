@@ -169,6 +169,38 @@ ai-customer:
     version: 1.0.0
     author: AI Customer Management Team
 
+# 【新增】AI引擎选择配置
+ai:
+  engine: dify  # 已设置为Dify引擎
+
+# 【新增】Dify平台配置
+dify:
+  enabled: true  # 已启用Dify引擎
+  api-url: http://localhost/v1  # Dify API地址
+  api-key: app-wzlIkHk3AG8ZkLHyJ4fueMsI  # Chatbot应用的API密钥（已验证可用）
+  dataset-id: "3dfc20b6-2d75-436d-a9e6-f0b31083c8f0" # 替换为您的Dify知识库ID
+  dataset-api-key: "dataset-api-key-here" # 替换为您的Dify数据集API Key (稍后更新)
+  timeout: 30000  # 超时时间（毫秒）
+  max-retries: 2  # 最大重试次数
+  health-check-interval: 60000  # 健康检查间隔（毫秒）
+  traffic-percentage: 100  # 100%流量使用Dify
+
+# 【新增】Resilience4j Circuit Breaker配置
+resilience4j:
+  circuitbreaker:
+    instances:
+      dify:
+        failure-rate-threshold: 50  # 失败率超过50%触发熔断
+        slow-call-rate-threshold: 80  # 慢调用率超过80%触发
+        slow-call-duration-threshold: 5s  # 超过5秒算慢调用
+        wait-duration-in-open-state: 60s  # 熔断后等待1分钟
+        permitted-number-of-calls-in-half-open-state: 3  # 半开状态允许3次尝试
+        sliding-window-size: 10  # 滑动窗口大小（最近10次）
+        sliding-window-type: COUNT_BASED  # 基于次数的窗口
+        minimum-number-of-calls: 5  # 至少5次调用后才统计
+        automatic-transition-from-open-to-half-open-enabled: true  # 自动恢复
+
+
 # 向量搜索配置（免费方案）- 如需使用请自行配置
 # vector:
 #   elasticsearch:

@@ -114,78 +114,46 @@ public class CustomerQueryService {
     }
 
     /**
-     * 执行动态 SQL 查询（Text-to-SQL）
+     * 通用客户查询（安全模式，不使用动态SQL）
      * 
-     * @param sql           AI 生成的 SQL 语句
-     * @param allowedLevels 允许访问的客户等级列表
-     * @return 查询结果
+     * @param params        查询参数实体
+     * @param limit         最大条数
+     * @param allowedLevels 权限
+     * @return 格式化结果
      */
-    public String executeDynamicQuery(String sql, List<Integer> allowedLevels) {
-        if (sql == null || sql.trim().isEmpty()) {
-            return "SQL 语句为空。";
-        }
-
-        // 安全检查：仅允许 SELECT
-        String upperSql = sql.trim().toUpperCase();
-        if (!upperSql.startsWith("SELECT")) {
-            return "出于安全考虑，仅支持 SELECT 查询语句。";
-        }
-
-        // 危险关键词过滤
-        String[] forbidden = { "DROP", "UPDATE", "DELETE", "TRUNCATE", "ALTER", "INSERT", "CREATE", "GRANT", "EXEC" };
-        for (String word : forbidden) {
-            if (upperSql.matches(".*\\b" + word + "\\b.*")) {
-                if ("CREATE".equals(word) && upperSql.matches(".*\\bCREATE_TIME\\b.*")
-                        && !upperSql.matches(".*\\bCREATE\\b(?!_TIME).*")) {
-                    continue;
-                }
-                return "SQL 包含禁止的关键词：" + word;
-            }
-        }
-
-        // --- 核心权限注入逻辑 ---
-        if (allowedLevels != null && !allowedLevels.isEmpty()) {
-            String levelsStr = allowedLevels.toString().replace("[", "(").replace("]", ")"); // e.g., (1, 2)
-
-            // 使用正则强制将 "customer" 表替换为带过滤条件的子查询
-            // 匹配不区分大小写的全字匹配 "customer"
-            // 替换为: (SELECT * FROM customer WHERE customer_level IN (1,2)) customer
-            String scopedTable = "(SELECT * FROM customer WHERE customer_level IN " + levelsStr + ") customer";
-
-            // 简单处理：仅替换 FROM customer
-            sql = sql.replaceAll("(?i)\\bFROM\\s+customer\\b", "FROM " + scopedTable);
-
-            log.info("【权限控制】动态SQL已重写: {}", sql);
-        }
-        // -----------------------
-
+    public String queryCustomers(Customer params, int limit, List<Integer> allowedLevels) {
         try {
-            log.info("【数据查询服务】正在执行动态 SQL: {}", sql);
-            if (!upperSql.contains("LIMIT")) {
-                sql = sql.trim();
-                if (sql.endsWith(";")) {
-                    sql = sql.substring(0, sql.length() - 1);
-                }
-                sql += " LIMIT 50";
-            }
+            // 参数校验
+            if (limit <= 0)
+                limit = 10;
+            if (limit > 50)
+                limit = 50;
 
-            List<Map<String, Object>> results = customerMapper.selectDynamic(sql);
-            if (results == null || results.isEmpty()) {
-                return "未查询到相关结果。";
+            List<Customer> customers = customerMapper.selectPage(params, null, allowedLevels, 0, limit);
+
+            if (customers == null || customers.isEmpty()) {
+                return "未查询到符合条件的客户信息" + (allowedLevels != null ? " (或无权访问)" : "") + "。";
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.append("查询到 ").append(results.size()).append(" 条记录 (权限范围内)：\n");
-            for (Map<String, Object> row : results) {
-                sb.append("- ");
-                row.forEach((k, v) -> sb.append(k).append(": ").append(v).append(", "));
-                sb.setLength(sb.length() - 2);
+            sb.append("找到 ").append(customers.size()).append(" 位客户：\n");
+            for (Customer c : customers) {
+                sb.append("- **").append(c.getCustomerName()).append("**");
+
+                if (c.getRegion() != null)
+                    sb.append(" | 地区: ").append(c.getRegion());
+                if (c.getContactPerson() != null)
+                    sb.append(" | 联系人: ").append(c.getContactPerson());
+                if (c.getCustomerLevel() != null)
+                    sb.append(" | 等级: ").append(getCustomerLevelName(c.getCustomerLevel()));
+
                 sb.append("\n");
             }
             return sb.toString();
+
         } catch (Exception e) {
-            log.error("动态 SQL 执行失败", e);
-            return "查询执行失败：" + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+            log.error("客户查询失败", e);
+            return "查询失败：" + e.getMessage();
         }
     }
 

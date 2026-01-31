@@ -10,9 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import com.aicustomer.dify.client.DifyClient;
+import com.aicustomer.config.DifyConfig;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.File;
 
 /**
  * 知识库文档服务实现类
@@ -23,22 +26,49 @@ import java.util.Map;
 public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
 
     private final KnowledgeDocumentMapper knowledgeDocumentMapper;
+    private final DifyClient difyClient;
+    private final DifyConfig difyConfig;
 
     @Override
     public KnowledgeDocument createDocument(KnowledgeDocument document) {
         document.setCreateTime(LocalDateTime.now());
         document.setUpdateTime(LocalDateTime.now());
         document.setDeleted(0);
-        if (document.getStatus() == null) {
+        if (document.getStatus() == null)
             document.setStatus(1);
-        }
-        if (document.getViewCount() == null) {
+        if (document.getViewCount() == null)
             document.setViewCount(0);
-        }
-        if (document.getDownloadCount() == null) {
+        if (document.getDownloadCount() == null)
             document.setDownloadCount(0);
+
+        // 1. 上传到Dify
+        if (document.getFilePath() != null) {
+            try {
+                File file = new File(document.getFilePath());
+                if (file.exists()) {
+                    log.info("开始上传文件到Dify: {}", file.getName());
+                    Map<String, Object> response = difyClient.createDocumentByFile(
+                            difyConfig.getDatasetId(),
+                            file,
+                            "system"); // user暂定system
+
+                    if (response != null && response.containsKey("document")) {
+                        Map<String, Object> docData = (Map<String, Object>) response.get("document");
+                        String difyDocId = (String) docData.get("id");
+                        document.setDifyDocumentId(difyDocId);
+                        log.info("Dify上传成功, Document ID: {}", difyDocId);
+                    } else {
+                        log.error("Dify上传返回异常: {}", response);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("上传文件到Dify失败", e);
+                // 此时可以选择抛异常回滚，或者继续保存本地记录但标记状态
+                // 这里选择继续保存，但记录错误
+            }
         }
 
+        // 2. 保存到本地数据库
         knowledgeDocumentMapper.insert(document);
         return document;
     }
@@ -46,13 +76,28 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     @Override
     public KnowledgeDocument updateDocument(KnowledgeDocument document) {
         document.setUpdateTime(LocalDateTime.now());
+        // TODO: Dify更新文件比较复杂(通常是替换)，暂时只更新本地字段
+        // 如果重新上传了文件，建议前端走"删除 -> 新增"流程
         knowledgeDocumentMapper.update(document);
         return knowledgeDocumentMapper.selectById(document.getId());
     }
 
     @Override
     public void deleteDocument(Long id) {
-        knowledgeDocumentMapper.deleteById(id);
+        KnowledgeDocument doc = knowledgeDocumentMapper.selectById(id);
+        if (doc != null) {
+            // 1. 从Dify删除
+            if (doc.getDifyDocumentId() != null) {
+                try {
+                    difyClient.deleteDocument(difyConfig.getDatasetId(), doc.getDifyDocumentId());
+                    log.info("Dify文档删除成功: {}", doc.getDifyDocumentId());
+                } catch (Exception e) {
+                    log.error("Dify文档删除失败", e);
+                }
+            }
+            // 2. 本地逻辑删除
+            knowledgeDocumentMapper.deleteById(id);
+        }
     }
 
     @Override
