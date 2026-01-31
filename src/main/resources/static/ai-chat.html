@@ -8,7 +8,7 @@
     <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="/css/common.css" rel="stylesheet">
+    <!-- 只使用ai-chat专属CSS，不引用common.css -->
     <link href="/css/ai-chat.css" rel="stylesheet">
     <!-- Markdown支持 -->
     <link href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css" rel="stylesheet">
@@ -135,18 +135,6 @@
 
 <body>
     <div class="main-container">
-        <!-- 页面头部 -->
-        <div class="page-header">
-            <div class="page-header-left">
-                <div class="page-title">
-                    <i class="bi bi-chat-dots"></i> AI智能聊天
-                </div>
-            </div>
-            <a href="/" class="back-home-btn">
-                <i class="bi bi-house-fill"></i> 返回首页
-            </a>
-        </div>
-
         <!-- 聊天主容器 -->
         <div class="chat-main-container">
             <!-- 侧边栏 -->
@@ -155,31 +143,32 @@
                     <i class="bi bi-chevron-left" id="sidebarToggleIcon"></i>
                 </button>
                 <div class="sidebar-header">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0 text-white">
-                            <i class="bi bi-robot me-2"></i>AI助手
+                    <div class="sidebar-title">
+                        <h5>
+                            <i class="bi bi-robot"></i>AI助手
                         </h5>
-                        <button class="btn btn-light btn-sm" onclick="createNewChatSession()" title="新对话">
-                            <i class="bi bi-plus"></i>
-                        </button>
+                        <a href="/" class="back-home-link" title="返回首页">
+                            <i class="bi bi-house-fill"></i>
+                        </a>
                     </div>
+                    <button class="btn" onclick="createNewChatSession()" title="新对话">
+                        <i class="bi bi-plus"></i>
+                    </button>
                     <div class="ai-status">
-                        <div class="status-indicator online"></div>
+                        <div class="status-indicator"></div>
                         <span class="status-text">在线服务中</span>
                     </div>
                 </div>
 
                 <!-- 当前对话 -->
                 <div class="current-chat-section">
-                    <h6 class="text-white mb-3">
-                        <i class="bi bi-chat-dots me-2"></i>当前对话
-                    </h6>
+                    <h6><i class="bi bi-chat-dots"></i>当前对话</h6>
                     <div class="current-chat-info" id="currentChatInfo">
                         <div class="current-chat-item active" id="currentChatSummary">
                             <i class="bi bi-chat-square-text"></i>
                             <div class="current-chat-text">
                                 <span id="currentChatTitle">请选择或新建会话</span>
-                                <small class="text-white-50 d-block" id="currentChatMeta">等待开始新的对话</small>
+                                <small id="currentChatMeta">等待开始新的对话</small>
                             </div>
                         </div>
                     </div>
@@ -187,11 +176,9 @@
 
                 <!-- 对话历史 -->
                 <div class="chat-history">
-                    <h6 class="text-white mb-3">
-                        <i class="bi bi-clock-history me-2"></i>对话历史
-                    </h6>
+                    <h6><i class="bi bi-clock-history"></i>对话历史</h6>
                     <div class="history-list" id="historyList">
-                        <div class="history-empty text-white-50">正在加载会话...</div>
+                        <div class="history-empty">正在加载会话...</div>
                     </div>
                 </div>
 
