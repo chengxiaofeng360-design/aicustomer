@@ -25,16 +25,21 @@ public class SecurityConfig {
         @Autowired
         private CustomUserDetailsService userDetailsService;
 
-        @Autowired
         public void configureGlobal(AuthenticationManagerBuilder auth, @Lazy PasswordEncoder passwordEncoder)
                         throws Exception {
                 auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
         }
 
         @Bean
+        public org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer webSecurityCustomizer() {
+                return (web) -> web.ignoring().requestMatchers("/api/dify/tools/**");
+        }
+
+        @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
                                 .authorizeHttpRequests(authorize -> authorize
+                                                .requestMatchers("/api/dify/tools/**").permitAll()
                                                 .requestMatchers("/login", "/register", "/lib/**", "/css/**", "/js/**",
                                                                 "/api/customer/login",
                                                                 "/api/user/login")
@@ -78,7 +83,7 @@ public class SecurityConfig {
                                                 .permitAll())
                                 .csrf(csrf -> csrf.disable())
                                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                                .cors(cors -> cors.disable());
+                                .cors(org.springframework.security.config.Customizer.withDefaults());
 
                 return http.build();
         }

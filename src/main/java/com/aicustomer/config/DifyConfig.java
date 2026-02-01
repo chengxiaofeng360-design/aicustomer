@@ -2,6 +2,7 @@ package com.aicustomer.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -61,6 +62,14 @@ public class DifyConfig {
      * 数据集API密钥 (用于管理知识库文档)
      */
     private String datasetApiKey;
+
+    @Bean
+    public org.springframework.web.client.RestTemplate restTemplate() {
+        org.springframework.http.client.SimpleClientHttpRequestFactory factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(timeout);
+        factory.setReadTimeout(timeout);
+        return new org.springframework.web.client.RestTemplate(factory);
+    }
 
     /**
      * Dify工具调用密钥 (用于Dify回调本服务)

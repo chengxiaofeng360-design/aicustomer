@@ -1,6 +1,7 @@
 # AI客户管理系统配置文件
 server:
   port: 8085
+  address: 0.0.0.0
   tomcat:
     uri-encoding: UTF-8
 
@@ -51,7 +52,7 @@ spring:
 # 文件存储配置
 file:
   upload:
-    path: /data/files/upload/
+    path: ./uploads/
 
   # Jackson配置
   jackson:
@@ -96,7 +97,7 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: /data/logs/app/ai-customer.log
+    name: ./logs/app/ai-customer.log
   logback:
     rollingpolicy:
       max-file-size: 100MB
@@ -117,7 +118,7 @@ management:
 ai-customer:
   # 文件存储路径
   file:
-    upload-path: /data/files/upload/
+    upload-path: ./uploads/
     max-size: 104857600  # 100MB
 
   # 安全配置
@@ -177,10 +178,10 @@ ai:
 dify:
   enabled: true  # 已启用Dify引擎
   api-url: http://localhost/v1  # Dify API地址
-  api-key: app-wzlIkHk3AG8ZkLHyJ4fueMsI  # Chatbot应用的API密钥（已验证可用）
-  dataset-id: "3dfc20b6-2d75-436d-a9e6-f0b31083c8f0" # 替换为您的Dify知识库ID
-  dataset-api-key: "dataset-api-key-here" # 替换为您的Dify数据集API Key (稍后更新)
-  timeout: 30000  # 超时时间（毫秒）
+  api-key: app-dEwBNmvUS7MGx69GWB679PkT  # Dify Agent App Key 
+  dataset-id: "d82755d1-93a6-4af2-8fb1-dd481cc1132f" # Dify Knowledge Base ID
+  dataset-api-key: "dataset-eZddbJm7OgvdWIqstA3Xq8FE" # 用户确认此Key包含知识库权限
+  timeout: 120000  # 超时时间（毫秒）
   max-retries: 2  # 最大重试次数
   health-check-interval: 60000  # 健康检查间隔（毫秒）
   traffic-percentage: 100  # 100%流量使用Dify

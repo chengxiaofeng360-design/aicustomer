@@ -81,8 +81,12 @@ public class AiToolController {
     @PostMapping("/customer/count")
     public String getCustomerCount(@RequestHeader("X-Tool-Secret") String secret,
             @RequestBody Map<String, Object> body) {
+        log.info("🔔 Dify Tool Call: getCustomerCount - Body: {}", body);
         validateSecret(secret);
         String user = String.valueOf(body.get("user"));
+        if (user == null || "null".equals(user) || user.trim().isEmpty()) {
+            user = "admin";
+        }
         return customerQueryService.getTotalCustomerCount(getUserPermission(user));
     }
 
@@ -92,8 +96,12 @@ public class AiToolController {
     @PostMapping("/customer/list")
     public String getCustomerList(@RequestHeader("X-Tool-Secret") String secret,
             @RequestBody Map<String, Object> body) {
+        log.info("🔔 Dify Tool Call: getCustomerList - Body: {}", body);
         validateSecret(secret);
         String user = String.valueOf(body.get("user"));
+        if (user == null || "null".equals(user) || user.trim().isEmpty()) {
+            user = "admin";
+        }
 
         // 构建查询实体
         com.aicustomer.entity.Customer params = new com.aicustomer.entity.Customer();
@@ -129,6 +137,9 @@ public class AiToolController {
             @RequestBody Map<String, Object> body) {
         validateSecret(secret);
         String user = String.valueOf(body.get("user"));
+        if (user == null || "null".equals(user) || user.trim().isEmpty()) {
+            user = "admin";
+        }
         String name = (String) body.get("name");
         return customerQueryService.getCustomerDetail(name, getUserPermission(user));
     }

@@ -35,7 +35,84 @@ public class DifyClient {
      * POST /chat-messages
      */
     public Map<String, Object> sendChatMessage(Map<String, Object> payload) {
-        return post("/chat-messages", payload);
+        // Agent 应用必须使用 streaming 模式
+        if (!payload.containsKey("inputs")) {
+            payload.put("inputs", new HashMap<>());
+        }
+        payload.put("response_mode", "streaming");
+
+        String url = getBaseUrl() + "/chat-messages";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + difyConfig.getApiKey());
+
+        // Debug Logging (User Request)
+        String debugKey = difyConfig.getApiKey();
+        log.info("-------------------- Dify Request Debug --------------------");
+        log.info("Dify URL      : {}", url);
+        log.info("Dify Key      : {}...",
+                (debugKey != null && debugKey.length() > 8) ? debugKey.substring(0, 8) : "null/short");
+        log.info("Response Mode : {}", payload.get("response_mode"));
+        log.info("------------------------------------------------------------");
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+        try {
+            // 使用 execute 而不是 postForEntity 以便处理流
+            return restTemplate.execute(url, HttpMethod.POST,
+                    request -> {
+                        objectMapper.writeValue(request.getBody(), payload);
+                        request.getHeaders().addAll(headers);
+                    },
+                    response -> {
+                        java.io.BufferedReader reader = new java.io.BufferedReader(
+                                new java.io.InputStreamReader(response.getBody(),
+                                        java.nio.charset.StandardCharsets.UTF_8));
+
+                        StringBuilder fullAnswer = new StringBuilder();
+                        String line;
+                        String conversationId = null;
+                        String taskId = null;
+
+                        while ((line = reader.readLine()) != null) {
+                            if (line.startsWith("data: ")) {
+                                String json = line.substring(6);
+                                if ("[DONE]".equals(json.trim()))
+                                    break;
+
+                                try {
+                                    Map<String, Object> event = objectMapper.readValue(json, Map.class);
+                                    String eventName = (String) event.get("event");
+
+                                    // 累积 agent_message 或 message 类型的 answer
+                                    if ("agent_message".equals(eventName) || "message".equals(eventName)) {
+                                        fullAnswer.append(event.getOrDefault("answer", ""));
+                                    }
+
+                                    if (event.containsKey("conversation_id")) {
+                                        conversationId = (String) event.get("conversation_id");
+                                    }
+                                    if (event.containsKey("task_id")) {
+                                        taskId = (String) event.get("task_id");
+                                    }
+                                } catch (Exception e) {
+                                    log.warn("Failed to parse SSE line: {}", line);
+                                }
+                            }
+                        }
+
+                        // 构造伪造的 blocking 响应格式，保持兼容性
+                        Map<String, Object> result = new HashMap<>();
+                        result.put("answer", fullAnswer.toString());
+                        result.put("conversation_id", conversationId);
+                        result.put("task_id", taskId);
+                        result.put("status", "success");
+                        return result;
+                    });
+        } catch (Exception e) {
+            log.error("Dify Streaming API call failed", e);
+            throw new RuntimeException("Dify API Error: " + e.getMessage());
+        }
     }
 
     /**
