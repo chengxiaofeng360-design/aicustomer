@@ -434,6 +434,30 @@ public class DatabaseInitializer {
                 log.warn("sys_user表不存在，跳过结构更新（这可能在初次初始化时由initializeDatabase处理）");
             }
 
+            // 检查并添加dify_document_id字段到faq_qa
+            if (!checkColumnExists("faq_qa", "dify_document_id")) {
+                log.info("添加dify_document_id字段到faq_qa表...");
+                try {
+                    jdbcTemplate
+                            .execute("ALTER TABLE faq_qa ADD COLUMN dify_document_id VARCHAR(100) COMMENT 'Dify文档ID'");
+                    log.info("✅ dify_document_id字段添加成功 (faq_qa)");
+                } catch (Exception e) {
+                    log.error("❌ 添加dify_document_id字段失败 (faq_qa): {}", e.getMessage());
+                }
+            }
+
+            // 检查并添加dify_document_id字段到knowledge_document
+            if (!checkColumnExists("knowledge_document", "dify_document_id")) {
+                log.info("添加dify_document_id字段到knowledge_document表...");
+                try {
+                    jdbcTemplate.execute(
+                            "ALTER TABLE knowledge_document ADD COLUMN dify_document_id VARCHAR(100) COMMENT 'Dify文档ID'");
+                    log.info("✅ dify_document_id字段添加成功 (knowledge_document)");
+                } catch (Exception e) {
+                    log.error("❌ 添加dify_document_id字段失败 (knowledge_document): {}", e.getMessage());
+                }
+            }
+
             log.info("✅ 表结构更新完成");
         } catch (Exception e) {
             log.error("❌ 更新表结构失败: {}", e.getMessage(), e);
@@ -769,8 +793,9 @@ public class DatabaseInitializer {
                     "create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', " +
                     "update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', " +
                     "create_by VARCHAR(50) COMMENT '创建人', " +
-                    "update_by VARCHAR(50) COMMENT '更新人', " +
-                    "deleted TINYINT DEFAULT 0 COMMENT '删除标志', " +
+                    "update_by VARCHAR(50), " +
+                    "deleted TINYINT NOT NULL DEFAULT 0, " +
+                    "dify_document_id VARCHAR(100) COMMENT 'Dify文档ID', " +
                     "INDEX idx_title (title), " +
                     "INDEX idx_document_type (document_type), " +
                     "INDEX idx_category (category), " +
@@ -805,6 +830,7 @@ public class DatabaseInitializer {
                     "create_by VARCHAR(50) COMMENT '创建人', " +
                     "update_by VARCHAR(50) COMMENT '更新人', " +
                     "deleted TINYINT DEFAULT 0 COMMENT '删除标志', " +
+                    "dify_document_id VARCHAR(100) COMMENT 'Dify文档ID', " +
                     "INDEX idx_category (category), " +
                     "INDEX idx_priority (priority), " +
                     "INDEX idx_status (status), " +

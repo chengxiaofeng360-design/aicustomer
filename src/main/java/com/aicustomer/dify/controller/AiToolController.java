@@ -25,6 +25,7 @@ public class AiToolController {
 
     private final CustomerQueryService customerQueryService;
     private final KnowledgeQueryService knowledgeQueryService;
+    private final com.aicustomer.service.FaqQaService faqQaService;
     private final UserService userService;
     private final DifyConfig difyConfig;
 
@@ -189,5 +190,34 @@ public class AiToolController {
         if (fileName == null)
             return "Missing fileName argument";
         return knowledgeQueryService.getKnowledgeDetail(fileName);
+    }
+
+    /**
+     * FAQ 搜索 (优先匹配官方问题库)
+     */
+    @PostMapping("/faq/search")
+    public String searchFaq(@RequestHeader("X-Tool-Secret") String secret,
+            @RequestBody Map<String, Object> body) {
+        validateSecret(secret);
+        String query = (String) body.get("query");
+        if (query == null || query.trim().isEmpty()) {
+            return "Missing query argument";
+        }
+
+        log.info("🔔 Dify Tool Call: searchFaq - Query: {}", query);
+        List<com.aicustomer.entity.FaqQa> results = faqQaService.searchFaq(query, 5);
+
+        if (results == null || results.isEmpty()) {
+            return "在 FAQ 库中未找到与 \"" + query + "\" 相关的标准问题。";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("在 FAQ 库中为您找到以下相关问答：\n\n");
+        for (int i = 0; i < results.size(); i++) {
+            com.aicustomer.entity.FaqQa faq = results.get(i);
+            sb.append(i + 1).append(". **问题**：").append(faq.getQuestion()).append("\n");
+            sb.append("   **回答**：").append(faq.getAnswer()).append("\n\n");
+        }
+        return sb.toString();
     }
 }

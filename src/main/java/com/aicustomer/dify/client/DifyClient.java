@@ -75,8 +75,9 @@ public class DifyClient {
                         String taskId = null;
 
                         while ((line = reader.readLine()) != null) {
-                            if (line.startsWith("data: ")) {
-                                String json = line.substring(6);
+                            String trimmed = line.trim();
+                            if (trimmed.startsWith("data:")) {
+                                String json = trimmed.substring(5).trim();
                                 if ("[DONE]".equals(json.trim()))
                                     break;
 
@@ -87,6 +88,17 @@ public class DifyClient {
                                     // 累积 agent_message 或 message 类型的 answer
                                     if ("agent_message".equals(eventName) || "message".equals(eventName)) {
                                         fullAnswer.append(event.getOrDefault("answer", ""));
+                                    } else if ("error".equals(eventName)) {
+                                        // 捕获流式传输中的错误
+                                        log.warn("Dify Stream Error Event: {}", json);
+                                        // 将错误信息放入 result，以便上层处理 (hack way via fullAnswer or side channel)
+                                        // 这里为了简单，直接将其追加到 content 或者抛出异常
+                                        // 更好的做法是 populate result map fields
+                                        // 但受限于 final 变量，我们使用 StringBuilder 存储 error
+                                        String errorMsg = String.format("Error: %s (Code: %s)",
+                                                event.getOrDefault("message", "Unknown"),
+                                                event.getOrDefault("code", "N/A"));
+                                        fullAnswer.append("[").append(errorMsg).append("]");
                                     }
 
                                     if (event.containsKey("conversation_id")) {

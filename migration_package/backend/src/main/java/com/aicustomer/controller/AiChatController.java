@@ -4,6 +4,7 @@ import com.aicustomer.common.Result;
 import com.aicustomer.entity.AiChat;
 import com.aicustomer.service.AiChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/ai-chat")
+@Profile("migration")
 @RequiredArgsConstructor
 public class AiChatController {
     

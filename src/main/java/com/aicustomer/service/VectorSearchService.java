@@ -5,8 +5,10 @@ import java.util.Map;
 
 /**
  * 向量搜索服务接口
- * 使用Elasticsearch进行向量相似度搜索
+ * 
+ * @deprecated 请优先使用 Dify 平台提供的向量检索和 RAG 能力
  */
+@Deprecated
 public interface VectorSearchService {
 
     /**

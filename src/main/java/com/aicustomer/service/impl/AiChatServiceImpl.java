@@ -31,6 +31,7 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("deprecation")
 public class AiChatServiceImpl implements AiChatService {
 
     private static final Long DEFAULT_USER_ID = 0L;
@@ -105,7 +106,14 @@ public class AiChatServiceImpl implements AiChatService {
                 aiReplyContent = (String) response.get("answer");
                 log.info("✅ Dify 响应成功: {}", aiReplyContent);
             } else {
-                aiReplyContent = "AI 服务暂时无响应 (Dify API returned empty answer)";
+                // 尝试提取错误信息
+                String errorMsg = "AI 服务暂时无响应 (Dify API returned empty answer)";
+                if (response != null && (response.containsKey("message") || response.containsKey("code"))) {
+                    errorMsg = String.format("Dify 调用失败: %s (Code: %s)",
+                            response.getOrDefault("message", "Unknown error"),
+                            response.getOrDefault("code", "N/A"));
+                }
+                aiReplyContent = errorMsg;
                 log.warn("❌ Dify 响应异常: {}", response);
             }
 

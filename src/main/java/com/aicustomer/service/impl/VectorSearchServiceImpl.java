@@ -29,13 +29,25 @@ public class VectorSearchServiceImpl implements VectorSearchService {
     @Value("${vector.index.name:knowledge_docs}")
     private String indexName;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.aicustomer.config.DifyConfig difyConfig;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private boolean serviceAvailable = false;
 
+    /**
+     * @deprecated 请优先使用 Dify 引擎的知识库检索能力
+     */
+    @Deprecated
     @PostConstruct
     public void init() {
+        if (difyConfig != null && difyConfig.isEnabled()) {
+            log.info("Dify 引擎已启用，自动停用本地向量搜索服务 (VectorSearchService)");
+            this.serviceAvailable = false;
+            return;
+        }
         checkServiceAvailability();
     }
 

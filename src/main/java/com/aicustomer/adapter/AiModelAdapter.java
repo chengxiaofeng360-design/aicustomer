@@ -11,7 +11,9 @@ import com.aicustomer.model.FunctionCallResponse;
  * 
  * @author AI Customer Management System
  * @version 2.0.0
+ * @deprecated 已被 Dify 引擎取代
  */
+@Deprecated
 public interface AiModelAdapter {
 
     /**
