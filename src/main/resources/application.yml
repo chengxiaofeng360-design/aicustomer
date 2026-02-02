@@ -178,7 +178,7 @@ ai:
 dify:
   enabled: true  # 已启用Dify引擎
   api-url: http://localhost/v1  # Dify API地址
-  api-key: app-dEwBNmvUS7MGx69GWB679PkT  # Dify Agent App Key 
+  api-key: app-NrkVcrAncc6fWi1ya4OQU2FF  # Dify Agent App Key 
   dataset-id: "d82755d1-93a6-4af2-8fb1-dd481cc1132f" # Dify Knowledge Base ID
   dataset-api-key: "dataset-eZddbJm7OgvdWIqstA3Xq8FE" # 用户确认此Key包含知识库权限
   timeout: 120000  # 超时时间（毫秒）
