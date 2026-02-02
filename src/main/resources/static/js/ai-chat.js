@@ -660,7 +660,7 @@ function scrollToChatArea() {
 
 // 添加消息到聊天界面
 function addMessage(content, sender, options = {}) {
-    const { timestamp = new Date(), recordHistory = true, skipScroll = false } = options;
+    const { timestamp = new Date(), recordHistory = true, skipScroll = false, id = null } = options;
     const messagesContainer = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
@@ -684,7 +684,7 @@ function addMessage(content, sender, options = {}) {
         `;
     } else {
         // AI消息添加语音播放按钮和来源显示
-        const messageId = 'msg_' + Date.now();
+        const messageId = id || ('msg_' + Date.now());
         const escapedContentForAttr = content.replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/\n/g, '\\n');
 
         // 解析来源信息
