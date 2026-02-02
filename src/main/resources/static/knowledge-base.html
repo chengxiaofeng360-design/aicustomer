@@ -641,10 +641,88 @@
             }
         }
 
-        // 查看文档
+        // 查看文档 (预览)
         function viewDocument(docId) {
-            // 实现查看逻辑
-            console.log('查看文档:', docId);
+            const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+            const previewBody = document.getElementById('previewBody');
+            const previewTitle = document.getElementById('previewTitle');
+            
+            // 显示加载状态
+            previewBody.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+            previewModal.show();
+
+            // 获取文档信息
+            fetch(`/api/knowledge-doc/${docId}`)
+                .then(res => res.json())
+                .then(result => {
+                    if (result.code === 200) {
+                        const doc = result.data;
+                        previewTitle.textContent = doc.title || doc.fileName;
+                        loadPreviewContent(doc);
+                    } else {
+                        previewBody.innerHTML = `<div class="alert alert-danger m-3">无法获取文档信息: ${result.message}</div>`;
+                    }
+                })
+                .catch(err => {
+                    previewBody.innerHTML = `<div class="alert alert-danger m-3">请求出错: ${err.message}</div>`;
+                });
+        }
+
+        // 加载预览内容
+        function loadPreviewContent(doc) {
+            const previewBody = document.getElementById('previewBody');
+            const fileType = doc.fileType ? doc.fileType.toLowerCase() : '';
+            const previewUrl = `/api/knowledge-doc/${doc.id}/preview`;
+
+            if (fileType === 'pdf') {
+                previewBody.innerHTML = `<iframe src="${previewUrl}" style="width:100%; height:100%; border:none;"></iframe>`;
+            } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(fileType)) {
+                previewBody.innerHTML = `<img src="${previewUrl}" style="max-width:100%; max-height:100%; object-fit:contain;" />`;
+            } else if (['txt', 'md', 'json', 'xml', 'log', 'java', 'js', 'css', 'html'].includes(fileType)) {
+                // 文本类文件，这会触发下载，改为用fetch获取文本内容显示
+                fetch(previewUrl)
+                    .then(res => res.text())
+                    .then(text => {
+                         previewBody.innerHTML = `<pre style="width:100%; height:100%; padding: 20px; margin:0; white-space: pre-wrap; overflow: auto; background: white;">${escapeHtml(text)}</pre>`;
+                    })
+                    .catch(e => {
+                         previewBody.innerHTML = `<div class="alert alert-warning m-3">无法读取文本内容</div>`;
+                    });
+            } else {
+                // 不支持直接预览的格式 (如 docx, xlsx)，显示提示并提供下载
+                previewBody.innerHTML = `
+                    <div class="text-center">
+                        <i class="bi bi-file-earmark-break display-1 text-muted mb-3"></i>
+                        <h4>此文件格式 (${fileType}) 暂不支持在线预览</h4>
+                        <p class="text-muted">您可以下载后查看，或者查看系统提取的文本内容（如有）</p>
+                        <div class="mt-4">
+                            <a href="/api/knowledge-doc/${doc.id}/preview" class="btn btn-primary" download>
+                                <i class="bi bi-download"></i> 下载原文件
+                            </a>
+                            ${doc.content ? `<button class="btn btn-outline-secondary ms-2" onclick="showExtractedText('${escapeHtml(doc.content).replace(/'/g, "\\'")}')">查看提取内容</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function showExtractedText(content) {
+            const previewBody = document.getElementById('previewBody');
+            previewBody.innerHTML = `<div style="width:100%; height:100%; padding: 2rem; overflow: auto; background: white;">
+                <h5>系统提取的文本内容：</h5>
+                <hr>
+                <div style="white-space: pre-wrap; font-family: monospace;">${content}</div>
+            </div>`;
+        }
+
+        function escapeHtml(text) {
+             if (!text) return '';
+             return text
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
         }
 
         // 分类和标签选择功能

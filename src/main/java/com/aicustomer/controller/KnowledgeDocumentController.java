@@ -21,6 +21,15 @@ import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import java.util.List;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -104,6 +113,46 @@ public class KnowledgeDocumentController {
     public Result<Void> incrementDownloadCount(@PathVariable Long id) {
         knowledgeDocumentService.incrementDownloadCount(id);
         return Result.success();
+    }
+
+    /**
+     * 预览文档
+     */
+    @GetMapping("/{id}/preview")
+    public ResponseEntity<Resource> getDocumentPreview(@PathVariable Long id) {
+        KnowledgeDocument doc = knowledgeDocumentService.getDocument(id);
+        if (doc == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            Path filePath = Paths.get(doc.getFilePath());
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                String contentType = "application/octet-stream";
+                String fileName = doc.getFileName().toLowerCase();
+
+                if (fileName.endsWith(".pdf")) {
+                    contentType = "application/pdf";
+                } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+                    contentType = "image/jpeg";
+                } else if (fileName.endsWith(".png")) {
+                    contentType = "image/png";
+                } else if (fileName.endsWith(".txt")) {
+                    contentType = "text/plain";
+                }
+
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**

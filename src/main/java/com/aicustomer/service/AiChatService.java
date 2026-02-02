@@ -25,6 +25,12 @@ public interface AiChatService {
             Long userId);
 
     /**
+     * 发送消息（流式，支持多轮对话）
+     */
+    void streamMessage(String sessionId, String userMessage, Long customerId, List<Map<String, String>> history,
+            Long userId, java.util.function.Consumer<String> chunkHandler);
+
+    /**
      * 获取聊天统计
      */
     Map<String, Object> getChatStatistics();

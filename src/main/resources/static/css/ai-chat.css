@@ -381,7 +381,7 @@ body {
 }
 
 .user-message {
-    flex-direction: row-reverse;
+    /* flex-direction: row-reverse; - 移除此行，因为HTML结构已经是 Content + Avatar */
 }
 
 .message-avatar {

@@ -30,6 +30,13 @@ public class DifyService {
     }
 
     /**
+     * 发送对话消息 (流式)
+     */
+    public void streamChat(Map<String, Object> payload, java.util.function.Consumer<String> chunkHandler) {
+        difyClient.streamChatMessage(payload, chunkHandler);
+    }
+
+    /**
      * 上传文件
      */
     public Map<String, Object> uploadFile(MultipartFile multipartFile, String userId) {

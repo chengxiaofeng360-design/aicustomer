@@ -34,6 +34,75 @@ public class DifyClient {
      * 发送对话消息
      * POST /chat-messages
      */
+    /**
+     * 发送对话消息 (流式)
+     * POST /chat-messages
+     */
+    public void streamChatMessage(Map<String, Object> payload, java.util.function.Consumer<String> chunkHandler) {
+        if (!payload.containsKey("inputs")) {
+            payload.put("inputs", new HashMap<>());
+        }
+        payload.put("response_mode", "streaming");
+
+        String url = getBaseUrl() + "/chat-messages";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + difyConfig.getApiKey());
+        headers.set("Accept", "text/event-stream");
+
+        try {
+            restTemplate.execute(url, HttpMethod.POST,
+                    request -> {
+                        objectMapper.writeValue(request.getBody(), payload);
+                        request.getHeaders().addAll(headers);
+                    },
+                    response -> {
+                        java.io.BufferedReader reader = new java.io.BufferedReader(
+                                new java.io.InputStreamReader(response.getBody(),
+                                        java.nio.charset.StandardCharsets.UTF_8));
+
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            String trimmed = line.trim();
+                            if (trimmed.startsWith("data:")) {
+                                String json = trimmed.substring(5).trim();
+                                if ("[DONE]".equals(json)) {
+                                    break;
+                                }
+
+                                try {
+                                    Map<String, Object> event = objectMapper.readValue(json, Map.class);
+                                    String eventName = (String) event.get("event");
+
+                                    // 处理消息内容
+                                    if ("agent_message".equals(eventName) || "message".equals(eventName)) {
+                                        String answer = (String) event.getOrDefault("answer", "");
+                                        if (answer != null && !answer.isEmpty()) {
+                                            chunkHandler.accept(answer);
+                                        }
+                                    } else if ("error".equals(eventName)) {
+                                        String errorMsg = String.format("[Error: %s]",
+                                                event.getOrDefault("message", "Unknown"));
+                                        log.warn("Dify Stream Error: {}", errorMsg);
+                                        chunkHandler.accept(errorMsg);
+                                    }
+                                } catch (Exception e) {
+                                    log.warn("Failed to parse SSE line: {}", line);
+                                }
+                            }
+                        }
+                        return null;
+                    });
+        } catch (Exception e) {
+            log.error("Dify Streaming API call failed", e);
+            chunkHandler.accept("[System Error: " + e.getMessage() + "]");
+        }
+    }
+
+    /**
+     * 发送对话消息 (阻塞式兼容)
+     * POST /chat-messages
+     */
     public Map<String, Object> sendChatMessage(Map<String, Object> payload) {
         // Agent 应用必须使用 streaming 模式
         if (!payload.containsKey("inputs")) {
@@ -89,12 +158,6 @@ public class DifyClient {
                                     if ("agent_message".equals(eventName) || "message".equals(eventName)) {
                                         fullAnswer.append(event.getOrDefault("answer", ""));
                                     } else if ("error".equals(eventName)) {
-                                        // 捕获流式传输中的错误
-                                        log.warn("Dify Stream Error Event: {}", json);
-                                        // 将错误信息放入 result，以便上层处理 (hack way via fullAnswer or side channel)
-                                        // 这里为了简单，直接将其追加到 content 或者抛出异常
-                                        // 更好的做法是 populate result map fields
-                                        // 但受限于 final 变量，我们使用 StringBuilder 存储 error
                                         String errorMsg = String.format("Error: %s (Code: %s)",
                                                 event.getOrDefault("message", "Unknown"),
                                                 event.getOrDefault("code", "N/A"));

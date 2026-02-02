@@ -508,19 +508,19 @@ async function sendMessage() {
     input.value = '';
     autoResize(input);
 
-    // 显示正在输入状态
-    showTypingIndicator();
+    // 准备AI回复容器
+    const aiMessageId = 'msg_ai_' + Date.now();
+    addMessage('', 'ai', {
+        id: aiMessageId,
+        recordHistory: false // 暂时不记录，等生成完再记录
+    });
+    const aiMessageBubble = document.querySelector(`#${aiMessageId} .message-text`);
+    let fullAiResponse = '';
 
     try {
-        // 调用后端API（传递对话历史以支持多轮对话）
-        console.log('【前端】开始调用后端API');
-        console.log('【前端】请求参数:', {
-            sessionId: currentChatId,
-            message: message,
-            historyCount: conversationHistory.length
-        });
-
-        const response = await fetch('/api/ai-chat/send', {
+        // 调用后端流式API
+        console.log('【前端】开始调用后端流式API');
+        const response = await fetch('/api/ai-chat/send/stream', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -529,65 +529,64 @@ async function sendMessage() {
                 sessionId: currentChatId,
                 message: message,
                 customerId: null,
-                history: conversationHistory // 传递对话历史
+                history: conversationHistory
             })
         });
 
-        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-        // 隐藏正在输入状态
-        hideTypingIndicator();
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
 
-        // 检查HTTP状态码和业务状态码
-        if (response.ok && result.code === 200 && result.data) {
-            const aiResponse = result.data.replyContent || result.data.content;
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-            if (aiResponse && aiResponse.trim()) {
-                // 添加AI回复到对话历史
-                conversationHistory.push({
-                    role: 'assistant',
-                    content: aiResponse
-                });
-                trimConversationHistory();
+            const chunk = decoder.decode(value, { stream: true });
+            fullAiResponse += chunk;
 
-                // 显示AI回复
-                addMessage(aiResponse, 'ai');
-                updateSessionAfterMessage(message, aiResponse);
-            } else {
-                const errorMsg = '抱歉，AI服务返回了空回复，请检查后端日志。';
-                addMessage(errorMsg, 'ai');
-                conversationHistory.push({
-                    role: 'assistant',
-                    content: errorMsg
-                });
-                trimConversationHistory();
-            }
-        } else {
-            // 如果后端失败，显示错误信息
-            const errorMsg = '后端API调用失败: ' + (result.message || '未知错误');
-            console.error('API调用失败:', {
-                status: response.status,
-                statusText: response.statusText,
-                result: result
-            });
-            addMessage(errorMsg, 'ai');
-            conversationHistory.push({
-                role: 'assistant',
-                content: errorMsg
+            // 实时更新UI
+            // 简单的Markdown处理：如果是流式，为了性能，可以暂时直接追加文本，或者定期解析Markdown
+            // 这里为了效果好，我们每次都重新解析Markdown（对于长文本可能会有性能消耗，但在这个规模下通常可以接受）
+            updateMessageContent(aiMessageId, fullAiResponse);
+
+            // 保持滚动到底部
+            requestAnimationFrame(() => {
+                scrollToBottom();
             });
         }
-    } catch (error) {
-        console.error('发送消息失败:', error);
-        hideTypingIndicator();
 
-        // 显示错误提示
-        const errorMessage = '抱歉，AI服务暂时无法响应。' + (error.message ? '错误：' + error.message : '');
-        addMessage(errorMessage, 'ai');
+        // 流结束
+        console.log('【前端】流式响应结束');
+
+        // 最终更新一次（处理Markdown闭合等）
+        updateMessageContent(aiMessageId, fullAiResponse);
+
+        // 添加到对话历史
         conversationHistory.push({
             role: 'assistant',
-            content: errorMessage
+            content: fullAiResponse
         });
         trimConversationHistory();
+        updateSessionAfterMessage(message, fullAiResponse);
+
+        // 记录到本地历史（为了页面刷新后能看到）
+        addToHistory(fullAiResponse, 'ai', new Date().toISOString());
+
+    } catch (error) {
+        console.error('发送消息失败:', error);
+        const errorMessage = '\n\n[系统错误: ' + (error.message || '网络连接中断') + ']';
+        fullAiResponse += errorMessage;
+        updateMessageContent(aiMessageId, fullAiResponse);
+
+        conversationHistory.push({
+            role: 'assistant',
+            content: fullAiResponse
+        });
+        trimConversationHistory();
+        addToHistory(fullAiResponse, 'ai', new Date().toISOString());
     } finally {
         // 恢复发送按钮和输入框
         if (sendBtn) {
@@ -598,6 +597,36 @@ async function sendMessage() {
             input.disabled = false;
             input.focus();
         }
+    }
+}
+
+// 更新消息内容（支持Markdown）
+function updateMessageContent(messageId, content) {
+    const messageDiv = document.getElementById(messageId);
+    if (!messageDiv) return;
+
+    const textContainer = messageDiv.querySelector('.message-text');
+    if (!textContainer) return;
+
+    let htmlContent = content;
+    if (typeof marked !== 'undefined') {
+        try {
+            htmlContent = marked.parse(content);
+        } catch (e) {
+            console.error('Markdown解析失败:', e);
+            htmlContent = escapeHtml(content).replace(/\n/g, '<br>');
+        }
+    } else {
+        htmlContent = escapeHtml(content).replace(/\n/g, '<br>');
+    }
+
+    textContainer.innerHTML = htmlContent;
+
+    // 代码高亮
+    if (typeof hljs !== 'undefined') {
+        textContainer.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
     }
 }
 

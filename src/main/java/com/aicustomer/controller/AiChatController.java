@@ -46,6 +46,9 @@ public class AiChatController {
     /**
      * 发送消息（支持多轮对话）
      */
+    /**
+     * 发送消息（支持多轮对话）
+     */
     @PostMapping("/send")
     public Result<Map<String, Object>> sendMessage(@RequestBody Map<String, Object> request) {
         try {
@@ -69,12 +72,9 @@ public class AiChatController {
             @SuppressWarnings("unchecked")
             List<Map<String, String>> history = (List<Map<String, String>>) request.get("history");
 
-            // 传递 userId 到 Service (需要修改 Service 接口)
-            // 这里为了不修改 Service 太多签名，我们暂时将 userId 放入 history 或者 threadLocal，或者重载方法
-            // 最佳实践：重载 sendMessage 方法接受 userId
+            // 传递 userId 到 Service
             AiChat response = aiChatService.sendMessage(sessionId, userMessage, customerId, history, userId);
 
-            // ... (rest of method)
             Map<String, Object> result = new HashMap<>();
             result.put("id", response.getId());
             result.put("sessionId", sessionId);
@@ -88,6 +88,55 @@ public class AiChatController {
             e.printStackTrace();
             return Result.error("发送消息失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 发送消息（流式）
+     */
+    @PostMapping(value = "/send/stream", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
+    public org.springframework.web.servlet.mvc.method.annotation.SseEmitter streamMessage(
+            @RequestBody Map<String, Object> request) {
+        final org.springframework.web.servlet.mvc.method.annotation.SseEmitter emitter = new org.springframework.web.servlet.mvc.method.annotation.SseEmitter(
+                180000L); // 3分钟超时
+        try {
+            String sessionId = request.get("sessionId").toString();
+            String userMessage = request.get("message").toString();
+            Long customerId = request.get("customerId") != null ? Long.valueOf(request.get("customerId").toString())
+                    : null;
+
+            String username = getCurrentUsername();
+            Long userId = 0L;
+            if (!"anonymous".equals(username)) {
+                com.aicustomer.entity.User user = userService.findByUsername(username);
+                if (user != null) {
+                    userId = user.getId();
+                }
+            }
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> history = (List<Map<String, String>>) request.get("history");
+            final Long finalUserId = userId; // for lambda
+
+            // 异步处理
+            new Thread(() -> {
+                try {
+                    aiChatService.streamMessage(sessionId, userMessage, customerId, history, finalUserId, chunk -> {
+                        try {
+                            emitter.send(chunk);
+                        } catch (java.io.IOException e) {
+                            emitter.completeWithError(e);
+                        }
+                    });
+                    emitter.complete();
+                } catch (Exception e) {
+                    emitter.completeWithError(e);
+                }
+            }).start();
+
+        } catch (Exception e) {
+            emitter.completeWithError(e);
+        }
+        return emitter;
     }
 
     /**

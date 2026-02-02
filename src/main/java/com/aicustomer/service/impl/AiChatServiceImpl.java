@@ -131,6 +131,61 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     @Override
+    public void streamMessage(String sessionId, String userMessage, Long customerId,
+            List<Map<String, String>> history, Long userId, java.util.function.Consumer<String> chunkHandler) {
+
+        log.info("【AiChatService】Dify 流式对话 - 会话ID: {}, 用户: {}", sessionId, userId);
+
+        Long effectiveUserId = (userId != null) ? userId : DEFAULT_USER_ID;
+        String normalizedSessionId = (sessionId == null || sessionId.trim().isEmpty())
+                ? createNewSession(effectiveUserId, customerId)
+                : sessionId;
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1. 记录用户消息
+        AiChat userRecord = buildMessageRecord(normalizedSessionId, customerId, 1, userMessage, null, now);
+        userRecord.setUserId(effectiveUserId);
+        aiChatMapper.insert(userRecord);
+
+        // 2. 调用 Dify Service (Stream)
+        StringBuilder fullResponseBuilder = new StringBuilder();
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("query", userMessage);
+            payload.put("user", String.valueOf(effectiveUserId));
+            payload.put("inputs", new HashMap<>());
+            // difyService.streamChat set response_mode internally
+
+            log.info("🚀 调用 Dify Streaming API...");
+            difyService.streamChat(payload, chunk -> {
+                // Accumulate full response
+                fullResponseBuilder.append(chunk);
+                // Forward chunk to frontend
+                chunkHandler.accept(chunk);
+            });
+            log.info("✅ Dify 流式响应结束");
+
+        } catch (Exception e) {
+            log.error("❌ 调用 Dify Stream 失败", e);
+            String errorMsg = "抱歉，系统暂时无法处理您的请求。(" + e.getMessage() + ")";
+            chunkHandler.accept(errorMsg);
+            fullResponseBuilder.append(errorMsg);
+        }
+
+        // 3. 记录AI回复 (Full Text)
+        String aiReplyContent = fullResponseBuilder.toString();
+        // 如果内容为空，可能发生了什么也没返回的情况
+        if (aiReplyContent.isEmpty()) {
+            aiReplyContent = "AI 服务未返回任何内容";
+        }
+
+        AiChat aiRecord = buildMessageRecord(normalizedSessionId, customerId, 2, aiReplyContent, aiReplyContent,
+                LocalDateTime.now());
+        aiRecord.setUserId(effectiveUserId);
+        aiChatMapper.insert(aiRecord);
+    }
+
+    @Override
     public Map<String, Object> getChatStatistics() {
         Map<String, Object> stats = aiChatMapper.selectStatistics(null, null, null, null);
         if (stats == null) {
