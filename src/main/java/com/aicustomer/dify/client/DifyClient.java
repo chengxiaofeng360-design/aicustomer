@@ -80,6 +80,27 @@ public class DifyClient {
                                         if (answer != null && !answer.isEmpty()) {
                                             chunkHandler.accept(answer);
                                         }
+                                    } else if ("message_end".equals(eventName)) {
+                                        // 处理结束事件，提取引用来源
+                                        if (event.containsKey("metadata")) {
+                                            Map<String, Object> metadata = (Map<String, Object>) event.get("metadata");
+                                            if (metadata != null && metadata.containsKey("retriever_resources")) {
+                                                java.util.List<Map<String, Object>> resources = (java.util.List<Map<String, Object>>) metadata
+                                                        .get("retriever_resources");
+                                                if (resources != null && !resources.isEmpty()) {
+                                                    StringBuilder citations = new StringBuilder();
+                                                    citations.append("\n\n---\n**参考来源：**\n");
+                                                    int index = 1;
+                                                    for (Map<String, Object> res : resources) {
+                                                        String docName = (String) res.getOrDefault("document_name",
+                                                                "未知文档");
+                                                        // 也可以加上匹配度等信息
+                                                        citations.append(String.format("%d. %s\n", index++, docName));
+                                                    }
+                                                    chunkHandler.accept(citations.toString());
+                                                }
+                                            }
+                                        }
                                     } else if ("error".equals(eventName)) {
                                         String errorMsg = String.format("[Error: %s]",
                                                 event.getOrDefault("message", "Unknown"));

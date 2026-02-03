@@ -117,20 +117,21 @@ public class AiChatController {
             List<Map<String, String>> history = (List<Map<String, String>>) request.get("history");
             final Long finalUserId = userId; // for lambda
 
-            // 核心修复：直接同步调用，不使用新线程
-            // 配合 Service 层的异步 DB 保存，可以确保响应最快结束
-            try {
-                aiChatService.streamMessage(sessionId, userMessage, customerId, history, finalUserId, chunk -> {
-                    try {
-                        emitter.send(chunk);
-                    } catch (java.io.IOException e) {
-                        emitter.completeWithError(e);
-                    }
-                });
-                emitter.complete();
-            } catch (Exception e) {
-                emitter.completeWithError(e);
-            }
+            // 异步执行Dify请求，确保SseEmitter能立即返回建立连接，实现真正流式
+            java.util.concurrent.CompletableFuture.runAsync(() -> {
+                try {
+                    aiChatService.streamMessage(sessionId, userMessage, customerId, history, finalUserId, chunk -> {
+                        try {
+                            emitter.send(chunk);
+                        } catch (java.io.IOException e) {
+                            emitter.completeWithError(e);
+                        }
+                    });
+                    emitter.complete();
+                } catch (Exception e) {
+                    emitter.completeWithError(e);
+                }
+            });
 
         } catch (Exception e) {
             emitter.completeWithError(e);
