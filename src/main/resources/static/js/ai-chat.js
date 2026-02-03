@@ -472,7 +472,7 @@ function handlePresetMessage() {
     }, 200);
 }
 
-// 发送消息（优化版 - 带状态管理、超时处理、性能监控）
+// 发送消息
 async function sendMessage() {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
@@ -486,21 +486,11 @@ async function sendMessage() {
         return;
     }
 
-    // 性能监控
-    const perfMetrics = {
-        startTime: Date.now(),
-        firstByteTime: null,
-        endTime: null,
-        totalTime: null,
-        ttfb: null
-    };
-
     // 禁用发送按钮和输入框
     const sendBtn = document.getElementById('sendBtn');
     if (sendBtn) {
         sendBtn.disabled = true;
-        sendBtn.classList.add('loading');
-        updateSendButtonStatus(sendBtn, 'connecting', '连接中...');
+        sendBtn.innerHTML = '<i class="bi bi-hourglass-split"></i><span class="send-label">发送中...</span>';
     }
     input.disabled = true;
 
@@ -518,54 +508,18 @@ async function sendMessage() {
     input.value = '';
     autoResize(input);
 
-    // 准备AI回复容器（带 typing indicator）
+    // 准备AI回复容器
     const aiMessageId = 'msg_ai_' + Date.now();
-    addTypingIndicator(aiMessageId);
-
+    addMessage('', 'ai', {
+        id: aiMessageId,
+        recordHistory: false // 暂时不记录，等生成完再记录
+    });
+    const aiMessageBubble = document.querySelector(`#${aiMessageId} .message-text`);
     let fullAiResponse = '';
-    let hasReceivedFirstByte = false;
-
-    // 超时处理
-    let warningTimeout = null;
-    let abortTimeout = null;
-    let isAborted = false;
-
-    // 30秒警告
-    warningTimeout = setTimeout(() => {
-        if (!hasReceivedFirstByte && !isAborted) {
-            console.warn('⚠️ AI响应超过30秒，仍在等待...');
-            showStatusMessage(aiMessageId, 'warning', 'AI 响应较慢，请稍候...');
-            updateSendButtonStatus(sendBtn, 'slow', '响应较慢...');
-        }
-    }, 30000);
-
-    // 60秒中断
-    abortTimeout = setTimeout(() => {
-        if (!isAborted) {
-            console.error('❌ AI响应超过60秒，自动中断');
-            isAborted = true;
-            removeTypingIndicator(aiMessageId);
-            const errorMsg = '抱歉，AI 响应超时。请稍后重试或检查网络连接。';
-            updateMessageContent(aiMessageId, errorMsg);
-            showStatusMessage(aiMessageId, 'error', '响应超时');
-
-            perfMetrics.endTime = Date.now();
-            perfMetrics.totalTime = perfMetrics.endTime - perfMetrics.startTime;
-            logPerformance(perfMetrics, true);
-        }
-    }, 60000);
 
     try {
         // 调用后端流式API
-        console.log('🚀 【前端】开始调用后端流式API');
-
-        // 1秒后更新状态为"AI思考中"
-        setTimeout(() => {
-            if (!hasReceivedFirstByte && !isAborted) {
-                updateSendButtonStatus(sendBtn, 'thinking', 'AI思考中...');
-            }
-        }, 1000);
-
+        console.log('【前端】开始调用后端流式API');
         const response = await fetch('/api/ai-chat/send/stream', {
             method: 'POST',
             headers: {
@@ -585,46 +539,18 @@ async function sendMessage() {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let buffer = '';
 
         while (true) {
-            if (isAborted) break;
-
             const { done, value } = await reader.read();
             if (done) break;
 
-            // 记录首字节时间
-            if (!hasReceivedFirstByte) {
-                hasReceivedFirstByte = true;
-                perfMetrics.firstByteTime = Date.now();
-                perfMetrics.ttfb = perfMetrics.firstByteTime - perfMetrics.startTime;
-                console.log(`⚡ 首字节延迟 (TTFB): ${perfMetrics.ttfb}ms`);
+            const chunk = decoder.decode(value, { stream: true });
+            fullAiResponse += chunk;
 
-                // 移除 typing indicator，开始显示实际内容
-                removeTypingIndicator(aiMessageId);
-                updateSendButtonStatus(sendBtn, 'generating', '生成中...');
-
-                // 清除30秒警告（已收到响应）
-                if (warningTimeout) {
-                    clearTimeout(warningTimeout);
-                    warningTimeout = null;
-                }
-            }
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split(/\r?\n/);
-            buffer = lines.pop(); // 保留最后一个可能不完整的片段
-
-            for (const line of lines) {
-                if (line.trim() === '') continue;
-                if (line.startsWith('data:')) {
-                    const content = line.slice(5); // 去掉 'data:' 前缀
-                    fullAiResponse += content;
-
-                    // 实时更新UI
-                    updateMessageContent(aiMessageId, fullAiResponse);
-                }
-            }
+            // 实时更新UI
+            // 简单的Markdown处理：如果是流式，为了性能，可以暂时直接追加文本，或者定期解析Markdown
+            // 这里为了效果好，我们每次都重新解析Markdown（对于长文本可能会有性能消耗，但在这个规模下通常可以接受）
+            updateMessageContent(aiMessageId, fullAiResponse);
 
             // 保持滚动到底部
             requestAnimationFrame(() => {
@@ -633,14 +559,7 @@ async function sendMessage() {
         }
 
         // 流结束
-        console.log('✅ 【前端】流式响应结束');
-        perfMetrics.endTime = Date.now();
-        perfMetrics.totalTime = perfMetrics.endTime - perfMetrics.startTime;
-        logPerformance(perfMetrics, false);
-
-        // 清除超时定时器
-        if (warningTimeout) clearTimeout(warningTimeout);
-        if (abortTimeout) clearTimeout(abortTimeout);
+        console.log('【前端】流式响应结束');
 
         // 最终更新一次（处理Markdown闭合等）
         updateMessageContent(aiMessageId, fullAiResponse);
@@ -657,17 +576,10 @@ async function sendMessage() {
         addToHistory(fullAiResponse, 'ai', new Date().toISOString());
 
     } catch (error) {
-        console.error('❌ 发送消息失败:', error);
-
-        // 清除超时定时器
-        if (warningTimeout) clearTimeout(warningTimeout);
-        if (abortTimeout) clearTimeout(abortTimeout);
-
-        removeTypingIndicator(aiMessageId);
+        console.error('发送消息失败:', error);
         const errorMessage = '\n\n[系统错误: ' + (error.message || '网络连接中断') + ']';
         fullAiResponse += errorMessage;
         updateMessageContent(aiMessageId, fullAiResponse);
-        showStatusMessage(aiMessageId, 'error', '发送失败');
 
         conversationHistory.push({
             role: 'assistant',
@@ -675,15 +587,10 @@ async function sendMessage() {
         });
         trimConversationHistory();
         addToHistory(fullAiResponse, 'ai', new Date().toISOString());
-
-        perfMetrics.endTime = Date.now();
-        perfMetrics.totalTime = perfMetrics.endTime - perfMetrics.startTime;
-        logPerformance(perfMetrics, true);
     } finally {
         // 恢复发送按钮和输入框
         if (sendBtn) {
             sendBtn.disabled = false;
-            sendBtn.classList.remove('loading');
             sendBtn.innerHTML = '<i class="bi bi-send"></i><span class="send-label">发送</span>';
         }
         if (input) {
@@ -692,119 +599,6 @@ async function sendMessage() {
         }
     }
 }
-
-// 更新发送按钮状态
-function updateSendButtonStatus(sendBtn, status, text) {
-    if (!sendBtn) return;
-
-    const iconMap = {
-        'connecting': 'bi-hourglass-split',
-        'thinking': 'bi-brain',
-        'generating': 'bi-lightning-charge',
-        'slow': 'bi-hourglass',
-        'error': 'bi-exclamation-triangle'
-    };
-
-    const icon = iconMap[status] || 'bi-hourglass-split';
-    sendBtn.innerHTML = `<i class="bi ${icon}"></i><span class="send-label">${text}</span>`;
-}
-
-// 添加 typing indicator
-function addTypingIndicator(messageId) {
-    const messagesContainer = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message ai-message';
-    messageDiv.id = messageId;
-
-    messageDiv.innerHTML = `
-        <div class="message-avatar">
-            <i class="bi bi-robot"></i>
-        </div>
-        <div class="message-content">
-            <div class="message-bubble">
-                <div class="typing-indicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
-}
-
-// 移除 typing indicator，替换为实际内容容器
-function removeTypingIndicator(messageId) {
-    const messageDiv = document.getElementById(messageId);
-    if (!messageDiv) return;
-
-    const messageBubble = messageDiv.querySelector('.message-bubble');
-    if (messageBubble) {
-        messageBubble.innerHTML = `
-            <div class="message-text"></div>
-            <div class="message-actions">
-                <button class="btn btn-outline-secondary btn-sm" onclick="copyMessage('${messageId}')" title="复制内容">
-                    <i class="bi bi-clipboard"></i>
-                </button>
-            </div>
-        `;
-    }
-}
-
-// 显示状态消息
-function showStatusMessage(messageId, type, text) {
-    const messageDiv = document.getElementById(messageId);
-    if (!messageDiv) return;
-
-    const content = messageDiv.querySelector('.message-content');
-    if (!content) return;
-
-    // 移除旧的状态消息
-    const oldStatus = content.querySelector('.status-message');
-    if (oldStatus) oldStatus.remove();
-
-    const iconMap = {
-        'warning': 'bi-exclamation-triangle-fill',
-        'error': 'bi-x-circle-fill',
-        'info': 'bi-info-circle-fill'
-    };
-
-    const statusDiv = document.createElement('div');
-    statusDiv.className = `status-message ${type}`;
-    statusDiv.innerHTML = `
-        <i class="bi ${iconMap[type] || 'bi-info-circle-fill'}"></i>
-        <span>${text}</span>
-    `;
-
-    content.appendChild(statusDiv);
-}
-
-// 性能日志
-function logPerformance(metrics, isError = false) {
-    const emoji = isError ? '❌' : '✅';
-    console.log(`${emoji} 【性能统计】`);
-    console.log(`  - 总耗时: ${metrics.totalTime}ms`);
-    if (metrics.ttfb) {
-        console.log(`  - 首字节延迟 (TTFB): ${metrics.ttfb}ms`);
-        console.log(`  - 流式传输时间: ${metrics.totalTime - metrics.ttfb}ms`);
-    }
-
-    // 性能评级
-    if (metrics.ttfb) {
-        if (metrics.ttfb < 3000) {
-            console.log('  - 响应速度: 🚀 优秀 (<3s)');
-        } else if (metrics.ttfb < 10000) {
-            console.log('  - 响应速度: ✅ 良好 (3-10s)');
-        } else if (metrics.ttfb < 30000) {
-            console.log('  - 响应速度: ⚠️ 较慢 (10-30s)');
-        } else {
-            console.log('  - 响应速度: 🐌 很慢 (>30s)');
-        }
-    }
-}
-
 
 // 更新消息内容（支持Markdown）
 function updateMessageContent(messageId, content) {
@@ -1096,6 +890,10 @@ function scrollToBottom() {
         setTimeout(() => {
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
         }, 100);
+
+        // 调试信息
+        console.log('滚动容器高度:', scrollContainer.scrollHeight);
+        console.log('当前滚动位置:', scrollContainer.scrollTop);
     }
 }
 

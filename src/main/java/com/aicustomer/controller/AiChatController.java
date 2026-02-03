@@ -98,7 +98,6 @@ public class AiChatController {
             @RequestBody Map<String, Object> request) {
         final org.springframework.web.servlet.mvc.method.annotation.SseEmitter emitter = new org.springframework.web.servlet.mvc.method.annotation.SseEmitter(
                 180000L); // 3分钟超时
-
         try {
             String sessionId = request.get("sessionId").toString();
             String userMessage = request.get("message").toString();
@@ -116,36 +115,27 @@ public class AiChatController {
 
             @SuppressWarnings("unchecked")
             List<Map<String, String>> history = (List<Map<String, String>>) request.get("history");
-            final Long finalUserId = userId;
+            final Long finalUserId = userId; // for lambda
 
-            // 核心修复：直接同步调用，不使用新线程
-            // 这样可以确保 streamMessage 完成后立即调用 emitter.complete()
-            try {
-                aiChatService.streamMessage(sessionId, userMessage, customerId, history, finalUserId, chunk -> {
-                    try {
-                        emitter.send(chunk); // 发送 data: 格式
-                    } catch (java.io.IOException e) {
-                        System.err.println("❌ SSE发送失败: " + e.getMessage());
-                        emitter.completeWithError(e);
-                    }
-                });
-
-                // 流式响应结束，立即完成emitter
-                System.out.println("✅ streamMessage完成，调用emitter.complete()");
-                emitter.complete();
-
-            } catch (Exception e) {
-                System.err.println("❌ streamMessage异常: " + e.getMessage());
-                e.printStackTrace();
-                emitter.completeWithError(e);
-            }
+            // 异步处理
+            new Thread(() -> {
+                try {
+                    aiChatService.streamMessage(sessionId, userMessage, customerId, history, finalUserId, chunk -> {
+                        try {
+                            emitter.send(chunk);
+                        } catch (java.io.IOException e) {
+                            emitter.completeWithError(e);
+                        }
+                    });
+                    emitter.complete();
+                } catch (Exception e) {
+                    emitter.completeWithError(e);
+                }
+            }).start();
 
         } catch (Exception e) {
-            System.err.println("❌ 参数解析异常: " + e.getMessage());
-            e.printStackTrace();
             emitter.completeWithError(e);
         }
-
         return emitter;
     }
 
