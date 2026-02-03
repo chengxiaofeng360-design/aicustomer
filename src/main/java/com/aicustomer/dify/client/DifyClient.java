@@ -379,6 +379,37 @@ public class DifyClient {
         }
     }
 
+    /**
+     * 上传文件到 Dify 知识库 (Dataset)
+     * POST /datasets/{dataset_id}/document/create_by_file
+     */
+    public Map<String, Object> createDocumentByFile(String datasetId, File file) {
+        String url = getBaseUrl() + "/datasets/" + datasetId + "/document/create_by_file";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        // 注意：这里必须使用 datasetApiKey
+        String apiKey = difyConfig.getDatasetApiKey();
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new RuntimeException("Dify Dataset API Key is not configured");
+        }
+        headers.set("Authorization", "Bearer " + apiKey);
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", new FileSystemResource(file));
+        // 使用自动分段规则
+        body.add("process_rule", "{\"mode\":\"automatic\"}");
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Failed to upload document to Dify Dataset: {}", e.getMessage());
+            throw new RuntimeException("Dify Dataset Upload Failure: " + e.getMessage());
+        }
+    }
+
     // B. Dataset API Helpers (使用 Dataset/Knowledge API Key)
 
     private Map<String, Object> postWithDatasetKey(String path, Map<String, Object> payload) {

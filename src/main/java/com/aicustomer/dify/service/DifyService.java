@@ -98,4 +98,37 @@ public class DifyService {
         return difyClient.deleteConversation(conversationId, userId);
     }
 
+    private final com.aicustomer.config.DifyConfig difyConfig;
+
+    /**
+     * 上传文档到知识库
+     */
+    public Map<String, Object> uploadKnowledgeDocument(MultipartFile multipartFile) {
+        String datasetId = difyConfig.getDatasetId();
+        if (datasetId == null || datasetId.isEmpty()) {
+            throw new RuntimeException("Dify Knowledge Base ID (datasetId) is not configured in application.yml");
+        }
+
+        File tempFile = null;
+        try {
+            // 转换MultipartFile为临时File
+            String originalFilename = multipartFile.getOriginalFilename();
+            String extension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            tempFile = File.createTempFile("kb_" + UUID.randomUUID(), extension);
+            multipartFile.transferTo(tempFile);
+
+            return difyClient.createDocumentByFile(datasetId, tempFile);
+        } catch (Exception e) {
+            log.error("知识库文档上传失败", e);
+            throw new RuntimeException("知识库上传失败: " + e.getMessage());
+        } finally {
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
+        }
+    }
+
 }

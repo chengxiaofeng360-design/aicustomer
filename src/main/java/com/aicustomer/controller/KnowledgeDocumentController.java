@@ -158,6 +158,14 @@ public class KnowledgeDocumentController {
     /**
      * 上传文档
      */
+    private final com.aicustomer.dify.service.DifyService difyService;
+
+    @Value("${ai.engine:dify}")
+    private String aiEngine;
+
+    /**
+     * 上传文档
+     */
     @PostMapping("/upload")
     public Result<KnowledgeDocument> uploadDocument(
             @RequestParam("file") MultipartFile file,
@@ -187,7 +195,7 @@ public class KnowledgeDocumentController {
             Files.write(filePath, file.getBytes());
             log.info("文件保存到: {}", filePath.toAbsolutePath());
 
-            // 2. 提取文本内容
+            // 2. 提取文本内容 (本地保留一份记录用于展示)
             String content = "";
             if ("pdf".equals(extension)) {
                 try (PDDocument document = PDDocument.load(file.getInputStream())) {
@@ -202,7 +210,6 @@ public class KnowledgeDocumentController {
             } else if ("txt".equals(extension)) {
                 content = new String(file.getBytes());
             } else {
-                // 其他格式暂不支持提取内容，只保存文件
                 content = "暂不支持提取该文件格式的内容: " + originalFilename;
             }
 
@@ -218,21 +225,49 @@ public class KnowledgeDocumentController {
             document.setDocumentType(documentType);
             document.setTags(tags);
 
-            // 生成摘要（简单截取前200字）
+            // 生成摘要
             if (content.length() > 200) {
                 document.setSummary(content.substring(0, 200) + "...");
             } else {
                 document.setSummary(content);
             }
 
+            // 4. 对接 Dify 知识库
+            if ("dify".equalsIgnoreCase(aiEngine)) {
+                try {
+                    log.info("🚀 正在上传文档到 Dify 知识库...");
+                    Map<String, Object> difyResponse = difyService.uploadKnowledgeDocument(file);
+                    log.info("✅ Dify 知识库上传成功: {}", difyResponse);
+
+                    // 可以把 Dify 返回的 document ID 存一下
+                    if (difyResponse != null && difyResponse.containsKey("document")) {
+                        Map<String, Object> docInfo = (Map<String, Object>) difyResponse.get("document");
+                        String difyDocId = (String) docInfo.get("id");
+                        document.setDifyDocumentId(difyDocId); // 存 Dify ID
+                    }
+                } catch (Exception e) {
+                    log.error("❌ Dify 知识库上传失败", e);
+                    // 即使 Dify 失败，本地也先保存成功？或者返回错误？
+                    // 为了用户感知，这里还是抛出异常比较好，或者返回带有警告的结果
+                    // 这里选择抛出异常，让用户知道没同步成功
+                    throw new RuntimeException("同步到 Dify 知识库失败: " + e.getMessage());
+                }
+            }
+
             KnowledgeDocument created = knowledgeDocumentService.createDocument(document);
-            // 自动索引到ES向量库
-            indexToVectorSearch(created);
+
+            // 5. 自动索引 (如果不是 Dify 引擎，则走本地向量库)
+            if (!"dify".equalsIgnoreCase(aiEngine)) {
+                indexToVectorSearch(created);
+            }
+
             return Result.success(created);
 
         } catch (IOException e) {
             log.error("文件上传失败", e);
             return Result.error("文件上传失败: " + e.getMessage());
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
         }
     }
 

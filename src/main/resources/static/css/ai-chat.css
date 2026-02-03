@@ -540,6 +540,20 @@ body {
     font-size: 18px;
 }
 
+.message-text h4 {
+    font-size: 16px;
+    margin: 12px 0 8px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.message-text h5 {
+    font-size: 14px;
+    margin: 10px 0 6px;
+    font-weight: 700;
+    color: #374151;
+}
+
 .message-text ul,
 .message-text ol {
     padding-left: 24px;

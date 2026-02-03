@@ -178,8 +178,8 @@ ai:
 dify:
   enabled: true  # 已启用Dify引擎
   api-url: http://localhost/v1  # Dify API地址
-  api-key: app-NrkVcrAncc6fWi1ya4OQU2FF  # Dify Agent App Key 
-  dataset-id: "d82755d1-93a6-4af2-8fb1-dd481cc1132f" # Dify Knowledge Base ID
+  api-key: app-UTtEzvfyGzrcDkpimYd97wsz  # Dify Agent App Key 
+  dataset-id: "c5d916e8-5a00-4ff4-b5f6-490a8e8f9d8b" # Dify Knowledge Base ID (Corrected)
   dataset-api-key: "dataset-eZddbJm7OgvdWIqstA3Xq8FE" # 用户确认此Key包含知识库权限
   timeout: 120000  # 超时时间（毫秒）
   max-retries: 2  # 最大重试次数
