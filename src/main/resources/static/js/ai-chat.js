@@ -24,6 +24,14 @@ function toggleSidebar() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function () {
+    // 初始化 Markdown 配置 (解决流式输出格式跳变问题)
+    if (typeof marked !== 'undefined') {
+        marked.use({
+            breaks: true,
+            gfm: true
+        });
+    }
+
     const input = document.getElementById('messageInput');
     if (input) {
         input.focus();
@@ -619,7 +627,11 @@ function updateMessageContent(messageId, content) {
     let htmlContent = content;
     if (typeof marked !== 'undefined') {
         try {
-            htmlContent = marked.parse(content);
+            // 强制开启换行支持 (breaks: true)
+            htmlContent = marked.parse(content, {
+                breaks: true,
+                gfm: true
+            });
         } catch (e) {
             console.error('Markdown解析失败:', e);
             htmlContent = escapeHtml(content).replace(/\n/g, '<br>');
