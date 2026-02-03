@@ -149,21 +149,28 @@ public class AiChatServiceImpl implements AiChatService {
 
         // 2. 调用 Dify Service (Stream)
         StringBuilder fullResponseBuilder = new StringBuilder();
+
         try {
             Map<String, Object> payload = new HashMap<>();
             payload.put("query", userMessage);
             payload.put("user", String.valueOf(effectiveUserId));
-            payload.put("inputs", new HashMap<>());
-            // difyService.streamChat set response_mode internally
+
+            // 注入上下文变量供 DSL 使用
+            Map<String, Object> inputs = new HashMap<>();
+            inputs.put("current_user", String.valueOf(effectiveUserId));
+            payload.put("inputs", inputs);
 
             log.info("🚀 调用 Dify Streaming API...");
+
+            // 核心修复：确保流式响应完成后立即返回
             difyService.streamChat(payload, chunk -> {
                 // Accumulate full response
                 fullResponseBuilder.append(chunk);
                 // Forward chunk to frontend
                 chunkHandler.accept(chunk);
             });
-            log.info("✅ Dify 流式响应结束");
+
+            log.info("✅ Dify 流式响应结束, 长度: {}", fullResponseBuilder.length());
 
         } catch (Exception e) {
             log.error("❌ 调用 Dify Stream 失败", e);
@@ -172,17 +179,18 @@ public class AiChatServiceImpl implements AiChatService {
             fullResponseBuilder.append(errorMsg);
         }
 
-        // 3. 记录AI回复 (Full Text)
+        // 3. 记录AI回复 (Full Text) - 在流结束后立即执行
         String aiReplyContent = fullResponseBuilder.toString();
-        // 如果内容为空，可能发生了什么也没返回的情况
         if (aiReplyContent.isEmpty()) {
             aiReplyContent = "AI 服务未返回任何内容";
         }
 
+        log.info("💾 保存AI回复到数据库, 长度: {}", aiReplyContent.length());
         AiChat aiRecord = buildMessageRecord(normalizedSessionId, customerId, 2, aiReplyContent, aiReplyContent,
                 LocalDateTime.now());
         aiRecord.setUserId(effectiveUserId);
         aiChatMapper.insert(aiRecord);
+        log.info("✅ AI回复已保存");
     }
 
     @Override
