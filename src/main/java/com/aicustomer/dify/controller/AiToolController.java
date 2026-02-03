@@ -67,6 +67,11 @@ public class AiToolController {
             return null;
         }
 
+        // 强制 staff 用户为普通权限 (防止数据库 UserType 配置错误)
+        if ("staff".equals(user.getUsername())) {
+            return Collections.singletonList(1);
+        }
+
         // 管理员类型看所有
         if (user.getUserType() != null && user.getUserType() == 1) {
             return null;
@@ -86,7 +91,8 @@ public class AiToolController {
         validateSecret(secret);
         String user = String.valueOf(body.get("user"));
         if (user == null || "null".equals(user) || user.trim().isEmpty()) {
-            user = "admin";
+            log.warn("⚠️ Security Alert: Tool call missing user identity!");
+            return "Error: Missing user identity. Request denied.";
         }
         return customerQueryService.getTotalCustomerCount(getUserPermission(user));
     }
@@ -101,7 +107,8 @@ public class AiToolController {
         validateSecret(secret);
         String user = String.valueOf(body.get("user"));
         if (user == null || "null".equals(user) || user.trim().isEmpty()) {
-            user = "admin";
+            log.warn("⚠️ Security Alert: Tool call missing user identity!");
+            return "Error: Missing user identity. Request denied.";
         }
 
         // 构建查询实体
@@ -139,7 +146,8 @@ public class AiToolController {
         validateSecret(secret);
         String user = String.valueOf(body.get("user"));
         if (user == null || "null".equals(user) || user.trim().isEmpty()) {
-            user = "admin";
+            log.warn("⚠️ Security Alert: Tool call missing user identity!");
+            return "Error: Missing user identity. Request denied.";
         }
         String name = (String) body.get("name");
         return customerQueryService.getCustomerDetail(name, getUserPermission(user));

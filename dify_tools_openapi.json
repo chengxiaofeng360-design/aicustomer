@@ -1,0 +1,186 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Customer Query Tools",
+    "description": "客户管理系统查询工具接口",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://host.docker.internal:8085"
+    }
+  ],
+  "paths": {
+    "/api/dify/tools/customer/count": {
+      "post": {
+        "summary": "查询客户总数",
+        "description": "查询系统中客户的总数量",
+        "operationId": "getCustomerCount",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user": {
+                    "type": "string",
+                    "description": "当前用户ID (请绑定 sys.user_id)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回客户总数",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "系统目前共有 15 位客户。"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dify/tools/customer/list": {
+      "post": {
+        "summary": "查询客户列表",
+        "description": "根据条件查询客户列表",
+        "operationId": "getCustomerList",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user": {
+                    "type": "string",
+                    "description": "当前用户ID（系统自动填充）",
+                    "default": "1"
+                  },
+                  "region": {
+                    "type": "string",
+                    "description": "地区筛选（可选）",
+                    "example": "北京"
+                  },
+                  "level": {
+                    "type": "integer",
+                    "description": "客户等级筛选（可选）：1=普通 2=VIP 3=钻石",
+                    "enum": [
+                      1,
+                      2,
+                      3
+                    ]
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "description": "返回数量限制（可选，默认20）",
+                    "default": 20
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回客户列表",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "为您找到以下客户：\n1. 张三（北京，VIP客户）\n2. 李四（上海，普通客户）"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dify/tools/customer/detail": {
+      "post": {
+        "summary": "查询客户详细信息",
+        "description": "根据客户姓名查询详细信息",
+        "operationId": "getCustomerDetail",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user": {
+                    "type": "string",
+                    "description": "当前用户ID（系统自动填充）",
+                    "default": "1"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "客户姓名或企业名称（必填）",
+                    "example": "张三"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回客户详细信息",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "客户姓名: 张三\n客户编号: CUS001\n客户类型: 企业客户\n联系方式: 13800138000\n地区: 北京\n客户等级: VIP"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dify/tools/knowledge/count": {
+      "post": {
+        "summary": "查询知识库文件数量",
+        "description": "查询系统中知识库文件的总数量",
+        "operationId": "getKnowledgeCount",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回知识库文件数量",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "当前知识库共有 25 个文件。"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}
