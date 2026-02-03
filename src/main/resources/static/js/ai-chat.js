@@ -539,18 +539,26 @@ async function sendMessage() {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
+        let buffer = '';
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value, { stream: true });
-            fullAiResponse += chunk;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split(/\r?\n/);
+            buffer = lines.pop(); // 保留最后一个可能不完整的片段
 
-            // 实时更新UI
-            // 简单的Markdown处理：如果是流式，为了性能，可以暂时直接追加文本，或者定期解析Markdown
-            // 这里为了效果好，我们每次都重新解析Markdown（对于长文本可能会有性能消耗，但在这个规模下通常可以接受）
-            updateMessageContent(aiMessageId, fullAiResponse);
+            for (const line of lines) {
+                if (line.trim() === '') continue;
+                if (line.startsWith('data:')) {
+                    const content = line.slice(5); // 去掉 'data:' 前缀
+                    fullAiResponse += content;
+
+                    // 实时更新UI
+                    updateMessageContent(aiMessageId, fullAiResponse);
+                }
+            }
 
             // 保持滚动到底部
             requestAnimationFrame(() => {
