@@ -152,7 +152,18 @@ public class AiChatServiceImpl implements AiChatService {
         try {
             Map<String, Object> payload = new HashMap<>();
             payload.put("query", userMessage);
-            payload.put("user", String.valueOf(effectiveUserId));
+            String difyUser = String.valueOf(effectiveUserId);
+            // 尝试获取真实用户名传递给Dify
+            if (effectiveUserId != null && effectiveUserId > 0) {
+                try {
+                    com.aicustomer.entity.User u = userService.getById(effectiveUserId);
+                    if (u != null && u.getUsername() != null) {
+                        difyUser = u.getUsername();
+                    }
+                } catch (Exception e) {
+                }
+            }
+            payload.put("user", difyUser);
             payload.put("inputs", new HashMap<>());
             // difyService.streamChat set response_mode internally
 
