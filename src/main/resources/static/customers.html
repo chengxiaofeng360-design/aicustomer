@@ -32,41 +32,41 @@
         <div class="row mb-3">
             <div class="col-md-3">
                 <div class="stats-card"
-                    style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                    style="padding: 0.5rem; min-height: 60px; display: flex; align-items: center; justify-content: center;">
                     <div>
-                        <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">客户总数</div>
+                        <div class="stats-label" style="font-size: 0.8rem; margin-bottom: 0;">客户总数</div>
                         <div id="statsTotalCustomers" class="stats-number"
-                            style="font-size: 1.5rem; font-weight: bold;">0</div>
+                            style="font-size: 1.2rem; font-weight: bold;">0</div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card"
-                    style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                    style="padding: 0.5rem; min-height: 60px; display: flex; align-items: center; justify-content: center;">
                     <div>
-                        <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">重要用户</div>
-                        <div id="statsSatisfaction" class="stats-number" style="font-size: 1.5rem; font-weight: bold;">-
+                        <div class="stats-label" style="font-size: 0.8rem; margin-bottom: 0;">重要用户</div>
+                        <div id="statsSatisfaction" class="stats-number" style="font-size: 1.2rem; font-weight: bold;">-
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card"
-                    style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                    style="padding: 0.5rem; min-height: 60px; display: flex; align-items: center; justify-content: center;">
                     <div>
-                        <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">本月新增</div>
-                        <div id="statsNewThisMonth" class="stats-number" style="font-size: 1.5rem; font-weight: bold;">0
+                        <div class="stats-label" style="font-size: 0.8rem; margin-bottom: 0;">本月新增</div>
+                        <div id="statsNewThisMonth" class="stats-number" style="font-size: 1.2rem; font-weight: bold;">0
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stats-card"
-                    style="padding: 1rem; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                    style="padding: 0.5rem; min-height: 60px; display: flex; align-items: center; justify-content: center;">
                     <div>
-                        <div class="stats-label" style="font-size: 0.9rem; margin-bottom: 0.25rem;">潜在客户</div>
+                        <div class="stats-label" style="font-size: 0.8rem; margin-bottom: 0;">潜在客户</div>
                         <div id="statsPotentialCustomers" class="stats-number"
-                            style="font-size: 1.5rem; font-weight: bold;">0</div>
+                            style="font-size: 1.2rem; font-weight: bold;">0</div>
                     </div>
                 </div>
             </div>
@@ -87,12 +87,25 @@
                 <!-- 搜索和操作按钮区域（初始隐藏） -->
                 <div id="searchPanel" style="display: none;" onclick="event.stopPropagation();">
                     <!-- 第一排：搜索条件 -->
+                    <!-- 第一排：基本信息搜索 -->
                     <div class="row g-3 mb-3">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">客户名称</label>
                             <input type="text" class="form-control" id="customerName" placeholder="请输入客户名称...">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
+                            <label class="form-label">联系人</label>
+                            <input type="text" class="form-control" id="contactPersonFilter" placeholder="请输入联系人姓名...">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">电话号码</label>
+                            <input type="text" class="form-control" id="phoneFilter" placeholder="请输入电话号码...">
+                        </div>
+                    </div>
+
+                    <!-- 第二排：分类筛选 -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
                             <label class="form-label">客户类型</label>
                             <select class="form-select" id="customerType">
                                 <option value="">全部</option>
@@ -101,7 +114,7 @@
                                 <option value="科研院所">科研院所</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">客户等级</label>
                             <select class="form-select" id="customerLevel">
                                 <option value="">全部</option>
@@ -110,7 +123,7 @@
                                 <option value="钻石">钻石</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">地区</label>
                             <select class="form-select" id="region">
                                 <option value="">全部</option>

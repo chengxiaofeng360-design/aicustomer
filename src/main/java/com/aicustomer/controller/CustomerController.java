@@ -276,6 +276,8 @@ public class CustomerController {
             @RequestParam(required = false) String customerType,
             @RequestParam(required = false) String customerLevel,
             @RequestParam(required = false) String region,
+            @RequestParam(required = false) String contactPerson,
+            @RequestParam(required = false) String phone,
             @RequestParam(required = false) List<String> businessType) {
         try {
             // 构建查询条件
@@ -299,6 +301,12 @@ public class CustomerController {
             }
             if (region != null && !region.trim().isEmpty()) {
                 queryCustomer.setRegion(region);
+            }
+            if (contactPerson != null && !contactPerson.trim().isEmpty()) {
+                queryCustomer.setContactPerson(contactPerson);
+            }
+            if (phone != null && !phone.trim().isEmpty()) {
+                queryCustomer.setPhone(phone);
             }
 
             // 处理业务类型参数（支持多个businessType，用于IN查询）

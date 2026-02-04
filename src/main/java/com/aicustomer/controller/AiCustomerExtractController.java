@@ -53,8 +53,30 @@ public class AiCustomerExtractController {
                 return Result.error("文本内容不能为空");
             }
 
-            Map<String, Object> extractedInfo = extractWithAI(text);
-            return Result.success(extractedInfo);
+            // 使用 OcrService 中的统一解析逻辑
+            List<Customer> customerList = ocrService.parseText(text);
+
+            List<Map<String, Object>> resultList = new ArrayList<>();
+            for (Customer customer : customerList) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("customerName", customer.getCustomerName());
+                result.put("contactPerson", customer.getContactPerson());
+                result.put("phone", customer.getPhone());
+                result.put("position", customer.getPosition());
+                result.put("email", customer.getEmail());
+                result.put("address", customer.getAddress());
+                result.put("remark", customer.getRemark());
+                result.put("region", customer.getRegion());
+                result.put("customerType",
+                        customer.getCustomerType() == 1 ? "个人" : customer.getCustomerType() == 3 ? "科研院所" : "企业");
+                resultList.add(result);
+            }
+
+            // 保持返回 Map 结构，但在其中放入 parsedList
+            Map<String, Object> response = new HashMap<>();
+            response.put("parsedList", resultList);
+            return Result.success(response);
+
         } catch (Exception e) {
             log.error("提取客户信息失败: {}", e.getMessage());
             return Result.error("提取客户信息失败: " + e.getMessage());

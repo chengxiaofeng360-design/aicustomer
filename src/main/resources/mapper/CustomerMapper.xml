@@ -106,6 +106,9 @@
         <if test="customer.region != null and customer.region != ''">
             AND region = #{customer.region}
         </if>
+        <if test="customer.contactPerson != null and customer.contactPerson != ''">
+            AND contact_person LIKE CONCAT('%', #{customer.contactPerson}, '%')
+        </if>
         ORDER BY create_time DESC
     </select>
 
@@ -143,6 +146,9 @@
         </if>
         <if test="customer.region != null and customer.region != ''">
             AND region = #{customer.region}
+        </if>
+        <if test="customer.contactPerson != null and customer.contactPerson != ''">
+            AND contact_person LIKE CONCAT('%', #{customer.contactPerson}, '%')
         </if>
         <choose>
             <when test="businessTypeList != null and businessTypeList.size() > 0">
@@ -190,6 +196,9 @@
         </if>
         <if test="customer.region != null and customer.region != ''">
             AND region = #{customer.region}
+        </if>
+        <if test="customer.contactPerson != null and customer.contactPerson != ''">
+            AND contact_person LIKE CONCAT('%', #{customer.contactPerson}, '%')
         </if>
         <choose>
             <when test="businessTypeList != null and businessTypeList.size() > 0">

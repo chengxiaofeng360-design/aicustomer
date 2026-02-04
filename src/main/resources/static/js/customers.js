@@ -403,19 +403,21 @@ function loadCustomers(page = currentPage) {
     const customerType = document.getElementById('customerType')?.value;
     const customerLevel = document.getElementById('customerLevel')?.value;
     const region = document.getElementById('region')?.value;
+    // 新增
+    const contactPerson = document.getElementById('contactPersonFilter')?.value;
+    const phone = document.getElementById('phoneFilter')?.value;
 
-    if (customerName) {
-        params.append('customerName', customerName);
-    }
+    if (customerName) params.append('customerName', customerName);
     if (customerType && customerTypeReverseMap[customerType]) {
         params.append('customerType', customerTypeReverseMap[customerType]);
     }
     if (customerLevel && customerLevelReverseMap[customerLevel]) {
         params.append('customerLevel', customerLevelReverseMap[customerLevel]);
     }
-    if (region) {
-        params.append('region', region);
-    }
+    if (region) params.append('region', region);
+    // 新增
+    if (contactPerson) params.append('contactPerson', contactPerson);
+    if (phone) params.append('phone', phone);
 
     // 如果有业务类型列表参数，添加到查询条件（支持多个businessType）
     if (currentBusinessTypeList && currentBusinessTypeList.length > 0) {
@@ -426,11 +428,11 @@ function loadCustomers(page = currentPage) {
 
     const apiUrl = '/api/customer/page?' + params.toString();
     console.log('加载客户列表，URL:', apiUrl);
-    console.log('当前业务类型列表:', currentBusinessTypeList);
+    // console.log('当前业务类型列表:', currentBusinessTypeList);
 
     fetch(apiUrl)
         .then(response => {
-            console.log('API响应状态:', response.status, response.statusText);
+            // console.log('API响应状态:', response.status, response.statusText);
             if (!response.ok) {
                 // 如果HTTP状态码不是200，尝试解析错误信息
                 return response.json().then(err => {
@@ -440,7 +442,7 @@ function loadCustomers(page = currentPage) {
             return response.json();
         })
         .then(result => {
-            console.log('API响应数据:', result);
+            // console.log('API响应数据:', result);
             if (result && result.code === 200 && result.data) {
                 const pageResult = result.data;
                 customers = pageResult.list || [];
@@ -457,9 +459,19 @@ function loadCustomers(page = currentPage) {
         })
         .catch(error => {
             console.error('加载客户列表失败:', error);
-            const errorMsg = error.message || '网络错误或服务器未响应';
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败: ' + errorMsg + '<br><small>请检查数据库连接或稍后重试</small></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败，请重试</td></tr>';
         });
+}
+
+// 格式化日期
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.getFullYear() + '-' +
+        String(date.getMonth() + 1).padStart(2, '0') + '-' +
+        String(date.getDate()).padStart(2, '0') + ' ' +
+        String(date.getHours()).padStart(2, '0') + ':' +
+        String(date.getMinutes()).padStart(2, '0');
 }
 
 // 渲染客户表格
@@ -467,10 +479,14 @@ function renderCustomerTable(customerList) {
     const tbody = document.getElementById('customerTableBody');
     tbody.innerHTML = '';
 
-    if (customerList.length === 0) {
+    if (!customerList || customerList.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无数据</td></tr>';
         return;
     }
+
+    // 重新获取权限状态
+    const dataPerm = (typeof userPermissions !== 'undefined' && userPermissions && userPermissions.dataPermission) || {};
+    const canManageSensitive = dataPerm.canViewSensitive === true;
 
     customerList.forEach(customer => {
         const row = document.createElement('tr');
@@ -493,11 +509,6 @@ function renderCustomerTable(customerList) {
         // 处理业务类型字段
         const businessType = customer.businessType !== null && customer.businessType !== undefined ? customer.businessType : 1;
         const businessTypeText = businessType ? (businessTypeMap[businessType.toString()] || '') : '-';
-
-        const createTime = customer.createTime ? new Date(customer.createTime).toLocaleString('zh-CN') : '';
-
-        const dataPerm = (userPermissions && userPermissions.dataPermission) || {};
-        const canManageSensitive = dataPerm.canViewSensitive === true;
 
         let actionButtons =
             '<div class="action-buttons">' +
@@ -537,6 +548,7 @@ function renderCustomerTable(customerList) {
         tbody.appendChild(row);
     });
 }
+
 
 // 更新总记录数
 function updateTotalCount() {
@@ -790,26 +802,27 @@ function parseImportData() {
         return;
     }
 
-    // 显示加载状态
-    const parseBtn = document.querySelector('button[onclick*="parseImportData"]') ||
-        document.querySelector('button.btn-outline-primary');
-    const originalText = parseBtn ? parseBtn.innerHTML : '';
+    const parseBtn = document.getElementById('parseDataBtn');
+    let originalText = '';
     if (parseBtn) {
+        originalText = parseBtn.innerHTML;
         parseBtn.disabled = true;
-        parseBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> AI解析中...';
+        parseBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>解析中...';
     }
 
     // 隐藏之前的预览
     document.getElementById('importPreview').style.display = 'none';
-    document.getElementById('saveImportBtn').disabled = true;
+    const saveBtn = document.getElementById('saveImportBtn');
+    if (saveBtn) saveBtn.disabled = true;
 
-    // 调用后端AI批量解析API
-    fetch('/api/ai/customer-extract/batch-parse', {
+    // 调用后端 API
+    // 注意：后端已统一升级，使用与 OCR 相同的解析逻辑，支持多记录
+    fetch('/api/ai/customer-extract/extract', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ data: data })
+        body: JSON.stringify({ text: data }) // 参数名 text
     })
         .then(response => response.json())
         .then(result => {
@@ -823,41 +836,57 @@ function parseImportData() {
                 return;
             }
 
+            // 后端现在返回 parsedList
             const parsedList = result.data.parsedList || [];
+
             if (parsedList.length === 0) {
-                alert('没有解析到任何数据，请检查输入格式');
-                return;
+                // 兼容旧接口，如果是单对象
+                if (result.data.parsedData) {
+                    parsedList.push(result.data.parsedData);
+                } else if (result.data.customerName) {
+                    parsedList.push(result.data);
+                } else {
+                    alert('未能识别出任何有效数据，请检查输入内容的格式。');
+                    return;
+                }
             }
 
-            // 转换数据格式以适配预览显示
-            const parsedData = parsedList.map(item => {
-                return {
-                    customerName: item.customerName || '',
-                    contactPerson: item.contactPerson || '',
-                    phone: item.phone || '',
-                    customerType: item.customerType || '',
-                    position: item.position || '',
-                    qqWeixin: item.qqWeixin || '',
-                    cooperationContent: item.cooperationContent || '',
+            // 转换并校验数据
+            const previewItems = parsedList.map(item => {
+                const previewItem = {
+                    customerName: item.customerName || item.name,
+                    contactPerson: item.contactPerson || item.name || item.customerName,
+                    phone: item.phone || item.mobile || item.phoneNumber,
+                    customerType: item.customerType || '企业',
                     region: item.region || '',
+                    position: item.position || '',
                     address: item.address || '',
                     remark: item.remark || '',
-                    status: item.status || 'valid',
-                    error: item.error || ''
+                    email: item.email || '',
+                    status: 'valid'
                 };
+
+                // 简单验证
+                if (!previewItem.customerName || !previewItem.phone) {
+                    previewItem.status = 'error';
+                    previewItem.error = '缺少客户名称或电话';
+                }
+                return previewItem;
             });
 
-            // 显示预览
-            displayImportPreview(parsedData);
+            // 渲染预览
+            processedData = previewItems;
+            displayImportPreview(processedData);
 
-            // 检查是否有错误
-            const hasError = parsedData.some(item => item.status === 'error');
-            if (!hasError) {
-                document.getElementById('saveImportBtn').disabled = false;
+            // 滚动到底部
+            const previewDiv = document.getElementById('importPreview');
+            previewDiv.scrollIntoView({ behavior: 'smooth' });
+
+            // 允许保存（只要有数据）
+            if (saveBtn && previewItems.length > 0) {
+                saveBtn.disabled = false;
             }
 
-            // 保存解析后的数据供后续使用
-            processedData = parsedData;
         })
         .catch(error => {
             if (parseBtn) {
@@ -2031,6 +2060,10 @@ function parseComplexFile(content, fileName) {
 
     return mockData;
 }
+
+
+
+
 
 // 显示数据预览
 function displayDataPreview() {

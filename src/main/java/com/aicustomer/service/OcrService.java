@@ -153,6 +153,57 @@ public class OcrService {
         return Collections.emptyList();
     }
 
+    public List<Customer> parseText(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 使用 DeepSeek 解析文本为 JSON 数组
+        // Prompt 与名片识别保持一致，针对多条记录优化
+        String dsPrompt = "你是一个智能数据助理。以下是一段包含客户信息的文本，可能是一条或多条记录（如通讯录列表、聊天记录等）。\n\n" +
+                "【任务】:\n" +
+                "1. 分析文本，判断包含了多少个人的联系方式\n" +
+                "2. 提取**所有**完整的联系人信息，不要遗漏\n" +
+                "3. 始终返回 JSON 数组格式 `[...]`\n\n" +
+
+                "【字段说明】:\n" +
+                "- customerName: 客户/公司名称\n" +
+                "- contactPerson: 联系人姓名\n" +
+                "- phone: 电话号码\n" +
+                "- position: 职位\n" +
+                "- region: 地区\n" +
+                "- email: 邮箱\n" +
+                "- address: 地址\n\n" +
+
+                "【处理规则】:\n" +
+                "- 无法区分客户名称和联系人时：人名填入 contactPerson，公司名填入 customerName\n" +
+                "- 字段无法提取时：设为 null\n" +
+                "- 保持所有字段完整\n\n" +
+
+                "【输入文本】:\n" + text + "\n\n" +
+
+                "请直接返回纯 JSON 数组，不要添加任何解释或 markdown 标记：";
+
+        try {
+            String aiResult = deepSeekChatService.chat(dsPrompt, "You are a judgmental intelligence assistant.");
+            List<Customer> customers = parseAiResultToList(aiResult);
+
+            if (customers != null) {
+                for (Customer c : customers) {
+                    String remark = (c.getRemark() != null ? c.getRemark() : "");
+                    remark += " (AI文本解析)";
+                    c.setRemark(remark);
+                }
+                return customers;
+            }
+        } catch (Exception e) {
+            log.error("AI文本解析失败: {}", e.getMessage());
+            throw new RuntimeException("AI解析失败: " + e.getMessage());
+        }
+
+        return Collections.emptyList();
+    }
+
     private List<Customer> parseAiResultToList(String aiResult) {
         if (aiResult == null || aiResult.trim().isEmpty()) {
             return null;
