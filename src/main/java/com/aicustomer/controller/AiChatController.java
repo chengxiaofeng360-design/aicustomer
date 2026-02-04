@@ -122,7 +122,9 @@ public class AiChatController {
                 try {
                     aiChatService.streamMessage(sessionId, userMessage, customerId, history, finalUserId, chunk -> {
                         try {
-                            emitter.send(chunk);
+                            Map<String, String> data = new java.util.HashMap<>();
+                            data.put("content", chunk);
+                            emitter.send(data); // Spring will serialize map to JSON: data: {"content":"..."}
                         } catch (java.io.IOException e) {
                             emitter.completeWithError(e);
                         }
@@ -133,7 +135,9 @@ public class AiChatController {
                 }
             });
 
-        } catch (Exception e) {
+        } catch (
+
+        Exception e) {
             emitter.completeWithError(e);
         }
         return emitter;

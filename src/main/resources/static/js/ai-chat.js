@@ -577,7 +577,16 @@ async function sendMessage() {
             for (const line of lines) {
                 if (line.trim() === '') continue;
                 if (line.startsWith('data:')) {
-                    const content = line.slice(5); // 去掉 'data:' 前缀
+                    let content = line.slice(5); // 去掉 'data:' 前缀
+                    try {
+                        // 尝试解析JSON（处理换行符等特殊字符）
+                        const json = JSON.parse(content);
+                        if (json && typeof json.content === 'string') {
+                            content = json.content;
+                        }
+                    } catch (e) {
+                        // 如果不是JSON，按纯文本处理（兼容旧逻辑）
+                    }
                     fullAiResponse += content;
 
                     // 实时更新UI
@@ -595,7 +604,17 @@ async function sendMessage() {
         console.log('【前端】流式响应结束');
 
         // 最终更新一次（处理Markdown闭合等）
-        updateMessageContent(aiMessageId, fullAiResponse);
+        // 强制重绘以解决可能的渲染问题
+        const finalMessageDiv = document.getElementById(aiMessageId);
+        if (finalMessageDiv) {
+            const textContainer = finalMessageDiv.querySelector('.message-text');
+            if (textContainer) {
+                textContainer.innerHTML = ''; // 先清空，促使浏览器重排
+                setTimeout(() => updateMessageContent(aiMessageId, fullAiResponse), 10);
+            }
+        } else {
+            updateMessageContent(aiMessageId, fullAiResponse);
+        }
 
         // 添加到对话历史
         conversationHistory.push({
@@ -607,6 +626,9 @@ async function sendMessage() {
 
         // 记录到本地历史（为了页面刷新后能看到）
         addToHistory(fullAiResponse, 'ai', new Date().toISOString());
+
+        // 生成并显示引导问题
+        setTimeout(() => renderSuggestedQuestions(aiMessageId, fullAiResponse), 100);
 
     } catch (error) {
         console.error('发送消息失败:', error);
@@ -1546,3 +1568,81 @@ function testScroll() {
     }, 2000);
 }
 
+
+// 简单的关键词匹配生成引导问题
+function generateSuggestedQuestions(content) {
+    const questions = [];
+    const text = content.toLowerCase();
+
+    // 关键词库
+    if (text.includes('杉木') || text.includes('树')) {
+        questions.push('杉木的保护期限是多久？');
+        questions.push('申请杉木新品种需要准备什么材料？');
+    }
+    if (text.includes('申请') || text.includes('流程')) {
+        questions.push('植物新品种权的申请流程详细介绍');
+        questions.push('申请费用大概是多少？');
+    }
+    if (text.includes('名录') || text.includes('保护')) {
+        questions.push('如何查询最新的植物新品种保护名录？');
+        questions.push('不在名录里的植物可以申请吗？');
+    }
+    if (text.includes('dus') || text.includes('测试')) {
+        questions.push('DUS测试的具体标准是什么？');
+        questions.push('在哪里进行DUS测试？');
+    }
+
+    // 补足3个问题（使用通用问题）
+    const commonQuestions = [
+        '如何联系代理机构？',
+        '植物新品种权有效期是多久？',
+        '最近有哪些新的农业政策？',
+        '如何查询授权品种信息？'
+    ];
+
+    while (questions.length < 3) {
+        const randomQ = commonQuestions[Math.floor(Math.random() * commonQuestions.length)];
+        if (!questions.includes(randomQ)) {
+            questions.push(randomQ);
+        }
+    }
+
+    return questions.slice(0, 3);
+}
+
+// 渲染引导问题
+function renderSuggestedQuestions(messageId, content) {
+    const messageDiv = document.getElementById(messageId);
+    if (!messageDiv) return;
+
+    const bubble = messageDiv.querySelector('.message-bubble');
+    if (!bubble) return;
+
+    // 防止重复添加
+    if (bubble.querySelector('.suggested-questions')) return;
+
+    const questions = generateSuggestedQuestions(content);
+    if (!questions.length) return;
+
+    const questionsContainer = document.createElement('div');
+    questionsContainer.className = 'suggested-questions mt-3 pt-2 border-top border-secondary border-opacity-10';
+    questionsContainer.innerHTML = `<div class="text-muted small mb-2"><i class="bi bi-lightbulb me-1"></i> 您可能想问：</div>`;
+
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'd-flex flex-wrap gap-2';
+
+    questions.forEach(q => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline-primary btn-sm rounded-pill';
+        btn.style.fontSize = '0.85rem';
+        btn.textContent = q;
+        btn.onclick = () => sendQuickMessage(q);
+        btnGroup.appendChild(btn);
+    });
+
+    questionsContainer.appendChild(btnGroup);
+    bubble.appendChild(questionsContainer);
+
+    // 再次滚动到底部
+    scrollToBottom();
+}

@@ -93,7 +93,11 @@ public class AiChatServiceImpl implements AiChatService {
             Map<String, Object> payload = new HashMap<>();
             payload.put("query", userMessage);
             payload.put("user", String.valueOf(effectiveUserId));
-            payload.put("inputs", new HashMap<>());
+
+            // 传递 inputs 给 Dify，供工具使用
+            Map<String, Object> inputs = new HashMap<>();
+            inputs.put("user_id", String.valueOf(effectiveUserId));
+            payload.put("inputs", inputs);
             payload.put("response_mode", "blocking");
 
             // 可选：传递 conversation_id 如果需要在这个层面维持Dify会话上下文
@@ -164,7 +168,11 @@ public class AiChatServiceImpl implements AiChatService {
                 }
             }
             payload.put("user", difyUser);
-            payload.put("inputs", new HashMap<>());
+
+            // 传递 inputs 给 Dify，供工具使用
+            Map<String, Object> inputs = new HashMap<>();
+            inputs.put("user_id", difyUser); // 传递用户名
+            payload.put("inputs", inputs);
             // difyService.streamChat set response_mode internally
 
             log.info("🚀 调用 Dify Streaming API...");
