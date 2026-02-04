@@ -9,7 +9,59 @@
     <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="/css/common.css" rel="stylesheet">
+    <style>
+        /* 移动端适配样式 */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px !important;
+            }
+
+            /* 隐藏非核心列 */
+            .table th:nth-child(5),
+            .table td:nth-child(5),
+            /* 进度 */
+            .table th:nth-child(6),
+            .table td:nth-child(6),
+            /* 业务类型 */
+            .table th:nth-child(7),
+            .table td:nth-child(7)
+
+            /* 敏感状态 */
+                {
+                display: none;
+            }
+
+            /* 调整表格紧凑度 */
+            .table td,
+            .table th {
+                padding: 0.5rem 0.2rem !important;
+                font-size: 13px;
+            }
+
+            /* 调整操作按钮大小 */
+            .btn-group-sm>.btn,
+            .btn-sm {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.75rem;
+            }
+
+            /* 浮窗改为底部静态显示 */
+            .position-fixed[style*="bottom: 20px"] {
+                position: static !important;
+                text-align: center;
+                margin-top: 10px;
+                margin-bottom: 20px;
+                display: block;
+            }
+
+            /* 搜索栏间距调整 */
+            .col-md-4 {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
 </head>
+
 
 <body>
     <div class="main-container">
