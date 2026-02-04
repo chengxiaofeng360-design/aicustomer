@@ -1,261 +1,447 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI智能识别客户信息 - AI客户管理系统</title>
+    <title>AI智能识别与名片录入 - AI客户管理系统</title>
     <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="/css/common.css" rel="stylesheet">
     <style>
         .extract-container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 30px 20px;
         }
-        
-        .input-section {
+
+        .main-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: none;
+            overflow: hidden;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #f1f3f5;
+            padding: 0 20px;
             background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
         }
-        
-        .preview-section {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+
+        .nav-link {
+            border: none;
+            color: #495057;
+            padding: 15px 25px;
+            font-weight: 500;
+            position: relative;
+            background: transparent !important;
         }
-        
-        .customer-info-card {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
+
+        .nav-link.active {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #0d6efd;
+        }
+
+        .tab-content {
+            padding: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 50px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fdfdfe;
+        }
+
+        .upload-area:hover {
+            border-color: #0d6efd;
+            background: #f1f8ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #adb5bd;
             margin-bottom: 15px;
         }
-        
-        .info-item {
-            margin-bottom: 10px;
+
+        .preview-container {
+            position: relative;
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
         }
-        
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .result-panel {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            display: none;
+            border: 1px solid #e9ecef;
+        }
+
+        .info-group {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
         .info-label {
-            font-weight: 600;
-            color: #495057;
+            color: #868e96;
+            font-weight: 500;
         }
-        
+
         .info-value {
             color: #212529;
+            font-weight: 500;
         }
-        
-        .loading-spinner {
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 100;
             display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .extracted-info {
-            display: none;
-        }
-        
-        .highlight {
-            background-color: #fff3cd;
-            padding: 2px 4px;
-            border-radius: 3px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
         }
     </style>
 </head>
+
 <body>
     <div class="main-container extract-container">
-        <!-- 页面头部 -->
-        <div class="page-header">
-            <div class="page-title">
-                <i class="bi bi-person-badge"></i> AI智能识别客户信息
-            </div>
-            <a href="/" class="back-home-btn">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-stars text-primary me-2"></i>AI 智能录入中心</h4>
+            <a href="/" class="btn btn-outline-secondary btn-sm" type="button">
                 <i class="bi bi-house-fill"></i> 返回首页
             </a>
         </div>
-        
-        <!-- 输入区域 -->
-        <div class="card input-section">
-            <div class="card-header">
-                <h5 class="mb-0">输入客户信息文本</h5>
+
+        <div class="main-card position-relative">
+            <!-- Loading 遮罩 -->
+            <div id="globalLoading" class="loading-overlay">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <p class="text-muted fw-bold" id="loadingText">正在智能分析中...</p>
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">请输入包含客户信息的文本内容：</label>
-                    <textarea class="form-control" id="customerText" rows="8" placeholder="请输入包含客户信息的文本，例如：
-张三，联系电话13800138000，邮箱zhangsan@example.com，地址北京市朝阳区xxx街道xxx号，公司为北京科技有限公司，职位是产品经理。
-或者：
-李四，手机号码13900139000，工作单位上海互联网公司，担任设计师职务，居住在上海浦东新区。"></textarea>
-                </div>
-                <button class="btn btn-primary" onclick="extractCustomerInfo()">
-                        <i class="fas fa-magic"></i> 解析客户信息
+
+            <!-- 标签页导航 -->
+            <ul class="nav nav-tabs" id="aiTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="text-tab" data-bs-toggle="tab" data-bs-target="#text-pane"
+                        type="button" role="tab" aria-selected="true">
+                        <i class="bi bi-file-text me-2"></i>文本智能解析
                     </button>
-                <button class="btn btn-outline-secondary" onclick="clearInput()">
-                    <i class="bi bi-x-circle"></i> 清空
-                </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ocr-tab" data-bs-toggle="tab" data-bs-target="#ocr-pane" type="button"
+                        role="tab" aria-selected="false">
+                        <i class="bi bi-camera me-2"></i>名片/图片识别
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Tab 1: 文本解析 -->
+                <div class="tab-pane fade show active" id="text-pane" role="tabpanel" tabindex="0">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">请输入或粘贴客户信息文本：</label>
+                        <textarea class="form-control" id="textInput" rows="6"
+                            placeholder="例如：张三 13800138000 北京科技公司产品经理，地址在朝阳区..."></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary px-4" onclick="handleExtractText(event)">
+                            <i class="bi bi-magic text-white me-1"></i> 开始解析
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearText(event)">
+                            清空
+                        </button>
+                    </div>
+
+                    <!-- 文本结果展示 -->
+                    <div id="textResult" class="result-panel">
+                        <h6 class="border-bottom pb-2 mb-3 fw-bold text-dark">解析结果</h6>
+                        <div id="textFields"></div> <!-- 动态填充 -->
+                        <button type="button" class="btn btn-success w-100 mt-3" onclick="saveCustomer('text', event)">
+                            <i class="bi bi-check-circle me-1"></i> 确认并保存客户
+                        </button>
+                    </div>
+                    <!-- 隐藏域存数据 -->
+                    <input type="hidden" id="textDataJson">
+                </div>
+
+                <!-- Tab 2: 图片识别 -->
+                <div class="tab-pane fade" id="ocr-pane" role="tabpanel" tabindex="0">
+                    <input type="file" id="fileInput" hidden accept="image/*" onchange="onFileSelected(event)">
+
+                    <div class="upload-area" id="uploadBox" onclick="document.getElementById('fileInput').click()">
+                        <i class="bi bi-cloud-upload upload-icon"></i>
+                        <h5 class="fw-bold text-dark mb-2">点击上传名片或表格图片</h5>
+                        <p class="text-muted small mb-0">支持 JPG, PNG，最大 5MB</p>
+                    </div>
+
+                    <div class="preview-container" id="previewBox">
+                        <img id="imgPreview" class="preview-image">
+                        <button type="button" class="btn btn-sm btn-light position-absolute top-0 end-0 m-2"
+                            onclick="clearImage(event)" title="移除图片">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3" id="ocrActions" style="display:none !important;">
+                        <button type="button" class="btn btn-warning text-white flex-grow-1"
+                            onclick="handleOcrRecognize(event)">
+                            <i class="bi bi-search me-1"></i> 开始智能识别
+                        </button>
+                    </div>
+
+                    <!-- OCR结果展示 -->
+                    <div id="ocrResult" class="result-panel">
+                        <h6 class="border-bottom pb-2 mb-3 fw-bold text-dark">识别结果 <span class="badge bg-secondary ms-2"
+                                style="font-size:10px" id="ocrSourceTag">OCR</span></h6>
+                        <div id="ocrFields"></div> <!-- 动态填充 -->
+                        <button type="button" class="btn btn-success w-100 mt-3" onclick="saveCustomer('ocr', event)">
+                            <i class="bi bi-check-circle me-1"></i> 确认并保存客户
+                        </button>
+                    </div>
+                    <!-- 隐藏域存数据 -->
+                    <input type="hidden" id="ocrDataJson">
+                </div>
             </div>
         </div>
-        
-        <!-- 加载动画 -->
-        <div class="loading-spinner" id="loadingSpinner">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">正在解析中...</span>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">提示</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
             </div>
-            <p class="mt-2">正在使用AI智能识别客户信息，请稍候...</p>
-        </div>
-        
-        <!-- 解析结果预览 -->
-        <div class="preview-section extracted-info" id="extractedInfo">
-            <h5 class="mb-4">识别结果预览</h5>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="customer-info-card">
-                        <h6><i class="bi bi-person-circle"></i> 基本信息</h6>
-                        <div class="info-item">
-                            <span class="info-label">客户姓名：</span>
-                            <span class="info-value" id="customerName">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">客户类型：</span>
-                            <span class="info-value" id="customerType">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">手机号码：</span>
-                            <span class="info-value" id="phoneNumber">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">电子邮箱：</span>
-                            <span class="info-value" id="email">-</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="customer-info-card">
-                        <h6><i class="bi bi-building"></i> 企业信息</h6>
-                        <div class="info-item">
-                            <span class="info-label">公司名称：</span>
-                            <span class="info-value" id="companyName">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">职位：</span>
-                            <span class="info-value" id="position">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">地址：</span>
-                            <span class="info-value" id="address">-</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="customer-info-card">
-                <h6><i class="bi bi-file-text"></i> 原始文本分析</h6>
-                <div class="info-item">
-                    <span class="info-label">原始输入：</span>
-                    <div class="info-value" id="originalText" style="white-space: pre-wrap; background: #f8f9fa; padding: 10px; border-radius: 4px;"></div>
-                </div>
-            </div>
-            
-            <div class="mt-4">
-                <button class="btn btn-success" onclick="saveCustomerInfo()">
-                    <i class="bi bi-save"></i> 保存客户信息
-                </button>
-                <button class="btn btn-outline-primary" onclick="reExtract()">
-                    <i class="bi bi-arrow-repeat"></i> 重新解析
-                </button>
-            </div>
+            <div class="toast-body" id="toastMessage"></div>
         </div>
     </div>
 
     <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script>
-        // 解析客户信息
-        function extractCustomerInfo() {
-            const text = document.getElementById('customerText').value.trim();
-            
-            if (!text) {
-                alert('请输入客户信息文本');
-                return;
-            }
-            
-            // 显示加载动画
-            document.getElementById('loadingSpinner').style.display = 'block';
-            document.getElementById('extractedInfo').style.display = 'none';
-            
-            // 调用后端API进行AI解析
+        // === Core Logic ===
+
+        function showLoading(show, text = "处理中...") {
+            const el = document.getElementById('globalLoading');
+            document.getElementById('loadingText').textContent = text;
+            el.style.display = show ? 'flex' : 'none';
+        }
+
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('liveToast');
+            document.getElementById('toastTitle').textContent = isError ? "错误" : "成功";
+            const msgEl = document.getElementById('toastMessage');
+            msgEl.textContent = msg;
+            msgEl.className = isError ? 'toast-body text-danger fw-bold' : 'toast-body text-success fw-bold';
+            new bootstrap.Toast(el).show();
+        }
+
+        // --- Text Logic ---
+        function handleExtractText(e) {
+            e.preventDefault(); // 防止刷新
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) return showToast("请输入文本内容", true);
+
+            showLoading(true, "AI 文本分析中...");
             fetch('/api/ai/customer-extract/extract', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({text: text})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
             })
-            .then(response => response.json())
-            .then(result => {
-                if (result.code === 1) {
-                    const extractedInfo = result.data;
-                    
-                    // 解析AI返回的JSON结果
-                    let parsedInfo = {};
-                    if (extractedInfo.aiResult) {
-                        try {
-                            // 尝试解析AI返回的JSON字符串
-                            parsedInfo = JSON.parse(extractedInfo.aiResult);
-                        } catch (e) {
-                            console.error('解析AI结果失败:', e);
-                            // 如果解析失败，尝试使用原始数据
-                            parsedInfo = extractedInfo;
-                        }
+                .then(res => res.json())
+                .then(res => {
+                    showLoading(false);
+                    if (res.code === 1) {
+                        const data = res.data.parsedData || res.data;
+                        renderResult('text', data);
                     } else {
-                        // 如果没有aiResult字段，直接使用原始数据
-                        parsedInfo = extractedInfo;
+                        showToast(res.msg || "解析失败", true);
                     }
-                    
-                    // 填充解析结果
-                    document.getElementById('customerName').textContent = parsedInfo.customerName || parsedInfo.name || '-';
-                    document.getElementById('customerType').textContent = parsedInfo.customerType || '-';
-                    document.getElementById('phoneNumber').textContent = parsedInfo.phoneNumber || parsedInfo.phone || parsedInfo.mobile || '-';
-                    document.getElementById('email').textContent = parsedInfo.email || parsedInfo.emailAddress || '-';
-                    document.getElementById('companyName').textContent = parsedInfo.companyName || parsedInfo.company || '-';
-                    document.getElementById('position').textContent = parsedInfo.position || parsedInfo.jobTitle || '-';
-                    document.getElementById('address').textContent = parsedInfo.address || parsedInfo.location || '-';
-                    document.getElementById('originalText').textContent = text;
-                    
-                    // 隐藏加载动画，显示结果
-                    document.getElementById('loadingSpinner').style.display = 'none';
-                    document.getElementById('extractedInfo').style.display = 'block';
-                } else {
-                    alert('解析失败: ' + result.msg);
-                    document.getElementById('loadingSpinner').style.display = 'none';
-                }
+                })
+                .catch(err => {
+                    showLoading(false);
+                    showToast("网络请求失败", true);
+                    console.error(err);
+                });
+        }
+
+        function clearText(e) {
+            if (e) e.preventDefault();
+            document.getElementById('textInput').value = '';
+            document.getElementById('textResult').style.display = 'none';
+        }
+
+        // --- OCR Logic ---
+        let currentFile = null;
+
+        function onFileSelected(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) return showToast("图片大小不能超过 5MB", true);
+
+            currentFile = file;
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                document.getElementById('imgPreview').src = evt.target.result;
+                document.getElementById('uploadBox').style.display = 'none';
+                document.getElementById('previewBox').style.display = 'block';
+                document.getElementById('ocrActions').style.display = 'flex'; // 显示识别按钮
+                document.getElementById('ocrResult').style.display = 'none'; // 隐藏旧结果
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage(e) {
+            if (e) e.preventDefault();
+            currentFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('previewBox').style.display = 'none';
+            document.getElementById('uploadBox').style.display = 'block';
+            document.getElementById('ocrActions').style.display = 'none';
+            document.getElementById('ocrResult').style.display = 'none';
+        }
+
+        function handleOcrRecognize(e) {
+            e.preventDefault(); // 关键：防止刷新！
+            if (!currentFile) return showToast("请先选择图片", true);
+
+            showLoading(true, "PaddleOCR + DeepSeek 联合识别中...");
+
+            const reader = new FileReader();
+            reader.readAsDataURL(currentFile);
+            reader.onload = function (evt) {
+                const base64 = evt.target.result;
+                fetch('/api/ai/customer-extract/recognize-business-card', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64, fileName: currentFile.name })
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        showLoading(false);
+                        if (res.code === 1) {
+                            renderResult('ocr', res.data);
+                            // 自动滚动到底部
+                            document.getElementById('ocrResult').scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                            showToast(res.msg || "识别失败", true);
+                        }
+                    })
+                    .catch(err => {
+                        showLoading(false);
+                        showToast("识别请求异常", true);
+                        console.error(err);
+                    });
+            };
+        }
+
+        // --- Common Render ---
+        function renderResult(type, data) {
+            const container = document.getElementById(type + 'Fields');
+            const map = {
+                'customerName': ['客户名称', data.customerName || data.name],
+                'phone': ['联系电话', data.phone || data.mobile || data.phoneNumber],
+                'company': ['所属公司', data.company || data.customerName || data.companyName],
+                'position': ['职位抬头', data.position || data.title],
+                'remark': ['智能备注', data.remark]
+            };
+
+            // 规范化数据用于保存
+            const saveData = {
+                customerName: map.customerName[1],
+                contactPerson: data.contactPerson || map.customerName[1],
+                phone: map.phone[1],
+                position: map.position[1],
+                remark: map.remark[1],
+                customerType: (data.customerType === '企业' || (data.customerName && data.customerName.length > 4)) ? 1 : 2,
+                region: data.region,
+                address: data.address,
+                email: data.email
+            };
+
+            let html = '';
+            for (let key in map) {
+                const label = map[key][0];
+                const value = map[key][1] || '-';
+                // 简单的HTML构造，避免复杂的DOM操作
+                html += `<div class="info-group">
+                            <span class="info-label">${label}</span>
+                            <span class="info-value text-break">${value}</span>
+                         </div>`;
+            }
+
+            container.innerHTML = html;
+            document.getElementById(type + 'DataJson').value = JSON.stringify(saveData);
+            document.getElementById(type + 'Result').style.display = 'block';
+        }
+
+        function saveCustomer(type, e) {
+            if (e) e.preventDefault(); // 防止刷新
+
+            const jsonStr = document.getElementById(type + 'DataJson').value;
+            if (!jsonStr) return;
+            const data = JSON.parse(jsonStr);
+
+            showLoading(true, "正在录入系统...");
+            fetch('/api/customer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             })
-            .catch(error => {
-                console.error('解析出错:', error);
-                alert('解析过程中出现错误，请稍后重试');
-                document.getElementById('loadingSpinner').style.display = 'none';
-            });
-        }
-        
-        // 清空输入
-        function clearInput() {
-            document.getElementById('customerText').value = '';
-            document.getElementById('extractedInfo').style.display = 'none';
-        }
-        
-        // 重新解析
-        function reExtract() {
-            extractCustomerInfo();
-        }
-        
-        // 保存客户信息
-        function saveCustomerInfo() {
-            alert('客户信息已保存！');
-            // 实际应该调用后端API保存数据
+                .then(res => res.json())
+                .then(res => {
+                    showLoading(false);
+                    if (res.code === 1) {
+                        showToast("录入成功！正在跳转客户列表...", false);
+                        setTimeout(() => {
+                            window.location.href = 'customers.html';
+                            // window.location.reload(); // 或者刷新页面重新录入
+                        }, 1500);
+                    } else {
+                        showToast(res.msg || "保存失败", true);
+                    }
+                })
+                .catch(err => {
+                    showLoading(false);
+                    showToast("保存请求失败", true);
+                });
         }
     </script>
 </body>
+
 </html>

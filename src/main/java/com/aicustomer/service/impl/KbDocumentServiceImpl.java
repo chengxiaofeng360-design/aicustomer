@@ -39,6 +39,8 @@ public class KbDocumentServiceImpl implements KbDocumentService {
 
     private final KbDocumentMapper documentMapper;
     private final VectorSearchService vectorSearchService;
+    private final com.aicustomer.dify.client.DifyClient difyClient;
+    private final com.aicustomer.config.DifyConfig difyConfig;
 
     // 文件存储路径
     private static final String UPLOAD_PATH = "uploads/knowledge/";
@@ -98,7 +100,33 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             int result = documentMapper.insert(document);
             if (result > 0) {
                 log.info("文档上传成功: {}", file.getOriginalFilename());
-                // 索引到向量库
+
+                // Dify 同步逻辑
+                if (difyConfig.isEnabled()) {
+                    try {
+                        String datasetId = difyConfig.getDatasetId();
+                        String datasetKey = difyConfig.getDatasetApiKey();
+
+                        if (datasetId != null && !datasetId.isEmpty() &&
+                                datasetKey != null && !datasetKey.isEmpty()) {
+
+                            log.info("正在同步文件到 Dify 知识库 (ID: {})...", datasetId);
+                            // 使用保存到本地的文件进行上传
+                            java.io.File localFile = new java.io.File(filePath);
+                            java.util.Map<String, Object> difyResponse = difyClient.createDocumentByFile(
+                                    datasetId, localFile, "system");
+
+                            log.info("Dify 同步结果: {}", difyResponse);
+                        } else {
+                            log.warn("Dify 配置缺少 Dataset ID 或 Dataset Key，跳过同步");
+                        }
+                    } catch (Exception e) {
+                        log.error("同步到 Dify 失败: {}", e.getMessage(), e);
+                        // 不中断流程，仅记录错误
+                    }
+                }
+
+                // 索引到向量库 (仅在Dify未启用或作为备份时)
                 try {
                     if (vectorSearchService.isAvailable()) {
                         vectorSearchService.indexDocument(

@@ -20,11 +20,11 @@ public class OcrController {
     private final OcrService ocrService;
 
     @PostMapping("/business-card")
-    public Result<Customer> recognizeBusinessCard(@RequestParam("file") MultipartFile file) {
+    public Result<java.util.List<Customer>> recognizeBusinessCard(@RequestParam("file") MultipartFile file) {
         try {
             log.info("Received business card OCR request, file size: {}", file.getSize());
-            Customer customer = ocrService.parseBusinessCard(file);
-            return Result.success(customer);
+            java.util.List<Customer> customers = ocrService.parseBusinessCard(file);
+            return Result.success(customers);
         } catch (Exception e) {
             log.error("Business card recognition failed", e);
             return Result.error("识别失败: " + e.getMessage());

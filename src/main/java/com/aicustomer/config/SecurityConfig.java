@@ -30,16 +30,26 @@ public class SecurityConfig {
                 auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
         }
 
+        // Dify 工具专用 FilterChain（完全豁免认证）
         @Bean
-        public org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer webSecurityCustomizer() {
-                return (web) -> web.ignoring().requestMatchers("/api/dify/tools/**");
+        @org.springframework.core.annotation.Order(1)
+        public SecurityFilterChain difyToolsSecurityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .securityMatcher("/api/dify/tools/**")
+                                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(
+                                                                org.springframework.security.config.http.SessionCreationPolicy.STATELESS));
+                return http.build();
         }
 
+        // 主应用 FilterChain
         @Bean
+        @org.springframework.core.annotation.Order(2)
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
                                 .authorizeHttpRequests(authorize -> authorize
-                                                .requestMatchers("/api/dify/tools/**").permitAll()
                                                 .requestMatchers("/login", "/register", "/lib/**", "/css/**", "/js/**",
                                                                 "/api/customer/login",
                                                                 "/api/user/login")

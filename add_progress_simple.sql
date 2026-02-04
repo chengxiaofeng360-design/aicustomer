@@ -1,2 +1,0 @@
--- 简单版本：直接添加字段（如果不存在会报错，可以忽略）
--- ALTER TABLE customer ADD COLUMN progress TINYINT DEFAULT 0 COMMENT '进度(0:未开始,1:进行中,2:暂停中,3:已成功,4:放弃)' AFTER protection_password;

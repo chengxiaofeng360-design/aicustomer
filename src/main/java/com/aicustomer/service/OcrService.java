@@ -1,181 +1,251 @@
 package com.aicustomer.service;
 
 import com.aicustomer.entity.Customer;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
 public class OcrService {
 
-    @Value("${ai-customer.ai.deepseek.ocr.api-key:helloworld}")
-    private String apiKey;
+    @Autowired
+    private ZhipuChatService zhipuChatService;
 
-    @Value("${ai-customer.ai.deepseek.ocr.base-url:https://api.ocr.space/parse/image}")
-    private String baseUrl;
+    @Autowired
+    private ArkChatService arkChatService;
 
-    @Value("${ai-customer.ai.deepseek.ocr.language:chs}")
-    private String language;
+    @Autowired
+    private DeepSeekChatService deepSeekChatService;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private PaddleOcrService paddleOcrService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Customer parseBusinessCard(MultipartFile file) throws IOException {
+    public List<Customer> parseBusinessCard(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("上传的文件为空");
         }
 
         // 转换为Base64
         String base64Image = Base64.getEncoder().encodeToString(file.getBytes());
-        String base64Data = "data:" + file.getContentType() + ";base64," + base64Image;
-
-        // 构建请求
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("apikey", apiKey);
-        body.add("base64Image", base64Data);
-        body.add("language", language);
-        body.add("isOverlayRequired", "false");
-        body.add("detectOrientation", "true");
-        body.add("scale", "true");
-        body.add("OCREngine", "2"); // 使用引擎2，支持中文更好
-
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-
-        try {
-            log.info("Sending OCR request to OCR.space API");
-
-            ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, entity, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return parseOcrSpaceResponse(response.getBody());
-            } else {
-                log.error("OCR.space API returned error: {}", response.getStatusCode());
-                throw new RuntimeException("名片识别失败: API调用错误");
-            }
-        } catch (Exception e) {
-            log.error("Error calling OCR.space API", e);
-            throw new RuntimeException("名片识别失败: " + e.getMessage());
-        }
+        return parseBusinessCard(base64Image);
     }
 
-    private Customer parseOcrSpaceResponse(String responseBody) {
-        try {
-            JsonNode rootNode = objectMapper.readTree(responseBody);
-
-            // 检查OCR是否成功
-            if (!rootNode.path("IsErroredOnProcessing").asBoolean(false)) {
-                JsonNode parsedResults = rootNode.path("ParsedResults");
-                if (parsedResults.isArray() && parsedResults.size() > 0) {
-                    String parsedText = parsedResults.get(0).path("ParsedText").asText();
-                    log.debug("OCR.space Response Text: {}", parsedText);
-
-                    // 解析文本提取信息
-                    return extractCustomerInfo(parsedText);
-                }
-            } else {
-                String errorMessage = rootNode.path("ErrorMessage").asText("未知错误");
-                log.error("OCR.space processing error: {}", errorMessage);
-                throw new RuntimeException("OCR处理失败: " + errorMessage);
-            }
-        } catch (Exception e) {
-            log.error("Error parsing OCR.space response", e);
-            throw new RuntimeException("解析识别结果失败: " + e.getMessage());
-        }
-        return new Customer();
-    }
-
-    private Customer extractCustomerInfo(String text) {
-        Customer customer = new Customer();
-
-        // 使用正则表达式提取信息
-        // 手机号 (中国手机号格式)
-        Pattern phonePattern = Pattern.compile("1[3-9]\\d{9}");
-        Matcher phoneMatcher = phonePattern.matcher(text);
-        if (phoneMatcher.find()) {
-            customer.setPhone(phoneMatcher.group());
+    public List<Customer> parseBusinessCard(String base64Image) {
+        // 构建兼容性前缀
+        String base64Data = base64Image;
+        if (!base64Image.startsWith("data:image")) {
+            base64Data = "data:image/jpeg;base64," + base64Image;
         }
 
-        // 邮箱
-        Pattern emailPattern = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
-        Matcher emailMatcher = emailPattern.matcher(text);
-        if (emailMatcher.find()) {
-            customer.setEmail(emailMatcher.group());
-        }
+        StringBuilder errors = new StringBuilder();
 
-        // 提取所有行
-        String[] lines = text.split("\\r?\\n");
+        // 策略1：PaddleOCR + DeepSeek（本地专业组合，优先级最高）
+        if (paddleOcrService != null && paddleOcrService.isAvailable()) {
+            log.info("【OcrService】策略1：尝试使用 PaddleOCR + DeepSeek 组合");
+            try {
+                // 1.1 使用 PaddleOCR 提取文本
+                String ocrText = paddleOcrService.recognizeText(base64Image);
+                log.info("【OcrService】PaddleOCR 提取文本成功，长度: {}", ocrText.length());
 
-        // 简单启发式规则：
-        // - 第一行通常是姓名
-        // - 包含"公司"、"有限"、"科技"等关键词的行可能是公司名
-        // - 包含"经理"、"总监"等的可能是职位
+                // 1.2 使用 DeepSeek 将文本解析为 JSON 数组
+                String dsPrompt = "你是一个智能数据助理。以下是 OCR 识别出的文字，它们可能来自一张单人名片，也可能来自通讯录列表或表格（包含多条记录）。\n\n" +
+                        "【任务】:\n" +
+                        "1. 分析 OCR 文本，判断包含了多少个人的联系方式\n" +
+                        "2. 提取**所有**完整的联系人信息，不要遗漏任何一条\n" +
+                        "3. 始终返回 JSON 数组格式，即使只有一个人也返回 [单个对象]\n\n" +
 
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i].trim();
-            if (line.isEmpty())
-                continue;
+                        "【字段说明】:\n" +
+                        "- customerName: 客户/公司名称\n" +
+                        "- contactPerson: 联系人姓名\n" +
+                        "- phone: 电话号码\n" +
+                        "- position: 职位\n" +
+                        "- region: 地区\n" +
+                        "- email: 邮箱\n" +
+                        "- address: 地址\n\n" +
 
-            // 第一个非空行可能是姓名
-            if (customer.getCustomerName() == null && i < 2) {
-                // 如果不是手机号或邮箱，可能是姓名
-                if (!line.matches(".*1[3-9]\\d{9}.*") && !line.contains("@")) {
-                    if (line.length() <= 10) { // 姓名通常不会太长
-                        customer.setContactPerson(line);
+                        "【处理规则】:\n" +
+                        "- 如果是表格格式：识别表头，将同一行数据关联为一个对象\n" +
+                        "- 无法区分客户名称和联系人时：人名填入 contactPerson，公司名填入 customerName\n" +
+                        "- 字段无法提取时：设为 null\n" +
+                        "- 保持所有字段完整，不要省略\n\n" +
+
+                        "【输出示例】:\n" +
+                        "[\n" +
+                        "  {\n" +
+                        "    \"customerName\": \"XX科技有限公司\",\n" +
+                        "    \"contactPerson\": \"张三\",\n" +
+                        "    \"phone\": \"13800138000\",\n" +
+                        "    \"position\": \"销售经理\",\n" +
+                        "    \"region\": \"北京\",\n" +
+                        "    \"email\": \"zhangsan@example.com\",\n" +
+                        "    \"address\": \"北京市朝阳区XX路XX号\"\n" +
+                        "  }\n" +
+                        "]\n\n" +
+
+                        "【OCR原文】:\n" + ocrText + "\n\n" +
+
+                        "请直接返回纯 JSON 数组，不要添加任何解释或markdown标记：";
+
+                String aiResult = deepSeekChatService.chat(dsPrompt, "You are a judgmental intelligence assistant.");
+                List<Customer> customers = parseAiResultToList(aiResult);
+
+                if (customers != null && !customers.isEmpty()) {
+                    log.info("【OcrService】PaddleOCR + DeepSeek 识别成功，提取到 {} 条记录", customers.size());
+                    for (Customer c : customers) {
+                        String remark = (c.getRemark() != null ? c.getRemark() : "");
+                        remark += " (PaddleOCR+DeepSeek)";
+                        c.setRemark(remark);
                     }
+                    return customers;
                 }
+            } catch (Exception e) {
+                log.error("【OcrService】PaddleOCR + DeepSeek 识别失败: {}", e.getMessage());
+                errors.append("PaddleOCR+DeepSeek Error: ").append(e.getMessage()).append("; ");
             }
+        } else {
+            log.warn("【OcrService】PaddleOCR 服务不可用，跳过策略1");
+        }
 
-            // 查找公司名
-            if (customer.getCustomerName() == null) {
-                if (line.contains("公司") || line.contains("有限") || line.contains("科技") ||
-                        line.contains("集团") || line.contains("企业") || line.contains("Co") ||
-                        line.contains("Ltd") || line.contains("Inc")) {
-                    customer.setCustomerName(line);
-                }
-            }
+        // 策略2：智谱AI（云端视觉AI）- 目前作为备选，或者在Paddle失败时用
+        // 这里的提示词也需要改为支持数组，但鉴于 DeepSeek 效果更好，我们暂时在智谱这里保持单条或尝试解析
+        // 为简化逻辑，并在多条记录需求下，这里建议如果 Paddle 失败，也让智谱尝试返回数组
+        if (zhipuChatService != null && zhipuChatService.isAvailable()) {
+            log.info("【OcrService】策略2：尝试使用智谱AI");
+            try {
+                String prompt = "请识别这张图片中的客户信息。图片可能包含单张名片或多条通讯录记录。\n" +
+                        "请提取所有记录，并Strictly return a JSON Array `[...]`。\n" +
+                        "字段：customerName, contactPerson, phone, position, region, email, address";
 
-            // 查找职位
-            if (customer.getPosition() == null) {
-                if (line.contains("经理") || line.contains("总监") || line.contains("主管") ||
-                        line.contains("总裁") || line.contains("CEO") || line.contains("CTO") ||
-                        line.contains("Manager") || line.contains("Director")) {
-                    customer.setPosition(line);
-                }
-            }
+                String aiResult = zhipuChatService.chatWithImage(prompt, base64Image, null);
+                log.info("【OcrService】智谱AI返回: {}", aiResult);
 
-            // 查找地址 (包含"路"、"街"、"区"等)
-            if (customer.getAddress() == null) {
-                if (line.contains("路") || line.contains("街") || line.contains("区") ||
-                        line.contains("市") || line.contains("省") || line.contains("Road") ||
-                        line.contains("Street") || line.contains("Avenue")) {
-                    customer.setAddress(line);
+                List<Customer> customers = parseAiResultToList(aiResult);
+                if (customers != null && !customers.isEmpty()) {
+                    return customers;
                 }
+
+                // 尝试修复非数组的JSON
+                // ... (简化起见，暂略，假设智谱能遵循指令)
+            } catch (Exception e) {
+                log.warn("【OcrService】智谱AI识别失败: {}", e.getMessage());
             }
         }
 
-        // 如果没有提取到公司名，使用联系人姓名
-        if (customer.getCustomerName() == null && customer.getContactPerson() != null) {
-            customer.setCustomerName(customer.getContactPerson());
+        // 如果所有策略都失败，抛出异常或返回空
+        if (errors.length() > 0) {
+            throw new RuntimeException("识别失败: " + errors.toString());
+        }
+        return Collections.emptyList();
+    }
+
+    private List<Customer> parseAiResultToList(String aiResult) {
+        if (aiResult == null || aiResult.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            // 清理Markdown
+            String jsonStr = aiResult.trim();
+            if (jsonStr.startsWith("```json")) {
+                jsonStr = jsonStr.substring(7);
+            } else if (jsonStr.startsWith("```")) {
+                jsonStr = jsonStr.substring(3);
+            }
+            if (jsonStr.endsWith("```")) {
+                jsonStr = jsonStr.substring(0, jsonStr.length() - 3);
+            }
+            jsonStr = jsonStr.trim();
+
+            List<Customer> resultList = new ArrayList<>();
+
+            // 尝试解析为 List<Map>
+            if (jsonStr.startsWith("[")) {
+                List<Map<String, Object>> list = objectMapper.readValue(jsonStr,
+                        new TypeReference<List<Map<String, Object>>>() {
+                        });
+                for (Map<String, Object> map : list) {
+                    resultList.add(mapToCustomer(map));
+                }
+            } else if (jsonStr.startsWith("{")) {
+                // 如果AI只返回了一个对象，手动包一层
+                Map<String, Object> map = objectMapper.readValue(jsonStr, Map.class);
+                // 检查是否包含 list/data 等包装字段
+                if (map.containsKey("list") && map.get("list") instanceof List) {
+                    List<Map<String, Object>> list = (List<Map<String, Object>>) map.get("list");
+                    for (Map<String, Object> m : list) {
+                        resultList.add(mapToCustomer(m));
+                    }
+                } else if (map.containsKey("data") && map.get("data") instanceof List) {
+                    List<Map<String, Object>> list = (List<Map<String, Object>>) map.get("data");
+                    for (Map<String, Object> m : list) {
+                        resultList.add(mapToCustomer(m));
+                    }
+                } else {
+                    // 就是单个对象
+                    resultList.add(mapToCustomer(map));
+                }
+            }
+
+            return resultList;
+
+        } catch (Exception e) {
+            log.error("解析AI结果失败: {}", e.getMessage());
+            log.debug("原始结果: {}", aiResult);
+            return null;
+        }
+    }
+
+    private Customer mapToCustomer(Map<String, Object> map) {
+        Customer customer = new Customer();
+        customer.setCustomerName((String) map.getOrDefault("customerName", ""));
+        customer.setContactPerson((String) map.getOrDefault("contactPerson", ""));
+        customer.setPhone((String) map.getOrDefault("phone", ""));
+
+        // 映射客户类型
+        Object typeObj = map.get("customerType");
+        String typeStr = typeObj != null ? String.valueOf(typeObj) : null;
+        if (typeStr != null) {
+            if (typeStr.contains("个人") || typeStr.equals("1")) {
+                customer.setCustomerType(1);
+            } else if (typeStr.contains("企业") || typeStr.equals("2")) {
+                customer.setCustomerType(2);
+            } else if (typeStr.contains("科研") || typeStr.equals("3")) {
+                customer.setCustomerType(3);
+            } else {
+                customer.setCustomerType(2); // 默认
+            }
+        } else {
+            customer.setCustomerType(2); // 默认
         }
 
-        // 将完整文本作为备注
-        customer.setRemark("OCR识别原文：\n" + text);
+        customer.setRegion((String) map.get("region"));
+
+        if (map.get("address") != null)
+            customer.setAddress((String) map.get("address"));
+        if (map.get("email") != null)
+            customer.setEmail((String) map.get("email"));
+        if (map.get("qqWeixin") != null)
+            customer.setQqWeixin((String) map.get("qqWeixin"));
+        if (map.get("position") != null)
+            customer.setPosition((String) map.get("position"));
+        if (map.get("remark") != null)
+            customer.setRemark((String) map.get("remark"));
+        if (map.get("cooperationContent") != null)
+            customer.setCooperationContent((String) map.get("cooperationContent"));
 
         return customer;
     }

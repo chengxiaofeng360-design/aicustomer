@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  paddleocr:
+    build:
+      context: ./paddle_ocr_service
+      dockerfile: Dockerfile
+    container_name: paddleocr-service
+    ports:
+      - "5001:5000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - aicustomer-network
+
+networks:
+  aicustomer-network:
+    driver: bridge

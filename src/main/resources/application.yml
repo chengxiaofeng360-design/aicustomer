@@ -153,7 +153,7 @@ ai-customer:
     zhipu:
       api-key: 975fc88a9db242f9b9044067488f2f98.fdlDhCDHP4MUGIhV
       base-url: https://open.bigmodel.cn/api/paas/v4
-      model: glm-4-flash  # Flash版本 - 用于图文识别
+      model: glm-4v     # GLM-4V - 专用图文识别模型
       timeout: 30000
       max-tokens: 2000
     # 智谱AI聊天版本配置（纯文本聊天）
@@ -163,6 +163,10 @@ ai-customer:
       model: glm-3-turbo  # Turbo版本 - 免费纯文本聊天
       timeout: 30000
       max-tokens: 4000
+    # PaddleOCR 本地服务配置
+    paddle-ocr:
+      enabled: true
+      base-url: http://localhost:5001
   
   # 系统配置
   system:
@@ -177,7 +181,7 @@ ai:
 # 【新增】Dify平台配置
 dify:
   enabled: true  # 已启用Dify引擎
-  api-url: http://localhost/v1  # Dify API地址
+  api-url: http://127.0.0.1/v1  # Dify API地址
   api-key: app-UTtEzvfyGzrcDkpimYd97wsz  # Dify Agent App Key 
   dataset-id: "c5d916e8-5a00-4ff4-b5f6-490a8e8f9d8b" # Dify Knowledge Base ID (Corrected)
   dataset-api-key: "dataset-eZddbJm7OgvdWIqstA3Xq8FE" # 用户确认此Key包含知识库权限

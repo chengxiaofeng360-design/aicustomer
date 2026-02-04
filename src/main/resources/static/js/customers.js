@@ -906,12 +906,20 @@ function displayImportPreview(data) {
             return cell;
         };
 
+        // 序号列
+        const indexCell = document.createElement('td');
+        indexCell.style.padding = '0.4rem';
+        indexCell.className = 'text-center text-muted small';
+        indexCell.textContent = index + 1;
+        row.appendChild(indexCell);
+
         // 客户类型选项
         const customerTypeOptions = ['个人', '企业', '科研院所'];
 
         // 创建单元格
         row.appendChild(createEditableCell(item.customerName || '', 'customerName'));
         row.appendChild(createEditableCell(item.contactPerson || '', 'contactPerson'));
+        row.appendChild(createEditableCell(item.position || '', 'position')); // 新增职务
         row.appendChild(createEditableCell(item.phone || '', 'phone'));
         row.appendChild(createEditableCell(item.customerType || '', 'customerType', true, customerTypeOptions));
         row.appendChild(createEditableCell(item.region || '', 'region'));
@@ -924,10 +932,41 @@ function displayImportPreview(data) {
             `<span class="text-success" style="font-size: 0.8rem;"><i class="bi bi-check-circle"></i> 有效</span>`;
         row.appendChild(statusCell);
 
+        // 操作列
+        const actionCell = document.createElement('td');
+        actionCell.style.padding = '0.4rem';
+        actionCell.className = 'text-center';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-link btn-sm p-0 text-danger text-decoration-none';
+        deleteBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+        deleteBtn.title = '删除此条目';
+        deleteBtn.onclick = function () { removePreviewItem(index); };
+
+        actionCell.appendChild(deleteBtn);
+        row.appendChild(actionCell);
+
         previewBody.appendChild(row);
     });
 
-    document.getElementById('importPreview').style.display = 'block';
+    // 如果数据列表不为空，显示容器
+    const container = document.getElementById('importPreview');
+    if (data.length > 0) {
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+        // 如果没有数据，禁用保存按钮
+        const saveBtn = document.getElementById('saveImportBtn');
+        if (saveBtn) saveBtn.disabled = true;
+    }
+}
+
+// 删除预览条目
+function removePreviewItem(index) {
+    if (confirm('确定要删除这条记录吗？')) {
+        processedData.splice(index, 1);
+        displayImportPreview(processedData);
+    }
 }
 
 // 编辑单元格
@@ -1156,46 +1195,68 @@ async function recognizeBusinessCard(file) {
         if (result.code === 200 && result.data) {
             const extractedData = result.data;
 
-            // 检查识别是否成功
-            if (extractedData.recognized === false) {
-                alert('名片识别失败：' + (extractedData.error || '无法识别名片信息'));
-                return;
-            }
-
-            // 检查必填字段是否完整
-            const requiredFields = ['customerName', 'contactPerson', 'phone', 'customerType', 'region'];
-            const missingFields = requiredFields.filter(field => !extractedData[field] || extractedData[field].trim() === '');
-
-            if (missingFields.length > 0) {
-                console.warn('名片识别缺少必填字段:', missingFields);
-                // 即使缺少必填字段，也填入已识别的数据，用户可以手动补充
-            }
-
-            // 将识别结果格式化为文本，填入数据录入框
-            const formattedText = formatBusinessCardData(extractedData);
-            const textarea = document.getElementById('batchImportData');
-
-            // 如果数据录入框为空，直接填入；否则追加到新行
-            const currentText = textarea.value.trim();
-            if (currentText) {
-                textarea.value = currentText + '\n' + formattedText;
+            // 统一处理为数组
+            let dataList = [];
+            if (Array.isArray(extractedData)) {
+                dataList = extractedData;
             } else {
-                textarea.value = formattedText;
+                dataList = [extractedData];
             }
 
-            // 滚动到文本框底部，让用户看到新填入的内容
-            textarea.scrollTop = textarea.scrollHeight;
+            // 构建预览列表
+            const previewItems = dataList.map(item => {
+                const previewItem = {
+                    customerName: item.customerName || item.name,
+                    contactPerson: item.contactPerson || item.name || item.customerName, // 兜底
+                    phone: item.phone || item.mobile || item.phoneNumber,
+                    customerType: item.customerType || '企业',
+                    region: item.region || '',
+                    position: item.position || '',
+                    address: item.address || '',
+                    remark: item.remark || '',
+                    email: item.email || '',
+                    status: 'valid'
+                };
 
-            // 自动解析数据
-            setTimeout(() => {
-                parseImportData();
-            }, 500);
+                // 简单验证
+                if (!previewItem.customerName || !previewItem.phone) {
+                    previewItem.status = 'error';
+                    previewItem.error = '缺少客户名称或电话';
+                }
 
-            // 显示成功提示
-            const successMsg = missingFields.length > 0
-                ? `名片识别完成！已填入数据录入框，但缺少以下字段：${missingFields.join('、')}，请手动补充后点击"解析数据"。`
-                : '名片识别成功！信息已填入数据录入框，正在自动解析...';
-            alert(successMsg);
+                return previewItem;
+            });
+
+            // 更新全局数据
+            processedData = previewItems;
+
+            // 渲染预览表格
+            displayImportPreview(processedData);
+
+            // 启用保存按钮
+            const saveBtn = document.getElementById('saveImportBtn');
+            if (saveBtn) {
+                // 只要有一条有效数据，就允许保存（或者要求全部有效？通常只要有一条就行）
+                // 这里逻辑：如果有 error，是否允许保存？通常允许保存 valid 的。
+                // 现有的 saveBatchImport 逻辑会过滤掉 error 的吗？
+                // 让我们检查一下 saveBatchImport，通常它会保存所有。
+                // 即使有红色行，用户也可以手动修正。所以允许点保存。
+                saveBtn.disabled = false;
+            }
+
+            // 滚动到底部预览区
+            const previewDiv = document.getElementById('importPreview');
+            previewDiv.scrollIntoView({ behavior: 'smooth' });
+
+            // 成功的提示
+            const validCount = previewItems.filter(i => i.status === 'valid').length;
+            const totalCount = previewItems.length;
+            /* 
+            // 移除弹窗通知，因为已经滚动到底部了
+            if (validCount < totalCount) {
+                // alert(`识别完成，共 ${totalCount} 条，其中 ${totalCount - validCount} 条存在信息缺失，请在下方表格中完善。`);
+            } 
+            */
         } else {
             alert('名片识别失败：' + (result.message || '未知错误，请检查网络连接或稍后重试'));
         }
@@ -2956,198 +3017,7 @@ function exportCustomers() {
     }
 }
 
-// 处理名片上传
-function handleBusinessCardUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    processBusinessCardFile(file);
-}
-
-// 处理名片拖拽
-function handleBusinessCardDrop(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('businessCardUploadZone').classList.remove('drag-over');
-
-    const file = event.dataTransfer.files[0];
-    if (!file) return;
-    processBusinessCardFile(file);
-}
-
-function handleBusinessCardDragOver(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('businessCardUploadZone').classList.add('drag-over');
-}
-
-function handleBusinessCardDragLeave(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('businessCardUploadZone').classList.remove('drag-over');
-}
-
-// 处理名片文件
-function processBusinessCardFile(file) {
-    // 验证文件类型和大小
-    if (!file.type.startsWith('image/')) {
-        alert('请上传图片文件');
-        return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-        alert('文件大小不能超过5MB');
-        return;
-    }
-
-    // 显示预览
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        document.getElementById('businessCardPreviewImg').src = e.target.result;
-        document.getElementById('businessCardFileInfo').textContent = `${file.name} (${formatFileSize(file.size)})`;
-        document.getElementById('businessCardUploadArea').style.display = 'none';
-        document.getElementById('businessCardPreview').style.display = 'block';
-
-        // 开始识别
-        recognizeBusinessCard(file);
-    };
-    reader.readAsDataURL(file);
-}
-
-// 清除名片预览
-function clearBusinessCardPreview() {
-    document.getElementById('businessCardImage').value = '';
-    document.getElementById('businessCardPreviewImg').src = '';
-    document.getElementById('businessCardUploadArea').style.display = 'block';
-    document.getElementById('businessCardPreview').style.display = 'none';
-    document.getElementById('businessCardRecognizing').style.display = 'none';
-}
-
-// 调用后端API识别名片
-function recognizeBusinessCard(file) {
-    const recognizingDiv = document.getElementById('businessCardRecognizing');
-    recognizingDiv.style.display = 'block';
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    fetch('/api/ocr/business-card', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => response.json())
-        .then(result => {
-            recognizingDiv.style.display = 'none';
-
-            if (result.code === 200 && result.data) {
-                const customer = result.data;
-                console.log('名片识别结果:', customer);
-
-                // 获取OCR识别的原始文本
-                let ocrText = customer.remark || '';
-                if (ocrText.startsWith('OCR识别原文：\n')) {
-                    ocrText = ocrText.substring('OCR识别原文：\n'.length);
-                }
-
-                if (!ocrText) {
-                    alert('OCR识别失败，未获取到文本');
-                    return;
-                }
-
-                // 切换到文本录入标签页
-                const textTab = new bootstrap.Tab(document.getElementById('text-tab'));
-                textTab.show();
-
-                // 显示加载状态
-                const textarea = document.getElementById('batchImportData');
-                textarea.value = '正在使用AI智能解析名片信息...';
-                textarea.disabled = true;
-
-                // 调用AI提取接口，将整段OCR文本作为一个整体解析
-                fetch('/api/ai/customer-extract/extract', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ text: ocrText })
-                })
-                    .then(response => response.json())
-                    .then(aiResult => {
-                        textarea.disabled = false;
-
-                        if (aiResult.code === 200 && aiResult.data && aiResult.data.parsedData) {
-                            const parsed = aiResult.data.parsedData;
-                            console.log('AI解析结果:', parsed);
-
-                            // 构建标准格式的一行数据
-                            const line = [
-                                parsed.customerName || '', // 客户名称
-                                parsed.contactPerson || '', // 联系人
-                                parsed.phone || '', // 电话
-                                parsed.customerType || '企业', // 客户类型
-                                parsed.region || '', // 地区
-                                parsed.position || '', // 职务
-                                parsed.qqWeixin || '', // QQ/微信
-                                parsed.cooperationContent || '', // 合作内容
-                                parsed.email || '', // 邮箱
-                                parsed.address || '', // 地址
-                                parsed.remark || '' // 备注
-                            ].join(' | ');
-
-                            textarea.value = line;
-                            alert('✅ AI智能解析成功！已自动填入数据，请检查并点击"解析数据"');
-                        } else {
-                            // AI解析失败，回退到简单格式
-                            console.warn('AI解析失败，使用简单格式');
-                            const line = [
-                                customer.customerName || '',
-                                customer.contactPerson || '',
-                                customer.phone || '',
-                                '企业',
-                                '',
-                                customer.position || '',
-                                '',
-                                '',
-                                customer.email || '',
-                                customer.address || '',
-                                ''
-                            ].join(' | ');
-
-                            textarea.value = line;
-                            alert('识别成功！已自动填入数据，请检查并完善信息后点击"解析数据"');
-                        }
-                    })
-                    .catch(error => {
-                        textarea.disabled = false;
-                        console.error('AI解析错误:', error);
-
-                        // AI调用失败，回退到简单格式
-                        const line = [
-                            customer.customerName || '',
-                            customer.contactPerson || '',
-                            customer.phone || '',
-                            '企业',
-                            '',
-                            customer.position || '',
-                            '',
-                            '',
-                            customer.email || '',
-                            customer.address || '',
-                            ''
-                        ].join(' | ');
-
-                        textarea.value = line;
-                        alert('识别成功！已自动填入数据，请检查并完善信息后点击"解析数据"');
-                    });
-
-            } else {
-                alert('识别失败: ' + (result.message || '未知错误'));
-            }
-        })
-        .catch(error => {
-            recognizingDiv.style.display = 'none';
-            console.error('OCR error:', error);
-            alert('识别请求失败，请重试');
-        });
-}
+// (此处已删除重复的 OCR 逻辑，以避免与文件前部的 recognizeBusinessCard 冲突)
 
 // 格式化文件大小
 function formatFileSize(bytes) {
