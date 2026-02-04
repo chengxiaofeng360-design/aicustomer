@@ -487,6 +487,12 @@ async function sendMessage() {
 
     if (!message) return;
 
+    // 计算模拟思考时间 (3-5秒)
+    // 依据问题长短：基础3秒，每10个字符增加0.2秒，上限5秒
+    let thinkTime = 3000 + Math.floor(message.length / 10) * 200;
+    thinkTime = Math.min(5000, thinkTime);
+    const startTime = Date.now();
+
     try {
         await ensureActiveSession();
     } catch (error) {
@@ -518,12 +524,14 @@ async function sendMessage() {
 
     // 准备AI回复容器
     const aiMessageId = 'msg_ai_' + Date.now();
-    addMessage('', 'ai', {
+    // 初始显示思考状态图标
+    addMessage('<i class="bi bi-three-dots"></i>', 'ai', {
         id: aiMessageId,
         recordHistory: false // 暂时不记录，等生成完再记录
     });
     const aiMessageBubble = document.querySelector(`#${aiMessageId} .message-text`);
     let fullAiResponse = '';
+    let isFirstChunk = true;
 
     try {
         // 调用后端流式API
@@ -556,6 +564,15 @@ async function sendMessage() {
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split(/\r?\n/);
             buffer = lines.pop(); // 保留最后一个可能不完整的片段
+
+            // 首次输出前强制等待剩余的思考时间
+            if (isFirstChunk) {
+                const elapsed = Date.now() - startTime;
+                if (elapsed < thinkTime) {
+                    await new Promise(r => setTimeout(r, thinkTime - elapsed));
+                }
+                isFirstChunk = false;
+            }
 
             for (const line of lines) {
                 if (line.trim() === '') continue;

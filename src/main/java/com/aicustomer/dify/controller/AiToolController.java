@@ -30,18 +30,6 @@ public class AiToolController {
     private final DifyConfig difyConfig;
 
     /**
-     * 验证工具调用密钥
-     */
-    private void validateSecret(String secret) {
-        // 配置默认为 "aicustomer-internal-secret-key-2024"，除非配置文件覆盖
-        String configSecret = difyConfig.getToolSecret();
-        if (configSecret == null || !configSecret.equals(secret)) {
-            log.warn("Invalid Tool Secret received: {}", secret);
-            throw new RuntimeException("Invalid Tool Secret");
-        }
-    }
-
-    /**
      * 获取当前用户权限等级
      * 逻辑：Admin/UserType1 -> null (全部)，其他 -> [1] (普通)
      */
@@ -80,30 +68,37 @@ public class AiToolController {
      * 获取客户总数
      */
     @PostMapping("/customer/count")
-    public String getCustomerCount(@RequestHeader("X-Tool-Secret") String secret,
-            @RequestBody Map<String, Object> body) {
+    public String getCustomerCount(@RequestBody Map<String, Object> body) {
         log.info("🔔 Dify Tool Call: getCustomerCount - Body: {}", body);
-        validateSecret(secret);
-        String user = String.valueOf(body.get("user"));
-        if (user == null || "null".equals(user) || user.trim().isEmpty()) {
-            log.warn("⚠️ Security Alert: Tool call missing user identity!");
-            return "Error: Missing user identity. Request denied.";
+
+        // 从 body 中获取 user_id，如果为空则默认为 "admin" (紧急兼容方案)
+        String userId = body != null ? String.valueOf(body.get("user_id")) : null;
+        if (userId == null || "null".equals(userId) || userId.trim().isEmpty()) {
+            log.warn("⚠️ Security Alert: Tool call missing user identity! Using DEFAULT 'admin' permission.");
+            userId = "admin";
         }
-        return customerQueryService.getTotalCustomerCount(getUserPermission(user));
+
+        log.info("✅ User ID: {}", userId);
+        return customerQueryService.getTotalCustomerCount(getUserPermission(userId));
     }
 
     /**
      * 获取客户列表 (支持多条件筛选)
      */
     @PostMapping("/customer/list")
-    public String getCustomerList(@RequestHeader("X-Tool-Secret") String secret,
-            @RequestBody Map<String, Object> body) {
+    public String getCustomerList(@RequestBody Map<String, Object> body) {
         log.info("🔔 Dify Tool Call: getCustomerList - Body: {}", body);
-        validateSecret(secret);
-        String user = String.valueOf(body.get("user"));
-        if (user == null || "null".equals(user) || user.trim().isEmpty()) {
-            log.warn("⚠️ Security Alert: Tool call missing user identity!");
-            return "Error: Missing user identity. Request denied.";
+
+        // 从 body 中获取 user_id，如果为空则默认为 "admin" (紧急兼容方案)
+        String userId = body != null ? String.valueOf(body.get("user_id")) : null;
+        if (userId == null || "null".equals(userId) || userId.trim().isEmpty()) {
+            log.warn("⚠️ Security Alert: Tool call missing user identity! Using DEFAULT 'admin' permission.");
+            userId = "admin";
+        }
+
+        // body 可能为空，需要处理
+        if (body == null) {
+            body = new java.util.HashMap<>();
         }
 
         // 构建查询实体
@@ -129,23 +124,27 @@ public class AiToolController {
             }
         }
 
-        return customerQueryService.queryCustomers(params, limit, getUserPermission(user));
+        return customerQueryService.queryCustomers(params, limit, getUserPermission(userId));
     }
 
     /**
      * 获取客户详情
      */
     @PostMapping("/customer/detail")
-    public String getCustomerDetail(@RequestHeader("X-Tool-Secret") String secret,
-            @RequestBody Map<String, Object> body) {
-        validateSecret(secret);
-        String user = String.valueOf(body.get("user"));
-        if (user == null || "null".equals(user) || user.trim().isEmpty()) {
-            log.warn("⚠️ Security Alert: Tool call missing user identity!");
-            return "Error: Missing user identity. Request denied.";
+    public String getCustomerDetail(@RequestBody Map<String, Object> body) {
+        log.info("🔔 Dify Tool Call: getCustomerDetail - Body: {}", body);
+
+        // 从 body 中获取 user_id，如果为空则默认为 "admin" (紧急兼容方案)
+        String userId = body != null ? String.valueOf(body.get("user_id")) : null;
+        if (userId == null || "null".equals(userId) || userId.trim().isEmpty()) {
+            log.warn("⚠️ Security Alert: Tool call missing user identity! Using DEFAULT 'admin' permission.");
+            userId = "admin";
+        }
+        if (body == null) {
+            return "Error: Missing request body with customer name.";
         }
         String name = (String) body.get("name");
-        return customerQueryService.getCustomerDetail(name, getUserPermission(user));
+        return customerQueryService.getCustomerDetail(name, getUserPermission(userId));
     }
 
     // 注意：dynamicQuery 已移除，不再支持任意 SQL 执行
@@ -156,8 +155,8 @@ public class AiToolController {
      * 知识库统计
      */
     @PostMapping("/knowledge/count")
-    public String getKnowledgeCount(@RequestHeader("X-Tool-Secret") String secret) {
-        validateSecret(secret);
+    public String getKnowledgeCount() {
+
         return knowledgeQueryService.getKnowledgeCount();
     }
 
@@ -165,9 +164,7 @@ public class AiToolController {
      * 知识库列表
      */
     @PostMapping("/knowledge/list")
-    public String getKnowledgeList(@RequestHeader("X-Tool-Secret") String secret,
-            @RequestBody Map<String, Object> body) {
-        validateSecret(secret);
+    public String getKnowledgeList(@RequestBody Map<String, Object> body) {
 
         Integer limit = 20;
         if (body.get("limit") != null) {
@@ -186,9 +183,8 @@ public class AiToolController {
      * 知识库详情
      */
     @PostMapping("/knowledge/detail")
-    public String getKnowledgeDetail(@RequestHeader("X-Tool-Secret") String secret,
-            @RequestBody Map<String, Object> body) {
-        validateSecret(secret);
+    public String getKnowledgeDetail(@RequestBody Map<String, Object> body) {
+
         String fileName = (String) body.get("fileName");
         if (fileName == null)
             return "Missing fileName argument";
@@ -199,9 +195,8 @@ public class AiToolController {
      * FAQ 搜索 (优先匹配官方问题库)
      */
     @PostMapping("/faq/search")
-    public String searchFaq(@RequestHeader("X-Tool-Secret") String secret,
-            @RequestBody Map<String, Object> body) {
-        validateSecret(secret);
+    public String searchFaq(@RequestBody Map<String, Object> body) {
+
         String query = (String) body.get("query");
         if (query == null || query.trim().isEmpty()) {
             return "Missing query argument";

@@ -17,15 +17,18 @@
         "description": "查询系统中客户的总数量",
         "operationId": "getCustomerCount",
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "user_id"
+                ],
                 "properties": {
-                  "user": {
+                  "user_id": {
                     "type": "string",
-                    "description": "当前用户ID (请绑定 sys.user_id)"
+                    "description": "当前用户ID，由 Dify 自动从 inputs.user_id 传递"
                   }
                 }
               }
@@ -53,16 +56,15 @@
         "description": "根据条件查询客户列表",
         "operationId": "getCustomerList",
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "user": {
+                  "user_id": {
                     "type": "string",
-                    "description": "当前用户ID（系统自动填充）",
-                    "default": "1"
+                    "description": "当前用户ID，由 Dify 自动从 inputs.user_id 传递"
                   },
                   "region": {
                     "type": "string",
@@ -83,7 +85,10 @@
                     "description": "返回数量限制（可选，默认20）",
                     "default": 20
                   }
-                }
+                },
+                "required": [
+                  "user_id"
+                ]
               }
             }
           }
@@ -115,10 +120,9 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "user": {
+                  "user_id": {
                     "type": "string",
-                    "description": "当前用户ID（系统自动填充）",
-                    "default": "1"
+                    "description": "当前用户ID，由 Dify 自动从 inputs.user_id 传递"
                   },
                   "name": {
                     "type": "string",
@@ -127,6 +131,7 @@
                   }
                 },
                 "required": [
+                  "user_id",
                   "name"
                 ]
               }
