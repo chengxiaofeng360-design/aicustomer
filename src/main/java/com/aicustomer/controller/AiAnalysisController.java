@@ -21,9 +21,9 @@ import java.util.Map;
 @RequestMapping("/api/ai-analysis")
 @RequiredArgsConstructor
 public class AiAnalysisController {
-    
+
     private final AiAnalysisService aiAnalysisService;
-    
+
     /**
      * 获取分析统计
      */
@@ -36,7 +36,7 @@ public class AiAnalysisController {
             return Result.error("获取分析统计失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 获取风险预警
      */
@@ -49,7 +49,7 @@ public class AiAnalysisController {
             return Result.error("获取风险预警失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 执行行为分析
      */
@@ -62,7 +62,7 @@ public class AiAnalysisController {
             return Result.error("行为分析失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 执行情感分析
      */
@@ -75,7 +75,7 @@ public class AiAnalysisController {
             return Result.error("情感分析失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 执行需求预测
      */
@@ -88,7 +88,7 @@ public class AiAnalysisController {
             return Result.error("需求预测失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 执行风险评估
      */
@@ -101,7 +101,7 @@ public class AiAnalysisController {
             return Result.error("风险评估失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 执行价值评估
      */
@@ -114,7 +114,7 @@ public class AiAnalysisController {
             return Result.error("价值评估失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 批量分析
      */
@@ -127,7 +127,7 @@ public class AiAnalysisController {
             return Result.error("批量分析失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 执行分析（前端通用分析接口）
      */
@@ -138,7 +138,7 @@ public class AiAnalysisController {
             String analysisType = request.get("analysisType").toString();
             String timeRange = request.get("timeRange").toString();
             String description = request.get("description").toString();
-            
+
             // 根据分析类型调用不同的分析方法
             AiAnalysis analysis = null;
             switch (analysisType) {
@@ -160,27 +160,27 @@ public class AiAnalysisController {
                 default:
                     analysis = aiAnalysisService.analyzeBehavior(customerId);
             }
-            
+
+            // 构建返回结果
             // 构建返回结果
             Map<String, Object> result = new HashMap<>();
-            result.put("analysisId", analysis.getId());
-            result.put("customerId", customerId);
-            result.put("analysisType", analysisType);
-            result.put("score", 85);
-            result.put("risk", "低");
-            result.put("insight", "基于数据分析，该客户表现出良好的合作潜力，建议加强沟通频率，提供个性化服务方案。");
-            result.put("recommendations", Arrays.asList(
-                "增加沟通频率",
-                "提供定制化服务",
-                "定期回访跟进"
-            ));
-            
+            if (analysis != null) {
+                result.put("analysisId", analysis.getId());
+                result.put("customerId", customerId);
+                result.put("analysisType", analysisType);
+                result.put("score", analysis.getConfidence()); // 使用置信度作为分数，或需要另外计算
+                result.put("risk", analysis.getRiskLevel() != null ? analysis.getRiskLevel() : "未知");
+                result.put("insight", analysis.getContent()); // 使用真实的分析内容
+                // 解析建议列表 (假设内容包含换行建议，或者从 recommendations 字段取)
+                result.put("recommendations", Arrays.asList(analysis.getContent().split("\n")));
+            }
+
             return Result.success(result);
         } catch (Exception e) {
             return Result.error("分析失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 获取分析历史
      */

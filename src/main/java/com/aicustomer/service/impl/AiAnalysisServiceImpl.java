@@ -3,6 +3,7 @@ package com.aicustomer.service.impl;
 import com.aicustomer.entity.AiAnalysis;
 import com.aicustomer.entity.CommunicationRecord;
 import com.aicustomer.entity.Customer;
+import com.aicustomer.mapper.AiAnalysisMapper;
 import com.aicustomer.mapper.CommunicationMapper;
 import com.aicustomer.mapper.CustomerMapper;
 import com.aicustomer.service.AiAnalysisService;
@@ -31,6 +32,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
     private final DeepSeekService deepSeekService;
     private final CommunicationMapper communicationMapper;
     private final CustomerMapper customerMapper;
+    private final AiAnalysisMapper aiAnalysisMapper;
 
     // 业务关键词列表
     private static final List<String> BUSINESS_KEYWORDS = Arrays.asList(
@@ -40,16 +42,28 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
 
     @Override
     public Map<String, Object> getAnalysisStatistics(Long customerId) {
+        // 使用 Mapper 查询真实统计数据
+        Map<String, Object> rawStats = aiAnalysisMapper.selectStatistics(customerId, null, null);
+
+        if (rawStats == null) {
+            rawStats = new HashMap<>();
+        }
+
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalAnalyses", 156);
-        stats.put("highImportanceCount", 23);
-        stats.put("processedCount", 89);
-        stats.put("avgConfidence", 87.5);
-        stats.put("behaviorAnalyses", 45);
-        stats.put("sentimentAnalyses", 38);
-        stats.put("needPredictions", 28);
-        stats.put("riskWarnings", 25);
-        stats.put("valueEvaluations", 20);
+        // 基础统计
+        stats.put("totalAnalyses", rawStats.getOrDefault("totalAnalyses", 0));
+        stats.put("highImportanceCount", rawStats.getOrDefault("highImportanceCount", 0));
+        stats.put("processedCount", rawStats.getOrDefault("processedCount", 0));
+        stats.put("avgConfidence", rawStats.getOrDefault("avgConfidence", 0.0));
+
+        // 分类统计映射
+        stats.put("behaviorAnalyses", rawStats.getOrDefault("behaviorAnalyses", 0));
+        stats.put("sentimentAnalyses", rawStats.getOrDefault("sentimentAnalyses", 0));
+        stats.put("needPredictions", rawStats.getOrDefault("trendAnalyses", 0)); // 映射 trendAnalyses -> needPredictions
+        stats.put("riskWarnings", rawStats.getOrDefault("riskAnalyses", 0)); // 映射 riskAnalyses -> riskWarnings
+        stats.put("valueEvaluations", rawStats.getOrDefault("valueAnalyses", 0)); // 映射 valueAnalyses ->
+                                                                                  // valueEvaluations
+
         return stats;
     }
 
@@ -72,19 +86,89 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         return warnings;
     }
 
+    /**
+     * Helper method to check for recent valid analysis
+     */
+    private AiAnalysis checkRecentAnalysis(Long customerId, int analysisType) {
+        // Find existing analysis created within last 7 days
+        // Note: Mapper needs to support this query efficiently.
+        // We reuse selectByCustomerId and filter in memory for simplicity if mapper
+        // doesn't support time range,
+        // or add method to mapper. Let's assume selectByCustomerId is available.
+        List<AiAnalysis> history = aiAnalysisMapper.selectByCustomerId(customerId);
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+
+        return history.stream()
+                .filter(a -> a.getAnalysisType() == analysisType && a.getDeleted() == 0)
+                .filter(a -> a.getCreateTime() != null && a.getCreateTime().isAfter(sevenDaysAgo))
+                .max((a1, a2) -> a1.getCreateTime().compareTo(a2.getCreateTime()))
+                .orElse(null);
+    }
+
     @Override
     public AiAnalysis analyzeBehavior(Long customerId) {
+        // Check cache first
+        AiAnalysis cached = checkRecentAnalysis(customerId, 1);
+        if (cached != null) {
+            return cached;
+        }
+
         AiAnalysis analysis = new AiAnalysis();
         analysis.setId(System.currentTimeMillis());
         analysis.setCustomerId(customerId);
         analysis.setAnalysisType(1); // 1:客户行为分析
         analysis.setTitle("客户行为分析报告");
-        analysis.setContent("基于历史数据，该客户表现出以下行为特征：\n" +
-                "1. 购买频率：每月1-2次\n" +
-                "2. 偏好产品：高端产品\n" +
-                "3. 沟通方式：偏好电话沟通\n" +
-                "4. 决策周期：平均7天");
-        analysis.setConfidence(92);
+
+        // 获取真实数据
+        Customer customer = customerMapper.selectById(customerId);
+        List<CommunicationRecord> records = communicationMapper.selectRecentByCustomerId(customerId, 60); // 最近60天
+
+        if (deepSeekService.isAvailable()) {
+            StringBuilder context = new StringBuilder();
+            if (customer != null) {
+                context.append("客户基本信息: ").append(customer.getCustomerName()).append(", ")
+                        .append(customer.getCustomerType() == 1 ? "个人" : "企业").append("\n");
+            }
+            context.append("最近沟通记录数目: ").append(records.size()).append("\n");
+            // 摘要部分沟通内容
+            records.stream().limit(5).forEach(r -> context.append("- ").append(r.getContent()).append("\n"));
+
+            String prompt;
+            if (records.isEmpty()) {
+                // 无沟通记录，进行行业通用行为分析
+                prompt = String.format("客户名称：%s\n客户类型：%s\n" +
+                        "请基于客户名称和类型，利用你的商业知识库，分析该客户（或同类客户）的典型行为特征：\n" +
+                        "1. 通常的采购/决策流程\n" +
+                        "2. 行业关注点\n" +
+                        "3. 建议的沟通风格\n" +
+                        "请直接输出分析结果。",
+                        customer != null ? customer.getCustomerName() : "未知",
+                        customer != null && customer.getCustomerType() != null && customer.getCustomerType() == 2 ? "企业"
+                                : "个人");
+            } else {
+                // 有沟通记录，进行个性化分析
+                prompt = "基于以上客户信息和沟通记录，分析该客户的以下行为特征：\n" +
+                        "1. 购买/沟通频率\n" +
+                        "2. 偏好/关注点\n" +
+                        "3. 决策风格\n" +
+                        "4. 互动积极性\n" +
+                        "请直接输出分析结果，不需要开场白。上下文数据：\n" + context.toString();
+            }
+
+            try {
+                String aiResult = deepSeekService.chat(prompt, "你是一个专业的客户行为分析专家。");
+                analysis.setContent(aiResult);
+                analysis.setConfidence(85 + (records.size() > 2 ? 10 : 0)); // 有数据则置信度高
+            } catch (Exception e) {
+                log.error("DeepSeek行为分析失败", e);
+                analysis.setContent("AI 分析暂时不可用，原因：" + e.getMessage());
+                analysis.setConfidence(0);
+            }
+        } else {
+            analysis.setContent("AI 服务未配置，无法进行智能分析。");
+            analysis.setConfidence(0);
+        }
+
         analysis.setImportance(2);
         analysis.setStatus(1);
         analysis.setCreateTime(LocalDateTime.now());
@@ -93,6 +177,12 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
 
     @Override
     public AiAnalysis analyzeSentiment(Long customerId, String content) {
+        // Sentiment is real-time based on specific content, usually NOT cached if
+        // content changes.
+        // However, if content is "batch analysis" or null, we might cache.
+        // For now, let's skip caching for analyzeSentiment as it depends on 'content'
+        // argument.
+
         AiAnalysis analysis = new AiAnalysis();
         analysis.setId(System.currentTimeMillis());
         analysis.setCustomerId(customerId);
@@ -139,6 +229,12 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
 
     @Override
     public AiAnalysis analyzeNeeds(Long customerId) {
+        // Check cache
+        AiAnalysis cached = checkRecentAnalysis(customerId, 3);
+        if (cached != null) {
+            return cached;
+        }
+
         AiAnalysis analysis = new AiAnalysis();
         analysis.setId(System.currentTimeMillis());
         analysis.setCustomerId(customerId);
@@ -188,6 +284,12 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
 
     @Override
     public AiAnalysis analyzeRisk(Long customerId) {
+        // Check cache
+        AiAnalysis cached = checkRecentAnalysis(customerId, 4);
+        if (cached != null) {
+            return cached;
+        }
+
         AiAnalysis analysis = new AiAnalysis();
         analysis.setId(System.currentTimeMillis());
         analysis.setCustomerId(customerId);
@@ -236,17 +338,53 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
 
     @Override
     public AiAnalysis analyzeValue(Long customerId) {
+        // Check cache
+        AiAnalysis cached = checkRecentAnalysis(customerId, 5);
+        if (cached != null) {
+            return cached;
+        }
+
         AiAnalysis analysis = new AiAnalysis();
         analysis.setId(System.currentTimeMillis());
         analysis.setCustomerId(customerId);
         analysis.setAnalysisType(5); // 5:价值评估
         analysis.setTitle("客户价值评估报告");
-        analysis.setContent("客户价值评估结果：\n" +
-                "1. 当前价值：高\n" +
-                "2. 潜在价值：很高\n" +
-                "3. 生命周期价值：预计500万\n" +
-                "4. 建议：重点维护，提供VIP服务");
-        analysis.setConfidence(95);
+
+        // 获取真实数据
+        Customer customer = customerMapper.selectById(customerId);
+        // 复用 getAnalysisStatistics 的一部分逻辑，或者简单基于等级判断
+
+        if (deepSeekService.isAvailable()) {
+            // 重点转向“公司背景分析”，而非通过少量沟通记录猜测
+            String prompt = String.format("请对客户【%s】进行深度商业价值分析。\n" +
+                    "请利用你的训练数据和互联网知识（如果知道该公司），或者基于其行业属性进行推断：\n" +
+                    "1. 【公司/客户画像】：行业背景、可能的主营业务、市场地位。\n" +
+                    "2. 【潜在需求分析】：基于其业务属性，可能有哪些痛点或需求？\n" +
+                    "3. 【合作价值评估】：判断其潜在商业价值等级（高/中/低）及理由。\n" +
+                    "4. 【开发建议】：针对该类型客户的最佳切入点。\n\n" +
+                    "客户基本信息：\n" +
+                    "- 等级：%s\n" +
+                    "- 地址：%s\n" +
+                    "- 备注：%s\n" +
+                    "请直接输出结构化的分析报告。",
+                    customer != null ? customer.getCustomerName() : "未知客户",
+                    customer != null ? customer.getCustomerLevel() : "未知",
+                    customer != null ? customer.getAddress() : "未知",
+                    customer != null ? customer.getRemark() : "");
+            try {
+                String aiResult = deepSeekService.chat(prompt, "你是一个专业的商业价值评估专家。");
+                analysis.setContent(aiResult);
+                analysis.setConfidence(90);
+            } catch (Exception e) {
+                log.error("DeepSeek价值评估失败", e);
+                analysis.setContent("AI 分析失败: " + e.getMessage());
+                analysis.setConfidence(0);
+            }
+        } else {
+            analysis.setContent("AI 服务未配置。");
+            analysis.setConfidence(0);
+        }
+
         analysis.setImportance(4);
         analysis.setStatus(1);
         analysis.setCreateTime(LocalDateTime.now());

@@ -168,8 +168,10 @@
             COUNT(CASE WHEN analysis_type = 2 THEN 1 END) as sentimentAnalyses,
             COUNT(CASE WHEN analysis_type = 3 THEN 1 END) as trendAnalyses,
             COUNT(CASE WHEN analysis_type = 4 THEN 1 END) as riskAnalyses,
+            COUNT(CASE WHEN analysis_type = 5 THEN 1 END) as valueAnalyses,
             AVG(confidence) as avgConfidence,
             COUNT(CASE WHEN importance = 3 THEN 1 END) as highImportanceCount,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as processedCount,
             COUNT(CASE WHEN risk_level = 3 THEN 1 END) as highRiskCount
         FROM ai_analysis
         WHERE deleted = 0

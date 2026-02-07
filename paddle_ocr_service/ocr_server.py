@@ -26,7 +26,7 @@ app = Flask(__name__)
 # use_angle_cls=True: 使用方向分类器
 # lang='ch': 中文识别
 logger.info("正在初始化 PaddleOCR...")
-ocr = PaddleOCR(use_angle_cls=True, lang='ch', show_log=False)
+ocr = PaddleOCR(use_angle_cls=True, lang='ch')
 logger.info("✅ PaddleOCR 初始化完成")
 
 @app.route('/health', methods=['GET'])
